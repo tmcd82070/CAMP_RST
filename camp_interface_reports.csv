@@ -1,0 +1,3 @@
+name,friendly,description,arguments
+F.biweekly.report,Bi-weekly report,Generate a .ODT or .PDF version of a bi-weekly report containing production estimates,site:min.date:max.date:output.type:from:to:return.addr
+
