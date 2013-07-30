@@ -20,8 +20,8 @@
     #   =================== Global variables 
     
     #   Parameter db.file is a string containing the full or relative path to the data base
-    #db.file <<- "..\\Platform\\Data\\CAMP.mdb"  # For trent's testing in 'code' directory
-    db.file <<- "..\\Data\\CAMP.mdb"
+    db.file <<- "..\\Data\\CAMP-American-20130610.mdb"  # For trent's testing in 'code' directory
+    #db.file <<- "..\\Data\\CAMP.mdb"
     
     cat(paste("DB file:", db.file, "\n"))
 
@@ -64,6 +64,12 @@
     
     #   Write out the memory limit on this machine
     cat(paste("Memory limit:", memory.limit(), "Mb \n"))    
+    
+    #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then, 
+    #  *************** Set the efficiency model to use. 
+    #
+    #   Specify the capture efficiency model
+    #eff.model.method <- 3
                     
 }
 .onAttach()

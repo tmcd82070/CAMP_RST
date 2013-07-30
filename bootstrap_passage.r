@@ -55,7 +55,9 @@ if( !ci ){
         trapID <- names(catch.fits)[trap]
         trap.ind <- grand.df$trapPositionID == trapID
 
-        cat(paste("trap=", trapID, "\n"))
+        #cat("*=*=*=*=*=*=*=*=*\n")
+        
+        cat(paste("trap=", trapID, ))
         setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
     
         #   *=*=*=*=*=*=*=* Generate random realizations of CATCH
@@ -97,8 +99,9 @@ if( !ci ){
         beta <- coef( c.fit )
         
 #        cat(paste("beta=", beta, "\n"))
-    
-       
+#        tmp <- chol.default( sigma, pivot=TRUE )
+#        print.default(tmp)
+              
         # Generate random coefficients       
         rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector. rbeta is R X (n coef)
 
@@ -144,50 +147,68 @@ if( !ci ){
         
         c.pred[ind.mat] <- pred   # replaces imputed values with other realizations contained in pred.  This is nrow(grand.df) X R, or (n.batch.days*n.traps) X R
         
+        cat("...Catch BS complete")
+        
         
         #   *=*=*=*=*=*=*=* Generate random realizations of EFFICIENCY
         e.fit <- eff.fits[[trap]] 
         e.X <- eff.X[[trap]]
         e.ind <- eff.ind.inside[[trap]]
-        
-        # Variance matrix
-        disp <- sum(residuals(e.fit, type="pearson")^2) / e.fit$df.residual
-        sig <- disp * vcov( e.fit )   # vcov returns unscaled variance-covariance matrix.  scale by over dispersion.
 
-        setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
-        
-        # Coefficients
-        beta <- coef( e.fit )        
+        if( !is.list(e.fit) ){
+            #   No efficiency trials
+            e.pred <- matrix( NA, nrow(c.pred), ncol(c.pred) )
+        } else {
+                    
+            # Variance matrix
+            if( e.fit$df.residual == 0 ){
+                #    Only one efficiency trial at this trap
+                disp <- 1
+            } else {
+                disp <- sum(residuals(e.fit, type="pearson")^2) / e.fit$df.residual
+            }
+            
+            sig <- disp * vcov( e.fit )   # vcov returns unscaled variance-covariance matrix.  scale by over dispersion.
     
-        # Generate random coefficients       
-        rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector
+            setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+            
+            # Coefficients
+            beta <- coef( e.fit )        
+        
+            # Generate random coefficients       
+            rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector
+    
+            setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+            
+            # Predict efficiency using random coefficients
+            # When computed, pred is a matrix where each column is a random realization of model predictions 
+            # for missing catches. There are R columns (sets of predictions)
+            pred <- (e.X %*% t(rbeta))
+            pred <- 1 / (1 + exp(-pred))    # pred is nrow(e.X) X R
+    
+            setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+            
+            # Use mean predicted efficiency for times outside first and last trials
+            ind.mat <- matrix( trap.ind, nrow=n.grand.df, ncol=R )
+            e.means <- matrix( colMeans( pred ), byrow=T, nrow=sum(trap.ind), ncol=R )
+            e.pred[ind.mat] <- e.means    # Assign mean outside of eff.ind.inside[[trap]]
+            
+            
+            ind.mat <- matrix( trap.ind & e.ind, nrow=n.grand.df, ncol=R )
+            e.pred[ind.mat] <- pred   # e.pred is (n days*n traps) X R, or nrow(grand.df) X R, or (n.batch.days*n.traps) X R
+            
+            setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+            
+            
+            #   *=*=*=*=*=*=*=* Store results from this trap.  We average, so just store sum.
+            #pass <- apply( p.pred, 2, function(x, ind.by){ tapply( x, ind.by, FUN=sum, na.rm=T ) }, ind.by=sum.by )  # a list of length R, each element is vector of length unique(ind.by)
+            #pass <- matrix( unlist(pass), nn, R )
+            #pass <- pass + p.pred
+            
+            
+        }
+        cat("...Efficiency BS complete\n")
 
-        setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
-        
-        # Predict efficiency using random coefficients
-        # When computed, pred is a matrix where each column is a random realization of model predictions 
-        # for missing catches. There are R columns (sets of predictions)
-        pred <- (e.X %*% t(rbeta))
-        pred <- 1 / (1 + exp(-pred))    # pred is nrow(e.X) X R
-
-        setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
-        
-        # Use mean predicted efficiency for times outside first and last trials
-        ind.mat <- matrix( trap.ind, nrow=n.grand.df, ncol=R )
-        e.means <- matrix( colMeans( pred ), byrow=T, nrow=sum(trap.ind), ncol=R )
-        e.pred[ind.mat] <- e.means    # Assign mean outside of eff.ind.inside[[trap]]
-        
-        
-        ind.mat <- matrix( trap.ind & e.ind, nrow=n.grand.df, ncol=R )
-        e.pred[ind.mat] <- pred   # e.pred is (n days*n traps) X R, or nrow(grand.df) X R, or (n.batch.days*n.traps) X R
-        
-        setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
-        
-        
-        #   *=*=*=*=*=*=*=* Store results from this trap.  We average, so just store sum.
-        #pass <- apply( p.pred, 2, function(x, ind.by){ tapply( x, ind.by, FUN=sum, na.rm=T ) }, ind.by=sum.by )  # a list of length R, each element is vector of length unique(ind.by)
-        #pass <- matrix( unlist(pass), nn, R )
-        #pass <- pass + p.pred
     }
 
 
