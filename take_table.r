@@ -40,13 +40,18 @@ tmp <- data.frame( species=c(sp.name), run=c(run.name), origin=c(fishOrigin.name
         lifeStage=c(lifeStage.name), date=c(date.name), n.live=c(n.live), n.dead=c(n.dead), stringsAsFactors=FALSE )
 tmp <- tmp[ !(is.na(tmp$n.live) & is.na(tmp$n.dead)), ]
 class(tmp$date) <- class(df$visitTime)
-print(tmp[1:30,])
 
+cat("\nFirst 30 records of output sorted by date:\n")
+print(tmp[1:30,])
+cat("Table of counts of all species found:\n")
 print(table(tmp$species))
+
 
 #   ---- Sort
 ord <- order( tmp$species, tmp$run, tmp$origin, tmp$lifeStage )
 tmp <- tmp[ord,]
+
+
 
 #   ---- Write out the data set
 out.fn <- paste(output.file, "_daily_catch.csv", sep="")

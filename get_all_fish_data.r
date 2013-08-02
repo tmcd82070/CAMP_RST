@@ -136,7 +136,7 @@ if( any( is.na(catch$n) )){
 catch <- catch[ catch$n > 0, ]
 
 #   Drop all marked fish
-keep <- (catch$releaseID == 0) | (catch$releaseID >= 200)
+keep <- (catch$releaseID == 0) | (catch$releaseID == 255)
 cat(paste(sum(!keep), "efficiency trial records dropped\n"))
 catch <- catch[keep,]
 
