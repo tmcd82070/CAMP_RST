@@ -37,6 +37,7 @@ usepb <- exists( "progbar", where=.GlobalEnv )
 #   By default, this produces one graph in a pdf.  Turn this off with plot=F in call.
 catch.and.fits <- F.est.catch( catch.df, plot=TRUE, plot.file=file.root )
 if(usepb){
+    progbar <- get( "progbar", pos=.GlobalEnv )
     tmp <- getWinProgressBar(progbar)
     setWinProgressBar(progbar, (2*tmp + 1)/3 )
 }
@@ -53,6 +54,13 @@ out.fn.list <- c(out.fn.list, attr(catch.and.fits, "out.fn.list"))
 #   If plot=T, this produces a graph in a pdf.
 f.banner(" Efficiency estimation ")
 bd <- sort( unique(catch$batchDate) )
+attr( release.df, "subsites" ) <- attr( catch.df, "subsites" )
+
+#cat(")))))))) in est_passage.r (((((((((\n")
+#print( attributes(release.df))
+#cat("@@@@@\n")
+#print( attributes(catch.df))
+
 eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df=3, plot=TRUE, plot.file=file.root )
 if(usepb){
     tmp <- getWinProgressBar(progbar)
@@ -103,11 +111,22 @@ grand.df$passage <- round(grand.df$passage,1)   # round final passage estimate h
 
 #   Save grand.df to .GlobalEnv (for debuggin) and write it out to a csv file
 grand.df <<- grand.df
-cat("grand.df stored in .GlobalEnv")
+cat("grand.df stored in .GlobalEnv\n")
 
 if( !is.na(file.root) ){
+    tmp.df <- grand.df[, !(names(grand.df) %in% c("nReleased", "nCaught", "batchDay")) ]  # do this so can change names (headers) in csv file, Drop 2 columns
+    names(tmp.df)[ names(tmp.df) == "catch" ] <- "rawCatch"
+    names(tmp.df)[ names(tmp.df) == "imputed.catch" ] <- "propImputedCatch"
+    names(tmp.df)[ names(tmp.df) == "imputed.eff" ] <- "propImputedEff"
+    tmp.df$propImputedEff <- as.numeric(tmp.df$propImputedEff)  # convert to numbers, 0 or 1
+    tmp.df$passage <- round(tmp.df$passage)  # Round off passage
+    tmp.df$rawCatch <- round(tmp.df$rawCatch,1)  
+    tmp.df$efficiency <- round(tmp.df$efficiency, 4)  
+    #   Merge in subsiteNames
+    ssiteNames <- attr(catch.df, "subsites")
+    tmp.df <- merge( ssiteNames, tmp.df, by.x="subSiteID", by.y="trapPositionID", all.y=T )
     out.fn <- paste(file.root, "_baseTable.csv", sep="")
-    write.table( grand.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
+    write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
     out.fn.list <- c(out.fn.list, out.fn)
 }
 

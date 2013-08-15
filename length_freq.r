@@ -40,6 +40,20 @@ if( by.lifestage ){
 
 catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
 
+if(nrow(catch.df) == 0){
+    plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
+    text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")
+    dev.off(dev.cur())
+    ans <- out.graphs
+    cat("FAILURE - F.length.frequency\n\n")
+    cat(paste("Working directory:", getwd(), "\n"))
+    cat(paste("R data frames saved in file:", "<no RData saved>", "\n\n"))
+    cat("Number of files created in working directory = 1\n")
+    cat(paste(out.graphs, "\n"))
+    cat("\n")    
+    return(catch.df)
+}
+
 #   ********
 #   Now plot
 
@@ -107,9 +121,13 @@ f.len.freq<-function(x, bks, col, last=F, max.y, stage){
     #h <- hist(x, breaks=bks, freq=T, xlab=xl, ylab="", main="", ylim=c(0,max.y),
     #    density=-1, col=col, xaxt=xa, cex.lab=2, cex.axis=1.25 )
 
-    h <- hist(x, breaks=bks, freq=T, xlab=xl, ylab="", main="",
-        density=-1, col=col, xaxt=xa, cex.lab=2, cex.axis=1.25 )
+    h <- hist(x, breaks=bks, plot=F )  # get counts so can set ylim correctly
+    y.at <- pretty(h$counts)
 
+    h <- hist(x, breaks=bks, freq=T, xlab=xl, ylab="", main="", ylim=range(y.at),
+        density=-1, col=col, xaxt=xa, cex.lab=2, cex.axis=1.25, yaxt="n" )
+        
+    axis( 2, at=y.at, labels=formatC(y.at, big.mark=",") )
 
     #   Smoothed density - If you want it
     #require(MASS)
@@ -120,7 +138,7 @@ f.len.freq<-function(x, bks, col, last=F, max.y, stage){
     #lines( sm, col="black", lwd=2 )
 
     #   Legend
-    n.str <- paste( "n (un-inflated)=", sum(h$counts) )
+    n.str <- paste( "n (un-inflated)=", formatC(sum(h$counts), big.mark=",") )
     top <- legend( "topright", legend=c(stage,n.str), plot=F, cex=2  )
     text( max(bks), top$text$y[1], stage, cex=2, col=col, adj=1 )
     text( max(bks), top$text$y[2], n.str, cex=1, col="black", adj=1 )
@@ -169,7 +187,6 @@ if( by.lifestage ){
     }
     
     #   Plot histograms 
-    par(mar=c(0,2.1,.5,2.1))
     for( i in 1:nl ){
         ind <- life.stages[i] == lstage
         yy <- y[ind]
@@ -177,7 +194,10 @@ if( by.lifestage ){
         if( i == nl ){
             # This is the bottom panel, make room for x-axis ticks and label
             par(mar=c(5.1,2.1,.5,2.1))
+        } else {
+            par(mar=c(0,2.1,.5,2.1))
         }
+        
         cnts <- f.len.freq(yy, bks, mycol[ i ], i == nl, max.y, stage.name)
 
         if( i == 1 ){

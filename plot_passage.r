@@ -24,42 +24,64 @@ if( !is.na(out.file) ){
 pass <- matrix( c(df$passage * df$pct.imputed.catch, df$passage * (1 - df$pct.imputed.catch)), ncol=nrow(df), byrow=T )
 dimnames(pass) <- list(NULL, df$date)
 
+pass[ is.na(pass) ] <- 0
 
-
+if( all(pass == 0) ){
+    plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
+    text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")
+    dev.off(dev.cur())
+    ans <- out.pass.graphs
+    return(ans)
+}
 #   Compute extent of y axis
 hgts <- colSums( pass )
 lab.y.at <- pretty( hgts )
 
 
 #   GRaph using barplot
+
 mp <- barplot( pass, beside=FALSE, space=0, col=c("lightblue","darkorange"), 
     legend.text=F, ylab="", xaxt="n", yaxt="n", ylim=range(c(hgts, lab.y.at)), 
-    xlab=capwords(attr(df,"summarized.by")), cex.lab=1.5 )
+    xlab="", cex.lab=1.5 )
 
 
-mtext( "Number of fish", side=2, line=2.25, cex=1.5)
+mtext( "Passage estimate (# fish)", side=2, line=2.25, cex=1.5)
 
 #   add a smoother line here. 
-lines( supsmu( mp, hgts), lwd=2, col="darkblue" )
+#lines( supsmu( mp, hgts), lwd=2, col="darkblue" )  # Doug did not like this
+
 
 #   Add x axis labels
-dt <- format(df$date, "%m-%y")
-dt <- dt[ !duplicated(dt) ]
-dt <- as.POSIXct( strptime( paste( "1", dt, sep="-" ), format="%d-%m-%y"))
+s.by <- capwords(attr(df,"summarized.by"))
 
-ind <- as.numeric(cut( dt, df$date ))
-dt <- dt[ !is.na(ind) ]
-ind <- ind[!is.na(ind)]   # because first of some month may be less than first date
+if( casefold(s.by) == "day" ){
+    dt <- format(df$date, "%m-%y")
+    dt <- dt[ !duplicated(dt) ]
+    dt <- as.POSIXct( strptime( paste( "1", dt, sep="-" ), format="%d-%m-%y"))
+    
+    ind <- as.numeric(cut( dt, df$date ))
+    dt <- dt[ !is.na(ind) ]
+    ind <- ind[!is.na(ind)]   # because first of some month may be less than first date
+    
+    lab.x.at <- mp[ind]
+    lab.x.lab <- format(dt, "%d%b%y")
+    
+    axis( side=1, at=lab.x.at, label=rep("", length(lab.x.at)) )
+    for( i in 1:length(dt) ){
+        mtext( side=1, at=lab.x.at[i], text=lab.x.lab[i], las=0, line=1 )
+    }
+    
+} else {
+    # by is "week" or "month"  ( by="year" does not get plotted )
+    dt1 <- df$date[-length(df$date)]
+    dt2 <- df$date[-1] - 24*60*60
+    dt1 <- format(dt1, "%d%b")
+    dt2 <- format(dt2, "%d%b")
+    dt <- paste(dt1, dt2, sep="-")
 
-lab.x.at <- mp[ind]
-lab.x.lab <- format(dt, "%d%b%y")
-
-axis( side=1, at=lab.x.at, label=rep("", length(lab.x.at)) )
-#axis( side=1, at=lab.x.at, label=lab.x.lab)
-
-#   Do the following if you want perpendicular tick labels
-for( i in 1:length(lab.x.at) ){
-    mtext( side=1, at=lab.x.at[i], text=lab.x.lab[i], las=0, line=1 )
+    for( i in 1:length(dt) ){
+        mtext( side=1, at=mp[i], text=dt[i], las=2, line=0.1, adj=1, cex=.75 )
+    }
 }
 
 #   Add y axis labels
@@ -72,7 +94,9 @@ N <- round(sum( df$passage ))
 mtext( side=3, at=max(mp),  text=paste("N =", format(N, scientific=F, big.mark="," )), adj=1, cex=1 )
 
 #   Add title
-mtext( side=3, at=max(mp), text=paste(attr(df,"site.abbr"), ", ", attr(df,"species.name"), ", ", attr(df,"run.name"), " run", sep=""), adj=1, cex=1.5, line=1.25 )
+mtext( side=3, at=max(mp), text=attr(df,"site.name"), adj=1, cex=1.5, line=2 )
+mtext( side=3, at=max(mp), text= paste(attr(df,"species.name"), ", ", attr(df,"run.name"), " run", sep=""), adj=1, cex=.75, line=1 )
+
 
 #plot( df$datetime, df$passage ,type="b", xlab="Date", ylab="Number of fish", xaxt="n", cex.lab=1.5)
 #mtext(side=3, text=attr(df, "site.name"), cex=1, line=.75 )
@@ -85,6 +109,7 @@ mtext( side=3, at=max(mp), text=paste(attr(df,"site.abbr"), ", ", attr(df,"speci
 #points( df$datetime[imp.ind], df$passage[imp.ind], col="red", pch=1 )
 #points( df$datetime[!imp.ind], df$passage[!imp.ind], col="black", pch=16 )
 #
+
 legend( "topright", legend=c("Observed","Imputed"),
     fill=c("darkorange", "lightblue"), cex=1)
 

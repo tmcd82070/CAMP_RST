@@ -36,17 +36,19 @@ f.banner("F.get.catch.data - Retrieving Visits")
 
 visit <- F.get.indiv.visit.data( site, run, min.date, max.date )
 
+if( nrow(visit) == 0 ){
+    return(visit)
+}
 
 #write.table(visit, file="Visits_test.csv", sep=",", row.names=F )
 
-#print(attributes(visit))
 
 #   Save some attributes for later
 site.name <- attr(visit, "site.name") 
 site.abbr <- attr(visit, "site.abbr")
 run.name <- attr(visit, "run.name")
 run.season <- attr(visit, "run.season")
-
+subsite.string <- attr(visit, "subsites")
 
    
 #   ================================================================================================
@@ -62,11 +64,11 @@ if( nrow(catch) >= 20 ) print(catch[1:20,]) else print(catch)
 #write.table(catch, file="catch_test.csv", sep=",", row.names=F )
 
 site.stream <- attr(catch, "site.stream") 
-subsite.string <- attr(catch, "subsites")
+#subsite.string <- attr(catch, "subsites")
 taxon.string <- attr(catch, "taxonID" )
 sp.commonName <- attr(catch, "species.name")
 
-tmp.catch <<- catch
+#tmp.catch <<- catch
 
 
 #   ================================================================================================
@@ -104,7 +106,6 @@ visit$n.morts[ is.na(visit$n.morts) ] <- 0
 taxon.composite <- paste(taxon, collapse="+")
 visit$taxonID <- rep(taxon.composite, nrow(visit))
 
-#warning("need to implement plus count methods, need to implement subsampling methods, add counts as other columns - n.parr, n.smolt, etc.")
 
 #   Sort
 visit <- visit[ order(visit$trapPositionID, visit$sampleStart), ]

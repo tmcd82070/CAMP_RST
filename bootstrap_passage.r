@@ -57,7 +57,7 @@ if( !ci ){
 
         #cat("*=*=*=*=*=*=*=*=*\n")
         
-        cat(paste("trap=", trapID, ))
+        cat(paste("trap=", trapID, "\n" ))
         setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
     
         #   *=*=*=*=*=*=*=* Generate random realizations of CATCH

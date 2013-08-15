@@ -42,6 +42,20 @@ close(ch)
 
 catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
 
+if( nrow(catch.df) == 0 ){
+    plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
+    text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")
+    dev.off(dev.cur())
+    cat("FAILURE - F.size.by.date\n\n")
+    cat(paste("Working directory:", getwd(), "\n"))
+    cat(paste("R data frames saved in file:", "<no RData saved>", "\n\n"))
+    cat("Number of files created in working directory = 1\n")
+    cat(paste(out.graphs, "\n"))
+    cat("\n")        
+    return(catch.df)
+}
+
+
 
 #   ********
 #   Now plot

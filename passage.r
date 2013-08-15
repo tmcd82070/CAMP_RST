@@ -26,26 +26,52 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
 
     #   ---- Fetch the catch data
     catch.df   <- F.get.catch.data( site, taxon, run, min.date, max.date  )
+
+    if( nrow(catch.df) > 0 ){
+        
+        cat("\n\n")
+        cat(paste(rep("+",150), collapse="")); cat("\n")
+        cat("\n\n")
     
-    cat("\n\n")
-    cat(paste(rep("+",150), collapse="")); cat("\n")
-    cat("\n\n")
+        #   ---- Fetch efficiency data
+        setWinProgressBar( progbar, getWinProgressBar(progbar)*.7 + .3 , label="Reading efficiency data" )
+        release.df <- F.get.release.data( site, run, min.date, max.date  )
+    
+        cat("\n\n")
+        cat(paste(rep("+",150), collapse="")); cat("\n")
+        cat("\n\n")
+    
+        #   ---- Compute passage
+        output.fn <- output.file 
+        setWinProgressBar( progbar, getWinProgressBar(progbar)*.7 + .3, label="Computing passage" )
+    
+        pass <- F.est.passage( catch.df, release.df, by, output.fn, ci )
+    
+        names(pass)[ names(pass) == "imputed" ] <- "pct.imputed"
+        out.fn.list <- attr(pass, "out.fn.list")
 
-    #   ---- Fetch efficiency data
-    setWinProgressBar( progbar, getWinProgressBar(progbar)*.7 + .3 , label="Reading efficiency data" )
-    release.df <- F.get.release.data( site, run, min.date, max.date  )
+    } else {
+        #   No visits found, dates are probably wrong
+        output.fn <- output.file 
+        out.fn.list <- NULL
+        tzn <- "America/Los_Angeles"
+        cat("No visits found, check the dates\n")
+        pass.nms <- c("year","passage","date","pct.imputed.catch","lower.95","upper.95",
+            "nForkLenMM","meanForkLenMM","sdForkLenMM","sampleLengthHrs","sampleLengthDays")
+        pass <- as.data.frame( matrix(NA, 1, length(pass.nms)) )
+        names(pass) <- pass.nms
+        pass$date <- as.POSIXct( strptime( "1970-01-01", "%Y-%m-%d", tz=tzn),tz=tzn)
 
-    cat("\n\n")
-    cat(paste(rep("+",150), collapse="")); cat("\n")
-    cat("\n\n")
-
-    #   ---- Compute passage
-    output.fn <- output.file 
-    setWinProgressBar( progbar, getWinProgressBar(progbar)*.7 + .3, label="Computing passage" )
-    pass <- F.est.passage( catch.df, release.df, by, output.fn, ci )
-    names(pass)[ names(pass) == "imputed" ] <- "pct.imputed"
-    out.fn.list <- attr(pass, "out.fn.list")
-
+        attr(pass,"site.name") <- attr(catch.df, "site.name")
+        attr(pass,"site.abbr") <- attr(catch.df, "site.abbr")
+        attr(pass,"siteID") <- site
+        attr(pass,"species.name") <- attr(catch.df, "species.name")
+        attr(pass,"taxonID") <- taxon
+        attr(pass,"run.name") <- attr(catch.df, "run.name")
+        attr(pass,"runID") <- attr(catch.df, "runID")
+        attr(pass,"summarized.by") <- by
+        attr(pass,"run.season") <- as.POSIXct( strptime(c(min.date, max.date), "%Y-%m-%d") ) 
+    }
 
     cat("\n\n")
     cat(paste(rep("+",150), collapse="")); cat("\n")
@@ -66,8 +92,35 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         out.pass.table <- paste(output.fn, "_passage_table.csv", sep="")
         rs <- attr(pass,"run.season")
         rs <- paste( format(rs[1], "%d-%b-%Y"), "to", format(rs[2], "%d-%b-%Y"))
-        nms <- names(pass)[1]
-        for( i in 2:length(names(pass))) nms <- paste(nms, ",", names(pass)[i], sep="")
+
+        #   Fix up the pass table to pretty the output
+        tmp.df <- pass
+        tmp.df$pct.imputed.catch <- round(tmp.df$pct.imputed.catch, 3)
+        
+        #tmp.ind <- is.na(tmp.df$date)
+        #print(class(tmp.df$date))
+
+        tzn <- attr( catch.df$visitTime, "tz" )
+        if( is.null(tzn) ){
+            tzn <- "America/Los_Angeles"
+        }
+        tmp.df$date <- as.POSIXct( strptime( format(tmp.df$date, "%Y-%m-%d"), "%Y-%m-%d", tz=tzn),tz=tzn)
+        
+        tmp.df$passage <- round(tmp.df$passage)
+        tmp.df$lower.95 <- round(tmp.df$lower.95)
+        tmp.df$upper.95 <- round(tmp.df$upper.95)
+        tmp.df$meanForkLenMM <- round(tmp.df$meanForkLenMM,1)
+        tmp.df$sdForkLenMM <- round(tmp.df$sdForkLenMM,2)
+        tmp.df$sampleLengthHrs <- round(tmp.df$sampleLengthHrs,1)
+        tmp.df$sampleLengthDays <- round(tmp.df$sampleLengthDays,2)
+        names(tmp.df)[ names(tmp.df) == "pct.imputed.catch" ] <- "propImputedCatch"
+        names(tmp.df)[ names(tmp.df) == "lower.95" ] <- "lower95pctCI"
+        names(tmp.df)[ names(tmp.df) == "upper.95" ] <- "upper95pctCI"
+        names(tmp.df)[ names(tmp.df) == "nForkLenMM" ] <- "numFishMeasured"
+
+
+        nms <- paste(names(tmp.df), collapse=",")  # do this to avoid warning "Appending column names to existing file"
+
     
         cat(paste("Writing passage estimates to", out.pass.table, "\n"))
         
@@ -85,11 +138,12 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         cat(nms)
         cat("\n")
         sink()
-    
-        write.table( pass, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
+
+        #   Write out the prettied table    
+        write.table( tmp.df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
         out.fn.list <- c(out.fn.list, out.pass.table)
 
-        #   ---- Plot the final passage estimates, just for good measure. 
+        #   ---- Plot the final passage estimates
         if( by != "year" ){
             out.f <- F.plot.passage( pass, out.file=output.fn )
             out.fn.list <- c(out.fn.list, out.f)

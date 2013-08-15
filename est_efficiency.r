@@ -42,8 +42,6 @@ rel.df <- F.assign.batch.date( rel.df )
 
 rel.df$batchDate.str <- format(rel.df$batchDate, "%Y-%m-%d")
 
-#print("hello")
-#print(rel.df)
 
 #       Sum by batch dates.  This combines release and catches over trials that occured close together in time
 ind <- list( trapPositionID=rel.df$trapPositionID, batchDate=rel.df$batchDate.str )
@@ -69,14 +67,17 @@ bd <- expand.grid(trapPositionID=sort(unique(eff.est$trapPositionID)), batchDate
 
 
 eff <- merge( eff.est, bd, by=c("trapPositionID", "batchDate"), all.y=T)
-#eff <- eff[ order( eff$batchDate), ]
-#print(eff)
 eff$batchDate <- as.POSIXct( eff$batchDate, format="%Y-%m-%d", tz="America/Los_Angeles" )
 
 #   Assign attributes for plotting
 attr(eff, "site.abbr") <- attr(release.df, "site.abbr")
+attr(eff, "site.name") <- attr(release.df, "site.name")
 attr(eff, "run.name") <- attr(release.df, "run.name")
 attr(eff, "species.name") <- attr(release.df, "species.name")
+attr(eff, "subsites") <- attr(release.df, "subsites")
+
+#cat("((((((((((((In est_efficiency.r))))))))))))\n")
+#print(attributes(release.df))
 
 
 #   ---- If there are missing days, imput them

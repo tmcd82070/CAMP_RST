@@ -77,9 +77,12 @@ est.catch$imputed.catch[ ind ] <- 0
 
 
 #   Assign attributes for plotting
+attr(est.catch, "site.name") <- attr(catch.df, "site.name")
+attr(est.catch, "subsites") <- attr(catch.df, "subsites")
 attr(est.catch, "site.abbr") <- attr(catch.df, "site.abbr")
 attr(est.catch, "run.name") <- attr(catch.df, "run.name")
 attr(est.catch, "species.name") <- attr(catch.df, "species.name")
+
 
 #   Make a plot if called for (I don't use parameter 'plot', apparently.
 if( !is.na(plot.file) ) {

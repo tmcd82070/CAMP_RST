@@ -58,6 +58,12 @@ site.stream <- as.character(sites$streamName)
 site.abbr <- as.character(sites$siteAbbreviation)
 site.name <- as.character(sites$siteName)
 
+#   Fetch subsite names
+subsite.names <- sqlQuery( ch, paste("SELECT subSiteID, subSiteName FROM", tables["subsites"], 
+        "WHERE (siteID =", site, ")" ))
+F.sql.error.check(subsite.names)
+subsite.names$subSiteName <- as.character(subsite.names$subSiteName)        
+
 
 #   Fetch species name 
 sp.codes <- sqlQuery(ch, paste("SELECT taxonID, commonName FROM", tables["species.codes"]))
@@ -215,6 +221,10 @@ cat("\n")
 catch <- sqlQuery(ch, sql.catch)
 F.sql.error.check(catch)
 
+if( nrow(catch) == 0 ){
+    return(catch)    
+}
+
 if(nrow(catch) >= 20) {cat("First 20 catch records...\n"); print(catch[1:20,])} else {cat("Catch records...\n"); print(catch)}
 
 cat(paste(nrow(catch), "total records in catch table.\n")) 
@@ -257,11 +267,14 @@ catch <- F.expand.plus.counts( catch )
 #   Now, subset to run. We cannot do this in the SQL above because we need unknown runs in order to expand for plus counts
 catch <- catch[ !is.na(catch$finalRunID) & catch$finalRunID == run, ]
 
+#   Find subsiteID names
+
+subSites.found <- data.frame(subSiteID=sort(unique(catch$trapPositionID)))
+subSites.found <- merge( subSites.found, subsite.names, by="subSiteID", all.x=T )
 
 cat("Subsites found...\n")
-subSites.found <- sort(unique(catch$trapPositionID))
 print(subSites.found)
-subsite.string <- paste(subSites.found, collapse="+")
+#subsite.string <- paste(subSites.found, collapse="+")
 
 
 #   A note on subsampling: subsampling is handled by the people entering data.  I.e., they enter a subsampleNumerator 
@@ -278,7 +291,7 @@ attr(catch, "site") <- site
 attr(catch, "site.name" ) <- site.name
 attr(catch, "site.abbr") <- site.abbr
 attr(catch, "site.stream") <- site.stream
-attr(catch, "subsites") <- subsite.string
+attr(catch, "subsites") <- subSites.found
 attr(catch, "taxonID" ) <- taxon.string
 attr(catch, "species.name") <- sp.commonName
 attr(catch, "runID") <- run

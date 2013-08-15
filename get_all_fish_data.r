@@ -64,6 +64,13 @@ F.sql.error.check(runs)
 
 #print(origins)
 
+
+#   ***********
+#   Get lifestages - lifestages are complicated by the cross-walk
+lifestage.df <- F.get.life.stages()
+lifestage.Xwalk <- lifestage.df$rst.ls   # This is the cross-walk between "old" lifestages and Camp lifestages
+
+
 #   **********************************************************************************************
 #   SQL for CATCH
 
@@ -164,7 +171,11 @@ catch <- merge( catch, sp.codes, by="taxonID", all.x=T )
 catch <- merge( catch, runs, by.x="finalRunID", by.y="runID", all.x=T )
 #print(catch[1:10,])
 catch <- merge( catch, origins, by="fishOriginID", all.x=T )
-print(catch[1:10,])
+#print(catch[1:10,])
+catch <- merge( catch, lifestage.Xwalk, by.x="lifeStageID", by.y="lifeStageID", all.x=T )
+#print(catch[1:10,])
+catch <- catch[, !(names(catch) %in% c("lifeStage", "lifeStageID" ))]
+
 
 catch$siteName <- as.character( catch$siteName )
 catch$siteAbbreviation <- as.character( catch$siteAbbreviation )
@@ -172,8 +183,10 @@ catch$streamName <- as.character( catch$streamName )
 catch$commonName <- as.character( catch$commonName )
 catch$run <- as.character( catch$run )
 catch$fishOrigin <- as.character( catch$fishOrigin )
+catch$lifeStage <- as.character( catch$lifeStageCAMP )
 
-
+catch <- catch[, !(names(catch) %in% c("lifeStageCAMP"))]
+names(catch)[ names(catch) == "lifeStageCAMPID" ] <- "lifeStageID"
 
 odbcClose(ch)
 

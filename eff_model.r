@@ -24,6 +24,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
 ans <- NULL
 traps <- sort( unique(obs.eff.df$trapPositionID))
 
+#cat("%%%%%%%%%%%%%% in eff_model.r\n")
+#print(attributes(obs.eff.df))
+
 fits <- all.X <- all.ind.inside <- vector("list", length(traps))
 names(fits) <- traps
 names(all.X) <- traps
@@ -164,6 +167,9 @@ for( trap in traps ){
     
     ans <- rbind(ans, df)
 }
+
+attr(ans,"subsites") <- attr(obs.eff.df, "subsites")
+attr(ans,"site.name") <- attr(obs.eff.df, "site.name")
 
 #   Make a plot if called for
 if( !is.na(plot.file) ) {

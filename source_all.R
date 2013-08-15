@@ -20,9 +20,9 @@
     #   =================== Global variables 
     
     #   Parameter db.file is a string containing the full or relative path to the data base
-    #db.file <<- "..\\Data\\CAMP-American-20130610.mdb"  # For trent's testing in 'code' directory
+    db.file <<- "..\\Data\\CAMP-American-20130610.mdb"  # For trent's testing in 'code' directory
     #db.file <<- "..\\Data\\CAMP-Feather-20130610.mdb"  # For trent's testing in 'code' directory
-    db.file <<- "..\\Data\\CAMP.mdb"
+    #db.file <<- "..\\Data\\CAMP.mdb"
     
     cat(paste("DB file:", db.file, "\n"))
 
@@ -112,7 +112,7 @@ source( "assign_gaplen.r" )
 source( "check_for_missing.r" )
 source( "biweekly_report.r" )
 source( "weekly_effort.r" )
-source( "weekly_passage.r" )
+#source( "weekly_passage.r" )  # exclude. Same as F.passage with by="week"
 source( "lifestage_passage.r" )
 source( "bootstrap_passage.r" )
 source( "summarize_passage.r" )

@@ -33,25 +33,10 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     sp.commonName <- as.character(sp.codes$commonName[ sp.codes$taxonID %in% taxon ])
 
 
-    
-    tmp <- paste("SELECT ",
-        table.names["life.stages"], ".lifeStage, ", 
-        table.names["life.stages"], ".lifeStageID, ", 
-        table.names["life.stages"], ".lifeStageCAMPID, ", 
-        table.names["CAMP.life.stages"], ".lifeStageCAMP ",
-        "FROM ",
-        table.names["CAMP.life.stages"],
-        " INNER JOIN ",
-        table.names["life.stages"],
-        " ON ", table.names["CAMP.life.stages"], ".lifeStageCAMPID = ", table.names["life.stages"], ".lifeStageCAMPID;", sep="")
-    rst.life.stage <- sqlQuery(ch, tmp)
-    F.sql.error.check(rst.life.stage)        
-
-    CAMP.life.stageIDs <- c(2,3,4,8,9,10,11,251)
-    CAMP.life.stages <- NULL
-    for( i in CAMP.life.stageIDs ){
-        CAMP.life.stages <- c(CAMP.life.stages, as.character(rst.life.stage$lifeStageCAMP[ rst.life.stage$lifeStageCAMPID == i ][1]))
-    }
+    tmp <- F.get.life.stages( )    
+    CAMP.life.stages <- tmp$stages
+    CAMP.life.stageIDs <- tmp$IDs
+    rst.life.stages <- tmp$rst.ls
     
 
     runs <- sqlFetch(ch, table.names["run.codes"] )
@@ -65,8 +50,6 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
 
     cat("Life stages under consideration:\n")
     print(cbind(CAMP.life.stageIDs, CAMP.life.stages))
-
-
 
     close(ch)
 
@@ -92,23 +75,28 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     out.fn.roots <- NULL
     for( run in runs$runID ){
 
-        tmp.mess <- paste("Processing run =", run, ", ", runs$run[which(run==runs$runID)])
+        run.name <- runs$run[which(run==runs$runID)]
+
+        tmp.mess <- paste("Processing run =", run, "-", run.name)
         cat(paste(tmp.mess, "\n\n"))
 
         progbar <- winProgressBar( tmp.mess, label="Reading catch data" )
         barinc <- 1 / (length(CAMP.life.stageIDs) * 6)
+        assign( "progbar", progbar, pos=.GlobalEnv ) 
 
         #   ---- Fetch the catch data
         catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
+        #   the subsites attributes of catch.df may be wrong. IF they did not catch the taxon-run of interest at 
+        #   a particular subsite, it does not show in subsites attribute.  Use the subsites attribute of visit data frame.
         
-        cat(paste('Number of fish records for run', run, "=", nrow(catch.df), "\n"))
+        cat(paste('Number of fish records for run', run, "-", run.name, "=", nrow(catch.df), "\n"))
 
         if( nrow(catch.df) > 0 ){
             cat(paste('Number of missing lifestages=', sum(is.na(catch.df$lifeStageID)), ".  All converted to '251'.\n"))
 
             #   ---- get visits during the run.  Will need this later.
             visit <- F.get.indiv.visit.data( site, run, min.date, max.date )
-            
+
             #   ---- Fetch efficiency data
             release.df <- F.get.release.data( site, run, min.date, max.date  )
             
@@ -123,9 +111,12 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     
                 #   ---- Subset to just one life stage
                 catch.df.ls <- catch.df[ catch.df$lifeStageID == ls, ]
+
+                species.name <- attr(catch.df, "species.name")
+                ls.name <- CAMP.life.stages[CAMP.life.stageIDs == ls]
                         
-                cat(paste("Lifestage=", ls, "; Run=", run, "; nrow(catch.df.ls)=", nrow(catch.df.ls), "\n"))
-                tmp.mess <- paste("Lifestage=", ls, "; Run=", run )
+                cat(paste("Lifestage=", ls.name, "; Run=", run.name, "; nrow(catch.df.ls)=", nrow(catch.df.ls), "\n"))
+                tmp.mess <- paste("Lifestage=", ls, "-", ls.name )
                 setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc, label=tmp.mess )                
                                     
                 #   ---- Replicate some of the computations made in F.get.catch.  Imput missing catches.
@@ -141,22 +132,31 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
                     catch.df.ls$n.hatchery[ is.na(catch.df.ls$n.hatchery) ] <- 0
                     catch.df.ls$n.wild[ is.na(catch.df.ls$n.wild) ] <- 0
                     catch.df.ls$n.morts[ is.na(catch.df.ls$n.morts) ] <- 0
+
                     
+                    cat("\nSubsites visited during time period:\n")
+                    print(attr(visit, "subsites"))
+                    cat(paste("Subsites that caught ", species.name, ", run=", run.name, ", lifestage=", ls.name, "\n", sep=""))
+                    print(attr(catch.df, "subsites"))
+                                        
                     attr(catch.df.ls, "run.season") <- run.season
                     attr(catch.df.ls, "site.abbr") <- site.abbr 
+                    attr(catch.df.ls, "subsites") <- attr(visit, "subsites")
+                    attr(catch.df.ls, "site.name") <- attr(visit, "site.name")
                     attr(catch.df.ls, "species.name") <- attr(catch.df, "species.name")
-                    attr(catch.df.ls, "run.name") <- paste(CAMP.life.stages[CAMP.life.stageIDs == ls], runs$run[ runs$runID == run ])
+                    attr(catch.df.ls, "run.name") <- paste(ls.name, run.name)
                 
                     #   ---- Compute passage
-                    out.fn.root <- paste0(output.file, "Stage",ls,"_Run",run ) 
+                    out.fn.root <- paste0(output.file, ls.name, run.name ) 
                     setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
+
+
                     pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
 
                     setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
                     out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
 
                     #print(pass)
-                    #readline()
                     
                     #   ---- Save
                     ans[ which(ls==CAMP.life.stageIDs), which(run == runs$runID) ] <- pass$passage
@@ -176,6 +176,9 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
 #    ans <<- ans
 #    ans <- get("ans")
     
+    cat("Final answer:\n")
+    print(ans)
+    
     #   ---- compute percentages of each life stage
     ans.pct <- matrix( colSums( ans ), byrow=T, ncol=ncol(ans), nrow=nrow(ans))
     ans.pct <- ans / ans.pct
@@ -187,7 +190,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     for( j in 2:ncol(ans) ){
         df <- cbind( df, data.frame( ans.pct[,j], ans[,j], lci[,j], uci[,j], stringsAsFactors=F ))
     }
-    names(df) <- c("LifeStage", paste( rep(runs$run, each=4), rep( c(".pctOfPassage",".passage",".lower.95", ".upper.95"), nrow(runs)), sep=""))
+    names(df) <- c("LifeStage", paste( rep(runs$run, each=4), rep( c(".propOfPassage",".passage",".lower95pctCI", ".upper95pctCI"), nrow(runs)), sep=""))
     
  
     #   ---- Append totals to bottom
@@ -219,15 +222,37 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
         sink()
     
         write.table( df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
+        out.fn.roots <- c(out.fn.roots, out.pass.table)
+        
+        
+        # Produce pie or bar charts
+        fl <- F.plot.lifestages( df, output.file, plot.pies=F )
+        if( fl == "ZEROS" ){
+            cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")
+            cat(paste("Working directory:", getwd(), "\n"))
+            cat(paste("R data frames saved in file:", "<none>", "\n\n"))
+            nf <- length(out.fn.roots)
+            cat(paste("Number of files created in working directory = ", nf, "\n"))
+            for(i in 1:length(out.fn.roots)){
+                 cat(paste(out.fn.roots[i], "\n", sep=""))
+            }    
+            cat("\n")
+            return(0)    
+        
+        } else {
+            out.fn.roots <- c(out.fn.roots, fl)
+        }
+        
+        #fl <- F.plot.runs( df, output.file, plot.pies=F )
+        #out.fn.roots <- c(out.fn.roots, fl)
     }
     
     #   ---- Write out message
     cat("SUCCESS - F.lifestage.passage\n\n")
     cat(paste("Working directory:", getwd(), "\n"))
     cat(paste("R data frames saved in file:", "<none>", "\n\n"))
-    nf <- length(out.fn.roots) + 1
+    nf <- length(out.fn.roots) 
     cat(paste("Number of files created in working directory = ", nf, "\n"))
-    cat(paste(out.pass.table, "\n"))
     for(i in 1:length(out.fn.roots)){
          cat(paste(out.fn.roots[i], "\n", sep=""))
      }    
