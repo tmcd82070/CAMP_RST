@@ -20,9 +20,10 @@
     #   =================== Global variables 
     
     #   Parameter db.file is a string containing the full or relative path to the data base
-    db.file <<- "..\\Data\\CAMP-American-20130610.mdb"  # For trent's testing in 'code' directory
+    #db.file <<- "..\\Data\\CAMP-American-20130610.mdb"  # For trent's testing in 'code' directory
     #db.file <<- "..\\Data\\CAMP-Feather-20130610.mdb"  # For trent's testing in 'code' directory
-    #db.file <<- "..\\Data\\CAMP.mdb"
+    #db.file <<- "..\\Data\\Caswell RST CAMP from connie to doug 7-31-2013.mdb"
+    db.file <<- "..\\Data\\CAMP.mdb"
     
     cat(paste("DB file:", db.file, "\n"))
 
@@ -121,3 +122,5 @@ source( "expand_plus_counts.r" )
 source( "assign_1dim.r" )
 source( "assign_2dim.r" )
 source( "get_all_fish_data.r" )
+source( "plot_lifestages.r" )
+source( "get_life_stages.r" )
