@@ -84,7 +84,7 @@ for( i in 1:length(traps) ){
 #   Draw legend
 subsite.name <- attr(df, "subsites")
 mx.len.name <- which.max( nchar(subsite.name$subSiteName) )
-tmp <- legend( "topleft", title=subsite.name$subSiteName[mx.len.name], legend=c("Observed","Predicted"), pch=rep(my.pch[1],2), cex=.85, plot=FALSE ) # don't plot, need the left coordinate here
+tmp <- legend( "topleft", title=subsite.name$subSiteName[mx.len.name], legend=c("Observed","Predicted"), pch=rep(my.pch[1],2), cex=.85, pt.cex=1.25, lty=c(NA,1), plot=FALSE ) # don't plot, need the left coordinate here
 tmp$rect$top <- tmp$rect$top + tmp$rect$h  # + goes up, - goes down
 
 for( i in 1:length(traps)){

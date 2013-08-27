@@ -143,6 +143,7 @@ repeat{
     } else {
         #   We have a missing value = a period of time with no estimate of fish.
         
+        
         #   i.gapLens is length of all intervals that we want to predict for.  They all sum to total of gap.
         i.gapLens <- c(rep(24, floor(catch.df$sampleGapLenHrs[i]/ 24)), catch.df$sampleGapLenHrs[i] %% 24 )
         
@@ -163,7 +164,6 @@ repeat{
         class(sStart) <- class(sStart)
         attr(sStart, "tzone") <- attr(sStart, "tzone")   
         
-            
         #   The smoother
         if( degree <= 2 ){
             bs.sEnd <- -1
@@ -249,11 +249,16 @@ repeat{
         
         
     }
+
+
             
 }
 
-class(all.bdates) <- class(sEnd)
-attr(all.bdates, "tzone") <- attr(sEnd, "tzone")   
+
+if(!is.null(all.bdates)){
+    class(all.bdates) <- class(sEnd)
+    attr(all.bdates, "tzone") <- attr(sEnd, "tzone")   
+}
 
 #print(all.bdates)
 #readline()

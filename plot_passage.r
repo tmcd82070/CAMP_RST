@@ -55,28 +55,60 @@ mtext( "Passage estimate (# fish)", side=2, line=2.25, cex=1.5)
 s.by <- capwords(attr(df,"summarized.by"))
 
 if( casefold(s.by) == "day" ){
-    dt <- format(df$date, "%m-%y")
-    dt <- dt[ !duplicated(dt) ]
-    dt <- as.POSIXct( strptime( paste( "1", dt, sep="-" ), format="%d-%m-%y"))
+    season.len <- difftime( max(df$date), min(df$date), units="days")
+    cat(paste("Total length of season = ", season.len, "\n"))
+    if( season.len > 40 ){
+        #   Just label 1st of every month
+        dt <- format(df$date, "%m-%y")
+        dt <- dt[ !duplicated(dt) ]
+        dt <- as.POSIXct( strptime( paste( "1", dt, sep="-" ), format="%d-%m-%y"))
     
-    ind <- as.numeric(cut( dt, df$date ))
-    dt <- dt[ !is.na(ind) ]
-    ind <- ind[!is.na(ind)]   # because first of some month may be less than first date
-    
-    lab.x.at <- mp[ind]
-    lab.x.lab <- format(dt, "%d%b%y")
-    
-    axis( side=1, at=lab.x.at, label=rep("", length(lab.x.at)) )
-    for( i in 1:length(dt) ){
-        mtext( side=1, at=lab.x.at[i], text=lab.x.lab[i], las=0, line=1 )
+        ind <- as.numeric(cut( dt, df$date ))
+        dt <- dt[ !is.na(ind) ]
+        ind <- ind[!is.na(ind)]   # because first of some month may be less than first date
+
+        lab.x.at <- mp[ind]
+        lab.x.lab <- format(dt, "%d%b%y")
+
+        axis( side=1, at=lab.x.at, label=lab.x.lab )
+
+    } else {
+        #   Label every day
+        dt <- df$date
+        ind <- rep(T, length(dt))
+        my.las <- 2
+        my.line <- 0.65
+        my.adj <- 1
+        my.cex <- 0.75
+
+        lab.x.at <- mp[ind]
+        lab.x.lab <- format(dt, "%d%b%y")
+        
+        axis( side=1, at=lab.x.at, label=rep("", length(lab.x.at)) )
+        for( i in 1:length(dt) ){
+            mtext( side=1, at=lab.x.at[i], text=lab.x.lab[i], las=my.las, line=my.line, adj=my.adj, cex=my.cex )
+        }
     }
     
 } else {
-    # by is "week" or "month"  ( by="year" does not get plotted )
-    dt1 <- df$date[-length(df$date)]
-    dt2 <- df$date[-1] - 24*60*60
-    dt1 <- format(dt1, "%d%b")
-    dt2 <- format(dt2, "%d%b")
+    if( casefold(s.by) == "month" ){
+        mons <-  format(df$date, "%b") 
+        yrs <- format(df$date, "%Y")
+        dt1 <- paste( "01", mons , sep="" )
+        mons <-  as.numeric(format(df$date, "%m")) 
+        dt2 <- as.POSIXct( strptime( paste("1",mons+1,yrs), "%d %m %Y" )) 
+        dt2 <- dt2 - 24*60*60
+        dt2 <- format(dt2, "%d%b")
+        
+        dt1[1] <- format( min(df$date), "%d%b" )
+        dt2[length(df$date)] <- format( max(df$date), "%d%b" )
+    } else {
+        # "weekly"  (yearly does not get plotted)   
+        dt1 <- df$date[-length(df$date)]
+        dt2 <- df$date[-1] - 24*60*60
+        dt1 <- format(dt1, "%d%b")
+        dt2 <- format(dt2, "%d%b")
+    }
     dt <- paste(dt1, dt2, sep="-")
 
     for( i in 1:length(dt) ){

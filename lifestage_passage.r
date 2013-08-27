@@ -104,7 +104,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
             catch.df$lifeStageID[ is.na(catch.df$lifeStageID) ] <- 251
             
             #   ---- Convert to CAMP lifestages
-            catch.df$lifeStageID <- f.to.camp.lifestages( catch.df$lifeStageID, rst.life.stage )
+            catch.df$lifeStageID <- f.to.camp.lifestages( catch.df$lifeStageID, rst.life.stages )
             
             #   ---- Loop over lifestages
             for( ls in CAMP.life.stageIDs ){

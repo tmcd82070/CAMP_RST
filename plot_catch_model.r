@@ -45,9 +45,9 @@ my.colors <- rainbow(length(traps))
 my.pch <- 15 + 1:length(traps)
 for( i in 1:length(traps) ){
 
-#   This adds the smoothed interpolation model to the plot.  I think it's ugly.
+#   This adds the smoothed interpolation model to the plot.  
 #    ind <- df$trapPositionID == traps[i]
-#    lines( df$batchDate[ind], df$catch[ind], lwd=1, lty=1 )
+#    lines( supsmu(df$batchDate[ind], df$catch[ind]), lwd=2, lty=1, col=my.colors[i] )
 
     ind <- df$trapPositionID == traps[i] & imputed
     points( df$batchDate[ ind ], df$catch[ ind ], pch=my.pch[i]-15, col=my.colors[i], cex=1 )

@@ -25,7 +25,8 @@ ans <- NULL
 traps <- sort( unique(obs.eff.df$trapPositionID))
 
 #cat("%%%%%%%%%%%%%% in eff_model.r\n")
-#print(attributes(obs.eff.df))
+#print(traps)
+#readline()
 
 fits <- all.X <- all.ind.inside <- vector("list", length(traps))
 names(fits) <- traps

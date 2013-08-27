@@ -25,7 +25,6 @@ if( sum(release.df$n, na.rm=T) <= 0 ){
 
 #   ---- Assign batch date to efficiency trials
 
-#print(release.df[1:10,])
 
 rel.df <- release.df[,c("releaseID", "releaseTime", "nReleased", "testDays",    "trapPositionID", "n", "meanRecapTime")]
 rel.df$batchDate <- rep(NA, nrow(rel.df))
@@ -77,7 +76,9 @@ attr(eff, "species.name") <- attr(release.df, "species.name")
 attr(eff, "subsites") <- attr(release.df, "subsites")
 
 #cat("((((((((((((In est_efficiency.r))))))))))))\n")
-#print(attributes(release.df))
+#print(eff)
+#print(bd)
+#readline()
 
 
 #   ---- If there are missing days, imput them
