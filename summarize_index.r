@@ -6,16 +6,18 @@ F.summarize.index <- function( dt, summarize.by ){
 #   summarize.by = a string equal to "week", "month", "year", or "day"
 #
 
+        
 
-#   ---- A utility function to deal with week 0
 f.week <- function( x ){
+    #   A utility to compute julian weeks 
     #   x = vector of POSIXct's
-    # Week 0 contains Jan 1.  Week 1 is first full week of the year.  Make week 0 part of last week of previous year
-    wk <- format( x, "%W" )
+
     yr <- format( x, "%Y" )
-    yr[ wk == "00" ] <- yr[ wk == max(as.numeric(wk)) ][1]  # previous year for week zeros.  Can't have more than 3 years in data.  
-                                                            # This is true because we restrict max.date-min.date<365
-    wk[ wk == "00" ] <- max( as.numeric(wk) )   # make week 0 part of last week of year previous
+
+    jday <- as.numeric(format( x, "%j" ))
+    wk <- trunc((jday - 1) / 7) + 1
+    wk <- formatC(wk, width=2, flag="0")  # to make sure sort order is correct
+    
     wk <- paste(yr, "-", wk, sep="")
     wk
 }

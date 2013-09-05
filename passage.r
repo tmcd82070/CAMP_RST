@@ -145,7 +145,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
 
         #   ---- Plot the final passage estimates
         if( by != "year" ){
-            out.f <- F.plot.passage( pass, out.file=output.fn )
+            out.f <- F.plot.passage( pass, max.date = max(catch.df$visitTime2,na.rm=T), out.file=output.fn )
             out.fn.list <- c(out.fn.list, out.f)
         }
         nf <- length(out.fn.list)

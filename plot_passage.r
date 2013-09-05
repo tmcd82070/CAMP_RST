@@ -1,4 +1,4 @@
-F.plot.passage <- function( df, out.file="passage.png" ){
+F.plot.passage <- function( df, max.date, out.file="passage.png" ){
 #
 #   Plot a time series of passage estimates.  This can be called from
 #   Sweave files to put a figure in a report.
@@ -91,28 +91,32 @@ if( casefold(s.by) == "day" ){
     }
     
 } else {
+    print( df )
     if( casefold(s.by) == "month" ){
-        mons <-  format(df$date, "%b") 
-        yrs <- format(df$date, "%Y")
-        dt1 <- paste( "01", mons , sep="" )
-        mons <-  as.numeric(format(df$date, "%m")) 
-        dt2 <- as.POSIXct( strptime( paste("1",mons+1,yrs), "%d %m %Y" )) 
-        dt2 <- dt2 - 24*60*60
-        dt2 <- format(dt2, "%d%b")
-        
-        dt1[1] <- format( min(df$date), "%d%b" )
-        dt2[length(df$date)] <- format( max(df$date), "%d%b" )
+        dt <-  format(df$date, "%b %Y") 
+        my.cex <- 1
+        #        mons <-  format(df$date, "%b") 
+        #        yrs <- format(df$date, "%Y")
+        #        dt1 <- paste( "01", mons , sep="" )
+        #        mons <-  as.numeric(format(df$date, "%m")) 
+        #        dt2 <- as.POSIXct( strptime( paste("1",mons+1,yrs), "%d %m %Y" )) 
+        #        dt2 <- dt2 - 24*60*60
+        #        dt2 <- format(dt2, "%d%b")
+        #        
+        #        dt1[1] <- format( min(df$date), "%d%b" )
+        #        dt2[length(df$date)] <- format( max(df$date), "%d%b" )
     } else {
         # "weekly"  (yearly does not get plotted)   
-        dt1 <- df$date[-length(df$date)]
-        dt2 <- df$date[-1] - 24*60*60
+        dt1 <- df$date
+        dt2 <- c(df$date[-1] - 24*60*60, max.date)
         dt1 <- format(dt1, "%d%b")
         dt2 <- format(dt2, "%d%b")
+        dt <- paste(dt1, dt2, sep="-")
+        my.cex <- .75
     }
-    dt <- paste(dt1, dt2, sep="-")
 
     for( i in 1:length(dt) ){
-        mtext( side=1, at=mp[i], text=dt[i], las=2, line=0.1, adj=1, cex=.75 )
+        mtext( side=1, at=mp[i], text=dt[i], las=2, line=0.1, adj=1, cex=my.cex )
     }
 }
 
