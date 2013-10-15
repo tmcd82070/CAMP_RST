@@ -1,9 +1,5 @@
 name,friendly,description,arguments
-F.passage,Estimate catch and production,"Estimates catch and production between two dates by day, week, month, or year.",site:taxon:run:min.date:max.date:by:output.file:ci
-F.lifestage.passage,Estimates production by life stage and run,Estimates production of all lifestages in all runs between two dates,site:taxon:min.date:max.date:output.file:ci
-F.release.summary,Summarize trap efficiency,Summarizes trap efficiency release and recapture information in tabular form.,site:taxon:run:min.date:max.date:output.file
-F.take.table,Summarize daily catches,Produces a table of daily live and dead catch by taxon-run-lifestage which excludes marked fish,site:min.date:max.date:output.file
-F.length.frequency,Graph length frequency,"Graphs length frequency distribution, optionally by life stage.",site:taxon:run:min.date:max.date:by.lifestage:output.file
-F.size.by.date ,Graph size by date,Graphs fork length (y-axis) as a function of date (x-axis) by life stage.  Stages bigger than smolt excluded.,site:taxon:run:min.date:max.date:output.file
-F.annual.passage,Estimate annual catch and production,Estimates catch and production every year between two dates.,site:taxon:run:min.date:max.date:output.file:ci
-F.weekly.effort,Graph weekly effort,Produces a bar chart of the proportion of each week trap was fishing.,site:min.date:max.date:output.file
+F.allCatch.table,View all catch records,Produces a table of everything caught between two dates.  No summary or inflation.,site:min.date:max.date:output.file
+F.byCatch.table,Export non-Chinook catch records,Produces a CSV file of daily non-Chinook catch (by-catch) between two dates.  No summary or inflation.,site:min.date:max.date:output.file
+F.chinookByDate.table,Sum chinook by date,Produces a table of daily chinook catch at all subsites-with marked and unmarked counts.,site:min.date:max.date:output.file
+

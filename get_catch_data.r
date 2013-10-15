@@ -20,112 +20,67 @@ F.get.catch.data <- function( site, taxon, run, min.date, max.date ){
 #   of the correct taxon, of the correct run, and between min and max dates. 
 #
 
-f.banner <- function( x ){
+#f.banner <- function( x ){
+#    cat("\n")
+#    cat(paste(rep("=",50), collapse="")); 
+#    cat(x); 
+#    cat(paste(rep("=",50), collapse="")); 
+#    cat("\n")
+#}
 
-    cat("\n")
-    cat(paste(rep("=",50), collapse="")); 
-    cat(x); 
-    cat(paste(rep("=",50), collapse="")); 
-    cat("\n")
+#   *****
+nvisits <- F.buildReportCriteria( site, min.date, max.date )
+
+if( nvisits == 0 ){
+    warning("Your criteria returned no trapVisit table records.")
+    return()
 }
 
 
-#   ================================================================================================
-#   Fetch the visit table. 
-f.banner("F.get.catch.data - Retrieving Visits")
-
-visit <- F.get.indiv.visit.data( site, run, min.date, max.date )
-
-if( nrow(visit) == 0 ){
-    return(visit)
-}
-
-#write.table(visit, file="Visits_test.csv", sep=",", row.names=F )
+#   *****
+#   Open ODBC channel
+db <- get( "db.file", env=.GlobalEnv ) 
+ch <- odbcConnectAccess(db)
 
 
-#   Save some attributes for later
-site.name <- attr(visit, "site.name") 
-site.abbr <- attr(visit, "site.abbr")
-run.name <- attr(visit, "run.name")
-run.season <- attr(visit, "run.season")
-subsite.string <- attr(visit, "subsites")
+#   *****
+#   This SQL file develops the hours fished and TempSamplingSummary table 
+F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )   
 
-   
-#   ================================================================================================
-#   Fetch raw catch data, one line per fish or group of fish of same length
-f.banner("Retrieving Fish")
-
-catch <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
-
-#   If 0 of the target taxon were caught, catch has 0 rows
-
-if( nrow(catch) >= 20 ) print(catch[1:20,]) else print(catch)
-
-#write.table(catch, file="catch_test.csv", sep=",", row.names=F )
-
-site.stream <- attr(catch, "site.stream") 
-#subsite.string <- attr(catch, "subsites")
-taxon.string <- attr(catch, "taxonID" )
-sp.commonName <- attr(catch, "species.name")
-
-#tmp.catch <<- catch
+#   *****
+#   This SQL generates the sum chinook by trap series of queries
+F.run.sqlFile( ch, "QrySumChinookByTrap.sql", R.TAXON=taxon )   
 
 
-#   ================================================================================================
-#   Now, summarize fish by visit.  I.e., add up and compute mean fork lengths, etc over fish and subsites
-f.banner("Summarizing fish by visit")
-
-if( nrow(catch) > 0 ){
-    catch.fl <- F.summarize.fish.visit( catch )
-} else {
-    u.visits <- unique(visit$trapVisitID)
-    null <- rep(NA, length(u.visits))
-    catch.fl <- data.frame( trapVisitID=u.visits,
-                            n.tot=null, n.hatchery=null, n.wild=null, n.morts=null,
-                            mean.fl=null, mean.fl.hatchery=null, mean.fl.wild=null,
-                            sd.fl=null, sd.fl.hatchery=null, sd.fl.wild=null )
-}
+#   *****
+#   Now, fetch the result
+visit <- sqlFetch( ch, "TempChinookSampling_i_final" )
+F.sql.error.check(visit)
 
 
-#   ================================================================================================
-#   merge summed fish into visit data
-f.banner("Merging and cleaning up")
+#   ******
+#   Fetch run name
+#run.name <- sqlQuery( ch, paste("SELECT run AS runName FROM luRun WHERE runID=", run ))
+#F.sql.error.check(run.name)
 
-visit <- merge( visit, catch.fl, by="trapVisitID", all.x=T ) # keeps all records in visit, but could be missing in catch
-
-
-#   Visits where they did not catch any fish are just missing from catch.  After merge, these 
-#   visits have NA for n.  Change to 0.
-visit$n.tot[ is.na(visit$n.tot) ] <- 0
-visit$n.hatchery[ is.na(visit$n.hatchery) ] <- 0
-visit$n.wild[ is.na(visit$n.wild) ] <- 0
-visit$n.morts[ is.na(visit$n.morts) ] <- 0
-
-
-#   TaxonID for visits where they did not catch fish is missing.  Assign it. 
-taxon.composite <- paste(taxon, collapse="+")
-visit$taxonID <- rep(taxon.composite, nrow(visit))
-
-
-#   Sort
-visit <- visit[ order(visit$trapPositionID, visit$sampleStart), ]
 
 #   Assign attributes
 attr(visit, "siteID" ) <- site
-attr(visit, "site.name") <- site.name
-attr(visit, "site.abbr") <- site.abbr
-attr(visit, "runID") <- run
-attr(visit, "run.name") <- run.name
-attr(visit, "run.season") <- run.season
-attr(visit, "site.stream") <- site.stream 
-attr(visit, "subsites") <- subsite.string
-attr(visit, "taxonID" ) <- taxon.string 
-attr(visit, "species.name") <- sp.commonName
-
-cat("First 20 records of final catch data frame...\n")
+attr(visit, "site.name") <- visit$Site[1]
+attr(visit, "site.abbr") <- visit$siteAbbreviation[1]
+#attr(visit, "runID") <- run
+#attr(visit, "run.name") <- run.name
+#attr(visit, "run.season") <- run.season
+#attr(visit, "site.stream") <- site.stream 
+attr(visit, "subsites") <- unique(visit$TrapPositionID)
+#attr(visit, "taxonID" ) <- taxon.string 
+#attr(visit, "species.name") <- sp.commonName
+#
+cat("First 20 records of catch data frame...\n")
 if( nrow(visit) >= 20 ) print( visit[1:20,] ) else print( visit )
 
-f.banner("F.get.catch.data - Complete")
+#f.banner("F.get.catch.data - Complete")
+
 
 visit
 
