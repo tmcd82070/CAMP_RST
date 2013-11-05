@@ -35,7 +35,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     
         #   ---- Fetch efficiency data
         setWinProgressBar( progbar, getWinProgressBar(progbar)*.7 + .3 , label="Reading efficiency data" )
-        release.df <- F.get.release.data( site, run, min.date, max.date  )
+        release.df <- F.get.release.data( site, taxon, min.date, max.date  )
     
         cat("\n\n")
         cat(paste(rep("+",150), collapse="")); cat("\n")

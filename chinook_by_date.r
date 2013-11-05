@@ -9,8 +9,7 @@ F.chinookByDate.table <- function(site, min.date, max.date, output.file ){
 #   ---- Retrieve all chinook records between two dates. 
 #        run does not work at this point
 taxon <- 161980
-run <- NA  # run is not used in F.get.catch.data, yet
-catch <- F.get.catch.data( site, taxon, run, min.date, max.date )
+catch <- F.get.all.catch.data( site, taxon, min.date, max.date )
 
 
 #   ---- Write out the data set

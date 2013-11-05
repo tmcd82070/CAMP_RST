@@ -12,11 +12,22 @@ SELECT TrapVisit.projectDescriptionID
         , Subsite.siteID
         , Site.siteName
     INTO TempReportCriteria_Trapvisit
-    FROM (Site
-        INNER JOIN
-            SubSite ON Site.siteID = SubSite.siteID)
-        INNER JOIN
-            TrapVisit ON SubSite.subSiteID = TrapVisit.trapPositionID
-    WHERE (((Subsite.siteID)= SITE )
-       AND ((TrapVisit.visitTime) >= #STRT.DT#
-       AND (TrapVisit.visitTime) <= #END.DT#));
+    FROM 
+        (
+            Site INNER JOIN SubSite ON 
+                Site.siteID = SubSite.siteID
+        )
+        INNER JOIN TrapVisit ON 
+            SubSite.subSiteID = TrapVisit.trapPositionID
+    WHERE 
+        (
+            (
+                (Subsite.siteID)= SITE 
+            )
+            AND 
+                (
+                    (TrapVisit.visitTime) >= #STRT.DT#
+                    AND 
+                    (TrapVisit.visitTime) <= #END.DT#
+                )
+        );

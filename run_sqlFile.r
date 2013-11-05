@@ -52,7 +52,9 @@ param <- list(...)
 #   Read the SQL statement
 sql.statements <- readLines( sqlFile, warn=FALSE )   # a vector of strings, one for each line
 
-#   Substitute the parameters, if any
+#   Substitute the parameters, if any.
+#   Note: double quotes cannot be used to surround string parameters, as in "R.TAXON".  This messes with R's and SQL's string representations. 
+#   In your sql, use single quotes for strings.
 if( length(param) > 0 ){
     for( i in 1:length(param)){
         parm <- names(param)[i]
@@ -76,7 +78,7 @@ sql.statements <- paste( sql.statements, collapse=" ") # a single string, all li
 #   Collapse multiple spaces into one space.  this is not necessary, but is saves some space.
 sql.statements <- gsub( " +", " ", sql.statements )
 
-#   Now split the long string at the semicolons.  I do this because sqlQuery does not seem to allow more than one sql statement at a time.  
+#   Now split the long string at the semicolons.  I do this because sqlQuery does not allow more than one sql statement at a time.  
 #   This way, I can put multiple sql statements in a file, and then loop over them
 sql.statements <- strsplit( sql.statements, ";" )[[1]]
 
