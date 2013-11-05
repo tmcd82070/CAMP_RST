@@ -15,7 +15,18 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
 #   Connie's SQL, which we converted to uses taxon.  I will go with Connie's SQL and use taxon. 
 
 
+#   *****  
+#   Run report criteria for trap visits. Builds TempReportCriteria_Trapvisit.
+nvisits <- F.buildReportCriteria( site, min.date, max.date )
+
+if( nvisits == 0 ){
+    warning("Your criteria returned no trap visits.")
+    return()
+}
+
+
 #   *****
+#   Run report criteria for efficiency releases. Builds TempReportCriteria_Release.
 nreleases <- F.buildReportCriteriaRelease( site, min.date, max.date )
 
 if( nreleases == 0 ){
@@ -29,49 +40,54 @@ if( nreleases == 0 ){
 db <- get( "db.file", env=.GlobalEnv ) 
 ch <- odbcConnectAccess(db)
 
+#   *****
+#   This SQL file develops the TempSamplingSummary table 
+F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )  
+
 
 #   *****
 #   This SQL file develops the hours fished and TempSamplingSummary table 
 F.run.sqlFile( ch, "QryEfficiencyTests.sql", R.TAXON=taxon )   
+
 
 #   *****
 #   Now, fetch the result
 release.visit <- sqlFetch( ch, "TempRelRecap_final" )
 F.sql.error.check(release.visit)
 
+close(ch) 
+
+#   In release.visit, there is one record for every trap visit within releaseTime (e.g., 7 days) 
+#   after each release, even if the trap visit did not catch any marked fish.  i.e., the 0's are in here
+#   because all combinations of (releaseID, trapPositionID, trapVisitID) upon which marked fish could have
+#    been cause are here.
+#   
+#   At times, more than one release was "going", and a single trap visit 
+#   could have caught fish from multiple releases.
+#
+# For a specific release, release.visit tells 
+#   how many fish from the release were captured on subsequent trap visits to each trap.  In future,
+#   we may want to do something fancy like a removal estimator or other analysis
+#   that requires recapture information through time (over multiple visits). If so, You will want to use 
+#   this data frame (release.visit). 
+#
+#   However, for now, we will collapse the trap visits and compute total number of each release's fish captured ever.  
+tmp <<- release.visit 
+
 #   *****
 #   Drop any rows that are flagged as "Do not include"
-release.visit$IncludeCatch[ is.na(release.visit$IncludeCatch) ] <- "Yes"   # could have release, but no recaptures.  IncludeCatch is <na> for these.  We want to include them.
 release.visit <- release.visit[ (release.visit$IncludeTest == "Yes") & (release.visit$IncludeCatch == "Yes"), ]
 
-#   *****
-#   Put in a valid trapPositionID for any missing catches.  Any trapPosition will work.  The catch for this trap is 0.  Later, catches at other trapPositions are added as zeros.
-ind <- which( !is.na(release.visit$trapPositionID) )[1]
-mis <- which( is.na(release.visit$trapPositionID) )
-release.visit$trapPositionID[ mis  ] <- release.visit$trapPositionID[ ind ]
-release.visit$TrapPosition[ mis  ] <- release.visit$TrapPosition[ ind ]
-release.visit$RST[ mis  ] <- release.visit$RST[ ind ]
-release.visit$HalfCone[ mis  ] <- release.visit$HalfCone[ ind ]
 
 
-#
-##   NOTE: the data frame , 'release.visit', has one row per releaseID X trapVisitID combination.  This is equivalent to 
-##   one row for each combination of (releaseID, trapPositionID, visitTime).  For a specific release, this data frame tells 
-##   how many fish from the release were captured on subsequent trap visits.  In future,
-##   we may want to do something fancy like a removal estimator or other analysis
-##   that requires recapture information through time (over multiple visits). If so, You will want to use 
-##   this data frame (release.visit). 
-##
-##   However, for now, we will collapse the trap visits and compute total number of each release's fish captured ever.  
-
-
+#   Sum over trapVisits at a trapPosition
 
 by.list <- list(trapPositionID = release.visit$trapPositionID, 
             releaseID = release.visit$releaseID )
 
 ind  <- tapply( release.visit$Recaps, by.list, FUN=NULL)
 
-u.groups <- unique(ind)
+u.groups <- sort(unique(ind))
 ans <- NULL
 for( g in u.groups ){
     tmp <- release.visit[ ind == g, ]
@@ -79,9 +95,15 @@ for( g in u.groups ){
 
     #   Number caught
     one.row$Recaps <- sum(tmp$Recaps, na.rm=T)
+
+    #   Compute time to first and last visit after release, even if they did not catch any marked fish
+    tmp.hdiff <- as.numeric( difftime(tmp$VisitTime, tmp$ReleaseDate, units="hours") )
+    one.row$HrsToFirstVisitAfter <-  min( tmp.hdiff ) 
+    one.row$HrsToLastVisitAfter <-  max( tmp.hdiff )
     
     #   Mean fork length of released fish that were captured
     if( one.row$Recaps == 0 ){
+        # This case should not happen
         #one.row$meanForkLength <- NA
         one.row$meanRecapTime <- NA
         one.row$meanTimeAtLargeHrs <- NA
@@ -93,16 +115,12 @@ for( g in u.groups ){
         one.row$meanRecapTime <- sum(tmp.v * tmp$Recaps, na.rm=T) / one.row$Recaps
         
         #   Mean time at large, in hours
-        if( is.na(tmp$VisitTime[1]) ){
-            one.row$meanTimeAtLargeHrs <- Inf
-        } else {
-            tmp.v <- as.numeric(difftime(tmp$VisitTime, tmp$ReleaseDate, units="hours"))
-            one.row$meanTimeAtLargeHrs <- sum(tmp.v * tmp$Recaps, na.rm=T) / one.row$Recaps
-        }
+        one.row$meanTimeAtLargeHrs <- sum(tmp.hdiff * tmp$Recaps, na.rm=T) / one.row$Recaps
 
     }
+    
 
-    one.row <- one.row[,-which( names(one.row) %in% c("VisitTime")) ]   # drop columns that are we are summing over
+    one.row <- one.row[,-which( names(one.row) %in% c("VisitTime", "trapVisitID", "SampleMinutes")) ]   # drop columns that are we are summing over
     
     
     ans <- rbind(ans, data.frame(one.row))
@@ -111,9 +129,6 @@ for( g in u.groups ){
 class(ans$meanRecapTime) <- class(release.visit$VisitTime)
 attr(ans$meanRecapTime, "tzone") <- attr(release.visit$VisitTime, "tzone")
 
-#   Add in a 'cell' in the table when a trap position did not catch a single fish from a particular release 
-ans$trapPositionID[ is.na(ans$trapPositionID) ] <- unique(ans$trapPositionID)[1]
-ans$Recaps[ is.na(ans$Recaps) ] <- 0 
     
 cat("First 20 records of RELEASE table:\n")  
 print( ans[1:min(nrow(ans),20),c("releaseID", "ReleaseDate", "TrapPosition", "trapPositionID", "nReleased",   "Recaps", "meanRecapTime", "meanTimeAtLargeHrs")] )

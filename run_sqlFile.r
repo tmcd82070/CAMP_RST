@@ -85,6 +85,9 @@ sql.statements <- strsplit( sql.statements, ";" )[[1]]
 #   Take out leading spaces
 sql.statements <- gsub( "^ ", "", sql.statements )
 
+#   Take out any tabs, which mess things up
+sql.statements <- gsub( "\t", "", sql.statements )
+
 #   Take out the last element, caused by the end of file
 sql.statements <- sql.statements[nchar(sql.statements) > 0]
 
@@ -95,6 +98,7 @@ if( check.drops ){
     #   Don't want to check for errors on drop statements. flag these
     drops <- grep( "^(?i)drop", sql.statements )
 }
+
 
 for( i in 1:length(sql.statements) ){
 

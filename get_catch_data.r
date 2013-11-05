@@ -63,6 +63,8 @@ F.sql.error.check(visit)
 #run.name <- sqlQuery( ch, paste("SELECT run AS runName FROM luRun WHERE runID=", run ))
 #F.sql.error.check(run.name)
 
+close(ch) 
+
 
 #   Assign attributes
 attr(visit, "siteID" ) <- site
