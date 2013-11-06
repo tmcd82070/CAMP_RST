@@ -5,6 +5,7 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
 #   Assign the missing one based on frequency dist of the other.
 #
 
+MUST TOSS RANDOMSELECTION == "NO"
 
 u <- sort(unique( catch[,present.var] ))
 u <- u[ !is.na(u) ]   # NA is included in unique values,  ditch it here

@@ -1,4 +1,4 @@
-F.get.catch.data <- function( site, taxon, run, min.date, max.date ){
+F.get.catch.data <- function( site, taxon, min.date, max.date ){
 #
 #   Fetch the catch data for a SINGLE TAXON from an Access data base. Do some initial
 #   computations, like dates.
@@ -48,42 +48,47 @@ ch <- odbcConnectAccess(db)
 F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )   
 
 #   *****
-#   This SQL generates the sum chinook by trap series of queries
-F.run.sqlFile( ch, "QrySumChinookByTrap.sql", R.TAXON=taxon )   
+#   This SQL generates times when the traps were not fishing
+F.run.sqlFile( ch, "QryNotFishing.sql" )   
 
 
 #   *****
-#   Now, fetch the result
-visit <- sqlFetch( ch, "TempChinookSampling_i_final" )
-F.sql.error.check(visit)
+#   This SQL generates unmarked fish by run and life stage
+F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )   
 
 
-#   ******
-#   Fetch run name
-#run.name <- sqlQuery( ch, paste("SELECT run AS runName FROM luRun WHERE runID=", run ))
-#F.sql.error.check(run.name)
+#   *****
+#   Now, fetch the result 
+catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+F.sql.error.check(catch)
 
 close(ch) 
 
 
+#   ********************************************************************
+#   Expand the Plus counts
+catch <- F.expand.plus.counts( catch )
+
+
+
 #   Assign attributes
-attr(visit, "siteID" ) <- site
-attr(visit, "site.name") <- visit$Site[1]
-attr(visit, "site.abbr") <- visit$siteAbbreviation[1]
-#attr(visit, "runID") <- run
-#attr(visit, "run.name") <- run.name
-#attr(visit, "run.season") <- run.season
-#attr(visit, "site.stream") <- site.stream 
-attr(visit, "subsites") <- unique(visit$TrapPositionID)
-#attr(visit, "taxonID" ) <- taxon.string 
-#attr(visit, "species.name") <- sp.commonName
+attr(catch, "siteID" ) <- site
+attr(catch, "site.name") <- catch$siteName[1]
+#attr(catch, "site.abbr") <- catch$siteAbbreviation[1]
+#attr(catch, "runID") <- run
+#attr(catch, "run.name") <- run.name
+#attr(catch, "run.season") <- run.season
+#attr(catch, "site.stream") <- site.stream 
+attr(catch, "subsites") <- unique(catch$trapPositionID)
+#attr(catch, "taxonID" ) <- taxon.string 
+#attr(catch, "species.name") <- sp.commonName
 #
 cat("First 20 records of catch data frame...\n")
-if( nrow(visit) >= 20 ) print( visit[1:20,] ) else print( visit )
+if( nrow(catch) >= 20 ) print( catch[1:20,] ) else print( catch )
 
 #f.banner("F.get.catch.data - Complete")
 
 
-visit
+catch
 
 }

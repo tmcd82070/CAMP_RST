@@ -104,10 +104,15 @@ for( i in 1:length(sql.statements) ){
 
     #   Print out the sql for us humans, if called for
     if( echo ){
-        out.sql <- gsub( ",", "\n,", sql.statements[i], fixed=T)
+        out.sql <- gsub( ", ", "\n, ", sql.statements[i], fixed=T)
         out.sql <- gsub( "FROM", "\nFROM", out.sql, fixed=T)
         out.sql <- gsub( "WHERE", "\nWHERE", out.sql, fixed=T)
-        out.sql <- gsub( ") ", ")\n", out.sql, fixed=T)
+        out.sql <- gsub( "AND", "\nAND", out.sql, fixed=T)
+        out.sql <- gsub( "INTO", "\nINTO", out.sql, fixed=T)
+        out.sql <- gsub( "ORDER BY", "\nORDER BY", out.sql, fixed=T)
+        out.sql <- gsub( "GROUP BY", "\nGROUP BY", out.sql, fixed=T)
+        out.sql <- gsub( "JOIN", "JOIN\n", out.sql, fixed=T)
+        
         cat(out.sql)
         cat("\n\n-------------------------------------------------------------\n")
     }
