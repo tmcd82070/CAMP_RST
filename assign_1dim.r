@@ -43,32 +43,46 @@ for( i in u ){
             UnassignedAbsent <- (catch[,absent.var]=="Unassigned") & !is.na(catch[,absent.var])
            
             thisInd <- thisTrapVisit & thisPresent & !UnassignedAbsent & RandomlySelected 
-
                        
             
             if( !any( thisInd ) ){
                 #   If we are here, there are no fish to compute frequencies.  
-                #   Expand out to and see if there are randomly selected fish with absentvar defined from other trap visits on same day
-                thisDay <- (format(catch$SampleDate[j],"%Y-%m-%d") == format(catch$SampleDate,"%Y-%m-%d")) & !is.na(catch$SampleDate)
-                thisInd <- thisDay & thisPresent & !UnassignedAbsent & RandomlySelected 
-                
-#                print(j)
-#                print(catch[thisInd,])
-#                print(sum(thisInd))
-#                readline()
-                
-                if( !any( thisInd ) ){
-                    #   No fish with absentvar on the day. 
-                    #   Expand window out +- 24 hours around date of target trapVisit
-                    day.low  <- catch$SampleDate[j] - 24*60*60
-                    day.high <- catch$SampleDate[j] + 24*60*60
-                    theseDays <- (day.low <= catch$SampleDate) & (catch$SampleDate <= day.high) & !is.na(catch$SampleDate)
-                    thisInd <- theseDays & thisPresent & !UnassignedAbsent & RandomlySelected 
+                #   Check to see if there are any non-RandomlySelected fish to use. 
+                #   The was they coded Randomly selected, we first check to see if there are any randomly selected fish 
+                #   which would come from the "grab sample".  If not, they may have measured all fish, and not taken a grab sample. 
+                #   In this case, they set RandomSelection to "no".  This means we must check for non-random selection fish after 
+                #   determining there are no randomly selected ones. 
 
-#                    print(c(day.low, day.high))
-#                    print(catch[theseDays,c("trapVisitID","SampleDate","Unmarked",present.var, absent.var)])
-#                    print(catch[thisInd,])
-#                    readline()
+                thisInd <- thisTrapVisit & thisPresent & !UnassignedAbsent
+                
+                if( !any(thisInd) ){
+
+                    #   Still no fish                
+                    #   Expand out to and see if there are randomly selected fish with absentvar defined from other trap visits on same day
+                    thisDay <- (format(catch$SampleDate[j],"%Y-%m-%d") == format(catch$SampleDate,"%Y-%m-%d")) & !is.na(catch$SampleDate)
+                    thisInd <- thisDay & thisPresent & !UnassignedAbsent & RandomlySelected 
+                    
+                    if( !any( thisInd ) ){
+                        #   Still no fish
+                        #   See if any non-randomly selected fish on same day
+                        thisInd <- thisDay & thisPresent & !UnassignedAbsent 
+                        
+                        if( !any( thisInd )){
+                            #   Still no fish
+                            #   Expand window out +- 24 hours around date of target trapVisit
+                            day.low  <- catch$SampleDate[j] - 24*60*60
+                            day.high <- catch$SampleDate[j] + 24*60*60
+                            theseDays <- (day.low <= catch$SampleDate) & (catch$SampleDate <= day.high) & !is.na(catch$SampleDate)
+                            thisInd <- theseDays & thisPresent & !UnassignedAbsent & RandomlySelected 
+                            
+                            if( !any( thisInd )){
+                                #   Still no fish, try one more time.
+                                #   Look for non-randomly sampled fish +- 24 hours. 
+                                #   If still no fish, give up.
+                                thisInd <- theseDays & thisPresent & !UnassignedAbsent 
+                            }
+                        }
+                    }
                 }
             }
             #   If there are no fish in thisInd at this point, we give up and will ask the user to fix this manually. 

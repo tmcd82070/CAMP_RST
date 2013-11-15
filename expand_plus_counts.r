@@ -29,10 +29,10 @@ catch <- F.assign.1dim( catch, present.var="FinalRun", absent.var="lifeStage" )
 #   ---- Deal with missing lifeStageID AND missing finalRunID (i.e., assign a life stage and a run)
 cat("\n")
 cat("---- finalRunID absent AND lifeStageID absent\n")
-catch <- F.assign.2dim( catch, var1="finalRunID", var2="lifeStageID" )
+#catch <- F.assign.2dim( catch, var1="FinalRun", var2="lifeStage" )
 
 cat("Final number of rows in run X life stage table:\n")
-print( table(finalRunID=catch$finalRunID, lifeStageID=catch$lifeStageID, useNA="ifany") )
+print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="ifany") )
 
 cat("----------- DONE assigning plus Counts----------\n")
 
