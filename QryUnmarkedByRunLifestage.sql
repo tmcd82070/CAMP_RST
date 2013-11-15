@@ -54,35 +54,31 @@ ORDER BY TempSamplingSummary.timeSampleStarted, Site.siteName, SubSite.subSiteNa
 
 DROP TABLE TempSumUnmarkedByTrap_Run_b;
 
+
 SELECT 
     TempSamplingSummary.projectDescriptionID
     , TempSamplingSummary.trapVisitID
     , Sum(CatchRaw!n) AS Unmarked
     , IIf(CatchRaw!finalRunID<6 And CatchRaw!finalRunID<>2,luRun!run,'Unassigned') AS FinalRun
     , IIf(CatchRaw!lifeStageID<10 Or CatchRaw!lifeStageID>15 And CatchRaw!lifeStageID<20,luLifeStageCAMP!lifeStageCAMP,IIf(CatchRaw!lifeStageID=11 Or CatchRaw!lifeStageID=15,'AdultSubAdult','Unassigned')) AS LifeStage
-    , IIf([CatchRaw]![randomID]=2 Or [CatchRaw]![lifeStageID]=11 Or [CatchRaw]![lifeStageID]=15,'No','Yes') AS RandomSelection 
+    , CatchRaw.forkLength
+    , IIf(CatchRaw!randomID=2 Or CatchRaw!lifeStageID=11 Or CatchRaw!lifeStageID=15,'No','Yes') AS RandomSelection 
 INTO TempSumUnmarkedByTrap_Run_b
 FROM 
     (
-    TempSamplingSummary INNER JOIN TrapVisit ON 
-        (TempSamplingSummary.trapVisitID = TrapVisit.trapVisitID) 
-        AND 
-        (TempSamplingSummary.projectDescriptionID = TrapVisit.projectDescriptionID)
+        TempSamplingSummary INNER JOIN TrapVisit ON 
+            (TempSamplingSummary.projectDescriptionID=TrapVisit.projectDescriptionID) AND (TempSamplingSummary.trapVisitID=TrapVisit.trapVisitID)
     ) INNER JOIN 
+    (
         (
-            (
-                (
-                    (CatchRaw LEFT JOIN luRun ON CatchRaw.finalRunID = luRun.runID) LEFT JOIN 
-                    luLifeStage ON CatchRaw.lifeStageID = luLifeStage.lifeStageID
-                ) LEFT JOIN luLifeStageCAMP ON luLifeStage.lifeStageCAMPID = luLifeStageCAMP.lifeStageCAMPID
-            ) LEFT JOIN MarkExisting ON 
-            (CatchRaw.catchRawID = MarkExisting.catchRawID) 
-            AND 
-            (CatchRaw.projectDescriptionID = MarkExisting.projectDescriptionID)
-        ) ON 
-        (TrapVisit.trapVisitID = CatchRaw.trapVisitID) 
-        AND 
-        (TrapVisit.projectDescriptionID = CatchRaw.projectDescriptionID)
+            ((CatchRaw LEFT JOIN luRun ON CatchRaw.finalRunID=luRun.runID) LEFT JOIN luLifeStage ON CatchRaw.lifeStageID=luLifeStage.lifeStageID) LEFT JOIN 
+            luLifeStageCAMP ON luLifeStage.lifeStageCAMPID=luLifeStageCAMP.lifeStageCAMPID
+        ) LEFT JOIN MarkExisting ON 
+            (CatchRaw.catchRawID=MarkExisting.catchRawID) AND (CatchRaw.projectDescriptionID=MarkExisting.projectDescriptionID)
+    ) ON 
+    (TrapVisit.trapVisitID=CatchRaw.trapVisitID) 
+    AND 
+    (TrapVisit.projectDescriptionID=CatchRaw.projectDescriptionID)
 WHERE 
     (
         ((TempSamplingSummary.visitTypeID)>1) 
@@ -101,10 +97,13 @@ WHERE
         AND 
         ((MarkExisting.markPositionID)=252)
     )
-GROUP BY TempSamplingSummary.projectDescriptionID
+GROUP BY 
+    TempSamplingSummary.projectDescriptionID
     , TempSamplingSummary.trapVisitID
     , IIf(CatchRaw!finalRunID<6 And CatchRaw!finalRunID<>2,luRun!run,'Unassigned')
-    , IIf(CatchRaw!lifeStageID<10 Or CatchRaw!lifeStageID>15 And CatchRaw!lifeStageID<20,luLifeStageCAMP!lifeStageCAMP,IIf(CatchRaw!lifeStageID=11 Or CatchRaw!lifeStageID=15,'AdultSubAdult','Unassigned')), IIf([CatchRaw]![randomID]=2 Or [CatchRaw]![lifeStageID]=11 Or [CatchRaw]![lifeStageID]=15,'No','Yes')
+    , IIf(CatchRaw!lifeStageID<10 Or CatchRaw!lifeStageID>15 And CatchRaw!lifeStageID<20,luLifeStageCAMP!lifeStageCAMP,IIf(CatchRaw!lifeStageID=11 Or CatchRaw!lifeStageID=15,'AdultSubAdult','Unassigned'))
+    , CatchRaw.forkLength
+    , IIf(CatchRaw!randomID=2 Or CatchRaw!lifeStageID=11 Or CatchRaw!lifeStageID=15,'No','Yes')
     , TempSamplingSummary.includeCatchID
 HAVING (((TempSamplingSummary.includeCatchID)=1));
 
@@ -133,6 +132,7 @@ SELECT
     , IIf(TempSumUnmarkedByTrap_Run_b!Unmarked Is Null,0,TempSumUnmarkedByTrap_Run_b!Unmarked) AS Unmarked
     , IIf(TempSumUnmarkedByTrap_Run_b!FinalRun Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!FinalRun) AS FinalRun
     , IIf(TempSumUnmarkedByTrap_Run_b!LifeStage Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!LifeStage) AS lifeStage
+    , TempSumUnmarkedByTrap_Run_b.forkLength 
     , IIf(TempSumUnmarkedByTrap_Run_b!RandomSelection Is Null,'Yes',TempSumUnmarkedByTrap_Run_b!RandomSelection) AS RandomSelection 
 INTO TempSumUnmarkedByTrap_Run_Final
 FROM TempSumUnmarkedByTrap_Run_a LEFT JOIN 
