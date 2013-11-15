@@ -5,7 +5,7 @@ F.assign.2dim <- function(catch, var1, var2 ){
 #   Assign a var1 and var2 value based on joint distribution
 #
 
-    if( sum( catch$n[is.na(catch[,var1]) & is.na(catch[,var2])] ) == 0 ){
+    if( sum( catch$unmarked[is.na(catch[,var1]) & is.na(catch[,var2])] ) == 0 ){
         #   There is nothing to do.  Either no lines with missing var1 and var2, or n=0 for all them.
         #   n=0 should not happen if n=0 lines are taken out before here
         cat(paste("-------- No missing combinations of", var1, "and", var2, "found.\n"))
@@ -16,7 +16,7 @@ F.assign.2dim <- function(catch, var1, var2 ){
     #   Otherwise, we need to assign a run and lifestage based on frequencies found the same day
 
     cat(paste("Number of fish before expanding and assigning", var1 , "and", var2, " ="))
-    cat(sum(catch$n))
+    cat(sum(catch$unmarked))
     cat("\n")
 
     #   For every line with missing var1 and var2, make sure n>0, then expand the line into length(freqs) lines with appropriate counts
@@ -25,7 +25,7 @@ F.assign.2dim <- function(catch, var1, var2 ){
         if( sum( MissingCombos ) == 0 ) break
         j <- which(MissingCombos)[1]
 
-        if( catch$n[j] > 0 ){
+        if( catch$unmarked[j] > 0 ){
             #   This is a plus count that needs expanding.
 
 #            print(catch[j,])
@@ -33,12 +33,12 @@ F.assign.2dim <- function(catch, var1, var2 ){
             #   Get the frequency distribution for the absent variable on this day.  Use that to inflate plus counts.
             thisTrapVisit <- catch$trapVisitID[j]
 #            print( catch[ catch$trapVisitID == thisTrapVisit, ] )
-            freqs <- tapply( catch$n[ catch$trapVisitID == thisTrapVisit ], 
+            freqs <- tapply( catch$unmarked[ catch$trapVisitID == thisTrapVisit ], 
                 list(var1=catch[ catch$trapVisitID == thisTrapVisit, var1 ], var2=catch[ catch$trapVisitID == thisTrapVisit, var2 ]), sum, na.rm=TRUE)
 
             if(length(freqs) > 0){
                 #   There were other fish captured this day that had a "var1 X var2" designation. Use them.
-                #print( cbind( catch$n[ catch$trapVisitID == thisTrapVisit ], catch[ catch$trapVisitID == thisTrapVisit, var1 ], catch[ catch$trapVisitID == thisTrapVisit, var2 ]) )
+                #print( cbind( catch$unmarked[ catch$trapVisitID == thisTrapVisit ], catch[ catch$trapVisitID == thisTrapVisit, var1 ], catch[ catch$trapVisitID == thisTrapVisit, var2 ]) )
                 #print(freqs)
 
                 props <- freqs / sum(freqs, na.rm=T)
@@ -50,7 +50,7 @@ F.assign.2dim <- function(catch, var1, var2 ){
     
     
                 #   Multiply proportions that day by number of missings - the 'plus' count
-                N.j <- catch$n[j]
+                N.j <- catch$unmarked[j]
                 n.j <- round( props$props * N.j )
 
 #                cat(paste("Proportions (when recorded) on", catch$visitTime[j],  ":\n"))
@@ -67,9 +67,9 @@ F.assign.2dim <- function(catch, var1, var2 ){
 #                    readline()
                 }
     
-                #   Replace line j with length(props) lines.  These new lines have $n equal to n.j, but all other variables equal to the original line
+                #   Replace line j with length(props) lines.  These new lines have $unmarked equal to n.j, but all other variables equal to the original line
                 lines.j <- catch[rep(j,nrow(props)),]
-                lines.j$n <- n.j
+                lines.j$unmarked <- n.j
                 lines.j[,var1] <- props[,var1]
                 lines.j[,var2] <- props[,var2]
                 
@@ -111,13 +111,13 @@ F.assign.2dim <- function(catch, var1, var2 ){
     }
 
     cat(paste("Number of fish after expanding and assigning", var1 , "and", var2, " (should match count before expansion)= "))
-    cat(sum(catch$n))
+    cat(sum(catch$unmarked))
     cat("\n")
 
 
 
     #   Finally, it is possible that we added some rows with n=0.  Remove them.
-    catch <- catch[ catch$n > 0, ]
+    catch <- catch[ catch$unmarked > 0, ]
 
 
     catch

@@ -15,15 +15,15 @@ print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="ifany") 
 #   NOTE: catch$Unmarked cannot be missing by the time it gets here.  
 #
 
-#   ---- Deal with missing runID, but present lifestageID (i.e., Assign a run)
+#   ---- Deal with missing run, but present lifestage (i.e., Assign a run)
 cat("---- lifeStage present, FinalRun absent\n")
-catch <- F.assign.1dim( catch, present.var="lifeStageID", absent.var="finalRunID" )
+catch <- F.assign.1dim( catch, present.var="lifeStage", absent.var="FinalRun" )
 
 
-#   ---- Deal with missing lifeStageID, but present finalRunID (i.e., Assign a life stage)
+#   ---- Deal with missing lifeStage, but present finalRun (i.e., Assign a life stage)
 cat("\n")
-cat("---- finalRunID present, lifeStageID absent\n")
-catch <- F.assign.1dim( catch, present.var="finalRunID", absent.var="lifeStageID" )
+cat("---- FinalRun present, lifeStage absent\n")
+catch <- F.assign.1dim( catch, present.var="FinalRun", absent.var="lifeStage" )
 
 
 #   ---- Deal with missing lifeStageID AND missing finalRunID (i.e., assign a life stage and a run)
