@@ -67,7 +67,7 @@ close(ch)
 
 #   ********************************************************************
 #   Expand the Plus counts
-#catch <- F.expand.plus.counts( catch )
+catch <- F.expand.plus.counts( catch )
 
 
 

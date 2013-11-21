@@ -8,7 +8,7 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
 #   We make sure to TOSS RANDOMSELECTION == "NO"
 
 u <- levels( catch[,present.var] )
-u <- u[ -which(u=="Unassigned") ]
+u <- u[ u!="Unassigned" ]
 
 nonMissTrapVisit <- !is.na(catch$trapVisitID)
 nonMissAbsent <- !is.na(catch[,absent.var])
@@ -48,7 +48,7 @@ for( i in u ){
             if( !any( thisInd ) ){
                 #   If we are here, there are no fish to compute frequencies.  
                 #   Check to see if there are any non-RandomlySelected fish to use. 
-                #   The was they coded Randomly selected, we first check to see if there are any randomly selected fish 
+                #   The way they coded Randomly selected, we first check to see if there are any randomly selected fish 
                 #   which would come from the "grab sample".  If not, they may have measured all fish, and not taken a grab sample. 
                 #   In this case, they set RandomSelection to "no".  This means we must check for non-random selection fish after 
                 #   determining there are no randomly selected ones. 
