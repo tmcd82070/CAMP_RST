@@ -67,6 +67,10 @@
     #   Write out the memory limit on this machine
     cat(paste("Memory limit:", memory.limit(), "Mb \n"))    
     
+    #   Set time zone. NOTE: all times are assumed to be in this time zone.  
+    #   If not, they may be incorrect.  In any event, all times are forced to this time zone.
+    time.zone <<- "America/Los_Angeles"
+    
     #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then, 
     #  *************** Set the efficiency model to use. 
     #

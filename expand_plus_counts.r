@@ -3,9 +3,11 @@ F.expand.plus.counts <- function( catch ){
 #   Expand the data set in 'catch' to account for plus counts.  Plus counts are lines with missing FinalRun or lifeStage.
 #
 
-#   On entry there can be rows with Unmarked = 0, eliminate these
-#   NOTE: catch$Unmarked cannot be missing by the time it gets here.  
-catch <- catch[ (catch$Unmarked > 0) , ]
+#print( catch[is.na(catch$FinalRun),] )
+
+#   On entry there can be rows with Unmarked = 0, eliminate these, but careful.
+#   There are missing lines we want to keep
+catch <- catch[ (catch$Unmarked > 0) | is.na(catch$Unmarked) , ]
 
 
 cat("----------- Assigning run and lifestage based on Plus Counts----------\n")
@@ -13,6 +15,9 @@ cat("Number of records over season in run X lifestage matrix upon entry:\n")
 
 print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="ifany") )
 
+#cat("in expand_plus_counts\n")
+#print( catch[is.na(catch$FinalRun),] )
+#readline()
 
 #   Assign plus counts one dimension at a time, then for the double missing
 #

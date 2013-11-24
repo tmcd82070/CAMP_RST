@@ -1,23 +1,23 @@
 F.assign.batch.date <- function( df ){
 #
-#   Assign batch data to records where batch date is missing.  If biologists change default batch date,
-#   it will appear in df.  Don't change it when it is present.
+#   Assign batch data to records.
 #
 
 cuttime <- get( "samplePeriodCutTime", env=.GlobalEnv )
 midtime <- "00:00:00"   # this is the time of day assigned to batchDates.  Could be half way between cut times or (cuttime - 12*60*60).
 
+time.zone <- get( "time.zone", env=.GlobalEnv )
 
 
 #   A sequence of dates at cuttime every day
-min.day <- min(df$sampleEnd)-24*60*60
-max.day <- max(df$sampleEnd)+ 2*24*60*60
+min.day <- min(df$EndTime) - 24*60*60
+max.day <- max(df$EndTime) + 2*24*60*60
 cut.seq <- seq( min.day, max.day, by=24*60*60 )
 cut.day <- format( cut.seq, "%Y-%m-%d" )
-cut.seq <- as.POSIXct( paste( cut.day, cuttime ), format="%Y-%m-%d %H:%M:%S", tz=attr(df$sampleEnd,"tzone"))
+cut.seq <- as.POSIXct( paste( cut.day, cuttime ), format="%Y-%m-%d %H:%M:%S", tz=time.zone)
 
 #   Bin the sampleEnd's to cut.seq
-ind <- cut( df$sampleEnd, cut.seq, labels=FALSE )
+ind <- cut( df$EndTime, cut.seq, labels=FALSE )
 
 
 #   Establish when the cut time "wraps" to the next day.  I.e., at some point, as cut time increases from 0, you
@@ -34,7 +34,7 @@ if( cut.POSIX < wrap.POSIX ){
 }
     
 #   Compute batchDate    
-bDate <- as.POSIXct( paste( format(cut.seq[ind] + add.day*24*60*60, "%Y-%m-%d"), midtime), format="%Y-%m-%d %H:%M:%S", tz=attr(df$sampleEnd,"tzone"))
+bDate <- as.POSIXct( paste( format(cut.seq[ind] + add.day*24*60*60, "%Y-%m-%d"), midtime), format="%Y-%m-%d %H:%M:%S", tz=time.zone)
 
 
 ##   If we allow biologists to over ride batchDate, uncomment the following code
@@ -42,8 +42,15 @@ bDate <- as.POSIXct( paste( format(cut.seq[ind] + add.day*24*60*60, "%Y-%m-%d"),
 #miss <- is.na(df$batchDate)
 #df$batchDate[miss] <- bDate[miss]
 
-#   Otherwise, just overwrite batchDate
-df$batchDate <- bDate
+#   Add batch date to data frame
+if( "SampleDate" %in% names(df) ){
+    #   overwrite with batchDate
+    df$SampleDate <- bDate
+    names(df)[names(df) == "SampleDate" ] <- "batchDate"
+} else {
+    df$batchDate <- bDate
+}
+
 
 df
 }

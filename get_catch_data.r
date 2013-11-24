@@ -65,9 +65,24 @@ F.sql.error.check(catch)
 close(ch) 
 
 
+#   ******************************************************************
+#   Assign time zone (probably does not matter)
+time.zone <- get( "time.zone", env=.GlobalEnv )
+attr(catch$StartTime, "tzone") <- time.zone
+attr(catch$EndTime, "tzone") <- time.zone
+
+
+
+
 #   ********************************************************************
 #   Expand the Plus counts
 catch <- F.expand.plus.counts( catch )
+
+
+
+#   ********************************************************************
+#   Assign batch date
+catch <- F.assign.batch.date( catch )
 
 
 

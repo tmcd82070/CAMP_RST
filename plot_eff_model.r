@@ -46,7 +46,13 @@ axis( side=1, at=lab.x.at, label=format(lab.x.at, "%d%b%y"))
 
 #   Draw points and lines
 traps <- sort(unique(df$trapPositionID))
-my.colors <- rainbow(length(traps))
+if( length(traps) == 1 ){
+    my.colors <- "red"
+} else if (length(traps) == 2){
+    my.colors <- c("red","blue")
+} else {
+    my.colors <- rainbow(length(traps))
+}
 my.pch <- 15 + 1:length(traps)
 for( i in 1:length(traps) ){
 
@@ -87,6 +93,7 @@ mx.len.name <- which.max( nchar(subsite.name$subSiteName) )
 tmp <- legend( "topleft", title=subsite.name$subSiteName[mx.len.name], legend=c("Observed","Predicted"), pch=rep(my.pch[1],2), cex=.85, pt.cex=1.25, lty=c(NA,1), plot=FALSE ) # don't plot, need the left coordinate here
 tmp$rect$top <- tmp$rect$top + tmp$rect$h  # + goes up, - goes down
 
+traps <- as.numeric(traps)
 for( i in 1:length(traps)){
     trap.name <- subsite.name$subSiteName[ subsite.name$subSiteID == traps[i] ]
     tmp <- legend( c(tmp$rect$left,tmp$rect$left + tmp$rect$w), c(tmp$rect$top - tmp$rect$h, tmp$rect$top - 2*tmp$rect$h) , title=trap.name, 
@@ -96,7 +103,7 @@ for( i in 1:length(traps)){
 
 #   Add title
 mtext( side=3, at=max(df$batchDate), text=attr(df,"site.name"), adj=1, cex=1.5, line=2 )
-mtext( side=3, at=max(df$batchDate), text= paste(attr(df,"species.name"), ", ", attr(df,"run.name"), " run", sep=""), adj=1, cex=.75, line=1 )
+mtext( side=3, at=max(df$batchDate), text= "Efficiency Trials", adj=1, cex=.75, line=1 )
 
 
 

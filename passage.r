@@ -25,9 +25,14 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     progbar <<- winProgressBar( "Passage estimates", label="Reading catch data and assigning plus-counts" )
 
     #   ---- Fetch the catch data
-    catch.df   <- F.get.catch.data( site, taxon, run, min.date, max.date  )
+    catch.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
 
+    tmp.c <<- catch.df
+    
     if( nrow(catch.df) > 0 ){
+    
+        #   ---- Summarize catch data by batchDate. Upon return, catch.df has one line per trapPosition-batchDate combo
+        catch.df <- F.summarize.fish.visit( catch.df )    
         
         cat("\n\n")
         cat(paste(rep("+",150), collapse="")); cat("\n")

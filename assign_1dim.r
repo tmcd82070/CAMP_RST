@@ -171,7 +171,7 @@ for( i in u ){
 }
 
 #   Finally, it is possible that we added some rows with n=0.  Remove them.
-catch <- catch[ catch$Unmarked > 0, ]
+catch <- catch[ (catch$Unmarked > 0) | is.na(catch$Unmarked), ]
 
 
 catch

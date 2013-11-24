@@ -12,13 +12,13 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 #   A data frame containing $batchDay and $catch
 #
 
+time.zone <- get("time.zone", env=.GlobalEnv )
+
 #   ---- Establish the days on which estimates need to be produced.
 #        Times in run season must be same as time in batchDate each day. 
 #        batchDate must occur at same time every day.  Can be missing days, but always at same time when present.
-run.season <- attr(catch.df, "run.season")
-bd.time <- format(catch.df$batchDate[1], "%H:%M:%S")
-start.season <- as.POSIXct( paste(format(run.season$start, "%Y-%m-%d"), bd.time, format="%Y-%m-%d %H:%M:%S" ))
-end.season   <- as.POSIXct( paste(format(run.season$end,   "%Y-%m-%d"), bd.time, format="%Y-%m-%d %H:%M:%S" ))
+start.season <- min(catch.df$batchDate)
+end.season   <- max(catch.df$batchDate)
 
 
 
@@ -29,6 +29,7 @@ u.traps <- unique( catch.df$trapPositionID )
 catch.fits <- X.miss <- Gaps <- bDates.miss <- vector("list", length(u.traps))   # lists to contain thing to save for bootstrapping 
 names(catch.fits) <- u.traps
 #catch.df <<- catch.df   # save a copy for debugging
+
 for( trap in u.traps ){
     cat(paste("==== Catch model for trapPositionID", trap, "========\n" ))
 
@@ -40,6 +41,7 @@ for( trap in u.traps ){
     #   sampleStart and sampleEnd for each of the new lines are defined so that no gap appears  now.  Variable
     #   'gamEstimated' is true for these periods. Batch date is assigned based on sampleEnd, as usual. 
     #   On return, there is a value or imputed value for each day from start of season to end of season.
+    
     
     df.and.fit <- suppressWarnings( F.catch.model( df2 ) )  # df.and.fit is list of length 2, $df2 contains data frame, $fit contains model 
 
@@ -63,7 +65,7 @@ p.imputed <- tapply( df$gamEstimated, ind, mean )
 
 est.catch <- cbind( expand.grid( trapPositionID=dimnames(est.catch)[[1]], batchDate=dimnames(est.catch)[[2]]), 
                 catch=c(est.catch), imputed.catch=c(p.imputed) )
-est.catch$batchDate <- as.POSIXct( as.character(est.catch$batchDate), "%Y-%m-%d", tz=attr(catch.df$batchDate, "tz"))                
+est.catch$batchDate <- as.POSIXct( as.character(est.catch$batchDate), "%Y-%m-%d", tz=time.zone)                
 
 #tmp.est.catch <<- est.catch
 #readline()
@@ -77,11 +79,10 @@ est.catch$imputed.catch[ ind ] <- 0
 
 
 #   Assign attributes for plotting
-attr(est.catch, "site.name") <- attr(catch.df, "site.name")
-attr(est.catch, "subsites") <- attr(catch.df, "subsites")
-attr(est.catch, "site.abbr") <- attr(catch.df, "site.abbr")
-attr(est.catch, "run.name") <- attr(catch.df, "run.name")
-attr(est.catch, "species.name") <- attr(catch.df, "species.name")
+attr(est.catch, "site.name") <- catch.df$SiteName[1]
+attr(est.catch, "subsites") <- unique(catch.df$TrapPosition)
+attr(est.catch, "run.name") <- catch.df$FinalRun[1]
+attr(est.catch, "species.name") <- "Chinook Salmon"
 
 
 #   Make a plot if called for (I don't use parameter 'plot', apparently.

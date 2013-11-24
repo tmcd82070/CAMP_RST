@@ -57,6 +57,13 @@ F.sql.error.check(release.visit)
 
 close(ch) 
 
+#   Assign time zones to date-time columns
+time.zone <- get( "time.zone", env=.GlobalEnv )
+attr(release.visit$ReleaseDate, "tzone")<-time.zone
+attr(release.visit$PlusTestDays, "tzone")<-time.zone
+attr(release.visit$VisitTime, "tzone")<-time.zone
+
+
 #   In release.visit, there is one record for every trap visit within releaseTime (e.g., 7 days) 
 #   after each release, even if the trap visit did not catch any marked fish.  i.e., the 0's are in here
 #   because all combinations of (releaseID, trapPositionID, trapVisitID) upon which marked fish could have

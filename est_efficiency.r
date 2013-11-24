@@ -18,39 +18,61 @@ F.est.efficiency <- function( release.df, batchDate, method=1, df.spline=4, plot
 
 
 #   ---- Check that we actually caught released fish.  If not, 0 efficiency, cannot do estimate.
-if( sum(release.df$n, na.rm=T) <= 0 ){
+if( sum(release.df$Recaps, na.rm=T) <= 0 ){
     warning("NO RELEASE FISH CAUGHT.  Zero efficiency.")
     return(data.frame(no.fish=NA))
 }
 
-#   ---- Assign batch date to efficiency trials
+time.zone <- get("time.zone", env=.GlobalEnv)
 
-
-rel.df <- release.df[,c("releaseID", "releaseTime", "nReleased", "testDays",    "trapPositionID", "n", "meanRecapTime")]
+#   ---- Fix up the data frame
+rel.df <- release.df[,c("releaseID", "ReleaseDate", "nReleased",   "trapPositionID", "VisitTime", "Recaps")]
 rel.df$batchDate <- rep(NA, nrow(rel.df))
-names(rel.df)[ names(rel.df) == "meanRecapTime" ] <- "sampleEnd"
+names(rel.df)[ names(rel.df) == "VisitTime" ] <- "EndTime"
 
 
-#        Replace any missing meanVisitTimes with 1/2 the testDays.  Mean visit time is missing if they did not catch anything from a release. 
-ind <- is.na( rel.df$sampleEnd )
-rel.df$sampleEnd[ind] <- rel.df$releaseTime[ind] + (rel.df$testDays[ind] * 24 * 60 * 60) / 2
+#   ---- Sum over trapvisits. Obtain one line per release.
+ind <- list( trapPositionID=rel.df$trapPositionID, releaseID=rel.df$releaseID )
+releaseDate <- tapply( rel.df$ReleaseDate, ind, "[", 1 )
+nReleased <- tapply( rel.df$nReleased, ind, "[", 1 )
+Recaps <- tapply( rel.df$Recaps, ind, sum )
+
+#   Take weighted average of end time, weights = recaps.  This determines batchDate
+sumEtimeN <- tapply( as.numeric(rel.df$EndTime)*rel.df$Recaps, ind, sum )
+meanEndTime <- c(sumEtimeN / Recaps)
+
+#   meanEndTime is Infinite (div by 0) if they did not catch anything from a release. 
+#   Replace any Infinite meanEndTimes with releaseDate plus 24 hours.  This will assign a batch date.  
+ind <- is.nan( meanEndTime )
+meanEndTime[ind] <- c(releaseDate)[ind] +  (24 * 60 * 60) 
+
+#   Make times back into time objects
+meanEndTime <- as.POSIXct( meanEndTime, origin=as.POSIXct("1970-01-01 00:00.00", tz="GMT"), tz=time.zone)
+releaseDate <- as.POSIXct( releaseDate, origin=as.POSIXct("1970-01-01 00:00.00", tz="GMT"), tz=time.zone)
 
 
-#       Assign batch date
+#   Put everthing back into a data frame
+rel.df <- cbind( expand.grid( trapPositionID=dimnames(nReleased)[[1]], releaseID=dimnames(nReleased)[[2]]), 
+    releaseDate = c(releaseDate), nReleased = c(nReleased),  Recaps = c(Recaps), EndTime=c(meanEndTime) )
+
+#   ---- Assign batch date to efficiency trials based on meanEndTime (really weighted meanVisitTime)
 rel.df <- F.assign.batch.date( rel.df )
 
+
 rel.df$batchDate.str <- format(rel.df$batchDate, "%Y-%m-%d")
+
 
 
 #       Sum by batch dates.  This combines release and catches over trials that occured close together in time
 ind <- list( trapPositionID=rel.df$trapPositionID, batchDate=rel.df$batchDate.str )
 nReleased <- tapply( rel.df$nReleased, ind, sum )
-nCaught   <- tapply( rel.df$n, ind, sum )
+nCaught   <- tapply( rel.df$Recaps, ind, sum )
 
 eff.est <- cbind( expand.grid( trapPositionID=dimnames(nReleased)[[1]], batchDate=dimnames(nReleased)[[2]]), 
                 nReleased=c(nReleased), nCaught=c(nCaught) )
 eff.est$batchDate <- as.character(eff.est$batchDate)
 
+#   ================== done with data manipulations ===========================
 
 #       Compute efficiency
 eff.est$efficiency <- (eff.est$nCaught+1)/(eff.est$nReleased+1)
@@ -66,19 +88,18 @@ bd <- expand.grid(trapPositionID=sort(unique(eff.est$trapPositionID)), batchDate
 
 
 eff <- merge( eff.est, bd, by=c("trapPositionID", "batchDate"), all.y=T)
-eff$batchDate <- as.POSIXct( eff$batchDate, format="%Y-%m-%d", tz="America/Los_Angeles" )
+eff$batchDate <- as.POSIXct( eff$batchDate, format="%Y-%m-%d", tz=time.zone )
 
 #   Assign attributes for plotting
-attr(eff, "site.abbr") <- attr(release.df, "site.abbr")
-attr(eff, "site.name") <- attr(release.df, "site.name")
-attr(eff, "run.name") <- attr(release.df, "run.name")
-attr(eff, "species.name") <- attr(release.df, "species.name")
-attr(eff, "subsites") <- attr(release.df, "subsites")
+ind <- !duplicated(release.df$TrapPosition)
+attr(eff,"subsites") <- data.frame(subSiteName=as.character(release.df$TrapPosition[ind]), subSiteID=release.df$trapPositionID[ind], stringsAsFactors=F)
+attr(eff, "site.name") <- release.df$siteName[1]
 
 #cat("((((((((((((In est_efficiency.r))))))))))))\n")
 #print(eff)
 #print(bd)
 #readline()
+
 
 
 #   ---- If there are missing days, imput them

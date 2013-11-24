@@ -3,7 +3,8 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 #   Compute passage estimates.
 #
 #   Input:
-#   catch.df = data frame resulting from call to F.get.catch.data.
+#   catch.df = data frame with one row per trapvisitID for a particular FinalRun and lifeStage
+#       That is, catch.df has only a single run X lifestage combination
 #   release.df = data frame resulting from call to F.get.release.data.  Contains info on efficiency.
 #   summarize.by = string specifying how to sum passage estimates.  valid values
 #       are "day", "week", "month", "year".
@@ -60,6 +61,8 @@ attr( release.df, "subsites" ) <- attr( catch.df, "subsites" )
 #print( attributes(release.df))
 #cat("@@@@@\n")
 #print( attributes(catch.df))
+
+
 
 eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df=3, plot=TRUE, plot.file=file.root )
 if(usepb){
