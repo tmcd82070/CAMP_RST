@@ -15,7 +15,7 @@ library(mvtnorm)
 
 conf <- 0.95   # this is the confidence level of the confidence intervals  
 
-cat("---- entering bootstrap\n")
+#cat("---- entering bootstrap\n")
 
 
 
@@ -76,11 +76,10 @@ if( !ci ){
             
             bd.miss <- catch.bDates.miss[[trap]]
     
-            if( !is.null(bd.miss)){
+            if( !is.na(bd.miss)){
                 #   We have some gaps
                 setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
             
-        #        print(bd.miss)
         #        print(names(catch.Xmiss))
         #        print(names(catch.gapLens))
         #        print(nrow(grand.df))

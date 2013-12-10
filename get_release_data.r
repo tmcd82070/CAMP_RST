@@ -133,12 +133,13 @@ for( g in u.groups ){
     ans <- rbind(ans, data.frame(one.row))
 }    
  
+ 
 class(ans$meanRecapTime) <- class(release.visit$VisitTime)
 attr(ans$meanRecapTime, "tzone") <- attr(release.visit$VisitTime, "tzone")
 
     
 cat("First 20 records of RELEASE table:\n")  
-print( ans[1:min(nrow(ans),20),c("releaseID", "ReleaseDate", "TrapPosition", "trapPositionID", "nReleased",   "Recaps", "meanRecapTime", "meanTimeAtLargeHrs")] )
+print( ans[1:min(nrow(ans),20),] )
 
 
 #   Store values of some header info as attribute for convienance. 

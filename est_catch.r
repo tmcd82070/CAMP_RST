@@ -30,6 +30,7 @@ catch.fits <- X.miss <- Gaps <- bDates.miss <- vector("list", length(u.traps))  
 names(catch.fits) <- u.traps
 #catch.df <<- catch.df   # save a copy for debugging
 
+
 for( trap in u.traps ){
     cat(paste("==== Catch model for trapPositionID", trap, "========\n" ))
 
@@ -43,17 +44,21 @@ for( trap in u.traps ){
     #   On return, there is a value or imputed value for each day from start of season to end of season.
     
     
-    df.and.fit <- suppressWarnings( F.catch.model( df2 ) )  # df.and.fit is list of length 2, $df2 contains data frame, $fit contains model 
-
+    df.and.fit <- suppressWarnings( F.catch.model( df2 ) )  # df.and.fit is list of, $df2 contains data frame, $fit contains model, etc
+    
     df <- rbind( df, df.and.fit$df2)
+    
+   
     catch.fits[[which(trap==u.traps)]] <- df.and.fit$fit
     X.miss[[which(trap==u.traps)]] <- df.and.fit$X.for.missings
     Gaps[[which(trap==u.traps)]] <- df.and.fit$gaps
     bDates.miss[[which(trap==u.traps)]] <- df.and.fit$batchDate.for.missings
 
+    
 #    tmp.df <- df
 #    readline()
 }
+
 
 #   Should probably save df into the Access data base for storage and potential use by others. 
 
@@ -79,9 +84,16 @@ est.catch$imputed.catch[ ind ] <- 0
 
 
 #   Assign attributes for plotting
-attr(est.catch, "site.name") <- catch.df$SiteName[1]
-attr(est.catch, "subsites") <- unique(catch.df$TrapPosition)
+u.ss.rows <- !duplicated(catch.df$trapPositionID)
+u.ss <- catch.df$trapPositionID[u.ss.rows]
+u.ss.name <- catch.df$trapPosition[u.ss.rows]
+ord <- order( u.ss )
+u.ss <- u.ss[ ord ]
+u.ss.name <- u.ss.name[ ord ]
+attr(est.catch, "site.name") <- catch.df$siteName[1]
+attr(est.catch, "subsites") <- data.frame(subSiteID = u.ss, subSiteName=u.ss.name)
 attr(est.catch, "run.name") <- catch.df$FinalRun[1]
+attr(est.catch, "life.stage" ) <- catch.df$lifeStage[1]
 attr(est.catch, "species.name") <- "Chinook Salmon"
 
 

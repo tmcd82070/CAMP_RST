@@ -16,6 +16,7 @@ cut.seq <- seq( min.day, max.day, by=24*60*60 )
 cut.day <- format( cut.seq, "%Y-%m-%d" )
 cut.seq <- as.POSIXct( paste( cut.day, cuttime ), format="%Y-%m-%d %H:%M:%S", tz=time.zone)
 
+
 #   Bin the sampleEnd's to cut.seq
 ind <- cut( df$EndTime, cut.seq, labels=FALSE )
 

@@ -17,7 +17,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
 
     #   ---- Fetch efficiency data
-    release.df <- F.get.release.data( site, run, min.date, max.date  )
+    release.df <- F.get.release.data( site, taxon, min.date, max.date  )
 
     if( nrow(release.df) == 0 ){
         stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
@@ -32,15 +32,19 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     }
     
     #   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables 
+    
     catch.df <- F.summarize.fish.visit( catch.df )    
 
+
     runs <- unique(catch.df$FinalRun)
-    cat("Runs found between", min.date, "and", max.date, ":\n")
+    runs <- runs[ !is.na(runs) ]
+    cat("\nRuns found between", min.date, "and", max.date, ":\n")
     print(runs)
 
 
     lstages <- unique(catch.df$lifeStage)
-    cat("Life stages found between", min.date, "and", max.date, ":\n")
+    lstages <- lstages[ !is.na(lstages) ]
+    cat("\nLife stages found between", min.date, "and", max.date, ":\n")
     print(lstages)
 
     #   ---- Extract the unique trap visits.  This will be used in merge to get 0's later
@@ -69,7 +73,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
         indRun <- (catch.df$FinalRun == run.name ) & !is.na(catch.df$FinalRun)
             
         #   ---- Loop over lifestages
-        for( i in 1:lstages ){
+        for( i in 1:length(lstages) ){
 
             ls <- lstages[i]
             
@@ -86,7 +90,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
                 catch.df.ls <- catch.df[ indRun & indLS, c("trapVisitID", "FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl")]
 
                 #   ---- Merge in the visits to get zeros
-                catch.df.ls <- merge( visit, catch.fl, by="trapVisitID", all.x=T )
+                catch.df.ls <- merge( visit.df, catch.df.ls, by="trapVisitID", all.x=T )
                 setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
 
                 catch.df.ls$n.tot[ is.na(catch.df.ls$n.tot) ] <- 0
@@ -97,7 +101,10 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
                 #   ---- Compute passage
                 out.fn.root <- paste0(output.file, ls, run.name ) 
                 setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
-
+                
+                #tmp.c <<- catch.df.ls
+                #tmp.r <<- release.df
+                
                 pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
 
                 setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
@@ -136,7 +143,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     for( j in 2:ncol(ans) ){
         df <- cbind( df, data.frame( ans.pct[,j], ans[,j], lci[,j], uci[,j], stringsAsFactors=F ))
     }
-    names(df) <- c("LifeStage", paste( rep(runs$run, each=4), rep( c(".propOfPassage",".passage",".lower95pctCI", ".upper95pctCI"), nrow(runs)), sep=""))
+    names(df) <- c("LifeStage", paste( rep(runs, each=4), rep( c(".propOfPassage",".passage",".lower95pctCI", ".upper95pctCI"), length(runs)), sep=""))
     
  
     #   ---- Append totals to bottom

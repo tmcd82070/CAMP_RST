@@ -73,17 +73,19 @@ attr(catch$EndTime, "tzone") <- time.zone
 
 
 
-
 #   ********************************************************************
 #   Expand the Plus counts
 catch <- F.expand.plus.counts( catch )
+
+
+#   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"
+catch$FinalRun <- as.character( catch$FinalRun ) 
 
 
 
 #   ********************************************************************
 #   Assign batch date
 catch <- F.assign.batch.date( catch )
-
 
 
 #   Assign attributes

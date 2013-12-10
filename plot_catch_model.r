@@ -72,7 +72,7 @@ for( i in 1:length(traps)){
 
 #   Add title
 mtext( side=3, at=max(df$batchDate), text=attr(df,"site.name"), adj=1, cex=1.5, line=2 )
-mtext( side=3, at=max(df$batchDate), text= paste(attr(df,"species.name"), ", ", attr(df,"run.name"), " run", sep=""), adj=1, cex=.75, line=1 )
+mtext( side=3, at=max(df$batchDate), text= paste(attr(df,"species.name"), ", ", attr(df,"run.name"), " run, ", attr(df,"life.stage"), sep=""), adj=1, cex=.75, line=1 )
 
 if( !is.na(file) ){
     dev.off(dev.cur())

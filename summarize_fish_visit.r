@@ -20,18 +20,28 @@ if( nrow(catch) > 0 ){
     #   indexes = all unique combinations of visit, run, and life stage
     #   indexes = NA for all gaps in the trapping sequence
     indexes <- tapply( 1:nrow(catch), list( catch$trapVisitID, catch$FinalRun, catch$lifeStage ) )
+    
+    #   Because of the gap lines, there are NA's in indexes (because there are NA's in trapVisitID). 
+    #   Fix these.  To assure indexes is same length as catch, we cannot simply remove NA's here. 
+    #   Solution: set them to -1, then remove -1 from u.ind.  This way the loop below 
+    #   just skips them.
+    indexes[ is.na(indexes) ] <- -1
 
     #   Initialize place to store summarized catches. 
     #u.ind <- sort(unique(indexes))  # NA's in indexes are lost here, in the sort
     #catch.fl <- as.data.frame( matrix( NA, length(u.ind), length(const.vars) + 3 ))
     #names( catch.fl ) <- c(const.vars, "n.tot", "mean.fl", "sd.fl")
+
+
     
-    u.ind <- indexes[!duplicated(indexes)] 
+    u.ind <- indexes[!duplicated(indexes)]
     catch.fl <- catch[!duplicated(indexes),const.vars]  # these are not the right lines, they will be replaced inside the loop.  This just initializes
+    catch.fl <- catch.fl[ u.ind > 0, ]    #  Don't want the former NA's, which are now -1's. 
+    u.ind <- u.ind[ u.ind > 0 ]  #  Don't want the former NA's, which are now -1's. 
     catch.fl <- cbind( catch.fl, matrix( NA, nrow(catch.fl), 3))
     names( catch.fl ) <- c(const.vars, "n.tot", "mean.fl", "sd.fl")
 
-    print(catch.fl[1:10,])
+
 
     #   Count number of fish, compute mean fork length, etc per visitID in catch.  
     for( i in 1:length(u.ind) ){
@@ -52,6 +62,7 @@ if( nrow(catch) > 0 ){
             catch.fl$mean.fl[i] <- NA
             catch.fl$sd.fl[i] <- NA
         }
+        
     }
  
 
@@ -59,11 +70,14 @@ if( nrow(catch) > 0 ){
     tmp <- catch[ is.na(indexes), const.vars ]
     tmp <- cbind( tmp, matrix( NA, sum(is.na(indexes)), 3))
     names( tmp ) <- c(const.vars, "n.tot", "mean.fl", "sd.fl")
+
     
     catch.fl <- rbind( catch.fl,  tmp )
+
     
     #   Sort the result by trap positing and trap visit
     catch.fl <- catch.fl[ order( catch.fl$trapPositionID, catch.fl$EndTime ), ]
+
 
 }
 

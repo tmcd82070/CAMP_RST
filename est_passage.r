@@ -15,6 +15,8 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 #   A data frame containing date, passage estimate, and SE of passage estimate.
 #
 
+time.zone <- get("time.zone", env=.GlobalEnv )
+
 f.banner <- function( x ){
 
     cat("\n")
@@ -55,7 +57,8 @@ out.fn.list <- c(out.fn.list, attr(catch.and.fits, "out.fn.list"))
 #   If plot=T, this produces a graph in a pdf.
 f.banner(" Efficiency estimation ")
 bd <- sort( unique(catch$batchDate) )
-attr( release.df, "subsites" ) <- attr( catch.df, "subsites" )
+
+#attr( release.df, "subsites" ) <- attr( catch, "subsites" )
 
 #cat(")))))))) in est_passage.r (((((((((\n")
 #print( attributes(release.df))
@@ -125,8 +128,9 @@ if( !is.na(file.root) ){
     tmp.df$passage <- round(tmp.df$passage)  # Round off passage
     tmp.df$rawCatch <- round(tmp.df$rawCatch,1)  
     tmp.df$efficiency <- round(tmp.df$efficiency, 4)  
+    
     #   Merge in subsiteNames
-    ssiteNames <- attr(catch.df, "subsites")
+    ssiteNames <- attr(catch, "subsites")
     tmp.df <- merge( ssiteNames, tmp.df, by.x="subSiteID", by.y="trapPositionID", all.y=T )
     out.fn <- paste(file.root, "_baseTable.csv", sep="")
     write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
@@ -141,8 +145,11 @@ f.banner(paste(" Bootstrapping, if called for, and summarizing by", summarize.by
 #   Even if bootstraps are not called for, F.bootstrap averages over traps (if multiple present) and 
 #   summarizes by 'summarize.by'.
 
+
 n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
                 catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside, summarize.by, 100, ci )
+                
+              
 if(usepb){
     tmp <- getWinProgressBar(progbar)
     setWinProgressBar(progbar, tmp + (1-tmp)*.9 )
@@ -163,10 +170,10 @@ if(usepb){
 
 index.aux <- F.summarize.index( catch.df$batchDate, summarize.by )
 
+
 #   Mean Forklength
 num <- catch.df$mean.fl * catch.df$n.tot
 num <- tapply( num, index.aux, sum, na.rm=T )
-
 
 #   SD of Forklength
 num.sd <- (catch.df$sd.fl * catch.df$sd.fl) * (catch.df$n.tot - 1)    # this is sum of squares
@@ -182,8 +189,8 @@ aux.sd <- ifelse( den > 1, sqrt(num.sd / (den-1)), NA )
 
 
 #   Amount of time sampled
-num <- as.numeric( catch.df$sampleLengthHrs )
-aux.hrs <- tapply( num, index.aux, sum, na.rm=T )   # this is hrs actually sampled during the 'index' period
+num <- as.numeric( catch.df$SampleMinutes )
+aux.hrs <- tapply( num, index.aux, sum, na.rm=T )/60   # this is hours actually sampled during the 'index' period
 
 #den <- rep( 24, length(batchDate.filled) )
 #den <- tapply( den, index.aux2, sum, na.rm=T )  # this is total hours in 'index' period
@@ -207,9 +214,8 @@ n <- merge(n,aux, by="s.by", all.x=T)
 
 n$sampleLengthDays <- n$sampleLengthHrs / 24
 
-tzn <- attr( grand.df$batchDate, "tz" )
-tz.offset <- as.numeric(as.POSIXct(0, origin="1970-01-01", tz=tzn))
-n$date <- as.POSIXct( n$date-tz.offset, origin="1970-01-01", tz=tzn )  # I think this only works west of GMT (North America).  East of GMT, it may be 12 hours off. UNTESTED east of GMT
+tz.offset <- as.numeric(as.POSIXct(0, origin="1970-01-01", tz=time.zone))
+n$date <- as.POSIXct( n$date-tz.offset, origin="1970-01-01", tz=time.zone )  # I think this only works west of GMT (North America).  East of GMT, it may be 12 hours off. UNTESTED east of GMT
 
 
 
@@ -217,6 +223,7 @@ n$date <- as.POSIXct( n$date-tz.offset, origin="1970-01-01", tz=tzn )  # I think
 
 #   Put the final data frame together
 names(n)[names(n) == "s.by"] <- summarize.by
+
 
 attr(n, "taxonID" ) <- attr(catch.df,"taxonID")
 attr(n, "species.name") <- attr(catch.df, "species.name")

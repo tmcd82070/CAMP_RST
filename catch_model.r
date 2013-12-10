@@ -51,11 +51,12 @@ catch.df <- catch.df[ catch.df$TrapStatus == "Fishing", ]
 catch.df$log.sampleLengthHrs <- log(as.numeric( catch.df$SampleMinutes/60 ))
 p.night <- sum(catch.df$night) / nrow(catch.df)
 
+
 #   Fit null model
 if( p.night < 0.9 ){
-    fit <- glm( Unmarked ~ offset(log.sampleLengthHrs)  + night, family=poisson, data=catch.df )
+    fit <- glm( n.tot ~ offset(log.sampleLengthHrs)  + night, family=poisson, data=catch.df )
 } else {
-    fit <- glm( Unmarked ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
+    fit <- glm( n.tot ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
 }
 fit.AIC <- AIC(fit)
 
@@ -139,10 +140,16 @@ i <- 1
 all.new.dat <- NULL
 all.gaplens <- NULL
 all.bdates <- NULL
+
+tmp.cc <<- catch.df
+#cat("---------------- in catch_model.r\n")
+
 repeat{
 
     if( i >= nrow(catch.df) ) break   # Don't do last line because no need to check.  After end, no more gaps by def'n.
     
+    #print(catch.df[i,])
+        
     if( catch.df$TrapStatus[i] == "Fishing" ){
         i <- i + 1
     } else if(catch.df$SampleMinutes[i] <= (60*max.ok.gap)){
@@ -224,9 +231,10 @@ repeat{
             }
         }
 
-#        print(new.dat)
-#        print(i.gapLens)
-#        print(length(i.gapLens))
+        cat("---------------- in catch_model.r\n")
+        print(new.dat)
+        print(i.gapLens)
+        print(length(i.gapLens))
 
         pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
         pred <- exp(pred)
@@ -244,8 +252,9 @@ repeat{
         new$trapPositionID <- catch.df$trapPositionID[i]
         new <- F.assign.batch.date( new )     
         
-#        print(new)
-#        readline()
+        print(new)
+        cat("Hit return to continue...")
+        readline()
         
         #   Insert new data frame into catch.df
         catch.df <- rbind( catch.df[1:i,], new, catch.df[(i+1):nrow(catch.df),] )
@@ -265,7 +274,18 @@ repeat{
 }
 
 
-if(!is.null(all.bdates)){
+#   If there are no gaps, all.new.dat, all.gaplens, and all.bdates are NULL. Turn these into NA so that 
+#   storing them in a list in function est_catch works.  (assigning NULL to list item collapses the list)
+if( is.null( all.new.dat )){
+    all.new.dat <- NA
+}
+if( is.null( all.gaplens )){
+    all.gaplens <- NA
+}
+
+if( is.null( all.bdates )){
+    all.bdates <- NA
+} else {
     class(all.bdates) <- class(sEnd)
     attr(all.bdates, "tzone") <- time.zone   
 }
