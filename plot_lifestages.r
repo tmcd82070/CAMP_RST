@@ -14,27 +14,42 @@ tot.row <- grep( "Total", df$LifeStage )
 tots <- df[ tot.row, pass.cols ]
 
 #   Pare down the data frame to just passage columns, no totals
-df2 <- df[ -tot.row, pass.cols ]
+df2 <- df[ -tot.row, pass.cols, drop=F ]
 
 #   drop the runs with 0 fish. 
-df2 <- df2[ , tots > 0 ]
+df2 <- df2[ , tots > 0, drop=F ]
 
 #   drop the lifestages with no fish
 tots <- apply( df2, 1, sum )
-df2 <- df2[ tots > 0, ]
+df2 <- df2[ tots > 0, , drop=F]
 
 if( nrow(df2) == 0 ){
     cat("F.plot.lifestages - ALL ZEROS\n")
     return("ZEROS")    
 }
 
-ls.names <- rownames(df2)
-ls.names[ ls.names == "YOY (young of the year)" ] <- "YOY"
-ls.names[ ls.names == "Not recorded" ] <- "Missing"
+#   Reorder the columns to make the bar charts go through time
 run.names <- strsplit(names(df2), ".", fixed=T)
 run.names <- unlist(lapply( run.names, function(x){x[1]} ))
-#run.names[ run.names == "Late fall"] <- "Late\nFall"
 
+run.names.order <- factor( run.names, levels=c("Fall", "Late fall", "Winter", "Spring", "Summer", "Mixed") )
+run.names.order <- order( as.numeric( run.names.order ))
+df2 <- df2[ , run.names.order, drop=F ]
+run.names <- run.names[ run.names.order ]
+
+
+#   Reorder the rows so life stages increase from left to right
+ls.names <- rownames(df2)
+ls.names[ ls.names == "YOY (young of the year)" ] <- "YOY"
+ls.names[ ls.names == "Unassigned" ] <- "Missing"
+
+ls.names.order <- factor( ls.names, levels=c("YOY", "Fry", "Parr", "Smolt", "Yearling", "Juvenile", "Adult", "Mixed", "Other") )  # anything not here goes at the end
+ls.names.order <- order( as.numeric( ls.names.order ))  # Any NA's go at the end.
+df2 <- df2[ ls.names.order, , drop=F]
+ls.names <- ls.names[ ls.names.order ]
+
+
+#   Do the plot
 if( plot.pies ){
 
     file.list <- NULL
@@ -90,7 +105,7 @@ if( plot.pies ){
     
         layout.mat <- matrix(1,n.plots+1,2)
         layout.wid <- c(1,20)
-        layout.hgt <- c(rep(3,n.plots),2)
+        layout.hgt <- c(rep(12/n.plots,n.plots),3)   # works well up to n.plots = 4
         layout.mat[,2]<-2:(n.plots+2)
         layout(layout.mat, widths=layout.wid, heights=layout.hgt)
 

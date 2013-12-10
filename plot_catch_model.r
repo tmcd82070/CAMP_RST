@@ -41,7 +41,13 @@ lab.y.at <- pretty(rng.y)
 axis( side=2, at=lab.y.at, label=formatC(lab.y.at, big.mark=",") )
 
 traps <- sort(unique(df$trapPositionID))
-my.colors <- rainbow(length(traps))
+if( length(traps) == 1 ){
+    my.colors <- "red"
+} else if (length(traps) == 2){
+    my.colors <- c("red","blue")
+} else {
+    my.colors <- rainbow(length(traps))
+}
 my.pch <- 15 + 1:length(traps)
 for( i in 1:length(traps) ){
 

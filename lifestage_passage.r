@@ -140,8 +140,11 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     
     #   ---- Write out the table
     df <- data.frame( dimnames(ans)[[1]], ans.pct[,1], ans[,1], lci[,1], uci[,1], stringsAsFactors=F )
-    for( j in 2:ncol(ans) ){
-        df <- cbind( df, data.frame( ans.pct[,j], ans[,j], lci[,j], uci[,j], stringsAsFactors=F ))
+    if( ncol(ans) > 1 ){
+        #   We have more than one run
+        for( j in 2:ncol(ans) ){
+            df <- cbind( df, data.frame( ans.pct[,j], ans[,j], lci[,j], uci[,j], stringsAsFactors=F ))
+        }
     }
     names(df) <- c("LifeStage", paste( rep(runs, each=4), rep( c(".propOfPassage",".passage",".lower95pctCI", ".upper95pctCI"), length(runs)), sep=""))
     
@@ -175,6 +178,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
         write.table( df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
         out.fn.roots <- c(out.fn.roots, out.pass.table)
         
+        ls.pass.df <<- df
         
         # Produce pie or bar charts
         fl <- F.plot.lifestages( df, output.file, plot.pies=F )

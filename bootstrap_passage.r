@@ -37,8 +37,8 @@ if( !ci ){
     n.traps <- length(catch.fits)
     #pass <- matrix(0, n.grand.df, R)
 
-    bootbar <- winProgressBar( "Bootstrapping..." )
-    barinc <- 1/(10*n.traps)
+#    bootbar <- winProgressBar( "Bootstrapping..." )
+#    barinc <- 1/(10*n.traps)
 
     
     #   These giant matrices will hold bootstrap iterations
@@ -58,7 +58,7 @@ if( !ci ){
         #cat("*=*=*=*=*=*=*=*=*\n")
         
         cat(paste("trap=", trapID, "\n" ))
-        setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#        setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
     
         #   *=*=*=*=*=*=*=* Generate random realizations of CATCH
 #        print(catch.fits) 
@@ -71,14 +71,14 @@ if( !ci ){
             X <- catch.Xmiss[[ind]]
             gaps <- catch.gapLens[[ind]]
     
-            setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#            setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
             
             
             bd.miss <- catch.bDates.miss[[trap]]
     
             if( !is.na(bd.miss)){
                 #   We have some gaps
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
             
         #        print(names(catch.Xmiss))
         #        print(names(catch.gapLens))
@@ -88,7 +88,7 @@ if( !ci ){
                 disp <- sum(residuals(c.fit, type="pearson")^2) / c.fit$df.residual
                 sig <- disp * vcov( c.fit )   # vcov returns unscaled variance-covariance matrix.  scale by over dispersion.
         
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
             
         #        cat(paste("disp=", disp, "\n"))
         #        cat(paste("sig=", "\n"))
@@ -106,7 +106,7 @@ if( !ci ){
                 # Generate random coefficients       
                 rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector. rbeta is R X (n coef)
         
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
         
         #        cat(paste("rbeta=", "\n"))
         #        print(rbeta[1:20,])
@@ -122,7 +122,7 @@ if( !ci ){
                 pred <- X %*% t(rbeta) + log(gaps)
                 pred <- exp(pred)    # pred is nrow(X) X R
         
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
         
                 
                 # But remember, it is possible for a gap to be small, say 3 hours, and the resulting gap be 
@@ -130,13 +130,13 @@ if( !ci ){
                 pred <- apply( pred, 2, function(x,bd){tapply(x,bd,sum)}, bd=bd.miss )
                 pred <- matrix( unlist(pred), nrow=length(unique(bd.miss)), ncol=R )        
         
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
         
                 
                 # Make catch matrix the correct size by including the observed counts
                 ind.mat <- matrix( trap.ind & (grand.df$imputed.catch > 0), nrow=n.grand.df, ncol=R )
         
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
         
         #        print( dim(ind.mat) )
         #        print( dim(c.pred) )
@@ -176,7 +176,7 @@ if( !ci ){
                 
                 sig <- disp * vcov( e.fit )   # vcov returns unscaled variance-covariance matrix.  scale by over dispersion.
         
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
                 
                 # Coefficients
                 beta <- coef( e.fit )        
@@ -184,7 +184,7 @@ if( !ci ){
                 # Generate random coefficients       
                 rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector
         
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
                 
                 # Predict efficiency using random coefficients
                 # When computed, pred is a matrix where each column is a random realization of model predictions 
@@ -192,7 +192,7 @@ if( !ci ){
                 pred <- (e.X %*% t(rbeta))
                 pred <- 1 / (1 + exp(-pred))    # pred is nrow(e.X) X R
         
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
                 
                 # Use mean predicted efficiency for times outside first and last trials
                 ind.mat <- matrix( trap.ind, nrow=n.grand.df, ncol=R )
@@ -203,7 +203,7 @@ if( !ci ){
                 ind.mat <- matrix( trap.ind & e.ind, nrow=n.grand.df, ncol=R )
                 e.pred[ind.mat] <- pred   # e.pred is (n days*n traps) X R, or nrow(grand.df) X R, or (n.batch.days*n.traps) X R
                 
-                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
                 
                 
                 #   *=*=*=*=*=*=*=* Store results from this trap.  We average, so just store sum.
@@ -249,7 +249,7 @@ if( !ci ){
     pass <- apply( c.pred, 2, f.sumize.pass, s.by=sum.by, bd=grand.df$batchDate )
     pass <- matrix( unlist(pass), n.len, R )
     
-    setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+#    setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
     
     
     #   ===== An internal function to compute bias corrected bootstrap intervals
@@ -269,7 +269,7 @@ if( !ci ){
     ans <- apply( pass, 1, f.bias.acc.ci, alpha=(1-conf), x.orig=n.orig )
     ans <- as.data.frame(t(matrix( unlist(ans), 2, n.len )))
     
-    close( bootbar )
+#    close( bootbar )
 
 }
 
