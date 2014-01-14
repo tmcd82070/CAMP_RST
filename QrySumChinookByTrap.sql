@@ -127,10 +127,112 @@ GROUP BY TrapVisit.trapPositionID
 -- qrySumChinookByTrap_d1
 DROP TABLE TempChinookSampling_d1; 
 
-SELECT TempReportCriteria_TrapVisit.projectDescriptionID, TempReportCriteria_TrapVisit.trapVisitID, CatchRaw.catchRawID INTO TempChinookSampling_d1
-FROM (TrapVisit INNER JOIN TempReportCriteria_TrapVisit ON (TrapVisit.trapVisitID = TempReportCriteria_TrapVisit.trapVisitID) AND (TrapVisit.projectDescriptionID = TempReportCriteria_TrapVisit.projectDescriptionID)) INNER JOIN (Release RIGHT JOIN (CatchRaw INNER JOIN MarkExisting ON (CatchRaw.catchRawID = MarkExisting.catchRawID) AND (CatchRaw.projectDescriptionID = MarkExisting.projectDescriptionID) AND (CatchRaw.projectDescriptionID = MarkExisting.projectDescriptionID)) ON (Release.releaseID = CatchRaw.releaseID) AND (Release.projectDescriptionID = CatchRaw.projectDescriptionID)) ON (TrapVisit.trapVisitID = CatchRaw.trapVisitID) AND (TrapVisit.projectDescriptionID = CatchRaw.projectDescriptionID)
-WHERE (((CatchRaw.fishOriginID)=1) AND ((CatchRaw.n)>0) AND ((CatchRaw.releaseID)=0 Or (CatchRaw.releaseID)=255) AND ((CatchRaw.taxonID)='R.TAXON') AND ((MarkExisting.markTypeID)=0) AND ((MarkExisting.markColorID)=252) AND ((MarkExisting.markPositionID)=252)) OR (((CatchRaw.n)>0) AND ((CatchRaw.releaseID) Not Like 0 And (CatchRaw.releaseID) Not Like 255) AND ((CatchRaw.taxonID)='R.TAXON') AND ((Release.releasePurposeID)=3)) OR (((CatchRaw.n)>0) AND ((CatchRaw.releaseID)=0 Or (CatchRaw.releaseID)=255) AND ((CatchRaw.taxonID)='R.TAXON') AND ((MarkExisting.markTypeID)=2) AND ((MarkExisting.markColorID)=252) AND ((MarkExisting.markPositionID)=1))
+SELECT TempReportCriteria_TrapVisit.projectDescriptionID, 
+    TempReportCriteria_TrapVisit.trapVisitID, 
+    CatchRaw.catchRawID 
+INTO TempChinookSampling_d1
+FROM 
+    (
+        TrapVisit INNER JOIN TempReportCriteria_TrapVisit ON 
+            (TrapVisit.trapVisitID = TempReportCriteria_TrapVisit.trapVisitID) 
+            AND 
+            (TrapVisit.projectDescriptionID = TempReportCriteria_TrapVisit.projectDescriptionID)
+    ) INNER JOIN 
+        (
+            Release RIGHT JOIN 
+                (
+                    CatchRaw INNER JOIN MarkExisting ON 
+                        (CatchRaw.catchRawID = MarkExisting.catchRawID) 
+                        AND 
+                        (CatchRaw.projectDescriptionID = MarkExisting.projectDescriptionID) 
+                        AND 
+                        (CatchRaw.projectDescriptionID = MarkExisting.projectDescriptionID)
+                ) ON 
+                (Release.releaseID = CatchRaw.releaseID) 
+                AND 
+                (Release.projectDescriptionID = CatchRaw.projectDescriptionID)
+        ) ON 
+        (TrapVisit.trapVisitID = CatchRaw.trapVisitID) 
+        AND 
+        (TrapVisit.projectDescriptionID = CatchRaw.projectDescriptionID)
+WHERE (
+    (
+        (CatchRaw.fishOriginID)=1) 
+        AND 
+            (
+                (CatchRaw.n)>0) 
+                AND 
+                (
+                    (CatchRaw.releaseID)=0 
+                    Or 
+                    (CatchRaw.releaseID)=255
+                ) 
+                AND 
+                ((CatchRaw.taxonID)='R.TAXON') 
+                AND 
+                ((MarkExisting.markTypeID)=0) 
+                AND 
+                ((MarkExisting.markColorID)=252) 
+                AND 
+                ((MarkExisting.markPositionID)=252) 
+                AND 
+                ((TrapVisit.fishProcessedID)<>2) 
+                AND 
+                (
+                    (TrapVisit.visitTypeID)>1 
+                    And 
+                    (TrapVisit.visitTypeID)<5)
+                ) 
+                OR 
+                (
+                    ((CatchRaw.n)>0) 
+                    AND 
+                    (
+                        (CatchRaw.releaseID) Not Like 0 
+                        And 
+                        (CatchRaw.releaseID) Not Like 255
+                    ) 
+                    AND 
+                        (
+                            (CatchRaw.taxonID)='R.TAXON') 
+                            AND 
+                            ((TrapVisit.fishProcessedID)<>2) 
+                            AND 
+                            (
+                                (TrapVisit.visitTypeID)>1 
+                                And 
+                                (TrapVisit.visitTypeID)<5
+                            ) 
+                            AND 
+                            ((Release.releasePurposeID)=3)
+                ) 
+                OR 
+                (
+                    ((CatchRaw.n)>0) 
+                    AND 
+                    (
+                        (CatchRaw.releaseID)=0 
+                        Or 
+                        (CatchRaw.releaseID)=255
+                    ) 
+                    AND 
+                    ((CatchRaw.taxonID)='R.TAXON') 
+                    AND 
+                    ((MarkExisting.markTypeID)=2) 
+                    AND 
+                    ((MarkExisting.markColorID)=252) 
+                    AND 
+                    ((MarkExisting.markPositionID)=1) 
+                    AND 
+                    ((TrapVisit.fishProcessedID)<>2) 
+                    AND 
+                    (
+                        (TrapVisit.visitTypeID)>1 
+                        And 
+                        (TrapVisit.visitTypeID)<5)
+                    )
 GROUP BY TempReportCriteria_TrapVisit.projectDescriptionID, TempReportCriteria_TrapVisit.trapVisitID, CatchRaw.catchRawID;
+
 
 -- qrySumChinookByTrap_d2
 DROP TABLE TempChinookSampling_d2; 
@@ -151,42 +253,30 @@ GROUP BY TempChinookSampling_d2.trapPositionID, TempChinookSampling_d2.Date, Tem
 -- qrySumChinookByTrap_e
 DROP TABLE TempChinookSampling_e; 
 
-SELECT TrapVisit.trapPositionID
-    , DateValue(TrapVisit!visitTime) AS [Date]
-    , IIf(TrapVisit!includeCatchID=2,'No',IIf(TrapVisit!fishProcessedID = 3,'No','Yes')) AS IncludeCatch
-    , Sum(CatchRaw!n) AS Hatchery
-    , TrapVisit.fishProcessedID
-    , TrapVisit.visitTypeID 
+SELECT 
+    TrapVisit.trapPositionID, 
+    DateValue(TrapVisit!visitTime) AS [Date], 
+    IIf(TrapVisit!includeCatchID=2,'No',IIf(TrapVisit!fishProcessedID=3,'No','Yes')) AS IncludeCatch, 
+    Sum(CatchRaw!n) AS Hatchery 
 INTO TempChinookSampling_e
-FROM 
-    TrapVisit 
+FROM TrapVisit 
     INNER JOIN 
-        (
-            CatchRaw 
-            INNER JOIN 
-            TempChinookSampling_d1 
-                ON 
-                    (CatchRaw.projectDescriptionID = TempChinookSampling_d1.projectDescriptionID) 
-                    AND 
-                    (CatchRaw.catchRawID = TempChinookSampling_d1.catchRawID)
-        ) 
-        ON 
-            (TrapVisit.trapVisitID = CatchRaw.trapVisitID) 
-            AND 
-            (TrapVisit.projectDescriptionID = CatchRaw.projectDescriptionID)
-GROUP BY 
-    TrapVisit.trapPositionID
-    , DateValue(TrapVisit!visitTime)
-    , IIf(TrapVisit!includeCatchID=2,'No',IIf(TrapVisit!fishProcessedID = 3,'No','Yes'))
-    , TrapVisit.fishProcessedID
-    , TrapVisit.visitTypeID
-HAVING 
     (
-        ((TrapVisit.fishProcessedID)<>2) 
+        CatchRaw 
+        INNER JOIN 
+        TempChinookSampling_d1 ON 
+            (CatchRaw.catchRawID = TempChinookSampling_d1.catchRawID) 
+            AND 
+            (CatchRaw.projectDescriptionID = TempChinookSampling_d1.projectDescriptionID)
+    ) ON 
+        (TrapVisit.trapVisitID = CatchRaw.trapVisitID) 
         AND 
-        ((TrapVisit.visitTypeID)>1 And (TrapVisit.visitTypeID)<5)
-    )
+        (TrapVisit.projectDescriptionID = CatchRaw.projectDescriptionID)
+GROUP BY TrapVisit.trapPositionID, 
+    DateValue(TrapVisit!visitTime), 
+    IIf(TrapVisit!includeCatchID=2,'No',IIf(TrapVisit!fishProcessedID=3,'No','Yes'))
 ORDER BY DateValue(TrapVisit!visitTime);
+
 
 -- qrySumChinookByTrap_f
 DROP TABLE TempChinookSampling_f; 
