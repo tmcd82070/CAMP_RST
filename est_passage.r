@@ -145,6 +145,8 @@ f.banner(paste(" Bootstrapping, if called for, and summarizing by", summarize.by
 #   Even if bootstraps are not called for, F.bootstrap averages over traps (if multiple present) and 
 #   summarizes by 'summarize.by'.
 
+#   Debugging (turn off bootstrapping)
+#ci = F
 
 n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
                 catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside, summarize.by, 100, ci )

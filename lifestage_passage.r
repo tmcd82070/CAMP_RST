@@ -24,9 +24,17 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     }
 
 
-    #   ---- Fetch the catch data (This has all FinalRun and lifeStages, inflated for plus counts)
-    catch.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
-
+    #   ---- Fetch the catch and visit data 
+    tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
+    
+    catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
+    visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
+    
+    #   Debugging
+#    tmp.catch0 <<- catch.df
+#    tmp.visit0 <<- visit.df
+#    print( table(catch.df$TrapStatus))
+    
     if( nrow(catch.df) == 0 ){
         stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
     }
@@ -35,22 +43,32 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     
     catch.df <- F.summarize.fish.visit( catch.df )    
 
+#   Debugging
+#    tmp.catch <<- catch.df
+#    print( table(catch.df$TrapStatus))
+#    cat("in lifestage_passage.r (hit return) ")
+#    readline()
 
+    #   ---- Compute the unique runs we need to do
     runs <- unique(catch.df$FinalRun)
     runs <- runs[ !is.na(runs) ]
     cat("\nRuns found between", min.date, "and", max.date, ":\n")
     print(runs)
 
 
+    #   ---- Compute the unique life stages we need to do
     lstages <- unique(catch.df$lifeStage)
-    lstages <- lstages[ !is.na(lstages) ]
+    lstages <- lstages[ !is.na(lstages) ]   #   Don't need this,  I am pretty sure lifeStage is never missing here.
     cat("\nLife stages found between", min.date, "and", max.date, ":\n")
     print(lstages)
 
+    #   ---- Print the number of non-fishing periods
+    cat( paste("\nNumber of non-fishing intervals at all traps:", sum(visit.df$TrapStatus == "Not fishing"), "\n\n"))
+    
     #   ---- Extract the unique trap visits.  This will be used in merge to get 0's later
-    ind <- !duplicated( catch.df$trapVisitID ) & !is.na(catch.df$trapVisitID)
-    visit.df <- catch.df[ind, ]
-    visit.df <- visit.df[, !(names(visit.df) %in% c("FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl"))] 
+#    ind <- !duplicated( catch.df$trapVisitID ) & !is.na(catch.df$trapVisitID)
+#    visit.df <- catch.df[ind, ]
+#    visit.df <- visit.df[, !(names(visit.df) %in% c("FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl"))] 
 
     #   ********
     #   Loop over runs
@@ -63,14 +81,17 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
 
         run.name <- runs[j]
 
+        cat(paste(rep("*",80), collapse=""))
         tmp.mess <- paste("Processing ", run.name)
-        cat(paste(tmp.mess, "\n\n"))
+        cat(paste("\n", tmp.mess, "\n"))
+        cat(paste(rep("*",80), collapse=""))
+        cat("\n\n")
 
         progbar <- winProgressBar( tmp.mess, label="Lifestage X run processing" )
         barinc <- 1 / (length(lstages) * 6)
         assign( "progbar", progbar, pos=.GlobalEnv ) 
 
-        indRun <- (catch.df$FinalRun == run.name ) & !is.na(catch.df$FinalRun)
+        indRun <- (catch.df$FinalRun == run.name ) & !is.na(catch.df$FinalRun)   # Don't need is.na clause.  FinalRun is never missing here.
             
         #   ---- Loop over lifestages
         for( i in 1:length(lstages) ){
@@ -78,7 +99,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
             ls <- lstages[i]
             
             #   ---- Subset to just one life stage and run
-            indLS <- (catch.df$lifeStage == ls) & !is.na(catch.df$lifeStage) 
+            indLS <- (catch.df$lifeStage == ls) & !is.na(catch.df$lifeStage) #  Don't need is.na clause.  I don't think lifeStage can be missing here.
 
             cat(paste("Lifestage=", ls, "; Run=", run.name, "; num records=", sum(indRun & indLS), "\n"))
             tmp.mess <- paste("Lifestage=", ls )
@@ -93,20 +114,35 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
                 catch.df.ls <- merge( visit.df, catch.df.ls, by="trapVisitID", all.x=T )
                 setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
 
-                catch.df.ls$n.tot[ is.na(catch.df.ls$n.tot) ] <- 0
+                #   ---- Update the constant variables.  Missing n.tot when trap was fishing should be 0.
+                catch.df.ls$FinalRun[ is.na(catch.df.ls$FinalRun) ] <- run.name
+                catch.df.ls$lifeStage[ is.na(catch.df.ls$lifeStage) ] <- ls
+                catch.df.ls$n.tot[ is.na(catch.df.ls$n.tot) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0
 
                 #   ---- Add back in the missing trapVisitID rows.  These identify the gaps in fishing
-                catch.df.ls <- rbind( catch.df.ls, catch.df[ is.na(catch.df$trapVisitID), ] )
+                #catch.df.ls <- rbind( catch.df.ls, catch.df[ is.na(catch.df$trapVisitID), ] )
                 
-                #   ---- Compute passage
+                #   ---- Update progress bar
                 out.fn.root <- paste0(output.file, ls, run.name ) 
                 setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
                 
-                #tmp.c <<- catch.df.ls
-                #tmp.r <<- release.df
+                #   Debugging
+#                tmp.c <<- catch.df.ls
+#                tmp.r <<- release.df
+
+                #   Debugging
+#                print(dim(visit.df))
+#                print(dim(catch.df.ls))
+#                print( table( tmp.c$FinalRun, useNA="always" ))
+#                print( table( tmp.c$lifeStage, useNA="always" ))
+#                print( table( tmp.c$trapVisitID, useNA="always" ))
+#                cat("in lifestage_passage (hit return) ")
+#                readline()
                 
+                #   ---- Compute passage
                 pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
 
+                #   ---- Update progress bar
                 setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
                 out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
 

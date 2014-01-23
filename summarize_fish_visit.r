@@ -41,7 +41,7 @@ if( nrow(catch) > 0 ){
     catch.fl <- cbind( catch.fl, matrix( NA, nrow(catch.fl), 3))
     names( catch.fl ) <- c(const.vars, "n.tot", "mean.fl", "sd.fl")
 
-
+    
 
     #   Count number of fish, compute mean fork length, etc per visitID in catch.  
     for( i in 1:length(u.ind) ){
@@ -66,20 +66,22 @@ if( nrow(catch) > 0 ){
     }
  
 
-    #   Add back in the lines with missing indexes.  These correspond to gaps in trapping
-    tmp <- catch[ is.na(indexes), const.vars ]
-    tmp <- cbind( tmp, matrix( NA, sum(is.na(indexes)), 3))
-    names( tmp ) <- c(const.vars, "n.tot", "mean.fl", "sd.fl")
-
     
-    catch.fl <- rbind( catch.fl,  tmp )
+    #   Add back in the lines with missing indexes.  These correspond to gaps in trapping
+#    tmp <- catch[ indexes < 0, const.vars ]
+#    tmp <- cbind( tmp, matrix( NA, sum(indexes < 0), 3))
+#    names( tmp ) <- c(const.vars, "n.tot", "mean.fl", "sd.fl")
+#    catch.fl <- rbind( catch.fl,  tmp )
 
     
     #   Sort the result by trap positing and trap visit
     catch.fl <- catch.fl[ order( catch.fl$trapPositionID, catch.fl$EndTime ), ]
 
 
+} else {
+    catch.fl <- NA
 }
+
 
 catch.fl
 

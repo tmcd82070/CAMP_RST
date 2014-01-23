@@ -72,6 +72,22 @@ attr(catch$StartTime, "tzone") <- time.zone
 attr(catch$EndTime, "tzone") <- time.zone
 
 
+#   ********************************************************************
+#   At this point, catch has all visits in it, even if no fish were caught.  
+#   It also has non-fishing intervals.  This is how you identify these intervals:
+#       1. zero catch = catch$Unmarked == 0  ($FinalRun and $LifeStage are both "Unassigned" for these lines)
+#       2. not fishing = catch$TrapStatus == "Not fishing"  (equivalently, $trapVisitID is missing for these lines.  Only time its missing.)
+#
+#   Pull apart the visits from the catch, because plus count expansion only applys to positive catches.    
+#   Recall, catch currently has multiple lines per trapVisit delineating fish with different fork lengths. 
+
+visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
+visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
+
+
+#   ********************************************************************
+#   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
+catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
 #   ********************************************************************
 #   Expand the Plus counts
@@ -80,11 +96,13 @@ catch <- F.expand.plus.counts( catch )
 
 #   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"
 catch$FinalRun <- as.character( catch$FinalRun ) 
+catch$lifeStage <- as.character( catch$lifeStage ) 
 
 
 
 #   ********************************************************************
-#   Assign batch date
+#   Assign batch dates
+visits <- F.assign.batch.date( visits )
 catch <- F.assign.batch.date( catch )
 
 
@@ -106,6 +124,7 @@ if( nrow(catch) >= 20 ) print( catch[1:20,] ) else print( catch )
 #f.banner("F.get.catch.data - Complete")
 
 
-catch
+#   Return two data frames. One containing positive catches.  The other containing visit and fishing information. 
+list( catch=catch, visit=visits )
 
 }

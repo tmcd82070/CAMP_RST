@@ -75,8 +75,13 @@ if( !ci ){
             
             
             bd.miss <- catch.bDates.miss[[trap]]
+
+            #   Debugging
+#            print(bd.miss)
+#            cat("in bootstrap_passage.r (hit return)...")
+#            readline()
     
-            if( !is.na(bd.miss)){
+            if( all(!is.na(bd.miss)) ){
                 #   We have some gaps
 #                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
             
@@ -85,14 +90,35 @@ if( !ci ){
         #        print(nrow(grand.df))
                 
                 # Variance matrix
-                disp <- sum(residuals(c.fit, type="pearson")^2) / c.fit$df.residual
+                #   We must cut down the over-dispersion parameter to avoid obviously 
+                #   a-typical residuals.  My approach is to toss the largest and smallest 5% of residuals
+                #   then compute overdispersion
+                
+                resids <- residuals(c.fit, type="pearson")
+                qrds <- quantile( resids, p=c(.025, .975))
+                toss.ind <- (resids < qrds[1]) | (qrds[2] < resids)
+                resids <- resids[!toss.ind]
+                disp <- sum( resids*resids ) / (c.fit$df.residual - sum(toss.ind))
+                if( disp < 1.0 ){
+                    disp <- 1.0
+                }
+                
+                #plot(predict(c.fit,type="response"), residuals(c.fit, type="pearson"))
+                
+                #   The following line includes all residuals in computation of overdispersion        
+                #disp <- sum(residuals(c.fit, type="pearson")^2) / c.fit$df.residual
+                
                 sig <- disp * vcov( c.fit )   # vcov returns unscaled variance-covariance matrix.  scale by over dispersion.
         
 #                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
             
-        #        cat(paste("disp=", disp, "\n"))
-        #        cat(paste("sig=", "\n"))
-        #        print(sig)
+                cat(paste("...Poisson over-dispersion in catch model for trap ", trapID, " = ", disp, "\n"))
+
+#                print(c(df.resid=c.fit$df.residual))
+#                cat(paste("sig=", "\n"))
+#                print(sig)
+#                cat("in bootstrap_passage.r (hit return)...")
+#                readline()
             
             
                 
@@ -148,7 +174,7 @@ if( !ci ){
             }
         }
         
-        cat("...Catch BS complete")
+#        cat("...Catch BS complete")
         
         
         
@@ -171,8 +197,34 @@ if( !ci ){
                     #    Only one efficiency trial at this trap
                     disp <- 1
                 } else {
-                    disp <- sum(residuals(e.fit, type="pearson")^2) / e.fit$df.residual
+                    resids <- residuals(e.fit, type="pearson")
+                                       
+                    #qrds <- quantile( resids, p=c(.025, .975))
+                    #toss.ind <- (resids < qrds[1]) | (qrds[2] < resids)
+                    
+                    #   For Binomial overdispersion, there are not very many efficiency trials. 
+                    #   So, I do not want to toss the top 2.5% in magintude, like I did for the catches. 
+                    #   However, we need to ensure that there are not some very very large residuals. 
+                    #   Thus, any greater than a cut off will be eliminated. 
+                    toss.ind <- (abs(resids) > 8)
+                    
+                    resids <- resids[!toss.ind]
+                    disp <- sum( resids*resids ) / (e.fit$df.residual - sum(toss.ind))
+                    if( disp < 1.0 ){
+                        disp <- 1.0
+                    }
+                    
+#                    print( sum(toss.ind) )
+#                    print( e.fit$df.residual - sum(toss.ind) )
+#                    readline()
                 }
+                
+                cat(paste("...Binomial over-dispersion in efficiency model for trap ", trapID, " = ", disp, "\n"))
+
+#                print(c(dispersion=disp))
+#                cat("in efficincy part of bootstrap_passage.r")
+#                readline()
+               
                 
                 sig <- disp * vcov( e.fit )   # vcov returns unscaled variance-covariance matrix.  scale by over dispersion.
         
@@ -214,7 +266,7 @@ if( !ci ){
                 
             }
         }
-        cat("...Efficiency BS complete\n")
+        cat("...BS complete\n")
 
     }
 

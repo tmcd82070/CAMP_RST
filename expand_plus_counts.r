@@ -5,15 +5,16 @@ F.expand.plus.counts <- function( catch ){
 
 #print( catch[is.na(catch$FinalRun),] )
 
-#   On entry there can be rows with Unmarked = 0, eliminate these, but careful.
-#   There are missing lines we want to keep
-catch <- catch[ (catch$Unmarked > 0) | is.na(catch$Unmarked) , ]
+#   On entry there cannot be any rows with Unmarked = 0 or with missing Unmarked. 
+#   The Unmarked == 0 correspond to unsuccessful visits.  Missing Unmarked correspond to non-fishing. 
+#   Eliminate these lines if they exist. 
+catch <- catch[ (catch$Unmarked > 0) & !is.na(catch$Unmarked) , ]
 
 
 cat("----------- Assigning run and lifestage based on Plus Counts----------\n")
 cat("Number of records over season in run X lifestage matrix upon entry:\n")
 
-print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="ifany") )
+print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="always") )
 
 #cat("in expand_plus_counts\n")
 #print( catch[is.na(catch$FinalRun),] )
@@ -44,7 +45,7 @@ if( any( (catch$FinalRun == "Unassigned") & (catch$lifeStage == "Unassigned") & 
 }
 
 cat("Final number of records in run X life stage table:\n")
-print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="ifany") )
+print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="always") )
 
 cat("----------- DONE assigning plus Counts----------\n")
 

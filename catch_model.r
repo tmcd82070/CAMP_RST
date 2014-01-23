@@ -15,6 +15,7 @@ F.catch.model <- function( catch.df ){
 #   This applies for all days between start.day and end.day.
 
 
+
 #   Sort the data frame properly, by trapPosition and date of visit
 #   This puts the gaps in their correct locations 
 catch.df <- catch.df[ order(catch.df$trapPositionID, catch.df$EndTime), ]
@@ -46,13 +47,13 @@ catch.df$pct.night[ind] <- (as.numeric(sunrise[ind]) - as.numeric(catch.df$Start
 
 library(splines)
 
-catch.df <- catch.df[ catch.df$TrapStatus == "Fishing", ]
+#catch.df <- catch.df[ catch.df$TrapStatus == "Fishing", ]
 
 catch.df$log.sampleLengthHrs <- log(as.numeric( catch.df$SampleMinutes/60 ))
 p.night <- sum(catch.df$night) / nrow(catch.df)
 
 
-#   Fit null model
+#   Fit null model.  The gap catches are NA here, so they are dropped from the fit.  Later, they are replaced.
 if( p.night < 0.9 ){
     fit <- glm( n.tot ~ offset(log.sampleLengthHrs)  + night, family=poisson, data=catch.df )
 } else {
@@ -60,13 +61,14 @@ if( p.night < 0.9 ){
 }
 fit.AIC <- AIC(fit)
 
-
+#tmp.cc <<- catch.df   # print( tmp.cc[,c(1,3,4,5,6,7,10,18)] )
 
 #   Fit glm model, increasing df, until the model goes bad
+cat(paste("Number of non-zero catches : ", sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)), "\n"))
 cat("Catch model fitting:\n")
-cat(paste("df= ", 0, ", conv= ", fit$converged, " boundary= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
+cat(paste("df= ", 0, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
 
-if( sum(!is.na(catch.df$Unmarked) & (catch.df$Unmarked > 0)) > 10 ){
+if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
     cur.df <- 1  # this is df in smoother part, excluding intercept.  1=linear, 2=quadratic, 3=bspline w/ 1 internal knot, 4=bspline w/ 2 internal knots, etc.
     repeat{
      
@@ -75,15 +77,15 @@ if( sum(!is.na(catch.df$Unmarked) & (catch.df$Unmarked > 0)) > 10 ){
             bs.sEnd <- matrix(j,ncol=1)
         } else if( cur.df == 2 ){
             j <- as.numeric( format(catch.df$EndTime, "%j"))
-            bs.sEnd <- cbind(j, j*j)
+            bs.sEnd <- cbind(Lin=j, Quad=j*j)
         } else {
             bs.sEnd <- bs( catch.df$EndTime, df=cur.df )
         }
         
         if( p.night < 0.9 ){
-            cur.fit <- glm( Unmarked ~ offset(log.sampleLengthHrs) + bs.sEnd + night, family=poisson, data=catch.df )
+            cur.fit <- glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd + night, family=poisson, data=catch.df )
         } else {
-            cur.fit <- glm( Unmarked ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df )
+            cur.fit <- glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df )
         }
         cur.AIC <- AIC( cur.fit )
     
@@ -127,7 +129,7 @@ catch.df$gamEstimated <- FALSE
 sunset <- sunset[1]   # do something different here (pull in actual sunrise/sunset) if we have actual times.  Otherwise, its constant.
 sunrise <- sunrise[1]
 
-degree <- length(coef(fit)) - 1
+degree <- length(coef(fit)) - 1 - night.in  # number of columns in smoother part only.  Excludes intercept and potential night covars
 if( degree <= 2 ){
     nots <- -1
     b.knots <- -1
@@ -141,7 +143,7 @@ all.new.dat <- NULL
 all.gaplens <- NULL
 all.bdates <- NULL
 
-tmp.cc <<- catch.df
+#tmp.cc <<- catch.df
 #cat("---------------- in catch_model.r\n")
 
 repeat{
@@ -175,13 +177,20 @@ repeat{
         ng <- length(i.gapLens)
 
 
-        sEnd <- catch.df$EndTime[i] + cumsum(i.gapLens * 60*60)
-        class(sEnd) <- class(catch.df$EndTime)
+        sEnd <- catch.df$StartTime[i] + cumsum(i.gapLens * 60*60)
+        class(sEnd) <- class(catch.df$StartTime)
         attr(sEnd, "tzone") <- time.zone   
 
-        sStart <- catch.df$EndTime[i] + cumsum( c(0,i.gapLens[-ng]) * 60*60 )
+        sStart <- catch.df$StartTime[i] + cumsum( c(0,i.gapLens[-ng]) * 60*60 )
         class(sStart) <- class(sStart)
         attr(sStart, "tzone") <- time.zone  
+        
+#        print(cbind(1:nrow(catch.df),catch.df)[(i-2):(i+2),c(1,1+c(1,3,4,5,6,7,10,18))])
+#        print( c(i=i, ng=ng))
+#        print( cbind( i.gapLens, sEnd, sStart ))
+#        print(c(degree=degree))
+#        cat("in catch_model.r (hit return)...")
+#        readline()
         
         #   The smoother
         if( degree <= 2 ){
@@ -208,12 +217,21 @@ repeat{
             sNight[ind] <- 1
             sPct.night[ind] <- (as.numeric(sunrise[ind]) - as.numeric(sStart[ind])) / (as.numeric(sunrise[ind]) - as.numeric(sunset[ind]))
     
-            if( bs.sEnd[1] < 0 ){
+            if( degree == 0 ){
                 #   Mean model
-                new.dat <- cbind( 1, sNight )
+                new.dat <- cbind( Int=matrix( 1, length(sEnd), 1 ), night=sNight )
+            } else if(degree == 1){
+                #   Linear model
+                j <- as.numeric( format(sEnd, "%j") )
+                new.dat <- cbind( Int=rep(1, length(sEnd)), Lin=j, night=sNight )
+            } else if(degree == 2){
+                #   Quadratic model
+                j <- as.numeric( format(sEnd, "%j") )
+                new.dat <- cbind( Int=rep(1, length(sEnd)), Lin=j, Quad=j*j, night=sNight )            
             } else {
-                new.dat <- cbind( 1, bs.sEnd, sNight )
+                new.dat <- cbind( 1, bs.sEnd, night=sNight )
             }
+
         } else {
             if( degree == 0 ){
                 #   Mean model
@@ -231,17 +249,19 @@ repeat{
             }
         }
 
-        cat("---------------- in catch_model.r\n")
-        print(new.dat)
-        print(i.gapLens)
-        print(length(i.gapLens))
+#        cat("---------------- in catch_model.r\n")
+#        print(new.dat)
+#        print(i.gapLens)
+#        print(length(i.gapLens))
+#        print(coef(fit))
+#        print(c(degree=degree))
+#        cat("in catch_model.r (hit return)...")
+#        readline()        
 
         pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
         pred <- exp(pred)
         
         #   Put things we need into a blank data frame suitable for inserting into catch.df
-        #new <- data.frame( matrix( NA, ng, ncol(catch.df) ) )
-        #names(new) <- names(catch.df)
         new <- catch.df[1:ng,]   # initialize - do it this way to get classes and factor levels
         new$n.tot <- pred
         new$SampleMinutes   <- i.gapLens * 60
@@ -249,23 +269,33 @@ repeat{
         new$StartTime <- sStart
         new$gamEstimated <- TRUE
         new$siteID <- catch.df$siteID[i]
+        new$mean.fl <- NA
+        new$sd.fl <- NA
         new$trapPositionID <- catch.df$trapPositionID[i]
         new <- F.assign.batch.date( new )     
         
-        print(new)
-        cat("Hit return to continue...")
-        readline()
+#        print(new)
+#        print(c(nrow.catch.df=nrow(catch.df), i=i, ng=ng))
         
         #   Insert new data frame into catch.df
-        catch.df <- rbind( catch.df[1:i,], new, catch.df[(i+1):nrow(catch.df),] )
+        catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
+
+#        print(c(nrow.catch.df=nrow(catch.df)))
      
         #   Save model matrix used to make predictions for use in bootstrapping
         all.new.dat <- rbind( all.new.dat, new.dat )
         all.gaplens <- c(all.gaplens, i.gapLens)
         all.bdates <- c(all.bdates, new$batchDate)  # we must save batch dates because it is possible for two gap estimates to fall on the same batch date
         
+#        print(cbind(1:nrow(catch.df),catch.df)[(i-2):(i+ng+2),c(1,1+c(1,3,4,5,6,7,10,18))])
+#        cat("in catch_model (bottom of loop): Hit return to continue...")        
+
         i <- i + ng + 1
         
+
+#        print(c(new.i=i))
+#        cat("in catch_model (bottom of loop): Hit return to continue...")
+#        readline()
         
     }
 

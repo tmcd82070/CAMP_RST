@@ -55,7 +55,8 @@ for( trap in u.traps ){
     bDates.miss[[which(trap==u.traps)]] <- df.and.fit$batchDate.for.missings
 
     
-#    tmp.df <- df
+#    print(df.and.fit)
+#    cat("in est_catch (hit return):")
 #    readline()
 }
 
