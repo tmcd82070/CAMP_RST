@@ -38,6 +38,7 @@ usepb <- exists( "progbar", where=.GlobalEnv )
 #   Estimate capture for every day of season.  Return value is
 #   data frame with columns $batchDate and $catch.  
 #   By default, this produces one graph in a pdf.  Turn this off with plot=F in call.
+#       catch.and.fits has components $catch, $fits, $X.miss, $gaps, $bDates.miss, and $trapsOperating
 catch.and.fits <- F.est.catch( catch.df, plot=TRUE, plot.file=file.root )
 if(usepb){
     progbar <- get( "progbar", pos=.GlobalEnv )
@@ -45,6 +46,8 @@ if(usepb){
     setWinProgressBar(progbar, (2*tmp + 1)/3 )
 }
 catch <- catch.and.fits$catch
+
+
 
 out.fn.list <- c(out.fn.list, attr(catch.and.fits, "out.fn.list"))
 
@@ -57,14 +60,6 @@ out.fn.list <- c(out.fn.list, attr(catch.and.fits, "out.fn.list"))
 #   If plot=T, this produces a graph in a pdf.
 f.banner(" Efficiency estimation ")
 bd <- sort( unique(catch$batchDate) )
-
-#attr( release.df, "subsites" ) <- attr( catch, "subsites" )
-
-#cat(")))))))) in est_passage.r (((((((((\n")
-#print( attributes(release.df))
-#cat("@@@@@\n")
-#print( attributes(catch.df))
-
 
 
 eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df=3, plot=TRUE, plot.file=file.root )
@@ -106,8 +101,22 @@ print(catch[1:20,])
 cat("First 20 rows of EFFICIENCY...\n")
 print(efficiency[1:20,])
 
+##   Add a trapFunctioning column so can tell when traps start and stop.
+#print(catch[1:10,])
+#print(catch.and.fits$trapsOperating[1:10,])
+#
+#catch <- merge( catch, catch.and.fits$trapsOperating, by=c("trapPositionID","batchDate") )
+#
+#tmp.catch <<- catch
+
+
+#   The Grand Merge.  Merge catch info with efficiency info.
 grand.df <- merge( catch, efficiency, by=c("trapPositionID", "batchDay"), all=T)
 
+#   For each trap, drop the dates that are outside it's start and stop date.  This 
+#   The season for each trap is identified as non missing catch.  I.e., the grand merge puts
+#   in every date because efficiency data frame has all dates. 
+grand.df <- grand.df[!is.na(grand.df$catch), ]
 
 #   The passage estimator
 grand.df$passage <- rep(NA, nrow(grand.df))
@@ -116,17 +125,18 @@ grand.df$passage <- round(grand.df$passage,1)   # round final passage estimate h
 
 
 #   Save grand.df to .GlobalEnv (for debuggin) and write it out to a csv file
+catch.df <<- catch
 grand.df <<- grand.df
 cat("grand.df stored in .GlobalEnv\n")
 
 if( !is.na(file.root) ){
     tmp.df <- grand.df[, !(names(grand.df) %in% c("nReleased", "nCaught", "batchDay")) ]  # do this so can change names (headers) in csv file, Drop 2 columns
-    names(tmp.df)[ names(tmp.df) == "catch" ] <- "rawCatch"
+    names(tmp.df)[ names(tmp.df) == "catch" ] <- "Catch"
     names(tmp.df)[ names(tmp.df) == "imputed.catch" ] <- "propImputedCatch"
     names(tmp.df)[ names(tmp.df) == "imputed.eff" ] <- "propImputedEff"
     tmp.df$propImputedEff <- as.numeric(tmp.df$propImputedEff)  # convert to numbers, 0 or 1
     tmp.df$passage <- round(tmp.df$passage)  # Round off passage
-    tmp.df$rawCatch <- round(tmp.df$rawCatch,1)  
+    tmp.df$Catch <- round(tmp.df$Catch,1)  
     tmp.df$efficiency <- round(tmp.df$efficiency, 4)  
     
     #   Merge in subsiteNames
@@ -238,6 +248,7 @@ attr(n, "year") <- attr(catch.df, "year")
 attr(n, "run.season") <- attr(catch.df, "run.season")
 attr(n, "summarized.by") <- summarize.by
 attr(n, "out.fn.list") <- out.fn.list
+attr(n, "trapsOperating") <- catch.and.fits$trapsOperating
 
 f.banner(" F.est.passage - COMPLETE ")
 

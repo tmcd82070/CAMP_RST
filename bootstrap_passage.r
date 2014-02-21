@@ -95,7 +95,7 @@ if( !ci ){
                 #   then compute overdispersion
                 
                 resids <- residuals(c.fit, type="pearson")
-                qrds <- quantile( resids, p=c(.025, .975))
+                qrds <- quantile( resids, p=c(.2, .8))
                 toss.ind <- (resids < qrds[1]) | (qrds[2] < resids)
                 resids <- resids[!toss.ind]
                 disp <- sum( resids*resids ) / (c.fit$df.residual - sum(toss.ind))
@@ -125,20 +125,26 @@ if( !ci ){
                 # Coefficients
                 beta <- coef( c.fit )
                 
-        #        cat(paste("beta=", beta, "\n"))
-        #        tmp <- chol.default( sigma, pivot=TRUE )
-        #        print.default(tmp)
+#                cat(paste("beta=", beta, "\n"))
+#                tmp <- chol.default( sig, pivot=TRUE )
+#                print.default(tmp)
                       
-                # Generate random coefficients       
-                rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector. rbeta is R X (n coef)
+                #   If there is only one coefficient, then number of non-zero catches is <10.
+                #   It is possible for number of non-zero catches to be 0 (they never caught anything)
+                #   In the latter case, coefficient is large negative and causes estimates to blow. 
+                #   Trap this situation.  The correct estimate in this case is 0.
+                if( (length(beta) == 1) & (beta[1] < -10)){
+                    rbeta <- matrix( -10, nrow=R, ncol=1 )
+                } else {
+                    # Generate random coefficients       
+                    rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector. rbeta is R X (n coef)
+                }
         
 #                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
         
-        #        cat(paste("rbeta=", "\n"))
-        #        print(rbeta[1:20,])
-        #        print(dim(rbeta))
-        #        cat("hit return...")
-        #        readline()
+#                cat(paste("rbeta=", "\n"))
+#                print(rbeta[1:20,])
+#                print(dim(rbeta))
             
                 
                 # Predict catches using random coefficients
@@ -147,6 +153,8 @@ if( !ci ){
                 
                 pred <- X %*% t(rbeta) + log(gaps)
                 pred <- exp(pred)    # pred is nrow(X) X R
+                
+#                print(sum(pred>1000000))
         
 #                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
         
@@ -169,6 +177,10 @@ if( !ci ){
         #        print( colSums( ind.mat ))
         #        cat("hit return...")
         #        readline()
+
+#                cat("in bootstrap.passage.r.  hit return...")
+#                readline()
+
                 
                 c.pred[ind.mat] <- pred   # replaces imputed values with other realizations contained in pred.  This is nrow(grand.df) X R, or (n.batch.days*n.traps) X R
             }
@@ -278,11 +290,17 @@ if( !ci ){
 #    cat("hit return...")
 #    readline()
     
+    assign("c.pred", c.pred, pos=.GlobalEnv)
+    assign("e.pred", e.pred, pos=.GlobalEnv)
+
+
 
     #   *=*=*=*=*=*=*=* Estimate passage
     #         c.pred and e.pred are the same size, so just divide
     c.pred <- c.pred / e.pred    # Re-use the c.pred matrix to save space
 
+    #   Debugging
+    assign("ce.pred", c.pred, pos=.GlobalEnv)
     
     #   ===== Now, average over traps
     #   At this point, c.pred is a (n.batch.day*n.trap) X R matrix, with each cell containing the passage estimated 
@@ -329,6 +347,8 @@ if( !ci ){
 names(ans) <- paste0( c("lower.", "upper."), conf*100 )
 ans <- data.frame( n.orig, ans, stringsAsFactors=F )
 
+#cat("In bootstrap_passage.r.  HIt return...")
+#readline()
 
 ans 
 

@@ -52,8 +52,8 @@ my.pch <- 15 + 1:length(traps)
 for( i in 1:length(traps) ){
 
 #   This adds the smoothed interpolation model to the plot.  
-#    ind <- df$trapPositionID == traps[i]
-#    lines( supsmu(df$batchDate[ind], df$catch[ind]), lwd=2, lty=1, col=my.colors[i] )
+    ind <- df$trapPositionID == traps[i]
+    lines( supsmu(df$batchDate[ind], df$catch[ind]), lwd=2, lty=1, col=my.colors[i] )
 
     ind <- df$trapPositionID == traps[i] & imputed
     points( df$batchDate[ ind ], df$catch[ ind ], pch=my.pch[i]-15, col=my.colors[i], cex=1 )

@@ -1,4 +1,4 @@
-F.plot.passage <- function( df, max.date, out.file="passage.png" ){
+F.plot.passage <- function( df, out.file="passage.png" ){
 #
 #   Plot a time series of passage estimates.  This can be called from
 #   Sweave files to put a figure in a report.
@@ -11,6 +11,8 @@ F.plot.passage <- function( df, max.date, out.file="passage.png" ){
 #
 
 if( !is.na(out.file) ){
+    graphics.off()
+    
     #   ---- Open PNG device
     out.pass.graphs <- paste(out.file, "_passage.png", sep="")
     if(file.exists(out.pass.graphs)){
@@ -33,6 +35,7 @@ if( all(pass == 0) ){
     ans <- out.pass.graphs
     return(ans)
 }
+
 #   Compute extent of y axis
 hgts <- colSums( pass )
 lab.y.at <- pretty( hgts )
@@ -71,7 +74,6 @@ if( casefold(s.by) == "day" ){
         lab.x.lab <- format(dt, "%d%b%y")
 
         axis( side=1, at=lab.x.at, label=lab.x.lab )
-
     } else {
         #   Label every day
         dt <- df$date
@@ -108,7 +110,7 @@ if( casefold(s.by) == "day" ){
     } else {
         # "weekly"  (yearly does not get plotted)   
         dt1 <- df$date
-        dt2 <- c(df$date[-1] - 24*60*60, max.date)
+        dt2 <- c(df$date[-1] - 24*60*60, max(df$date))
         dt1 <- format(dt1, "%d%b")
         dt2 <- format(dt2, "%d%b")
         dt <- paste(dt1, dt2, sep="-")
@@ -130,21 +132,10 @@ N <- round(sum( df$passage ))
 mtext( side=3, at=max(mp),  text=paste("N =", format(N, scientific=F, big.mark="," )), adj=1, cex=1 )
 
 #   Add title
-mtext( side=3, at=max(mp), text=attr(df,"site.name"), adj=1, cex=1.5, line=2 )
-mtext( side=3, at=max(mp), text= paste(attr(df,"species.name"), ", ", attr(df,"run.name"), " run", sep=""), adj=1, cex=.75, line=1 )
+mtext( side=3, at=max(mp), text=df$site.name[1], adj=1, cex=1.5, line=2 )
+mtext( side=3, at=max(mp), text= paste("Chinook Salmon, ", df$FinalRunName, " run", sep=""), adj=1, cex=.75, line=1 )
 
 
-#plot( df$datetime, df$passage ,type="b", xlab="Date", ylab="Number of fish", xaxt="n", cex.lab=1.5)
-#mtext(side=3, text=attr(df, "site.name"), cex=1, line=.75 )
-#mtext(side=3, text=paste(attr(df, "species.name"), ", ", attr(df, "run.name"), " run", sep=""), line=2, cex=2 )
-#
-#imp.ind <- df$pct.imputed.catch > 0   # if data summarized by 'week' 'month' or 'year', df$imputed is
-#                            # a percentage of the values in that period that were missing.
-#
-#
-#points( df$datetime[imp.ind], df$passage[imp.ind], col="red", pch=1 )
-#points( df$datetime[!imp.ind], df$passage[!imp.ind], col="black", pch=16 )
-#
 
 legend( "topright", legend=c("Observed","Imputed"),
     fill=c("darkorange", "lightblue"), cex=1)

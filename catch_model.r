@@ -68,6 +68,7 @@ cat(paste("Number of non-zero catches : ", sum(!is.na(catch.df$n.tot) & (catch.d
 cat("Catch model fitting:\n")
 cat(paste("df= ", 0, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
 
+
 if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
     cur.df <- 1  # this is df in smoother part, excluding intercept.  1=linear, 2=quadratic, 3=bspline w/ 1 internal knot, 4=bspline w/ 2 internal knots, etc.
     repeat{
