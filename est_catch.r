@@ -112,10 +112,8 @@ trapsOperating <- data.frame( batchDate=names(trapsOperating), nTrapsOperating=t
 trapsOperating$batchDate <- as.POSIXct( as.character(trapsOperating$batchDate), "%Y-%m-%d", tz=time.zone)                
 
 #tmp.est.catch <<- tmp.est.catch
+#tmp.trapsOperating <<- trapsOperating
 
-
-
-#tmp.est.catch <<- est.catch
 #readline()
 
 #   If a trap runs without checks for 48 hours say, it runs over two batch dates.  When this happens, 

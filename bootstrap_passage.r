@@ -1,4 +1,4 @@
-F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, sum.by, R, ci=T ){
+F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R, ci=T ){
 #
 #   Bootstrap or Monte Carlo simulate data sufficient to compute confidence intervals 
 #   for passage. 
@@ -197,7 +197,9 @@ if( !ci ){
 
             e.fit <- eff.fits[[ind]] 
             e.X <- eff.X[[ind]]
-            e.ind <- eff.ind.inside[[ind]]
+            e.ind <- eff.ind.inside[[ind]]   # this is a 2 vector of first and last efficiency trials
+            e.ind <- (e.ind[1] <= grand.df$batchDate) & (grand.df$batchDate <= e.ind[2]) & trap.ind   # this is an indicator for days inside the efficiency season
+            e.dts <- eff.X.dates[[ind]] # Vector of dates inside efficiency season.  Used to line up with catches because catch seasons vary.
     
             if( !is.list(e.fit) | length(e.fit) == 0 ){
                 #   No efficiency trials
@@ -256,24 +258,31 @@ if( !ci ){
                 pred <- (e.X %*% t(rbeta))
                 pred <- 1 / (1 + exp(-pred))    # pred is nrow(e.X) X R
         
-#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
                 
                 # Use mean predicted efficiency for times outside first and last trials
                 ind.mat <- matrix( trap.ind, nrow=n.grand.df, ncol=R )
+
                 e.means <- matrix( colMeans( pred ), byrow=T, nrow=sum(trap.ind), ncol=R )
-                e.pred[ind.mat] <- e.means    # Assign mean outside of eff.ind.inside[[trap]]
                 
                 
-                ind.mat <- matrix( trap.ind & e.ind, nrow=n.grand.df, ncol=R )
-                e.pred[ind.mat] <- pred   # e.pred is (n days*n traps) X R, or nrow(grand.df) X R, or (n.batch.days*n.traps) X R
+                #   This is complicated, but we have to line up the catch dates with the efficiency dates.  Because length of seasons vary, this is necessary.
+                df.c <- data.frame(batchDate=format(grand.df$batchDate[trap.ind]), in.catch = TRUE, stringsAsFactors=FALSE )
+                df.e <- data.frame(batchDate=format(e.dts), in.eff = TRUE, stringsAsFactors=FALSE )
                 
-#                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
+                df.ce <- merge( df.c, df.e, all.x=TRUE )
+                df.ec <- merge( df.e, df.c, all.x=TRUE )
                 
+                df.ec$in.catch[ is.na(df.ec$in.catch) ] <- FALSE
+                df.ce$in.eff[ is.na(df.ce$in.eff) ] <- FALSE
                 
-                #   *=*=*=*=*=*=*=* Store results from this trap.  We average, so just store sum.
-                #pass <- apply( p.pred, 2, function(x, ind.by){ tapply( x, ind.by, FUN=sum, na.rm=T ) }, ind.by=sum.by )  # a list of length R, each element is vector of length unique(ind.by)
-                #pass <- matrix( unlist(pass), nn, R )
-                #pass <- pass + p.pred
+                pred <- pred[ df.ec$in.catch, ]   # predictions that are in the catch data set
+                
+                #tmp.df.ce <<- df.ce
+                #tmp.df.ec <<- df.ec
+                
+                e.means[ df.ce$in.eff ] <- pred  # predictions inside the season, on the right dates
+
+                e.pred[ind.mat] <- e.means    # Assigns mean outside of eff.ind.inside[[trap]], and efficiency model inside season
                 
                 
             }
@@ -330,7 +339,7 @@ if( !ci ){
         z.alpha <- qnorm( 1 - (alpha/2)) 
         p.L <- pnorm( 2*z.0 - z.alpha )
         p.H <- pnorm( 2*z.0 + z.alpha )
-        ci <- quantile( x[ !is.na(x) ], p=c(p.L, p.H) )
+        ci <- quantile( x[ !is.na(x) & (x < Inf) ], p=c(p.L, p.H) )
         ci
     }
     

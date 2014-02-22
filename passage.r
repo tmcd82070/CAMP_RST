@@ -45,6 +45,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
     visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
     
+    
     if( nrow(catch.df) == 0 ){
         stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
     }
@@ -134,6 +135,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         #   ---- Compute passage
         out.fn.root <- paste0(output.file, "_", run.name )
         pass <- F.est.passage( catch.df.ls, release.df, by, out.fn.root, ci )
+        
         out.fn.roots <- attr(pass, "out.fn.list")        
         
     }
@@ -147,7 +149,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     cat(paste(rep("+",150), collapse="")); cat("\n")
     cat("\n\n")
 
-
+    
 
     #   ---- Save .RData for later plotting (grand.df is produced by F.est.passage, and saved in .GlobalEnv
     RData.fname <- "<none>"
@@ -177,12 +179,14 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         names(tmp.df)[ names(tmp.df) == "upper.95" ] <- "upper95pctCI"
         names(tmp.df)[ names(tmp.df) == "nForkLenMM" ] <- "numFishMeasured"
 
-        #   Merge in the trapsOperating column
-        tO <- attr(pass, "trapsOperating")
-        tmp.df <- merge( tmp.df, tO, by.x="date", by.y="batchDate", all.x=T )
-
-        #   For aesthetics, change number fish measured on days in gaps from NA to 0
-        tmp.df$numFishMeasured[ is.na(tmp.df$numFishMeasured) & (tmp.df$nTrapsOperating == 0) ] <- 0
+        if( by == "day" ){
+            #   Merge in the trapsOperating column
+            tO <- attr(pass, "trapsOperating")
+            tmp.df <- merge( tmp.df, tO, by.x="date", by.y="batchDate", all.x=T )
+    
+            #   For aesthetics, change number fish measured on days in gaps from NA to 0
+            tmp.df$numFishMeasured[ is.na(tmp.df$numFishMeasured) & (tmp.df$nTrapsOperating == 0) ] <- 0
+        }
 
         #   Open file and write out header.
         out.pass.table <- paste(output.fn, "_passage_table.csv", sep="")
@@ -211,9 +215,9 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         write.table( tmp.df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
         
         #   Write out the total passage. No other totals in file.
-        sink(out.pass.table, append=TRUE)
-        cat(paste("Total:,", round(sum(pass$passage,na.rm=T)), "\n"))
-        sink()
+        #sink(out.pass.table, append=TRUE)
+        #cat(paste("Total:,", round(sum(pass$passage,na.rm=T)), "\n"))
+        #sink()
         
         
         out.fn.roots <- c(out.fn.roots, out.pass.table)
@@ -224,10 +228,13 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         #   ---- Plot the final passage estimates
         if( by != "year" ){
             attr(pass,"summarized.by") <- by 
+            attr(pass, "species.name") <- "Chinook Salmon"
+            attr(pass, "site.name") <- catch.df$siteName[1]
+            attr(pass, "run.name" ) <- catch.df$FinalRun[1]
+            attr(pass, "lifestage.name" ) <- "All lifestages"
             
-            tmp.pass <<- pass  # debugging
             
-            out.f <- F.plot.passage( pass, max.date = max(catch.df.ls$EndTime,na.rm=T), out.file=output.fn )
+            out.f <- F.plot.passage( pass, out.file=output.fn )
             out.fn.roots <- c(out.fn.roots, out.f)
         }
         nf <- length(out.fn.roots)

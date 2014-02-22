@@ -28,9 +28,10 @@ traps <- sort( unique(obs.eff.df$trapPositionID))
 #print(traps)
 #readline()
 
-fits <- all.X <- all.ind.inside <- vector("list", length(traps))
+fits <- all.X <- all.ind.inside <- all.dts <- vector("list", length(traps))
 names(fits) <- traps
 names(all.X) <- traps
+names(all.dts) <- traps
 names(all.ind.inside) <- traps
 
 for( trap in traps ){
@@ -66,6 +67,7 @@ for( trap in traps ){
         strt.dt <- min( df$batchDate[ind], na.rm=T )  # Earliest date with an efficiency trial
         end.dt  <- max( df$batchDate[ind], na.rm=T )  # Latest date with efficiency trial
         ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
+        inside.dates <- c(strt.dt, end.dt)
 
         tmp.df <- df[ind & ind.inside,]
         cat(paste("\n\n++++++Efficiency model fitting for trap:", trap, "\n"))
@@ -122,7 +124,7 @@ for( trap in traps ){
             print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
             
             fits[[trap]] <- fit     # Save fit for bootstrapping
-            all.ind.inside[[trap]] <- ind.inside   #    Save this indicator for bootstrap routine.  
+            all.ind.inside[[trap]] <- inside.dates   #    Save this season dates for bootstrap routine.  
     
             if( length(coef(fit)) <= 1 ){
                 pred <- matrix( coef(fit), sum(ind.inside), 1 )
@@ -133,6 +135,7 @@ for( trap in traps ){
             }
             
             all.X[[trap]] <- X   # Save X for bootstrapping
+            all.dts[[trap]] <- df$batchDate[ind.inside]   #  Save dates we predict at for use in bootstrapping
             
             pred <- 1 / (1 + exp(-pred))   # pred is all efficiencies for dates between min and max of trials. 
             
@@ -179,7 +182,7 @@ if( !is.na(plot.file) ) {
     out.fn <- NULL
 }
 
-ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside)
+ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts)
 attr(ans, "out.fn.list") <- out.fn
 
 ans

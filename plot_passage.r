@@ -132,8 +132,8 @@ N <- round(sum( df$passage ))
 mtext( side=3, at=max(mp),  text=paste("N =", format(N, scientific=F, big.mark="," )), adj=1, cex=1 )
 
 #   Add title
-mtext( side=3, at=max(mp), text=df$site.name[1], adj=1, cex=1.5, line=2 )
-mtext( side=3, at=max(mp), text= paste("Chinook Salmon, ", df$FinalRunName, " run", sep=""), adj=1, cex=.75, line=1 )
+mtext( side=3, at=max(mp), text=attr(df,"site.name"), adj=1, cex=1.5, line=2 )
+mtext( side=3, at=max(mp), text= paste("Chinook Salmon, ", attr(df, "run.name"), " run, ", attr(df,"lifestage.name"), sep=""), adj=1, cex=.75, line=1 )
 
 
 

@@ -30,27 +30,6 @@ rel.df <- release.df[,c("releaseID", "ReleaseDate", "nReleased",  "HrsToFirstVis
 rel.df$batchDate <- rep(NA, nrow(rel.df))
 names(rel.df)[ names(rel.df) == "meanRecapTime" ] <- "EndTime"
 
-#   Don't need to sum over trapvisits.  That was done back in get_release_data.
-
-#   ---- Sum over trapvisits. Obtain one line per release X trapPosition.
-#ind <- list( trapPositionID=rel.df$trapPositionID, releaseID=rel.df$releaseID )
-#releaseDate <- tapply( rel.df$ReleaseDate, ind, "[", 1 )
-#nReleased <- tapply( rel.df$nReleased, ind, "[", 1 )
-#Recaps <- tapply( rel.df$Recaps, ind, sum )
-#
-##   Take weighted average of end time, weights = recaps.  This determines batchDate
-#sumEtimeN <- tapply( as.numeric(rel.df$EndTime)*rel.df$Recaps, ind, sum )
-#meanEndTime <- c(sumEtimeN / Recaps)
-
-
-##   Make times back into time objects
-#meanEndTime <- as.POSIXct( meanEndTime, origin=as.POSIXct("1970-01-01 00:00.00", tz="GMT"), tz=time.zone)
-#releaseDate <- as.POSIXct( releaseDate, origin=as.POSIXct("1970-01-01 00:00.00", tz="GMT"), tz=time.zone)
-
-
-##   Put everthing back into a data frame
-#rel.df <- cbind( expand.grid( trapPositionID=dimnames(nReleased)[[1]], releaseID=dimnames(nReleased)[[2]]), 
-#    releaseDate = c(releaseDate), nReleased = c(nReleased),  Recaps = c(Recaps), EndTime=c(meanEndTime) )
 
 #   ---- meanRecapTime is NA if they did not catch anything from a release. 
 #   Replace any NA meanEndTimes with releaseTime plus mean of HrsToFirstVisitAfter and HrsToLastVisitAfter . This will assign a batch date.  

@@ -159,7 +159,8 @@ f.banner(paste(" Bootstrapping, if called for, and summarizing by", summarize.by
 #ci = F
 
 n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
-                catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside, summarize.by, 100, ci )
+                catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside, 
+                eff.and.fits$X.dates, summarize.by, 100, ci )
                 
               
 if(usepb){
