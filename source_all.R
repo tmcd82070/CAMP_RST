@@ -83,7 +83,7 @@
 #   --------------------------------------------------------
 #   Source code
 
-#source(	"capwords.r"	)
+source(	"capwords.r"	)
 source(	"catch_model.r"	)
 source(	"eff_model.r"	)
 source(	"est_catch.r"	)
