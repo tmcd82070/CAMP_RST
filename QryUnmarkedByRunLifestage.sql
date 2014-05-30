@@ -114,71 +114,81 @@ HAVING (((TempSamplingSummary.includeCatchID)=1));
 DROP TABLE TempSumUnmarkedByTrap_Run_Final;
 
 SELECT 
-    TempSumUnmarkedByTrap_Run_a.ProjID
-    , TempSumUnmarkedByTrap_Run_a.trapVisitID
-    , TempSumUnmarkedByTrap_Run_a.SampleDate
-    , TempSumUnmarkedByTrap_Run_a.StartTime
-    , TempSumUnmarkedByTrap_Run_a.EndTime
-    , TempSumUnmarkedByTrap_Run_a.SampleMinutes
-    , TempSumUnmarkedByTrap_Run_a.TrapStatus
-    , TempSumUnmarkedByTrap_Run_a.siteID
-    , TempSumUnmarkedByTrap_Run_a.siteName
-    , TempSumUnmarkedByTrap_Run_a.trapPositionID
-    , TempSumUnmarkedByTrap_Run_a.TrapPosition
-    , TempSumUnmarkedByTrap_Run_a.sampleGearID
-    , TempSumUnmarkedByTrap_Run_a.sampleGear
-    , TempSumUnmarkedByTrap_Run_a.halfConeID
-    , TempSumUnmarkedByTrap_Run_a.HalfCone
-    , IIf(TempSumUnmarkedByTrap_Run_b!Unmarked Is Null,0,TempSumUnmarkedByTrap_Run_b!Unmarked) AS Unmarked
-    , IIf(TempSumUnmarkedByTrap_Run_b!FinalRun Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!FinalRun) AS FinalRun
-    , IIf(TempSumUnmarkedByTrap_Run_b!LifeStage Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!LifeStage) AS lifeStage
-    , TempSumUnmarkedByTrap_Run_b.forkLength 
-    , IIf(TempSumUnmarkedByTrap_Run_b!RandomSelection Is Null,'Yes',TempSumUnmarkedByTrap_Run_b!RandomSelection) AS RandomSelection 
-INTO TempSumUnmarkedByTrap_Run_Final
-FROM TempSumUnmarkedByTrap_Run_a LEFT JOIN 
-    TempSumUnmarkedByTrap_Run_b ON 
-    (TempSumUnmarkedByTrap_Run_a.ProjID = TempSumUnmarkedByTrap_Run_b.projectDescriptionID) 
-    AND 
-    (TempSumUnmarkedByTrap_Run_a.trapVisitID = TempSumUnmarkedByTrap_Run_b.trapVisitID)
-ORDER BY TempSumUnmarkedByTrap_Run_a.StartTime
-    , TempSumUnmarkedByTrap_Run_a.siteName
-    , TempSumUnmarkedByTrap_Run_a.TrapPosition
-    , IIf(TempSumUnmarkedByTrap_Run_b!FinalRun Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!FinalRun)
-    , IIf(TempSumUnmarkedByTrap_Run_b!LifeStage Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!LifeStage)
-    , IIf(TempSumUnmarkedByTrap_Run_b!RandomSelection Is Null,'Yes',TempSumUnmarkedByTrap_Run_b!RandomSelection);
-
+    TempSumUnmarkedByTrap_Run_a.ProjID, 
+    TempSumUnmarkedByTrap_Run_a.trapVisitID,
+    TempSumUnmarkedByTrap_Run_a.SampleDate,
+    TempSumUnmarkedByTrap_Run_a.StartTime,
+    TempSumUnmarkedByTrap_Run_a.EndTime,
+    TempSumUnmarkedByTrap_Run_a.SampleMinutes,
+    TempSumUnmarkedByTrap_Run_a.TrapStatus,
+    TempSumUnmarkedByTrap_Run_a.siteID,
+    TempSumUnmarkedByTrap_Run_a.siteName,
+    TempSumUnmarkedByTrap_Run_a.trapPositionID,
+    TempSumUnmarkedByTrap_Run_a.TrapPosition,
+    TempSumUnmarkedByTrap_Run_a.sampleGearID,
+    TempSumUnmarkedByTrap_Run_a.sampleGear,
+    TempSumUnmarkedByTrap_Run_a.halfConeID,
+    TempSumUnmarkedByTrap_Run_a.HalfCone,
+    IIf(TempSumUnmarkedByTrap_Run_b!Unmarked Is Null,0,TempSumUnmarkedByTrap_Run_b!Unmarked) AS Unmarked, 
+    IIf(TempSumUnmarkedByTrap_Run_b!FinalRun Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!FinalRun) AS FinalRun, 
+    IIf(TempSumUnmarkedByTrap_Run_b!LifeStage Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!LifeStage) AS lifeStage, 
+    TempSumUnmarkedByTrap_Run_b.forkLength, 
+    IIf(TempSumUnmarkedByTrap_Run_b!RandomSelection Is Null,'Yes',TempSumUnmarkedByTrap_Run_b!RandomSelection) AS RandomSelection 
+INTO 
+    TempSumUnmarkedByTrap_Run_Final
+FROM 
+    TempSumUnmarkedByTrap_Run_a 
+    LEFT JOIN 
+        TempSumUnmarkedByTrap_Run_b ON 
+        (TempSumUnmarkedByTrap_Run_a.trapVisitID = TempSumUnmarkedByTrap_Run_b.trapVisitID) 
+        AND 
+        (TempSumUnmarkedByTrap_Run_a.ProjID = TempSumUnmarkedByTrap_Run_b.projectDescriptionID)
+WHERE 
+    (
+        ((IIf(TempSumUnmarkedByTrap_Run_b!LifeStage Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!LifeStage))<>'AdultSubAdult')
+    )
+ORDER BY TempSumUnmarkedByTrap_Run_a.StartTime,
+    TempSumUnmarkedByTrap_Run_a.siteName,
+    TempSumUnmarkedByTrap_Run_a.TrapPosition,
+    IIf(TempSumUnmarkedByTrap_Run_b!FinalRun Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!FinalRun), 
+    IIf(TempSumUnmarkedByTrap_Run_b!LifeStage Is Null,'Unassigned',TempSumUnmarkedByTrap_Run_b!LifeStage), 
+    IIf(TempSumUnmarkedByTrap_Run_b!RandomSelection Is Null,'Yes',TempSumUnmarkedByTrap_Run_b!RandomSelection);
 
 -- 4.  qrySumUnmarkedByTrap_Run_d Adds records for non sampling periods to the final table.  Trap status = not fishing
 
 INSERT INTO TempSumUnmarkedByTrap_Run_Final 
     ( 
-        ProjID
-        , StartTime
-        , EndTime
-        , SampleMinutes
-        , TrapStatus
-        , siteID
-        , siteName
-        , trapPositionID
-        , TrapPosition 
-    )
-SELECT TempNonSamplingSummary.projectDescriptionID
-    , TempNonSamplingSummary.timepreviousSampleEnd
-    , TempNonSamplingSummary.timeSampleStarted
-    , TempNonSamplingSummary.TotalNonSampleMinutes
-    , 'Not fishing' AS TrapStatus
-    , SubSite.siteID
-    , Site.siteName
-    , TempNonSamplingSummary.trapPositionID
-    , SubSite.subSiteName
-FROM Site RIGHT JOIN 
-    (
-        TempNonSamplingSummary LEFT JOIN SubSite ON TempNonSamplingSummary.trapPositionID = SubSite.subSiteID
-    ) ON Site.siteID = SubSite.siteID
+        ProjID,
+        SampleDate,
+        StartTime,
+        EndTime,
+        SampleMinutes,
+        TrapStatus,
+        siteID,
+        siteName,
+        trapPositionID,
+        TrapPosition 
+    ) 
+SELECT 
+    TempNonSamplingSummary.projectDescriptionID, 
+    DateValue([TempNonSamplingSummary]![timeSampleStarted]) AS SampleDate, 
+    TempNonSamplingSummary.timepreviousSampleEnd,
+    TempNonSamplingSummary.timeSampleStarted, TempNonSamplingSummary.TotalNonSampleMinutes, 'Not fishing' AS TrapStatus, 
+    SubSite.siteID, 
+    Site.siteName, 
+    TempNonSamplingSummary.trapPositionID,
+    SubSite.subSiteName 
+FROM 
+    Site RIGHT JOIN 
+        (
+            TempNonSamplingSummary LEFT JOIN SubSite ON
+                TempNonSamplingSummary.trapPositionID = SubSite.subSiteID
+        ) ON 
+        Site.siteID = SubSite.siteID 
 ORDER BY 
-    TempNonSamplingSummary.timepreviousSampleEnd
-    , SubSite.siteID
-    , TempNonSamplingSummary.trapPositionID;
+    TempNonSamplingSummary.timepreviousSampleEnd, 
+    SubSite.siteID,
+    TempNonSamplingSummary.trapPositionID;
 
 
 
