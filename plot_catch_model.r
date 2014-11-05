@@ -63,7 +63,12 @@ for( i in 1:length(traps) ){
 
 }
 
-subsite.name <- attr(df, "subsites")
+
+catch.df.sites <- unique(df[,c('trapPositionID','TrapPosition')])       # jason add
+colnames(catch.df.sites) <- c('subSiteID','subSiteName')                         # jason add
+subsite.name <- catch.df.sites
+subsite.name$subSiteName <- as.character(subsite.name$subSiteName)
+# subsite.name <- attr(df, "subsites")
 
 
 mx.len.name <- which.max( nchar(subsite.name$subSiteName) )

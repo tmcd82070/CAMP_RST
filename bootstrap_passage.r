@@ -10,7 +10,20 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 #   eff.fits = list of Binomial logistic regression fitted objects used to compute efficiency.  One per trap. 
 #   R = number of Monte Carlo iterations to do.
 #
-
+# grand.df <- grand.df
+# catch.fits <- catch.and.fits$fits
+# catch.Xmiss <- catch.and.fits$X.miss
+# catch.gapLens <- catch.and.fits$gaps
+# catch.bDates.miss <- catch.and.fits$bDates.miss
+# eff.fits <- eff.and.fits$fits
+# eff.X <- eff.and.fits$X
+# eff.ind.inside <- eff.and.fits$ind.inside
+# eff.X.dates <- eff.and.fits$X.dates
+# sum.by <- summarize.by
+# R <- 100
+# ci=T <- ci 
+  
+  
 library(mvtnorm)
 
 conf <- 0.95   # this is the confidence level of the confidence intervals  

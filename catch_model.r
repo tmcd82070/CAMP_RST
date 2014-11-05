@@ -143,6 +143,7 @@ i <- 1
 all.new.dat <- NULL
 all.gaplens <- NULL
 all.bdates <- NULL
+jason.new <- NULL
 
 #tmp.cc <<- catch.df
 #cat("---------------- in catch_model.r\n")
@@ -275,8 +276,11 @@ repeat{
         new$trapPositionID <- catch.df$trapPositionID[i]
         new <- F.assign.batch.date( new )     
         
-#        print(new)
-#        print(c(nrow.catch.df=nrow(catch.df), i=i, ng=ng))
+       print(new)                                             # jason turn on
+       print(c(nrow.catch.df=nrow(catch.df), i=i, ng=ng))     # jason turn on
+
+       # pull out the actual imputed numbers only for checking daily counts in baseTable.
+       jason.new <- rbind(jason.new,new)                                      # 
         
         #   Insert new data frame into catch.df
         catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
@@ -324,7 +328,7 @@ if( is.null( all.bdates )){
 #print(all.bdates)
 #readline()
 
-
-list(df2=catch.df, fit=fit, X.for.missings=all.new.dat, gaps=all.gaplens, batchDate.for.missings=all.bdates)
+jason.new <- jason.new[,c('batchDate','trapVisitID','trapPositionID','n.tot')]   # reduce scope to only those variables needed
+list(df2=catch.df, fit=fit, X.for.missings=all.new.dat, gaps=all.gaplens, batchDate.for.missings=all.bdates, true.imp=jason.new)
 
 }

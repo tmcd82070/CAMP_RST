@@ -3,8 +3,9 @@ F.summarize.passage <- function( df, summarize.by ){
 #   Average passage over all traps at a site, then sum by summarize.by
 #
 #   df must have the following columns: $batchDate, $imputed.catch
-
-
+#   df <- grand.df
+#   summarize.by <- sum.by
+  
 
 #   ---- First, average over traps
 index <- list(batchDate= format( df$batchDate, "%Y-%m-%d" ))
@@ -14,8 +15,7 @@ dt <- c(tapply( df$batchDate, index, FUN=function(x, narm){ min(x, na.rm=narm) }
 class(dt) <- class(df$batchDate)  # the tapply above strips class information.  make this back into a POSIX date
 attr(dt, "tzone") <- attr(df$batchDate, "tzone")   
 p.imp <- c(tapply( df$imputed.catch, index, FUN=mean, na.rm=T ))
-
-
+  
 
 #   ---- Now, summarize passage by time period.  
 index <- F.summarize.index( dt, summarize.by )

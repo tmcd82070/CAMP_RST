@@ -10,6 +10,9 @@ F.plot.passage <- function( df, out.file="passage.png" ){
 #       It is assumed that the percentage of the estimate that was imputed is available in df$pct.imputed.catch. 
 #
 
+#   df<-pass
+#     out.file='passage.png'
+  
 if( !is.na(out.file) ){
     graphics.off()
     
@@ -109,6 +112,8 @@ if( casefold(s.by) == "day" ){
         #        dt2[length(df$date)] <- format( max(df$date), "%d%b" )
     } else {
         # "weekly"  (yearly does not get plotted)   
+        # jason -- add.  need a lookup table that maps days to our defined julian weeks here.  
+      
         dt1 <- df$date
         dt2 <- c(df$date[-1] - 24*60*60, max(df$date))
         dt1 <- format(dt1, "%d%b")

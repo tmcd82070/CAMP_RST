@@ -16,13 +16,17 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
 #   which is 1 = "Yes" for those that came from the model. 
 #
 
-
+# obs.eff.df=eff
+# plot=T
+# method=1
+# max.df.spline=4
+# plot.file=NA
 #   It is possible to implement a GAM here using covariates like flow, time of day
 #   check was done, etc. and a smooting component.  For now, I will only implement a
 #   simple step function
 
 ans <- NULL
-traps <- sort( unique(obs.eff.df$trapPositionID))
+traps <- sort( unique(obs.eff.df$TrapPositionID))
 
 #cat("%%%%%%%%%%%%%% in eff_model.r\n")
 #print(traps)
@@ -36,7 +40,7 @@ names(all.ind.inside) <- traps
 
 for( trap in traps ){
 
-    df <- obs.eff.df[ is.na(obs.eff.df$trapPositionID) | (obs.eff.df$trapPositionID == trap), ]
+    df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
 
     
     ind <- !is.na(df$efficiency)

@@ -44,6 +44,9 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     
     catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
     visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
+
+    
+    
     
     
     if( nrow(catch.df) == 0 ){
@@ -161,7 +164,40 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         #   Fix up the pass table to pretty the output
         tmp.df <- pass
         
+        # id leap years.
+        #         test vector.
+        #         myYear <- c(1600,1700,1800,1900,2000,2100,2200,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2014,2015,2016)
+        myYear = as.POSIXlt(tmp.df$date)$year + 1900
+         
+        leap <- rep(NA,length(myYear))
+        for(i in 1:length(myYear)){
+          if(myYear[i] %% 4 != 0){                         # wikipedia article on leap year.
+            leap[i] <- 0
+          } else if (myYear[i] %% 100 != 0){
+            leap[i] <- 1
+          } else if (myYear[i] %% 400 != 0){
+            leap[i] <- 0
+          } else {
+            leap[i] <- 1
+          }
+        }
         
+        tmp.jday <- rep(NA,length(myYear))
+        for(i in 1:length(myYear)){
+          if(leap[i] == 1){  # leap year -- feb 29th included.
+            tmp.jday[i] <- as.numeric(format(tmp.df$date[i], "%j"))
+          } else {           # not a leap year -- feb 29th not included. adjust.
+            if(as.numeric(format(tmp.df$date[i], "%j")) >= 60 ){            # 60 = feb 29th on leap years. 61 = mar 1st on leap years.
+              tmp.jday[i] <- as.numeric(format(tmp.df$date[i], "%j")) + 1     # this pushes march 1st for non-leap to day 61 instead of day 60.                 
+            } else {
+              tmp.jday[i] <- as.numeric(format(tmp.df$date[i], "%j"))
+            }
+          }
+        }
+        
+        if(by == 'week'){
+          tmp.df$week <- paste0(myYear,'-',tmp.jday %/% 7 + 1)
+        }
         
         tzn <- get("time.zone", .GlobalEnv )
         tmp.df$date <- as.POSIXct( strptime( format(tmp.df$date, "%Y-%m-%d"), "%Y-%m-%d", tz=tzn),tz=tzn)
@@ -193,7 +229,19 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
 
         rs <- paste( format(run.season[1], "%d-%b-%Y"), "to", format(run.season[2], "%d-%b-%Y"))
         nms <- names(tmp.df)[1]
-        for( i in 2:length(names(tmp.df))) nms <- paste(nms, ",", names(tmp.df)[i], sep="")
+        for( i in 2:length(names(tmp.df))){
+          if(by == 'day'){
+            nms <- paste(nms, ",", names(tmp.df)[i], sep="")
+          } else {
+            if(i != 3){                                                # jason add:  put in this condition to make 'date' not print. doug doesnt like it.
+              nms <- paste(nms, ",", names(tmp.df)[i], sep="")    
+            }
+          }
+        } 
+        
+        if(by == 'day'){
+          nms <- gsub('date,', '', nms)     # by == day results in a slightly different format for tmp.df than the other three.
+        }
     
         cat(paste("Writing passage estimates to", out.pass.table, "\n"))
         
@@ -205,12 +253,13 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         cat(paste("Lifestage =,", catch.df.ls$lifeStage[1], "\n", sep=""))
         cat(paste("Summarized by=,", by, "\n", sep=""))
         cat(paste("Dates included=,", rs, "\n", sep=""))
-
+        
         cat("\n")
         cat(nms)
         cat("\n")
         sink()
     
+        tmp.df$date <- NULL                                          # jason add:  make sure the whole column of date doesnt print.
         #   Write out the table    
         write.table( tmp.df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
         

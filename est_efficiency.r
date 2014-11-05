@@ -5,7 +5,7 @@ F.est.efficiency <- function( release.df, batchDate, method=1, df.spline=4, plot
 #   Input:
 #   release.df = data frame produced by F.get.release.data().  Contains
 #       information on releases, and recaptures. This data frame has one line per release trial 
-#       per trap (trapPositionID).
+#       per trap (TrapPositionID).
 #
 #   Note: Run season is a vector length 2 of dates for beginning and 
 #   ending of run, stored as an attribut of the data frame.
@@ -47,11 +47,11 @@ rel.df$batchDate.str <- format(rel.df$batchDate, "%Y-%m-%d")
 
 
 #       Sum by batch dates.  This combines release and catches over trials that occured close together in time
-ind <- list( trapPositionID=rel.df$trapPositionID, batchDate=rel.df$batchDate.str )
+ind <- list( TrapPositionID=rel.df$trapPositionID, batchDate=rel.df$batchDate.str )
 nReleased <- tapply( rel.df$nReleased, ind, sum )
 nCaught   <- tapply( rel.df$Recaps, ind, sum )
 
-eff.est <- cbind( expand.grid( trapPositionID=dimnames(nReleased)[[1]], batchDate=dimnames(nReleased)[[2]]), 
+eff.est <- cbind( expand.grid( TrapPositionID=dimnames(nReleased)[[1]], batchDate=dimnames(nReleased)[[2]]), 
                 nReleased=c(nReleased), nCaught=c(nCaught) )
 eff.est$batchDate <- as.character(eff.est$batchDate)
 
@@ -67,10 +67,10 @@ eff.est <- eff.est[ !is.na(eff.est$efficiency), ]
 
 
 #   ---- Figure out which days have efficiency data.
-bd <- expand.grid(trapPositionID=sort(unique(eff.est$trapPositionID)), batchDate=format(batchDate, "%Y-%m-%d"), stringsAsFactors=F)
+bd <- expand.grid(TrapPositionID=sort(unique(eff.est$TrapPositionID)), batchDate=format(batchDate, "%Y-%m-%d"), stringsAsFactors=F)
 
 
-eff <- merge( eff.est, bd, by=c("trapPositionID", "batchDate"), all.y=T)
+eff <- merge( eff.est, bd, by=c("TrapPositionID", "batchDate"), all.y=T)
 eff$batchDate <- as.POSIXct( eff$batchDate, format="%Y-%m-%d", tz=time.zone )
 
 #   Assign attributes for plotting

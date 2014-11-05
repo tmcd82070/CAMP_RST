@@ -56,10 +56,11 @@ F.run.sqlFile( ch, "QryNotFishing.sql" )
 #   This SQL generates unmarked fish by run and life stage
 F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )   
 
-
+# stop('in the name of safety.')      # jason stop to show connie what can be output to the console window.  delete later probably.
 #   *****
 #   Now, fetch the result 
 catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
 F.sql.error.check(catch)
 
 close(ch) 
@@ -70,6 +71,19 @@ close(ch)
 time.zone <- get( "time.zone", env=.GlobalEnv )
 attr(catch$StartTime, "tzone") <- time.zone
 attr(catch$EndTime, "tzone") <- time.zone
+
+#  jason add all this get includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST)
+time.zone <- get( "time.zone", env=.GlobalEnv )
+# includecatchID$StartTime <- includecatchID$timeSampleStarted 
+includecatchID$EndTime <- includecatchID$timeSampleEnded 
+includecatchID$ProjID <- includecatchID$projectDescriptionID
+includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL
+# attr(includecatchID$StartTime, "tzone") <- time.zone
+attr(includecatchID$EndTime, "tzone") <- time.zone
+includecatchID <- includecatchID[,c('trapPositionID','EndTime','ProjID','includeCatchID')]
+
+# sampleGearID ProjID trapPositionID trapVisitID
+catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
 
 
 #   ********************************************************************
