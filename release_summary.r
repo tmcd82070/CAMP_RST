@@ -1,4 +1,5 @@
 F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
+#
 #   This is the outer wrapper function to summarize releases at a particular site, for a particular run, for a particular taxon for a particular year.
 #
 #   Inputs:
