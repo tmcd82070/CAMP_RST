@@ -11,6 +11,8 @@ F.plot.eff.model <- function( fit, df, file ){
 #   Output:
 #   A time series plot of catch by date.
 #
+#   df <- ans
+#   plot.file <- file
 
 
 if( !is.na(file) ){
@@ -74,7 +76,7 @@ for( i in 1:length(traps) ){
     
     trials.season <- (strt <= df$batchDate[ind.line]) & (df$batchDate[ind.line] <= end)
 
-
+   
     #   Draw lines
     lines( df$batchDate[ ind.line ][trials.season & pre.season], df$efficiency[ ind.line ][trials.season & pre.season], lwd=3, col=my.colors[i] )
     lines( df$batchDate[ ind.line ][trials.season & during.season], df$efficiency[ ind.line ][trials.season & during.season], lwd=3, col=my.colors[i] )

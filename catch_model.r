@@ -14,7 +14,7 @@ F.catch.model <- function( catch.df ){
 #   'gamEstimated' is true for these new lines. Batch date is assigned based on EndTime, as usual. 
 #   This applies for all days between start.day and end.day.
 
-
+# catch.df <- df2
 
 #   Sort the data frame properly, by trapPosition and date of visit
 #   This puts the gaps in their correct locations 
@@ -150,6 +150,7 @@ jason.new <- NULL
 
 repeat{
 
+   
     if( i >= nrow(catch.df) ) break   # Don't do last line because no need to check.  After end, no more gaps by def'n.
     
     #print(catch.df[i,])
@@ -265,7 +266,8 @@ repeat{
         
         #   Put things we need into a blank data frame suitable for inserting into catch.df
         new <- catch.df[1:ng,]   # initialize - do it this way to get classes and factor levels
-        new$n.tot <- pred
+        new$n.tot <- pred      # put imputed with plus counts.
+        new$n.Orig <- NA       # jason add 4/17/2015 ... we want imputed values to go into tot, and not mess with unassigned numbers
         new$SampleMinutes   <- i.gapLens * 60
         new$EndTime <- sEnd
         new$StartTime <- sStart

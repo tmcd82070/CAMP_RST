@@ -73,7 +73,17 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
 
     
     #   ---- Summarize catch data by batchDate. Upon return, catch.df has one line per trapPosition-batchDate combo during time trap was operating. missing times pre and post season
-    catch.df <- F.summarize.fish.visit( catch.df )    
+    
+    catch.df1 <- F.summarize.fish.visit( catch.df, 'inflated' )   # jason - 4/14/2015 - we summarize over lifeStage, w/o regard to unassigned.  this is what has always been done.
+    catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned')    # jason - 4/14/2015 - we summarize over unassigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
+                                                                  #                   - the only reason we do this again is to get a different n.tot.
+    
+    assd <- catch.df2[catch.df2$Unassd != 'Unassigned' ,c('trapVisitID','lifeStage','FinalRun','n.tot','mean.fl','sd.fl')]    # & catch.df2$FinalRun == run.name not sure why we need to restrict to run here
+    colnames(assd) <- c('trapVisitID','lifeStage','FinalRun','n.Orig','mean.fl.Orig','sd.fl.Orig')
+    catch.df <- merge(catch.df1,assd,by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
+    
+    
+    
 
     runs.found <- unique(catch.df$FinalRun)
     runs.found <- runs.found[ !is.na(runs.found) ]
@@ -121,8 +131,9 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     } else {
         #   We have some of this run, compute production     
         
-        catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", "includeCatchID", "n.tot", "mean.fl", "sd.fl")]
-
+        catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", 'n.Orig','mean.fl.Orig','sd.fl.Orig',"n.tot", "mean.fl", "sd.fl")]     # jason 4/14/2015 - unassigned col added in
+#         catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", "includeCatchID", "n.tot", "mean.fl", "sd.fl")]
+        
         #   ---- Merge in the visits to get zeros
         catch.df.ls <- merge( visit.df, catch.df.ls, by="trapVisitID", all.x=T )
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
@@ -171,8 +182,8 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
           close(ch)
           
           # can't figure out how to join on posix dates.  so cheating. 
-          tmp.df$date.alone <- strftime(tmp.df$date,format="%F")
-          the.dates$date.alone <- strftime(the.dates$uniqueDate,format="%F")
+          tmp.df$date.alone <- as.Date(strptime(tmp.df$date,format="%F"))
+          the.dates$date.alone <- as.Date(strptime(the.dates$uniqueDate,format="%F"))    # jason: from strftime to strptime. why the change?
           tmp.df <- merge(tmp.df,the.dates,by = c("date.alone"),all.x=TRUE)
           
           tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)    #paste0(myYear,'-',tmp.jday %/% 7 + 1)

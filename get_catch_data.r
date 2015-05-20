@@ -87,42 +87,18 @@ visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeSta
 #   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
 catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
-ugh1 <<- sum(na.omit(catch[catch$FinalRun == 'Spring',]$Unmarked))
+
+catch$Unassd <- catch$lifeStage # jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
 #   ********************************************************************
-# catch <- catch[order(catch$trapVisitID,catch$FinalRun),]
+
 #   Expand the Plus counts
 catch <- F.expand.plus.counts( catch )
-
-
-ugh2 <<- sum(na.omit(catch[catch$FinalRun == 'Spring',]$Unmarked))
-
-
-
-db <- get( "db.file", env=.GlobalEnv ) 
-ch <- odbcConnectAccess(db)
-
-includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
-
-close(ch) 
-
-#  jason add all this get includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST)
-time.zone <- get( "time.zone", env=.GlobalEnv )
-# includecatchID$StartTime <- includecatchID$timeSampleStarted 
-includecatchID$EndTime <- includecatchID$timeSampleEnded 
-includecatchID$ProjID <- includecatchID$projectDescriptionID
-includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL
-# attr(includecatchID$StartTime, "tzone") <- time.zone
-attr(includecatchID$EndTime, "tzone") <- time.zone
-includecatchID <- includecatchID[,c('trapPositionID','EndTime','ProjID','includeCatchID')]
-
-# sampleGearID ProjID trapPositionID trapVisitID
-catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
 
 
 #   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"
 catch$FinalRun <- as.character( catch$FinalRun ) 
 catch$lifeStage <- as.character( catch$lifeStage ) 
-
+#catch$lifeStage <- as.character( catch$Unassd ) jason - possibly delete
 
 
 #   ********************************************************************

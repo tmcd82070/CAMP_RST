@@ -30,7 +30,7 @@
   db.file4 <<- "..\\Data\\TestingDBs\\CAMPCosumnes_25Oct2013_notForAnalyses\\CAMP.mdb"
   db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_29Jan2015\\CAMP.mdb"
   db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
-  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/Working/Data/CAMPAmerican_11Nov2014.mdb"
+  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150501/Data/TestingDBs/CAMPAmerican_11Nov2014.mdb"
     
   cat(paste("DB file:", db.file1, "\n"))
   cat(paste("DB file:", db.file2, "\n"))
@@ -63,7 +63,7 @@
   
   #   Retreive the YES/NO codes from the luNoYes table.  Just in case they should ever change in the data base
   
-  ch <- odbcConnectAccess(db.file1)
+  ch <- odbcConnectAccess(db.file7)
   luNoYes <- sqlFetch(ch, table.names["yes.no.codes"])
   No.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "no" ]
   Yes.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "yes" ]
@@ -118,7 +118,7 @@ source(	"plot_eff_model.r"	)
 source(	"plot_passage.r"	)
 source(	"release_summary.r"	)
 source(	"summarize_releases.r"	)
-source( "summarize_fish_visit.r" )
+source( "summarize_fish_visit.r" )  
 source( "all_catch_table.r" )
 #source(	"vec2sqlstr.r"	)
 source(	"size_by_date.r"	)

@@ -15,7 +15,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     run.season <- data.frame( start=strt.dt, end=end.dt )
     dt.len <- difftime(end.dt, strt.dt, units="days")
     if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
-
+    
     #   ---- Fetch efficiency data
     release.df <- F.get.release.data( site, taxon, min.date, max.date  )
 
@@ -41,7 +41,12 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     
     #   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables 
     
-    catch.df <- F.summarize.fish.visit( catch.df )    
+    #catch.df <- F.summarize.fish.visit( catch.df )       jason turns off 4/15/2015
+
+    catch.df1 <- F.summarize.fish.visit( catch.df, 'inflated' )   # jason - 4/14/2015 - we summarize over lifeStage, w/o regard to unassigned.  this is what has always been done.
+    catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned')    # jason - 4/14/2015 - we summarize over unassigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
+                                                                  #                   - the only reason we do this again is to get a different n.tot.
+
 
 #   Debugging
 #    tmp.catch <<- catch.df
@@ -50,14 +55,14 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
 #    readline()
 
     #   ---- Compute the unique runs we need to do
-    runs <- unique(catch.df$FinalRun)
+    runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    # get all instances over the two df.  jason change 4/17/2015
     runs <- runs[ !is.na(runs) ]
     cat("\nRuns found between", min.date, "and", max.date, ":\n")
     print(runs)
 
 
     #   ---- Compute the unique life stages we need to do
-    lstages <- unique(catch.df$lifeStage)
+    lstages <- unique(c(catch.df1$lifeStage,catch.df2$lifeStage))   # get all instances over the two df.  jason change 4/17/2015
     lstages <- lstages[ !is.na(lstages) ]   #   Don't need this,  I am pretty sure lifeStage is never missing here.
     cat("\nLife stages found between", min.date, "and", max.date, ":\n")
     print(lstages)
@@ -80,6 +85,11 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     for( j in 1:length(runs) ){
 
         run.name <<- runs[j]
+        
+        assd <- catch.df2[catch.df2$Unassd != 'Unassigned' & catch.df2$FinalRun == run.name,c('trapVisitID','lifeStage','n.tot','mean.fl','sd.fl')]    # not sure why we need to restrict to run here
+        colnames(assd) <- c('trapVisitID','lifeStage','n.Orig','mean.fl.Orig','sd.fl.Orig')
+        catch.df <- merge(catch.df1,assd,by=c('trapVisitID','lifeStage'),all.x=TRUE)
+        
 
         cat(paste(rep("*",80), collapse=""))
         tmp.mess <- paste("Processing ", run.name)
@@ -108,7 +118,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
             #   ---- If we caught this run and lifestage, compute passage estimate. 
             if( any( indRun & indLS ) ){
 
-                catch.df.ls <- catch.df[ indRun & indLS, c("trapVisitID", "FinalRun", "lifeStage", "includeCatchID", "n.tot", "mean.fl", "sd.fl")]
+                catch.df.ls <- catch.df[ indRun & indLS, c("trapVisitID", "FinalRun", "lifeStage", 'n.Orig','mean.fl.Orig','sd.fl.Orig',"n.tot", "mean.fl", "sd.fl")]
 
                 #   ---- Merge in the visits to get zeros
                 catch.df.ls <- merge( visit.df, catch.df.ls, by="trapVisitID", all.x=T )

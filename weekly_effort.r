@@ -10,8 +10,8 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
 f.prop.fished <- function( df ){
     # compute proportion of min(sample start) to max(sample start) that trap 
     # was fishing
-    off.hrs <- sum(as.numeric(df[with(df,TrapStatus == 'Fishing'),]$SampleMinutes), na.rm=TRUE )
-    on.hrs <- sum(as.numeric(df[with(df,TrapStatus == 'Not fishing'),]$SampleMinutes), na.rm=TRUE )
+    on.hrs <- sum(as.numeric(df[with(df,TrapStatus == 'Fishing'),]$SampleMinutes), na.rm=TRUE )
+    off.hrs <- sum(as.numeric(df[with(df,TrapStatus == 'Not fishing'),]$SampleMinutes), na.rm=TRUE )
 #     off.hrs <- sum(as.numeric(df$sampleGapLenHrs), na.rm=TRUE )
 #     on.hrs <- sum(as.numeric(df$sampleLengthHrs), na.rm=TRUE )
     prop <- on.hrs / (on.hrs + off.hrs)
@@ -24,7 +24,7 @@ f.prop.fished <- function( df ){
 
 # visit <- F.get.indiv.visit.data( site, NA, min.date, max.date )
 tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
-visit <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
+visit <- tmp.df$visit   # the unique trap visits. 
 
 
 

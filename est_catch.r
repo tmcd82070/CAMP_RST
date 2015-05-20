@@ -12,6 +12,8 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 #   A data frame containing $batchDay and $catch
 #
 
+
+  
 time.zone <- get("time.zone", env=.GlobalEnv )
 
 #   ---- Establish the days on which estimates need to be produced.
@@ -46,7 +48,7 @@ for( trap in u.traps ){
     
     
     df.and.fit <- suppressWarnings( F.catch.model( df2 ) )  # df.and.fit is list of, $df2 contains data frame, $fit contains model, etc
-#     jason.df.and.fit <<- df.and.fit
+     #jason.df.and.fit <<- df.and.fit
     df <- rbind( df, df.and.fit$df2)
     
    
@@ -74,6 +76,9 @@ ind <- list( batchDate=format(df$batchDate, "%Y-%m-%d"), trapPositionID=df$trapP
 est.catch <- tapply( df$n.tot, ind, sum )
 p.imputed <- tapply( df$gamEstimated, ind, mean )
 
+est.catch2 <- tapply( df$n.Orig, ind, sum )       # we need to tally up the unassigned catch
+
+
 
 tmp.est.catch <- est.catch   # save a copy of est.catch for counting traps later
 
@@ -82,7 +87,15 @@ tmp.est.catch <- est.catch   # save a copy of est.catch for counting traps later
 
 est.catch <- cbind( expand.grid( batchDate=dimnames(est.catch)[[1]], trapPositionID=dimnames(est.catch)[[2]]), 
                 catch=c(est.catch), imputed.catch=c(p.imputed) )
+est.catch2 <- cbind( expand.grid( batchDate=dimnames(est.catch2)[[1]], trapPositionID=dimnames(est.catch2)[[2]]), 
+                    assdCatch=c(est.catch2), imputed.catch=c(p.imputed) )    # jason add 4/17/2015.  need to tally up unassigned catch
+
+# get both total catch and unassigned catch.
+est.catch <- merge(est.catch,est.catch2,by=c('batchDate','trapPositionID','imputed.catch'))     # jason add 4/17/2015 - join assumes full join, i.e., dim(of both dfs) same
 est.catch$batchDate <- as.POSIXct( as.character(est.catch$batchDate), "%Y-%m-%d", tz=time.zone)                
+est.catch <- est.catch[order(est.catch$trapPositionID,est.catch$batchDate),]
+
+
 
 #   ---- Now remove times before and after a trap started and stopped.  The above tapply's using ind inserted NA for days when one trap was not fishing but others where. 
 #        There are no gaps between the start and stop of a trap in a season, but each trap could operated over a different part of the season.
@@ -120,9 +133,9 @@ trapsOperating$batchDate <- as.POSIXct( as.character(trapsOperating$batchDate), 
 #   If a trap runs without checks for 48 hours say, it runs over two batch dates.  When this happens, 
 #   the above statements result in a NA for catch on the day it skipped.  The real (non-imputed) catch 
 #   for these days is 0.  Replace these NA's with zeros.  (But, perhaps these lines should be tossed...)
-ind <- is.na(est.catch$catch)
-est.catch$catch[ ind ] <- 0
-est.catch$imputed.catch[ ind ] <- 0
+#ind <- is.na(est.catch$catch)
+#est.catch$catch[ ind ] <- 0
+#est.catch$imputed.catch[ ind ] <- 0
 
 
 #   Assign attributes for plotting
@@ -146,15 +159,94 @@ attr(est.catch, "run.name") <- run.name#catch.df$FinalRun[1]
 attr(est.catch, "life.stage" ) <- catch.df$lifeStage[1]
 attr(est.catch, "species.name") <- "Chinook Salmon"
 
+# jason adds 4/20/2015 to itemize out the different types of catches
+
+# collapse imputed to day ... could be two per day if both traps non-functioning
+true.imp$shortdate <- strftime(true.imp$batchDate, format="%Y-%m-%d")
+true.imp.sum <- aggregate(true.imp$n.tot,by=list(true.imp$shortdate,true.imp$trapPositionID), FUN=sum)
+true.imp.sum$batchDate <- as.POSIXct( as.character(true.imp.sum$Group.1), "%Y-%m-%d", tz=time.zone)  
+true.imp.sum$Group.1 <- NULL
+names(true.imp.sum)[names(true.imp.sum) == 'V1'] <- 'n.tot'  
+names(true.imp.sum)[names(true.imp.sum) == 'Group.2'] <- 'trapPositionID'  
+
+
+preCatch <- merge(est.catch,true.imp.sum,by=c('trapPositionID','batchDate'),all.x=TRUE)
+
+# collpase catch counts in catch.df over day, for both n.tot (totalCatch) and n.Orig (assigned)
+catch.df$shortdate  <- strftime(catch.df$batchDate, format="%Y-%m-%d")
+catch.df.reduced <- catch.df[catch.df$TrapStatus == 'Fishing',]
+catch.df.n.tot.sum <- aggregate(catch.df.reduced$n.tot,by=list(catch.df.reduced$shortdate,catch.df.reduced$trapPositionID), FUN=sum)
+catch.df.n.Orig.sum <- aggregate(catch.df.reduced$n.Orig,by=list(catch.df.reduced$shortdate,catch.df.reduced$trapPositionID), FUN=sum)
+colnames(catch.df.n.tot.sum) <- c('shortdate','trapPositionID','n.tot')
+colnames(catch.df.n.Orig.sum) <- c('shortdate','trapPositionID','n.Orig')
+catch.df.both.sum <- merge(catch.df.n.tot.sum,catch.df.n.Orig.sum,by=c('shortdate','trapPositionID'))
+catch.df.both.sum$batchDate <- as.POSIXct( as.character(catch.df.both.sum$shortdate), "%Y-%m-%d", tz=time.zone)  
+catch.df.both.sum$shortdate <- NULL
+
+
+# full join here to bring in assd data data was observed but not randomly selected...i think
+masterCatch <- merge(preCatch,catch.df.both.sum,by=c('trapPositionID','batchDate'),all.x=TRUE,all.y=TRUE)
+masterCatch$unassdCatch <- masterCatch$n.tot.y - masterCatch$n.Orig
+
+masterCatch <- masterCatch[, !(names(masterCatch) %in% c('assdCatch'))]    # we have NA for this var for batchDates with imputation -- its not good enough
+
+names(masterCatch)[names(masterCatch) == 'n.tot.x'] <- 'imputedCatch'   
+names(masterCatch)[names(masterCatch) == 'catch'] <- 'totalCatch'   # this is trent's old catch col
+names(masterCatch)[names(masterCatch) == 'n.Orig'] <- 'assdCatch'  
+
+masterCatch <- masterCatch[, !(names(masterCatch) %in% c('trapVisitID','n.tot.y'))]
+
+#   If a trap runs without checks for 48 hours say, it runs over two batch dates.  When this happens, 
+#   the above statements result in a NA for catch on the day it skipped.  The real (non-imputed) catch 
+#   for these days is 0.  Replace these NA's with zeros.  (But, perhaps these lines should be tossed...)
+
+getMinDate1 <- masterCatch[!is.na(masterCatch$assdCatch),]
+getMinDate2 <- aggregate(getMinDate1[,names(getMinDate1) %in% c('trapPositionID','batchDate')],list(getMinDate1$trapPositionID),FUN=head, 1)
+getMinDate2$minDate <- as.POSIXct( as.character(getMinDate2$batchDate), "%Y-%m-%d", tz=time.zone)  
+
+masterCatch <- merge(masterCatch,getMinDate2[,c('trapPositionID','minDate')],by='trapPositionID',all.x=TRUE)
+
+masterCatch$indOld <- !is.na(masterCatch$imputedCatch) | !is.na(masterCatch$assdCatch)   # 4/20/2015 reproduce output from before
+# masterCatch$assdCatch[ ind ] <- 0
+#masterCatch$imputed.catch[ ind ] <- 0
+
+# # adaptation of trent code from before, where he somehow had data only after the first catch day
+# ind1 <- (masterCatch$minDate <= masterCatch$batchDate) & is.na(masterCatch$assdCatch)   # 4/20/2015 reproduce output from before
+# masterCatch$assdCatch[ ind1 ] <- 0
+# ind2 <- (masterCatch$minDate <= masterCatch$batchDate) & is.na(masterCatch$imputed.catch)   # 4/20/2015 reproduce output from before
+# masterCatch$imputed.catch[ ind2 ] <- 0
+
+
+# make sure that totalCatch includes unassdCatch
+masterCatch$totalCatch <- ifelse(masterCatch$unassdCatch > 0 & is.na(masterCatch$totalCatch),masterCatch$unassdCatch,masterCatch$totalCatch)
+
+# make sure that totalCatch includes imputedCatch -- it was this way before, but breaking things up broke everything
+masterCatch$totalCatch <- ifelse(masterCatch$imputedCatch > 0 & is.na(masterCatch$totalCatch),masterCatch$imputedCatch,masterCatch$totalCatch)
+
+# make sure that totalCatch includes assdCatch -- it was this way before, but breaking things up broke everything
+masterCatch$totalCatch <- ifelse(masterCatch$assdCatch >= 0 & is.na(masterCatch$totalCatch),masterCatch$assdCatch,masterCatch$totalCatch)
+
+# make sure that imputed.catch is a 1 if no other source of fish for that day.
+masterCatch$imputed.catch <- ifelse(masterCatch$imputedCatch >0 & is.na(masterCatch$imputed.catch) & is.na(masterCatch$unassdCatch) & is.na(masterCatch$assdCatch),1.0,masterCatch$imputed.catch)
+
+
+attr(masterCatch, "site.name") <- catch.df$siteName[1]
+attr(masterCatch, "subsites") <- data.frame(subSiteID = u.ss, subSiteName=u.ss.name)
+attr(masterCatch, "run.name") <- run.name#catch.df$FinalRun[1]
+attr(masterCatch, "life.stage" ) <- catch.df$lifeStage[1]
+attr(masterCatch, "species.name") <- "Chinook Salmon"
+
+
+#write.csv(masterCatch,'C:/Users/jmitchell/Desktop/masterCatch.csv')
+
+
 if( !is.na(plot.file) ) {
-    out.fn <- F.plot.catch.model( est.catch, file=plot.file )
+    out.fn <- F.plot.catch.model( masterCatch, file=plot.file )    # change f'n input from est.catch to masterCatch
 } else {
     out.fn <- NULL
 }
 
 cat("Catch estimation complete...\n")
-
-
 
 
 ans <- list(catch=est.catch, fits=catch.fits, X.miss=X.miss, gaps=Gaps, bDates.miss=bDates.miss, trapsOperating=trapsOperating, true.imp=true.imp)

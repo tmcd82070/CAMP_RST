@@ -1,10 +1,23 @@
 
 library(RODBC)
 
-testing <- TRUE                                                                                                            # points to different output folders.
 
-# source("\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150204/R-Interface/source_all.R")  
-source("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150204/R-Interface/source_all_testing.R")  
+testing <- TRUE           # points to different output folders.
+platform <- '20150501'    # points to different platforms
+
+if(testing == FALSE){
+  paste(cat('testing == FALSE\n'))
+  source("\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150204/R-Interface/source_all.R")  
+} else {
+  paste(cat('testing == TRUE\n'))
+  setwd(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST",platform,"/R-Interface/"))
+  source(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST",platform,"/R-Interface/source_all_testing.R"))
+  
+  by <- 'week'
+  river <- 'Old American Test'
+}
+
+
 
 theExcel <- read.csv('theExcel.csv')                                                                                        # read in Excel of data.
 # theExcel <- theExcel[theExcel$Issues == '' & theExcel$streamName == 'Sacramento River',]
@@ -31,7 +44,6 @@ for(testi in 81:121){#dim(theExcel)[1]){
 #     } 
 
     river        <- droplevels(theExcel[testi,]$streamName)    
-#     river        <- 'Old American Test'
     
     if(river == ''){
       db.file <- db.file1
@@ -62,8 +74,10 @@ for(testi in 81:121){#dim(theExcel)[1]){
       siteText     <- 'testing'
       run          <- 3
       runText      <- 'Fall'
-      min.date     <- "2014-01-01"
-      max.date     <- "2014-06-02"
+      min.date     <- "2013-10-01"
+      max.date     <- "2014-09-29"
+      min.date     <- "2012-10-01"
+      max.date     <- "2013-09-29"
     }
 
     taxon        <- 161980
@@ -91,5 +105,7 @@ for(testi in 81:121){#dim(theExcel)[1]){
   F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=T"),   by.lifestage=FALSE   )
   F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=F"),   by.lifestage=TRUE    )
   F.weekly.effort   ( site, taxon,      min.date, max.date,            output.file                                         )  
+
+  F.lifestage.passage(site, taxon,      min.date, max.date,            output.file,                     ci=TRUE)
 
 }

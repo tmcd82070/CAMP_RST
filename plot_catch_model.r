@@ -13,6 +13,14 @@ F.plot.catch.model <- function( df, file=NA ){
 
 
 # df <- est.catch
+# df <- masterCatch
+
+if( attr(df,"life.stage") == 'All'){
+  catchMetric <- 'totalCatch'
+} else {
+  catchMetric <- 'assdCatch'
+}
+
 
 #   If file=NA, a pdf graphing device is assumed to be open already.
 if( !is.na(file) ){
@@ -28,10 +36,27 @@ if( !is.na(file) ){
 
 }
 
+# impute the imputed number of fish into unassd catch days.  awkward, b/c imputed catch
+# based on plus-counted fish, but unassd based on measured fish (non-plus-counted).
+#df$unassdcatch <- ifelse(df$imputed.catch > 0,df$catch,df$unassdcatch)
 
-imputed <- df$imputed.catch > 0
+# jason add 4/20/2015 -- plotting only measured values means that many days in df have NA.
+# we need to pull those out before we plot--sometimes, a trap could have caught many fish,
+# none of which were measured.  so, these traps end up not having anything to plot, even
+# though the code thinks data for that plot is there.  this causes errors.
+#df <- df[ df$imputed.catch != 0 | !is.na(df$unassdcatch) ,]
 
-rng.y <- range(df$catch[ df$catch < Inf], na.rm=T)
+imputed <- df$imputed.catch > 0 & !is.na(df$imputed.catch)
+
+# jason turn on -- have to be creative -- imputed and unassd catch generally on
+# different scales, since imputed based on plus-counts, but unassigned on raw catches.
+
+if(catchMetric == 'assdCatch'){
+  rng.y <- range(df$assdCatch[ df$assdCatch < Inf], na.rm=T) 
+} else {
+  rng.y <- range(df$totalCatch[ df$totalCatch < Inf], na.rm=T)
+}
+
 plot( range(df$batchDate), rng.y, type="n", xlab="Date", ylab="Daily Raw (un-inflated) catch", xaxt="n", yaxt="n" )
     
 lab.x.at <- pretty(df$batchDate)
@@ -52,19 +77,38 @@ my.pch <- 15 + 1:length(traps)
 for( i in 1:length(traps) ){
 
 #   This adds the smoothed interpolation model to the plot.  
-    ind <- df$trapPositionID == traps[i]
-    lines( supsmu(df$batchDate[ind], df$catch[ind]), lwd=2, lty=1, col=my.colors[i] )
-
+#     ind <- df$trapPositionID == traps[i]          # jason turns off
+#     lines( supsmu(df$batchDate[ind], df$catch[ind]), lwd=2, lty=1, col=my.colors[i] )
+  
+    # jason 4/20/3015 -- use new var indOld?
+  if(catchMetric == 'totalCatch'){
+    
+    ind <- df$trapPositionID == traps[i] & !is.na(df$assdCatch)
+    lines( supsmu(df$batchDate[ind], df$totalCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
+    
     ind <- df$trapPositionID == traps[i] & imputed
-    points( df$batchDate[ ind ], df$catch[ ind ], pch=my.pch[i]-15, col=my.colors[i], cex=1 )
+    points( df$batchDate[ ind ], df$imputedCatch[ ind ], pch=my.pch[i]-15, col=my.colors[i], cex=1 )    # jason 4/17/2015 - jason changes catch to imputedCatch
 
     ind <- df$trapPositionID == traps[i] & !imputed
-    points( df$batchDate[ ind ], df$catch[ ind ], pch=my.pch[i], col=my.colors[i] )
+    points( df$batchDate[ ind ], df$totalCatch[ ind ], pch=my.pch[i], col=my.colors[i] )              # jason 4/17/2015 - jason changes catch to assdCatch
+    
+  } else {
+    
+    ind <- df$trapPositionID == traps[i] & !is.na(df$assdCatch)
+    lines( supsmu(df$batchDate[ind], df$assdCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
+    
+    ind <- df$trapPositionID == traps[i] & imputed
+    points( df$batchDate[ ind ], df$imputedCatch[ ind ], pch=my.pch[i]-15, col=my.colors[i], cex=1 )    # jason 4/17/2015 - jason changes catch to imputedCatch
+    
+    ind <- df$trapPositionID == traps[i] & !imputed
+    points( df$batchDate[ ind ], df$assdCatch[ ind ], pch=my.pch[i], col=my.colors[i] )              # jason 4/17/2015 - jason changes catch to assdCatch
+    
+  }
 
 }
 
 
-catch.df.sites <- unique(df[,c('trapPositionID','TrapPosition')])       # jason add  
+catch.df.sites <- unique(na.omit(df[,c('trapPositionID','TrapPosition')]))       # jason add  
 colnames(catch.df.sites) <- c('subSiteID','subSiteName')                         # jason add
 subsite.name <- catch.df.sites
 subsite.name$subSiteName <- as.character(subsite.name$subSiteName)
