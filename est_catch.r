@@ -25,10 +25,11 @@ time.zone <- get("time.zone", env=.GlobalEnv )
 
 #   ---- Fill in the gaps for individual traps
 df <- NULL
+true.imp <- NULL
 u.traps <- unique( catch.df$trapPositionID )
 catch.fits <- X.miss <- Gaps <- bDates.miss <- vector("list", length(u.traps))   # lists to contain thing to save for bootstrapping 
 names(catch.fits) <- u.traps
-catch.dff <<- catch.df   # save a copy for debugging
+# catch.dff <<- catch.df   # save a copy for debugging
 
 
 for( trap in u.traps ){
@@ -45,7 +46,7 @@ for( trap in u.traps ){
     
     
     df.and.fit <- suppressWarnings( F.catch.model( df2 ) )  # df.and.fit is list of, $df2 contains data frame, $fit contains model, etc
-    
+#     jason.df.and.fit <<- df.and.fit
     df <- rbind( df, df.and.fit$df2)
     
    
@@ -54,12 +55,12 @@ for( trap in u.traps ){
     Gaps[[which(trap==u.traps)]] <- df.and.fit$gaps
     bDates.miss[[which(trap==u.traps)]] <- df.and.fit$batchDate.for.missings
 
-    
+    true.imp <- rbind(true.imp,df.and.fit$true.imp)
 #    print(df.and.fit)
 #    cat("in est_catch (hit return):")
 #    readline()
 }
-
+# true.imp <<- true.imp
 cat("in est_catch.r  DF")
 print( tapply(df$batchDate, df$trapPositionID, range) )
 cat("-------\n")
@@ -127,18 +128,24 @@ est.catch$imputed.catch[ ind ] <- 0
 #   Assign attributes for plotting
 u.ss.rows <- !duplicated(catch.df$trapPositionID)
 u.ss <- catch.df$trapPositionID[u.ss.rows]
-u.ss.name <- catch.df$trapPosition[u.ss.rows]
+u.ss.name <- catch.df$TrapPosition[u.ss.rows]
 ord <- order( u.ss )
 u.ss <- u.ss[ ord ]
 u.ss.name <- u.ss.name[ ord ]
+
+#   Make a plot if called for (I don't use parameter 'plot', apparently.
+# jason.est.catch <<- est.catch
+
+
+# jason add:  merge in TrapPosition so that graphical output can show text labels instead of computer code numbers.
+# est.catch <- merge(jason.est.catch,unique(catch.dff[,c('trapPositionID','TrapPosition')]),by=c('trapPositionID'),all.x=TRUE)  delete later
+est.catch <- merge(est.catch,unique(catch.df[,c('trapPositionID','TrapPosition')]),by=c('trapPositionID'),all.x=TRUE)
 attr(est.catch, "site.name") <- catch.df$siteName[1]
 attr(est.catch, "subsites") <- data.frame(subSiteID = u.ss, subSiteName=u.ss.name)
-attr(est.catch, "run.name") <- catch.df$FinalRun[1]
+attr(est.catch, "run.name") <- run.name#catch.df$FinalRun[1]
 attr(est.catch, "life.stage" ) <- catch.df$lifeStage[1]
 attr(est.catch, "species.name") <- "Chinook Salmon"
 
-
-#   Make a plot if called for (I don't use parameter 'plot', apparently.
 if( !is.na(plot.file) ) {
     out.fn <- F.plot.catch.model( est.catch, file=plot.file )
 } else {
@@ -150,7 +157,7 @@ cat("Catch estimation complete...\n")
 
 
 
-ans <- list(catch=est.catch, fits=catch.fits, X.miss=X.miss, gaps=Gaps, bDates.miss=bDates.miss, trapsOperating=trapsOperating)
+ans <- list(catch=est.catch, fits=catch.fits, X.miss=X.miss, gaps=Gaps, bDates.miss=bDates.miss, trapsOperating=trapsOperating, true.imp=true.imp)
 
 attr(ans, "out.fn.list") <- out.fn
 

@@ -15,7 +15,7 @@ if( nrow(catch) > 0 ){
     #   These are variables that are constant within a trapVisit, run, and lifestage
     const.vars<-c("ProjID", "trapVisitID", "batchDate", "StartTime", "EndTime", "SampleMinutes", 
         "TrapStatus", "siteID", "siteName", "trapPositionID", "TrapPosition", "sampleGearID", 
-        "sampleGear", "halfConeID", "HalfCone", "FinalRun", "lifeStage" )
+        "sampleGear", "halfConeID", "HalfCone", "FinalRun", "lifeStage", "includeCatchID" )
 
     #   indexes = all unique combinations of visit, run, and life stage
     #   indexes = NA for all gaps in the trapping sequence

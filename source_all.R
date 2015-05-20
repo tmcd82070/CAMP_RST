@@ -23,9 +23,10 @@
     #db.file <<- "..\\Data\\WorkingVersionCAMP_LAR_16July2013.mdb"  # For trent's testing in 'code' directory
     #db.file <<- "..\\Data\\CAMPFeather_NewVersion1July2013.mdb"  # For trent's testing in 'code' directory
     #db.file <<- "..\\Data\\connie's caswell stanislaus file after doug adds finaRunIDs  CAMP.mdb"
-    db.file <<- "..\\Data\\CAMP.mdb"
+
+    db.file  <<- "..\\Data\\CAMP.mdb"    #   THE OFFICIAL DATA BASE
     
-    cat(paste("DB file:", db.file, "\n"))
+    cat(paste("DB file:", db.file ,"\n"))
 
     #   Parameter table.names is a list containing the mapping of table names in Access to table names in R. 
     #   This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
@@ -49,12 +50,13 @@
                     fish.origin="luFishOrigin" )
                     
     #   Retreive the YES/NO codes from the luNoYes table.  Just in case they should ever change in the data base
+
     ch <- odbcConnectAccess(db.file)
     luNoYes <- sqlFetch(ch, table.names["yes.no.codes"])
     No.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "no" ]
     Yes.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "yes" ]
-    close(ch)
- 
+    close(ch)      
+    
     #   Assign sample cut time for batch dates that are missing. 
     #   If a sample period ends before this time, batch date is the day the period ends. 
     #   If a sample period ends after this time, batch date is the next day following the end of the sampling period.
@@ -82,7 +84,6 @@
 
 #   --------------------------------------------------------
 #   Source code
-#
 
 source(	"capwords.r"	)
 source(	"catch_model.r"	)
@@ -118,7 +119,7 @@ source( "assign_batch_date.r" )
 source( "assign_gaplen.r" )
 #source( "check_for_missing.r" )
 #source( "biweekly_report.r" )
-#source( "weekly_effort.r" )
+source( "weekly_effort.r" )
 #source( "weekly_passage.r" )  # exclude. Same as F.passage with by="week"
 source( "lifestage_passage.r" )
 source( "bootstrap_passage.r" )
@@ -126,7 +127,7 @@ source( "summarize_passage.r" )
 source( "summarize_index.r" )
 source( "expand_plus_counts.r" )
 source( "assign_1dim.r" )
-source( "assign_2dim.r" )
+source( "assign_2dim.r" )                             # stuck in an endless loop?  maybe doesnt matter.
 source( "get_all_fish_data.r" )
 source( "plot_lifestages.r" )
 #source( "get_life_stages.r" )

@@ -64,7 +64,6 @@ F.sql.error.check(catch)
 
 close(ch) 
 
-
 #   ******************************************************************
 #   Assign time zone (probably does not matter)
 time.zone <- get( "time.zone", env=.GlobalEnv )
@@ -84,14 +83,40 @@ attr(catch$EndTime, "tzone") <- time.zone
 visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
 visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
 
-
 #   ********************************************************************
 #   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
 catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
+ugh1 <<- sum(na.omit(catch[catch$FinalRun == 'Spring',]$Unmarked))
 #   ********************************************************************
+# catch <- catch[order(catch$trapVisitID,catch$FinalRun),]
 #   Expand the Plus counts
 catch <- F.expand.plus.counts( catch )
+
+
+ugh2 <<- sum(na.omit(catch[catch$FinalRun == 'Spring',]$Unmarked))
+
+
+
+db <- get( "db.file", env=.GlobalEnv ) 
+ch <- odbcConnectAccess(db)
+
+includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
+
+close(ch) 
+
+#  jason add all this get includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST)
+time.zone <- get( "time.zone", env=.GlobalEnv )
+# includecatchID$StartTime <- includecatchID$timeSampleStarted 
+includecatchID$EndTime <- includecatchID$timeSampleEnded 
+includecatchID$ProjID <- includecatchID$projectDescriptionID
+includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL
+# attr(includecatchID$StartTime, "tzone") <- time.zone
+attr(includecatchID$EndTime, "tzone") <- time.zone
+includecatchID <- includecatchID[,c('trapPositionID','EndTime','ProjID','includeCatchID')]
+
+# sampleGearID ProjID trapPositionID trapVisitID
+catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
 
 
 #   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"

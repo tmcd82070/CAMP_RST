@@ -10,10 +10,30 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 #       are "day", "week", "month", "year".
 #   file.root = root of file name for graphics files
 #  
+  
+# catch.df <- catch.df.ls
+# release.df <- release.df
+# summarize.by <- by
+# file.root <- out.fn.root
+# ci <- ci
 #
 #   Output,
 #   A data frame containing date, passage estimate, and SE of passage estimate.
-#
+# 
+  
+catch.df.sites <- unique(catch.df[,c('trapPositionID','TrapPosition')])           # jason add
+colnames(catch.df.sites) <- c('subSiteID','subSiteName')                             # jason add
+get.includeCatchID <- catch.df[,c('trapPositionID','batchDate','includeCatchID')] # jason add
+
+# the.na <<- get.includeCatchID[is.na(get.includeCatchID$includeCatchID),]
+the.na <- get.includeCatchID[is.na(get.includeCatchID$includeCatchID),]
+
+get.includeCatchID <- na.omit(unique(get.includeCatchID[order(get.includeCatchID$trapPositionID,get.includeCatchID$batchDate),]))
+
+
+
+# jason.get.includeCatchID <<- get.includeCatchID
+
 
 time.zone <- get("time.zone", env=.GlobalEnv )
 
@@ -34,6 +54,20 @@ out.fn.list <- NULL
 #   retrieve the progress bar
 usepb <- exists( "progbar", where=.GlobalEnv )
 
+# jason add: this data frame has the raw unmarked counts of catch.  note that rows with missing data for certain days, i.e., for which imputation
+# occurs also appear as line items here.  so, to get catch, for different trapPositionID/subSiteID, summarise and add togeter (b/c some
+# days have more than one record).  brings back more dates than ultimately wanted; let merge below (after grand.df) take care of which
+# to keep.    
+jason.catch2.df <- catch.df[,c('trapVisitID','batchDate','trapPositionID','n.tot')]
+jason.catch3.df <- data.frame(with(jason.catch2.df,tapply(n.tot, list(batchDate,trapPositionID), sum, na.rm=T )))
+# jason.catch3.df$batchDate <- rownames(jason.catch3.df)
+jason.catch4.df <- na.omit(reshape(jason.catch3.df,idvar='batchDate',ids=row.names(jason.catch3.df),times=names(jason.catch3.df),timevar='trapPositionID',varying=list(names(jason.catch3.df)),direction='long'))
+colnames(jason.catch4.df)[2] <- 'rawCatch'
+jason.catch4.df$trapPositionID <- as.character(substr(jason.catch4.df$trapPositionID,2,nchar(jason.catch4.df$trapPositionID)))
+jason.catch4.df$batchDate <- as.POSIXct(jason.catch4.df$batchDate,time.zone)
+
+# jasontest <- jason.catch4.df[jason.catch4.df$trapPositionID == 'X57004',]
+
 #   ------------------------------------------------------------------
 #   Estimate capture for every day of season.  Return value is
 #   data frame with columns $batchDate and $catch.  
@@ -46,6 +80,14 @@ if(usepb){
     setWinProgressBar(progbar, (2*tmp + 1)/3 )
 }
 catch <- catch.and.fits$catch
+
+  # the catch dataframe in this list has the imputed values already overwriting the original numbers
+jason.catch.and.fits2.df <- catch.and.fits$true.imp
+jason.catch.and.fits3.df <- data.frame(with(jason.catch.and.fits2.df,tapply(n.tot, list(batchDate,trapPositionID), sum, na.rm=T )))
+jason.catch.and.fits4.df <- na.omit(reshape(jason.catch.and.fits3.df,idvar='batchDate',ids=row.names(jason.catch.and.fits3.df),times=names(jason.catch.and.fits3.df),timevar='trapPositionID',varying=list(names(jason.catch.and.fits3.df)),direction='long'))
+colnames(jason.catch.and.fits4.df)[2] <- 'ImputedCatch'
+jason.catch.and.fits4.df$trapPositionID <- as.character(substr(jason.catch.and.fits4.df$trapPositionID,2,nchar(jason.catch.and.fits4.df$trapPositionID)))
+jason.catch.and.fits4.df$batchDate <- as.POSIXct(jason.catch.and.fits4.df$batchDate,time.zone)
 
 
 
@@ -109,7 +151,6 @@ print(efficiency[1:20,])
 #
 #tmp.catch <<- catch
 
-
 #   The Grand Merge.  Merge catch info with efficiency info.
 grand.df <- merge( catch, efficiency, by=c("trapPositionID", "batchDay"), all=T)
 
@@ -118,15 +159,52 @@ grand.df <- merge( catch, efficiency, by=c("trapPositionID", "batchDay"), all=T)
 #   in every date because efficiency data frame has all dates. 
 grand.df <- grand.df[!is.na(grand.df$catch), ]
 
+grand.df.rawCatch <- merge(grand.df,jason.catch4.df,by=c('trapPositionID','batchDate'),all.x=TRUE)
+grand.df.rawCatch.Imputed <- merge(grand.df.rawCatch,jason.catch.and.fits4.df,by=c('trapPositionID','batchDate'),all.x=TRUE)
+grand.df.rawCatch.Imputed$totalCatch <- rowSums(grand.df.rawCatch.Imputed[11:12], na.rm=TRUE)     # 11:12 == rawCatch,ImputedCatch
+grand.df.rawCatch.Imputed$correct <- ifelse(abs(grand.df.rawCatch.Imputed$totalCatch - grand.df.rawCatch.Imputed$catch) < 0.00001,TRUE,FALSE)
+
+grand.df.rawCatch.Imputed.includeCatchID <- merge(grand.df.rawCatch.Imputed,get.includeCatchID,by=c('trapPositionID','batchDate'),all.x=TRUE)
+
+grand.df <- grand.df.rawCatch.Imputed.includeCatchID
+
+# somewhere, there are comments that state that catches of NA mean zero.  so, replace NA in each of 
+# rawCatch and ImputedCatch with zero. 
+grand.df$rawCatch <- ifelse(is.na(grand.df$rawCatch), 0, grand.df$rawCatch)
+grand.df$ImputedCatch <- ifelse(is.na(grand.df$ImputedCatch), 0, round(grand.df$ImputedCatch,1))
+
+# switch to stop it all if this doesnt work.
+if(sum(grand.df$correct) != nrow(grand.df)){
+  stop("Sum of rawCatch and ImputedCatch doesn't equal originally calculated catch values. Investigate.")
+}
+
 #   The passage estimator
 grand.df$passage <- rep(NA, nrow(grand.df))
 grand.df$passage <- grand.df$catch / grand.df$efficiency
 grand.df$passage <- round(grand.df$passage,1)   # round final passage estimate here so different summaries sum to the same number.
 
+# jason - 1/14/2015.  the inclusion of includeCatchID ends up creating extra rows of data, when there is a 1 and a 2 on the same day.
+# need to collapse this down...or just get rid of it for the purposes of bootstrapping.
+grand.df$includeCatchID <- ifelse(is.na(grand.df$includeCatchID),0,grand.df$includeCatchID)
+ugh <- grand.df[,c('trapPositionID','batchDay','includeCatchID')]
+ugh$text <- as.character(grand.df$includeCatchID)
+heyyy <- reshape(ugh,timevar="text",idvar=c("trapPositionID","batchDay"),direction="wide")
+heyyy[is.na(heyyy)] <- ''
+heyyy$includeCatchID <- paste0(heyyy$includeCatchID.0,heyyy$includeCatchID.1,heyyy$includeCatchID.2)  # keep as char for now, so if it can happen, 01 and 10 and so on don't become 1 and 1
+heyyy[heyyy=='0'] <- "NA"                                                                             # if it can happen, want things like "NA1" or "1NA"
+heyyy <- heyyy[,!(names(heyyy) %in% c('includeCatchID.0','includeCatchID.1','includeCatchID.2'))]
+
+grand.df <- merge(grand.df[!(duplicated(paste0(grand.df$batchDate,grand.df$trapPositionID))),!(names(grand.df) %in% 'includeCatchID')],heyyy,by=c('trapPositionID','batchDay'),all.x=T)
+
+rm(ugh,heyyy)
+
+# jason.catch <<- catch
+# jason.efficiency <<- efficiency
+
 
 #   Save grand.df to .GlobalEnv (for debuggin) and write it out to a csv file
-catch.df <<- catch
-grand.df <<- grand.df
+# catch.df <<- catch
+# grand.df <<- grand.df
 cat("grand.df stored in .GlobalEnv\n")
 
 if( !is.na(file.root) ){
@@ -137,12 +215,27 @@ if( !is.na(file.root) ){
     tmp.df$propImputedEff <- as.numeric(tmp.df$propImputedEff)  # convert to numbers, 0 or 1
     tmp.df$passage <- round(tmp.df$passage)  # Round off passage
     tmp.df$Catch <- round(tmp.df$Catch,1)  
+    tmp.df$totalCatch <- round(tmp.df$totalCatch,1)
     tmp.df$efficiency <- round(tmp.df$efficiency, 4)  
     
     #   Merge in subsiteNames
-    ssiteNames <- attr(catch, "subsites")
+#     ssiteNames <- attr(catch, "subsites")    # jason turn off
+    ssiteNames <- catch.df.sites              # jason turn on
     tmp.df <- merge( ssiteNames, tmp.df, by.x="subSiteID", by.y="trapPositionID", all.y=T )
     out.fn <- paste(file.root, "_baseTable.csv", sep="")
+
+#     jason.tmp.df <<- tmp.df
+    tmp.df$TrapPosition <- tmp.df$TrapPositionID <- NULL
+
+    tmp.df$includeCatchID <- ifelse(is.na(tmp.df$includeCatchID),NA,ifelse(tmp.df$includeCatchID == 1,'Yes',ifelse(tmp.df$includeCatchID == 12,'Yes+No','No')))
+
+
+# ugh <- data.frame(c(1,2,2,2,2,1,1,1,NA,NA,1,1,1))
+# colnames(ugh) <- 'ugh'
+# ugh$ughYN <- ifelse(is.na(ugh$ugh),NA,ifelse(ugh$ugh == 1,'Yes','No'))
+
+    tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','rawCatch','ImputedCatch','totalCatch','Catch','correct','propImputedCatch','efficiency','propImputedEff','passage','includeCatchID')]    # rearrange columns
+
     write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
     out.fn.list <- c(out.fn.list, out.fn)
 }
@@ -182,7 +275,6 @@ if(usepb){
 #   ---- Summarize auxillary information about catch
 
 index.aux <- F.summarize.index( catch.df$batchDate, summarize.by )
-
 
 #   Mean Forklength
 num <- catch.df$mean.fl * catch.df$n.tot

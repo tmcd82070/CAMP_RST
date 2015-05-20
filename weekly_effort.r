@@ -1,4 +1,4 @@
-F.weekly.effort <- function( site, min.date, max.date, output.file ){
+F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
 #
 #   compute weekly effort.  Effort is number of days/hours that trap was fishing.
 #
@@ -10,8 +10,10 @@ F.weekly.effort <- function( site, min.date, max.date, output.file ){
 f.prop.fished <- function( df ){
     # compute proportion of min(sample start) to max(sample start) that trap 
     # was fishing
-    off.hrs <- sum(as.numeric(df$sampleGapLenHrs), na.rm=TRUE )
-    on.hrs <- sum(as.numeric(df$sampleLengthHrs), na.rm=TRUE )
+    off.hrs <- sum(as.numeric(df[with(df,TrapStatus == 'Fishing'),]$SampleMinutes), na.rm=TRUE )
+    on.hrs <- sum(as.numeric(df[with(df,TrapStatus == 'Not fishing'),]$SampleMinutes), na.rm=TRUE )
+#     off.hrs <- sum(as.numeric(df$sampleGapLenHrs), na.rm=TRUE )
+#     on.hrs <- sum(as.numeric(df$sampleLengthHrs), na.rm=TRUE )
     prop <- on.hrs / (on.hrs + off.hrs)
     prop
 }
@@ -20,7 +22,11 @@ f.prop.fished <- function( df ){
 #   ================================================================================================
 #   Fetch the visit table.
 
-visit <- F.get.indiv.visit.data( site, NA, min.date, max.date )
+# visit <- F.get.indiv.visit.data( site, NA, min.date, max.date )
+tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
+visit <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
+
+
 
 
 weeks <- format( visit$batchDate, "%U" )   # Sunday is first day of the week, Weeks go from 0 to 51 
@@ -41,6 +47,8 @@ min.dt <- as.POSIXct( min.date, format="%Y-%m-%d", tz="America/Los_Angeles" )
 max.dt <- as.POSIXct( max.date, format="%Y-%m-%d", tz="America/Los_Angeles" )
 all.weeks <- seq( min.dt, max.dt, by=7*24*60*60 )
 all.weeks <- data.frame( yr=as.numeric(format(all.weeks, "%Y")), week=as.numeric(format(all.weeks, "%U")) )
+
+all.weeks <- all.weeks[all.weeks$week <= 52,]    # JASON: THE PRESENCE OF A 53RD WEEK CREATES PROBLEMS BELOW.  THIS IS PERHAPS NOT THE RIGHT FIX...
 
 eff.df <- merge( obs.eff, all.weeks, by=c("yr", "week"), all.y=TRUE )
 eff.df$prop.on[ is.na(eff.df$prop.on) ] <- 0

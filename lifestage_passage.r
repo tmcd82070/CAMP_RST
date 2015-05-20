@@ -79,7 +79,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     out.fn.roots <- NULL
     for( j in 1:length(runs) ){
 
-        run.name <- runs[j]
+        run.name <<- runs[j]
 
         cat(paste(rep("*",80), collapse=""))
         tmp.mess <- paste("Processing ", run.name)
@@ -108,7 +108,7 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
             #   ---- If we caught this run and lifestage, compute passage estimate. 
             if( any( indRun & indLS ) ){
 
-                catch.df.ls <- catch.df[ indRun & indLS, c("trapVisitID", "FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl")]
+                catch.df.ls <- catch.df[ indRun & indLS, c("trapVisitID", "FinalRun", "lifeStage", "includeCatchID", "n.tot", "mean.fl", "sd.fl")]
 
                 #   ---- Merge in the visits to get zeros
                 catch.df.ls <- merge( visit.df, catch.df.ls, by="trapVisitID", all.x=T )
