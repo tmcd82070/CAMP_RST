@@ -24,6 +24,7 @@ if( nvisits == 0 ){
     return()
 }
 
+# jason.nvisits <<- nvisits
 
 #   *****
 #   Run report criteria for efficiency releases. Builds TempReportCriteria_Release.
@@ -34,6 +35,7 @@ if( nreleases == 0 ){
     return()
 }
 
+# jason.nreleases <<- nreleases
 
 #   *****
 #   Open ODBC channel
@@ -53,14 +55,19 @@ F.run.sqlFile( ch, "QryEfficiencyTests.sql", R.TAXON=taxon )
 #   *****
 #   Now, fetch the result
 release.visit <- sqlFetch( ch, "TempRelRecap_final" )
+
+# jason.release.visit0 <<- release.visit
+
 F.sql.error.check(release.visit)
+
+# jason.release.visit <<- release.visit
 
 close(ch) 
 
 #   Assign time zones to date-time columns
 time.zone <- get( "time.zone", env=.GlobalEnv )
 attr(release.visit$ReleaseDate, "tzone")<-time.zone
-attr(release.visit$PlusTestDays, "tzone")<-time.zone
+# attr(release.visit$PlusTestDays, "tzone")<-time.zone     # jason: no longer in connie's query, 6/17/2015
 attr(release.visit$VisitTime, "tzone")<-time.zone
 
 
@@ -79,7 +86,7 @@ attr(release.visit$VisitTime, "tzone")<-time.zone
 #   this data frame (release.visit). 
 #
 #   However, for now, we will collapse the trap visits and compute total number of each release's fish captured ever.  
-tmp <<- release.visit 
+# tmp <<- release.visit 
 
 #   *****
 #   Drop any rows that are flagged as "Do not include"
@@ -138,6 +145,8 @@ class(ans$meanRecapTime) <- class(release.visit$VisitTime)
 attr(ans$meanRecapTime, "tzone") <- attr(release.visit$VisitTime, "tzone")
 
     
+# ans.check <<- ans
+
 cat("First 20 records of RELEASE table:\n")  
 print( ans[1:min(nrow(ans),20),] )
 

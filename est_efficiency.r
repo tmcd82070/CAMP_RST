@@ -15,6 +15,10 @@ F.est.efficiency <- function( release.df, batchDate, method=1, df.spline=4, plot
 #   $gam.estimated.  $gam.estimated is 'Yes' if efficiency for that interval was estimated
 #   by the GAM model, rather than being empirical.
 #
+#    batchDate <- bd
+#      method <- 3
+#      df.spline <- 3
+#      plot.file <- file.root
 
 
 #   ---- Check that we actually caught released fish.  If not, 0 efficiency, cannot do estimate.

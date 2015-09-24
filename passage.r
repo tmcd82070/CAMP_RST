@@ -30,7 +30,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     #        to the name here.  A bit inefficient, but not much.
     ch <- odbcConnectAccess(db.file)
     luRun <- sqlFetch(ch, "luRun")
-    run.name <- luRun$run[ luRun$runID == run ]
+    run.name <<- luRun$run[ luRun$runID == run ]
     close(ch)
 
 
@@ -44,8 +44,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     
     catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
     visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
-    
-    
+        
     if( nrow(catch.df) == 0 ){
         stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
     }
@@ -74,7 +73,20 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
 
     
     #   ---- Summarize catch data by batchDate. Upon return, catch.df has one line per trapPosition-batchDate combo during time trap was operating. missing times pre and post season
-    catch.df <- F.summarize.fish.visit( catch.df )    
+    
+    catch.df1 <- F.summarize.fish.visit( catch.df, 'inflated' )   # jason - 4/14/2015 - we summarize over lifeStage, w/o regard to unassigned.  this is what has always been done.
+    catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned')    # jason - 4/14/2015 - we summarize over unassigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
+                                                                  #                   - the only reason we do this again is to get a different n.tot.
+    
+    # bring in counts and stats of measured fish
+    assd <- catch.df2[catch.df2$Unassd != 'Unassigned' ,c('trapVisitID','lifeStage','FinalRun','n.tot','mean.fl','sd.fl')]    # & catch.df2$FinalRun == run.name not sure why we need to restrict to run here
+    colnames(assd) <- c('trapVisitID','lifeStage','FinalRun','n.Orig','mean.fl.Orig','sd.fl.Orig')
+    catch.dfA <- merge(catch.df1,assd,by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
+    
+    # bring in counts of unassigned (unmeasured) fish
+    unassd <- catch.df2[catch.df2$Unassd == 'Unassigned' ,c('trapVisitID','lifeStage','FinalRun','n.tot')]    
+    colnames(unassd) <- c('trapVisitID','lifeStage','FinalRun','n.Unassd')
+    catch.df <- merge(catch.dfA,unassd,by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
 
     runs.found <- unique(catch.df$FinalRun)
     runs.found <- runs.found[ !is.na(runs.found) ]
@@ -116,13 +128,15 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         tmp <- matrix(0,ncol=10)
         tmp <- as.data.frame( tmp )
         names(tmp) <- c("passage","date","pct.imputed.catch","lower.95","upper.95",
-            "nForkLenMM", "meanForkLenMM","sdForkLenMM","sampleLengthHrs","sampleLengthDays")
+            "nForkLenMM", "meanForkLenMM","sdForkLenMM","sampleLengthHrs","sampleLengthDays")   # jason ... delete out date?
         pass <- data.frame(month="0", tmp)
         
     } else {
-        #   We have some of this run, compute production        
-        catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl")]
-
+        #   We have some of this run, compute production     
+        
+        catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", 'n.Orig','mean.fl.Orig','sd.fl.Orig',"n.tot", "mean.fl", "sd.fl","n.Unassd")]     # jason 4/14/2015 - n.Orig col added in. 5/20/15 - n.Unassd added
+#         catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", "includeCatchID", "n.tot", "mean.fl", "sd.fl")]
+        
         #   ---- Merge in the visits to get zeros
         catch.df.ls <- merge( visit.df, catch.df.ls, by="trapVisitID", all.x=T )
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
@@ -131,6 +145,8 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         catch.df.ls$FinalRun[ is.na(catch.df.ls$FinalRun) ] <- run
         catch.df.ls$lifeStage <- "All"
         catch.df.ls$n.tot[ is.na(catch.df.ls$n.tot) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0
+        catch.df.ls$n.Orig[ is.na(catch.df.ls$n.Orig) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0
+        catch.df.ls$n.Unassd[ is.na(catch.df.ls$n.Unassd) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0
 
         #   ---- Compute passage
         out.fn.root <- paste0(output.file, "_", run.name )
@@ -161,7 +177,23 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         #   Fix up the pass table to pretty the output
         tmp.df <- pass
         
-        
+        if(by == 'week'){
+          
+          # jason add.
+          db <- get( "db.file", env=.GlobalEnv )                                  #   Open ODBC channel
+          ch <- odbcConnectAccess(db)
+          the.dates <- sqlFetch( ch, "Dates" )                                    #   get the table that has the julian week labels.
+          the.dates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,julianWeek,julianWeekLabel))
+          close(ch)
+          
+          # can't figure out how to join on posix dates.  so cheating. 
+          tmp.df$date.alone <- as.Date(strptime(tmp.df$date,format="%F"))
+          the.dates$date.alone <- as.Date(strptime(the.dates$uniqueDate,format="%F"))    # jason: from strftime to strptime. why the change?
+          tmp.df <- merge(tmp.df,the.dates,by = c("date.alone"),all.x=TRUE)
+          
+          tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)    #paste0(myYear,'-',tmp.jday %/% 7 + 1)
+          tmp.df <- subset(tmp.df, select = -c(date.alone,uniqueDate,julianWeek,julianWeekLabel) )
+        }
         
         tzn <- get("time.zone", .GlobalEnv )
         tmp.df$date <- as.POSIXct( strptime( format(tmp.df$date, "%Y-%m-%d"), "%Y-%m-%d", tz=tzn),tz=tzn)
@@ -193,7 +225,19 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
 
         rs <- paste( format(run.season[1], "%d-%b-%Y"), "to", format(run.season[2], "%d-%b-%Y"))
         nms <- names(tmp.df)[1]
-        for( i in 2:length(names(tmp.df))) nms <- paste(nms, ",", names(tmp.df)[i], sep="")
+        for( i in 2:length(names(tmp.df))){
+          if(by == 'day'){
+            nms <- paste(nms, ",", names(tmp.df)[i], sep="")
+          } else {
+            if(i != 3){                                                # jason add:  put in this condition to make 'date' not print. doug doesnt like it.
+              nms <- paste(nms, ",", names(tmp.df)[i], sep="")    
+            }
+          }
+        } 
+        
+        if(by == 'day'){
+          nms <- gsub('date,', '', nms)     # by == day results in a slightly different format for tmp.df than the other three.
+        }
     
         cat(paste("Writing passage estimates to", out.pass.table, "\n"))
         
@@ -211,6 +255,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
         cat("\n")
         sink()
     
+        tmp.df$date <- NULL                                              # jason add:  make sure the whole column of date doesnt print.
         #   Write out the table    
         write.table( tmp.df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
         
@@ -230,7 +275,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
             attr(pass,"summarized.by") <- by 
             attr(pass, "species.name") <- "Chinook Salmon"
             attr(pass, "site.name") <- catch.df$siteName[1]
-            attr(pass, "run.name" ) <- catch.df$FinalRun[1]
+            attr(pass, "run.name" ) <- run.name#catch.df$FinalRun[1]
             attr(pass, "lifestage.name" ) <- "All lifestages"
             
             

@@ -42,7 +42,7 @@ if( !ci ){
 
     
     #   These giant matrices will hold bootstrap iterations
-    c.pred <- matrix( grand.df$catch, nrow=nrow(grand.df), ncol=R )
+    c.pred <- matrix( grand.df$totalCatch, nrow=nrow(grand.df), ncol=R )      # jason change to totalCatch.  
     e.pred <- matrix( grand.df$efficiency, nrow=nrow(grand.df), ncol=R )
 
     
