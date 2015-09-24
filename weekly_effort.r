@@ -7,6 +7,7 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
 #   max.date = maximum date to include
 #   output.file = root name of output file(s)
 
+<<<<<<< HEAD
 #   ---- Check that times are less than 1 year apart
 strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
 end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )
@@ -22,6 +23,17 @@ nvisits <- F.buildReportCriteria( site, min.date, max.date )
 if( nvisits == 0 ){
   warning("Your criteria returned no trapVisit table records.")
   return()
+=======
+f.prop.fished <- function( df ){
+    # compute proportion of min(sample start) to max(sample start) that trap 
+    # was fishing
+    on.hrs <- sum(as.numeric(df[with(df,TrapStatus == 'Fishing'),]$SampleMinutes), na.rm=TRUE )
+    off.hrs <- sum(as.numeric(df[with(df,TrapStatus == 'Not fishing'),]$SampleMinutes), na.rm=TRUE )
+#     off.hrs <- sum(as.numeric(df$sampleGapLenHrs), na.rm=TRUE )
+#     on.hrs <- sum(as.numeric(df$sampleLengthHrs), na.rm=TRUE )
+    prop <- on.hrs / (on.hrs + off.hrs)
+    prop
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 }
 
 #  === update 5/23/2015 === requires new connie-query. ===================================
@@ -114,6 +126,7 @@ for(i in 1:nTraps){
   }
 }
 
+<<<<<<< HEAD
 # combine all the traps into an overall df
 # the.sum <- NULL
 # for(i in 1:nTraps){
@@ -137,6 +150,136 @@ for(i in 1:nrow(df.Day[[nTraps + 1]])){
 }
 df.Day[[nTraps + 1]]$Total <- df.Day[[nTraps + 1]]$Minutes.1 + df.Day[[nTraps + 1]]$Minutes.2 + df.Day[[nTraps + 1]]$Minutes.3
 df.Day[[nTraps + 1]]$Diff <- round(df.Day[[nTraps + 1]]$Total - 1440,3)
+=======
+#   ================================================================================================
+#   Fetch the visit table.
+
+# visit <- F.get.indiv.visit.data( site, NA, min.date, max.date )
+tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
+visit <- tmp.df$visit   # the unique trap visits. 
+
+
+
+
+weeks <- format( visit$batchDate, "%U" )   # Sunday is first day of the week, Weeks go from 0 to 51 
+yrs <- format( visit$batchDate, "%Y" )
+
+
+eff <- by( visit, list(yrs=yrs, weeks=weeks), f.prop.fished )
+
+
+obs.weeks <- dimnames(eff)$weeks
+obs.yrs <- dimnames(eff)$yrs
+obs.eff <- as.numeric(eff)
+obs.eff <- data.frame(expand.grid(yr=as.numeric(obs.yrs), week=as.numeric(obs.weeks)), prop.on=obs.eff )
+obs.eff <- obs.eff[ !is.na(obs.eff$prop.on), ]
+obs.eff <- obs.eff[ order(obs.eff$yr, obs.eff$week), ]
+
+min.dt <- as.POSIXct( min.date, format="%Y-%m-%d", tz="America/Los_Angeles" )
+max.dt <- as.POSIXct( max.date, format="%Y-%m-%d", tz="America/Los_Angeles" )
+all.weeks <- seq( min.dt, max.dt, by=7*24*60*60 )
+all.weeks <- data.frame( yr=as.numeric(format(all.weeks, "%Y")), week=as.numeric(format(all.weeks, "%U")) )
+
+all.weeks <- all.weeks[all.weeks$week <= 52,]    # JASON: THE PRESENCE OF A 53RD WEEK CREATES PROBLEMS BELOW.  THIS IS PERHAPS NOT THE RIGHT FIX...
+
+eff.df <- merge( obs.eff, all.weeks, by=c("yr", "week"), all.y=TRUE )
+eff.df$prop.on[ is.na(eff.df$prop.on) ] <- 0
+eff.df <- eff.df[ order(eff.df$yr, eff.df$week), ]
+eff.df$prop.off <- 1 - eff.df$prop.on
+
+
+eff.bars <- t(as.matrix(eff.df[,c("prop.on", "prop.off")]))
+
+#   ========================================================================
+#   Now plot the bars
+
+out.fn <- paste(output.file, "_effort.png", sep="")
+tryCatch({png(file=out.fn,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.fn)})
+layout( matrix(c(1,2), ncol=1), height=c(1,1), widths=1)
+par(mar=c(2.1,4.1,0,0))
+
+mid.time <- round((1+ncol(eff.bars))/2)
+eff1.bars <- eff.bars[,1:mid.time]
+eff2.bars <- eff.bars[,(mid.time+1):ncol(eff.bars)]
+
+wk1.bars <- eff.df$week[1:mid.time]
+wk2.bars <- eff.df$week[(mid.time+1):ncol(eff.bars)]
+
+yr1.bars <- eff.df$yr[1:mid.time]
+yr2.bars <- eff.df$yr[(mid.time+1):ncol(eff.bars)]
+
+#   Upper plot
+barplot(eff1.bars, 
+    space=0, 
+    col=c("brown", "white"), 
+    legend.text=c("Fished", "Not fished"), 
+    args.legend=list(x="topright", horiz=T, bty="n"), 
+    ylab="", 
+    xlab="", 
+    ylim=c(0,1.15), 
+    yaxt = "n", 
+    xaxt = "n")
+
+mtext( side=2, text="Proportion of\nweek fished", line=2 )    
+axis(2, at=seq(0, 1, by=.2))
+
+#   Compute locations for, and labels of, months'
+mon.cuts <- as.POSIXct( paste( yr1.bars, (wk1.bars)*7 + 1), format="%Y %j" )
+mon.u <- format(mon.cuts, "%m")
+mon.y <- yr1.bars[ !duplicated(mon.u) ]
+mon.m <- tapply(1:length(mon.u), list(yr1.bars,mon.u), mean)     # This sorts by month number, which gets labels out of sync -> resort
+mon.m <- sort(mon.m) - 0.5
+mon.u <- mon.u[ !duplicated(mon.u) ]
+mon.cuts <- as.POSIXct( paste(mon.y, mon.u, "15"), format="%Y %m %d")
+mon.labs<- format(mon.cuts, "%b%y")
+ind <- mon.m > 1
+axis(1, at=mon.m[ind], labels=mon.labs[ind], las=1, tick=F, line=-.5 )
+
+
+#   Add tick marks
+mon.cuts <- as.POSIXct( paste( yr1.bars, (wk1.bars)*7 + 1), format="%Y %j" )
+mon.u <- format(mon.cuts, "%m")
+mon.cuts <- sort(tapply(1:length(mon.u), list(yr1.bars,mon.u), max))
+axis(1, at=mon.cuts, labels=rep("",length(mon.cuts)))
+
+
+#   Lower plot
+par(mar=c(3.1,4.1,0,0))
+barplot(eff2.bars, 
+    space=0, 
+    col=c("brown", "white"), 
+    legend.text=c("Fished", "Not fished"), 
+    args.legend=list(x="topright", horiz=T, bty="n"), 
+    ylab="", 
+    xlab="", 
+    ylim=c(0,1.15), 
+    yaxt = "n", 
+    xaxt = "n")
+    
+mtext( side=2, text="Proportion of\nweek fished", line=2 )    
+axis(2, at=seq(0, 1, by=.2))
+
+
+#   Compute locations for, and labels of, months'
+mon.cuts <- as.POSIXct( paste( yr2.bars, (wk2.bars)*7 + 1), format="%Y %j" )
+mon.u <- format(mon.cuts, "%m")
+mon.y <- yr2.bars[ !duplicated(mon.u) ]
+mon.m <- tapply(1:length(mon.u), list(yr2.bars, mon.u), mean)     # This sorts by month number, which gets labels out of sync -> resort
+mon.m <- sort(mon.m) - 0.5
+mon.u <- mon.u[ !duplicated(mon.u) ]
+mon.cuts <- as.POSIXct( paste(mon.y, mon.u, "15"), format="%Y %m %d")
+mon.labs<- format(mon.cuts, "%b%y")
+
+ind <- mon.m > 1
+axis(1, at=mon.m[ind], labels=mon.labs[ind], las=1, tick=F, line=-.5 )
+
+
+#   Add tick marks
+mon.cuts <- as.POSIXct( paste( yr2.bars, (wk2.bars)*7 + 1), format="%Y %j" )
+mon.u <- format(mon.cuts, "%m")
+mon.cuts <- sort(tapply(1:length(mon.u), list(yr2.bars,mon.u), max))
+axis(1, at=mon.cuts, labels=rep("",length(mon.cuts)))
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 # get site label
 siteLabel <- as.character(droplevels(Site[Site$siteID == site,]$siteName))

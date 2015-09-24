@@ -12,6 +12,7 @@ F.summarize.releases <- function( release.df ){
 
 
 #   ---- Summarize by releaseID.  This summarizes over the traps at a site.  Visits have already been collapsed by the time we get here.
+<<<<<<< HEAD
 # nRcap    <- tapply( release.df$Recaps, release.df$releaseID, sum, na.rm=T )
 # nRelease <- tapply( release.df$nReleased, release.df$releaseID, function(x){ x[1] } )
 # trapPos  <- tapply( as.character(release.df$TrapPosition), release.df$releaseID, function(x){ x[1] })
@@ -34,6 +35,18 @@ comment  <- gsub("\r\n\r\n", ". ", as.character(release.df$ReleaseComments))
 dt       <- release.df$ReleaseDate
 mean.vis   <- release.df$meanRecapTime
 mean.atLarge   <- release.df$meanTimeAtLargeHrs
+=======
+nRcap    <- tapply( release.df$Recaps, release.df$releaseID, sum, na.rm=T )
+nRelease <- tapply( release.df$nReleased, release.df$releaseID, function(x){ x[1] } )
+trapPos  <- tapply( as.character(release.df$TrapPosition), release.df$releaseID, function(x){ x[1] })
+ReleaseID<- tapply( release.df$releaseID, release.df$releaseID, function(x){ x[1] } )
+Include  <- tapply( as.character(release.df$IncludeTest), release.df$releaseID, function(x){ x[1] } )
+comment  <- gsub("\r\n\r\n", ". ", tapply( as.character(release.df$ReleaseComments), release.df$releaseID, function(x){ x[1] } ))
+dt       <- tapply( release.df$ReleaseDate, release.df$releaseID, function(x){ x[1] })
+mean.vis   <- tapply( release.df$meanRecapTime, release.df$releaseID, function(x){ mean(x, na.rm=T) })
+mean.atLarge   <- tapply( release.df$meanTimeAtLargeHrs, release.df$releaseID, function(x){ mean(x, na.rm=T) })
+# rel.site   <- tapply( as.character(release.df$siteID), release.df$releaseID, function(x){ x[1] })
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 class( dt ) <- class( release.df$meanRecapTime )
 class( mean.vis ) <- class( release.df$meanRecapTime )
