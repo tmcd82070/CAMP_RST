@@ -12,7 +12,11 @@ F.plot.eff.model <- function( fit, df, file ){
 #   A time series plot of catch by date.
 #
 #   df <- ans
+<<<<<<< HEAD
 #   file <- plot.file
+=======
+#   plot.file <- file
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 
 if( !is.na(file) ){

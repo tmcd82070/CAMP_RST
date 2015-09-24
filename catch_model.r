@@ -267,7 +267,10 @@ repeat{
         #   Put things we need into a blank data frame suitable for inserting into catch.df
         new <- catch.df[1:ng,]   # initialize - do it this way to get classes and factor levels
         new$n.tot <- pred      # put imputed with plus counts.
+<<<<<<< HEAD
         new$n.Unassd <- 0      # we've already accounted for these?
+=======
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
         new$n.Orig <- NA       # jason add 4/17/2015 ... we want imputed values to go into tot, and not mess with unassigned numbers
         new$SampleMinutes   <- i.gapLens * 60
         new$EndTime <- sEnd

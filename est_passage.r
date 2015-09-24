@@ -23,7 +23,11 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   
 catch.df.sites <- unique(catch.df[,c('trapPositionID','TrapPosition')])                     # jason add
 colnames(catch.df.sites) <- c('subSiteID','subSiteName')                                    # jason add
+<<<<<<< HEAD
 #catch.df$n.Orig <- ifelse(is.na(catch.df$n.Orig) & catch.df$TrapStatus == 'Fishing',0,catch.df$n.Orig)   # jason add -- 4/15/2015 delete 5/20/2015.  do with other 0 overwrite in passage.R
+=======
+catch.df$n.Orig <- ifelse(is.na(catch.df$n.Orig) & catch.df$TrapStatus == 'Fishing',0,catch.df$n.Orig)   # jason add -- 4/15/2015
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 time.zone <- get("time.zone", env=.GlobalEnv )
 
@@ -164,6 +168,7 @@ grand.df <- grand.df.rawCatch.Imputed
 # rawCatch and ImputedCatch with zero. 
 grand.df$assignedCatch <- ifelse(is.na(grand.df$rawCatch), 0, grand.df$rawCatch)
 grand.df$inflatedCatch <- ifelse(is.na(grand.df$inflatedCatch), 0, grand.df$inflatedCatch)
+<<<<<<< HEAD
 grand.df$unassignedCatch <- ifelse(is.na(grand.df$UnassdCatch), 0, grand.df$UnassdCatch)
 grand.df$imputedCatch <- ifelse(is.na(grand.df$ImputedCatch), 0, round(grand.df$ImputedCatch,1))
 grand.df$totalCatch <- ifelse(is.na(grand.df$inflatedCatch + grand.df$imputedCatch), 0, round(grand.df$inflatedCatch + grand.df$imputedCatch,1))
@@ -185,6 +190,12 @@ if(sum(grand.df$check1 + grand.df$check2 + grand.df$check3) != nrow(grand.df)*3)
 } else {
   cat('No issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Continuing...\n')
 }
+=======
+grand.df$imputedCatch <- ifelse(is.na(grand.df$ImputedCatch), 0, round(grand.df$ImputedCatch,1))
+grand.df$totalCatch <- ifelse(is.na(grand.df$inflatedCatch + grand.df$imputedCatch), 0, round(grand.df$inflatedCatch + grand.df$imputedCatch,1))
+
+grand.df$rawCatch <- grand.df$ImputedCatch <- grand.df$catch <- NULL       
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 
 #   The passage estimator
@@ -264,7 +275,11 @@ if( !is.na(file.root) ){
 
      #tmp.df$includeCatchID <- ifelse(is.na(tmp.df$includeCatchID),NA,ifelse(tmp.df$includeCatchID == 1,'Yes',ifelse(tmp.df$includeCatchID == 12,'Yes+No','No')))
 
+<<<<<<< HEAD
     tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','imputedCatch','totalCatch','propImputedCatch','efficiency','propImputedEff','passage')]    # rearrange columns
+=======
+    tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','imputedCatch','totalCatch','propImputedCatch','efficiency','propImputedEff','passage')]    # rearrange columns
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
     
     write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
     out.fn.list <- c(out.fn.list, out.fn)
@@ -307,6 +322,7 @@ if(usepb){
 #        .tot for metrics pertaining to the inflated catch.  
 
 index.aux <- F.summarize.index( catch.df$batchDate, summarize.by )  
+<<<<<<< HEAD
 
 # jason: for some reason, for testi = 7, bootstrap passage brings back one year, but summarize index brings back
 # another, when calculating per year.  this messes up the join below. force the two to be the 
@@ -314,6 +330,8 @@ index.aux <- F.summarize.index( catch.df$batchDate, summarize.by )
 if(summarize.by == 'year'){
   n[1,1] <- index.aux[[1]][1]
 }
+=======
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 #   Mean Forklength
 num <- catch.df$mean.fl.Orig * catch.df$n.Orig 
@@ -330,6 +348,7 @@ den <- tapply( catch.df$n.Orig, index.aux, sum, na.rm=T)
 aux.fl <- ifelse( den > 0, num / den, NA )
 aux.sd <- ifelse( den > 1, sqrt(num.sd / (den-1)), NA )
 
+<<<<<<< HEAD
 
 
 catch.df.reduced <- aggregate(catch.df,by=list(ID=catch.df$batchDate),head,1)  # 6/5/2015 - jason reduces df to select first of each and changes to batchdate...
@@ -358,6 +377,16 @@ index.aux <- F.summarize.index(catch.df.reduced$batchDate,summarize.by)         
  
 
 
+=======
+#   Amount of time sampled
+catch.df.reduced <- aggregate(catch.df,by=list(ID=catch.df$trapVisitID),head,1)  # 4/13/2015 - jason reduces df to select first of each
+tzn <- get("time.zone", .GlobalEnv )                                                   # batchDate defaults to mountain time. fix that.
+catch.df.reduced$batchDate <- as.POSIXct( strptime( format(catch.df.reduced$batchDate, "%Y-%m-%d"), "%Y-%m-%d", tz=tzn),tz=tzn)   # fix the time.
+   
+index.aux <- F.summarize.index(catch.df.reduced$batchDate,summarize.by)               # 4/13/2015 - jason indexes in reduced df
+
+num <- as.numeric( catch.df.reduced$SampleMinutes )                                   # 4/13/2015 - jason pulls from reduced df
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 aux.hrs <- tapply( num, index.aux, sum, na.rm=T )/60                                  # this is hours actually sampled during the 'index' period
 
 #den <- rep( 24, length(batchDate.filled) )

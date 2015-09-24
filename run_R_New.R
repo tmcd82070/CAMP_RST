@@ -3,15 +3,24 @@ library(RODBC)
 
 
 testing <- TRUE           # points to different output folders.
+<<<<<<< HEAD
 platform <- 'CAMP_RST20150501 - Copy'    # points to different platforms
+=======
+platform <- '20150501'    # points to different platforms
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 if(testing == FALSE){
   paste(cat('testing == FALSE\n'))
   source("\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150204/R-Interface/source_all.R")  
 } else {
   paste(cat('testing == TRUE\n'))
+<<<<<<< HEAD
   setwd(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/"))
   source(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/source_all_testing.R"))
+=======
+  setwd(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST",platform,"/R-Interface/"))
+  source(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST",platform,"/R-Interface/source_all_testing.R"))
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
   
   by <- 'week'
   river <- 'Old American Test'
@@ -25,6 +34,7 @@ theExcel <- read.csv('theExcel.csv')                                            
 theExcel <- theExcel[theExcel$Issues == '',]
 rownames(theExcel) <- NULL
 
+<<<<<<< HEAD
 testi <- 30
 by <- 'week'
 # 73-80!!
@@ -42,6 +52,25 @@ for(testi in 22:dim(theExcel)[1]){
     } else if(byj == 4){
       by <- 'year'
     } 
+=======
+testi <- 7
+by <- 'month'
+# 73-80!!
+
+for(testi in 81:121){#dim(theExcel)[1]){
+  
+#   for(byj in 1:4){
+    
+#     if(byj == 1){
+#       by <- 'day'
+#     } else if(byj == 2){
+#       by <- 'week'
+#     } else if(byj == 3){
+#       by <- 'month'
+#     } else if(byj == 4){
+#       by <- 'year'
+#     } 
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
     river        <- droplevels(theExcel[testi,]$streamName)    
     
@@ -74,6 +103,7 @@ for(testi in 22:dim(theExcel)[1]){
       siteText     <- 'testing'
       run          <- 3
       runText      <- 'Fall'
+<<<<<<< HEAD
 #       min.date     <- "2013-10-01"
 #       max.date     <- "2014-09-29"
       min.date     <- "2013-10-01"
@@ -86,12 +116,27 @@ for(testi in 22:dim(theExcel)[1]){
 #     } else {
 #       output.file  <- paste0("..//Outputs//",river,"_",siteText,"_",min.date,"_",max.date)         
 #     }
+=======
+      min.date     <- "2013-10-01"
+      max.date     <- "2014-09-29"
+      min.date     <- "2012-10-01"
+      max.date     <- "2013-09-29"
+    }
+
+    taxon        <- 161980
+    if(testing == TRUE){    
+      output.file  <- paste0("..//Outputs//",river,"//",river,"_",siteText,"_",min.date,"_",max.date)   
+    } else {
+      output.file  <- paste0("..//Outputs//",river,"_",siteText,"_",min.date,"_",max.date)         
+    }
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
     ci           <- TRUE
     output.type  <- "odt"
     from         <- "Trent McDonald, Ph.D., WEST Incorporated"
     to           <- "Doug Threloff, USFWS CAMP Coordinator"
     return.addr  <- "FISH AND WILDLIFE SERVICE!USFWS Caswell State Park Office!1234 Abbey Rd.!Caswell, California  96080!(530) 527-3043, FAX (530) 529-0292"
     
+<<<<<<< HEAD
 #     F.passage       ( site, taxon, run, min.date, max.date, by,        output.file,                ci                      )
 #   }
 
@@ -108,4 +153,22 @@ for(testi in 22:dim(theExcel)[1]){
     F.run.passage     ( site, taxon,      min.date, max.date, by=by,        output.file=output.file,                     ci=TRUE            )
 #   F.lifestage.passage(site, taxon,      min.date, max.date,            output.file,                     ci=TRUE)
   }
+=======
+    F.passage       ( site, taxon, run, min.date, max.date, by,        output.file,                ci                      )
+#   }
+
+  if(testing == TRUE){
+    output.file  <- paste0("..//Outputs//",river,"//",river,"_",siteText,"_",min.date,"_",max.date)   
+  } else {
+    output.file  <- paste0("..//Outputs//",river,"_",siteText,"_",min.date,"_",max.date)    
+  }
+  F.release.summary ( site, taxon, run, min.date, max.date,            output.file                                         )
+  F.size.by.date    ( site, taxon, run, min.date, max.date,            output.file                                         )
+  F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=T"),   by.lifestage=FALSE   )
+  F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=F"),   by.lifestage=TRUE    )
+  F.weekly.effort   ( site, taxon,      min.date, max.date,            output.file                                         )  
+
+  F.lifestage.passage(site, taxon,      min.date, max.date,            output.file,                     ci=TRUE)
+
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 }

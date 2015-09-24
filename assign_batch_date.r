@@ -53,5 +53,16 @@ if( "SampleDate" %in% names(df) ){
     df$batchDate <- bDate
 }
 
+<<<<<<< HEAD
+=======
+
+# jason <- data.frame(trapVisitID=df$trapVisitID,batchDate=bDate,SampleDate=df$SampleDate)
+# jason$same <- ifelse(jason$batchDate == jason$SampleDate,1,0)
+# head(jason)
+# eww <- jason[jason$same == 0,]
+
+
+
+>>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 df
 }
