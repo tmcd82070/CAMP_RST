@@ -65,8 +65,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     if( nrow(release.df) == 0 ){
         stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
     }
-# try again
-# and again hihihih
+
     cat("\n\n")
     cat(paste(rep("+",150), collapse="")); cat("\n")
     cat("\n\n")
