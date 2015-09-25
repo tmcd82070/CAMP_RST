@@ -3,11 +3,13 @@ library(RODBC)
 source("source_all.r")
 
 #  Specify parameters to the function
-site <- 3000
+site <- 57000
 taxon <- "161980"
-min.date <- "2000-11-26"
-max.date <- "2001-07-23"
-output.file <- "X:/ThePlatform/CAMP_RST20151123/Outputs/weekly.effort_FR060_2015-09-25_08-53-16"
+min.date <- "2013-10-01"
+max.date <- "2014-09-29"
+by <-"week"
+output.file <- "X:/ThePlatform/CAMP_RST20150501 - Copy/Outputs/PASS.2014.WEEK.NEW.EFF_LAR_2015-06-17_07-57-27"
+ci <- FALSE
 
 #  Call the function
-weekly.effort <- F.weekly.effort( site, taxon, min.date, max.date, output.file)
+PASS.2014.WEEK.NEW.EFF <- F.run.passage( site, taxon, min.date, max.date, by, output.file, ci)
