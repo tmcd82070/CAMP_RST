@@ -1,4 +1,5 @@
 F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
+#
 #   This is the outer wrapper function to summarize releases at a particular site, for a particular run, for a particular taxon for a particular year.
 #
 #   Inputs:
@@ -14,7 +15,7 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
 
 
     #   ---- Fetch efficiency data
-    release.df <- F.get.release.data( site, run, min.date, max.date  )
+    release.df <- F.get.release.data( site, taxon, min.date, max.date  )
 
     #   ---- Summarize the releases
     release.sum <- F.summarize.releases( release.df )
@@ -22,21 +23,30 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
     #   ---- Could write to a Latex format table for inclusion in a later report.
     #F.latex.recapSummary(rel.df)
 
+    # get a couple of variables from quickie lookups
+    db <- get( "db.file", env=.GlobalEnv ) 
+    ch <- odbcConnectAccess(db)
+      siteTable <- sqlFetch( ch, "site" )[,c('siteName','siteAbbreviation','siteID')]
+      runTable <- sqlFetch( ch, "luRun" )   
+    close(ch) 
+    
+    
     #   ---- Or, could write summary to CSV file
     out.fn <- paste(output.file, "_release_summary.csv", sep="")
-    rs <- attr(release.df,"run.season")
-    rs <- paste( format(rs[1], "%d-%b-%Y"), "to", format(rs[2], "%d-%b-%Y"))
+#     rs <- attr(release.df,"run.season")
+#     rs <- paste( format(rs[1], "%d-%b-%Y"), "to", format(rs[2], "%d-%b-%Y"))
+    rs <- paste( format(as.POSIXlt(min.date,tz=""), "%d-%b-%Y"), "to", format(as.POSIXlt(max.date,tz=""), "%d-%b-%Y"))
     nms <- names(release.sum)[1]
     for( i in 2:length(names(release.sum))) nms <- paste(nms, ",", names(release.sum)[i], sep="")
 
     sink(out.fn)
-    cat(paste("Site=,", attr(release.df,"site.name"), "\n", sep=""))
-    cat(paste("Site abbreviation=,", attr(release.df,"site.abbr"), "\n", sep=""))
+    cat(paste("Site=,", release.df$siteName[1], "\n", sep=""))
+    cat(paste("Site abbreviation=,", siteTable[siteTable$siteID == site,]$siteAbbreviation, "\n", sep=""))
     cat(paste("Site ID=,", attr(release.df,"siteID"), "\n", sep=""))
-    cat(paste("Species=,", attr(release.df,"species.name"), "\n", sep=""))
+    cat(paste("Species=,", "Chinook Salmon", "\n", sep=""))
     cat(paste("Species ID=,", attr(release.df,"taxonID"), "\n", sep=""))
-    cat(paste("Run=,", attr(release.df,"run.name"), "\n", sep=""))
-    cat(paste("Run ID=,", attr(release.df,"runID"), "\n", sep=""))
+    cat(paste("Run=,", runTable[runTable$runID == run,]$run, "\n", sep=""))
+    cat(paste("Run ID=,", run, "\n", sep=""))
     cat(paste("Run season=,", rs, "\n", sep=""))
     cat("\n")
     cat(nms)
