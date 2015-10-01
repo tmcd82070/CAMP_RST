@@ -17,8 +17,10 @@ F.summarize.fish.visit <- function( catch,variable ){
   
 
   # jason add - first pass assumed that unassigned fork length is NA.  but...not NA for one day in run i'm investigating.  force this.
-  catch[catch$Unassd == 'Unassigned',]$forkLength <- NA
-
+  if(nrow(catch[catch$Unassd == 'Unassigned',]) > 0){
+    catch[catch$Unassd == 'Unassigned',]$forkLength <- NA
+  }
+  
 if( nrow(catch) > 0 ){
 
   if(variable == 'unassigned'){         # fish counts with plus counts, but allow for pulling out the plus counted fish alone by code below.
