@@ -30,6 +30,8 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
     visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
     
+    catch.dfX <- catch.df      # save for a small step below.  several dfs get named catch.df, so need to call this something else.
+    
     #   Debugging
 #    tmp.catch0 <<- catch.df
 #    tmp.visit0 <<- visit.df
