@@ -330,15 +330,6 @@ den <- tapply( catch.df$n.Orig, index.aux, sum, na.rm=T)
 aux.fl <- ifelse( den > 0, num / den, NA )
 aux.sd <- ifelse( den > 1, sqrt(num.sd / (den-1)), NA )
 
-<<<<<<< HEAD
-
-
-catch.df.reduced <- aggregate(catch.df,by=list(ID=catch.df$batchDate),head,1)  # 6/5/2015 - jason reduces df to select first of each and changes to batchdate...
-catch.df.Fishing <- catch.df
-catch.df.Fishing$SampleMinutes <- ifelse(catch.df.Fishing$TrapStatus == 'Not fishing',0,catch.df.Fishing$SampleMinutes)
-catch.df.Fishing <- unique(catch.df.Fishing[,c('SampleMinutes','batchDate','trapPositionID')])
-num <-  aggregate(catch.df.Fishing$SampleMinutes,by=list(ID=catch.df.Fishing$batchDate),sum)[,2]
-
 
 
 catch.df.reduced <- aggregate(catch.df,by=list(ID=catch.df$batchDate),head,1)  # 6/5/2015 - jason reduces df to select first of each and changes to batchdate...
