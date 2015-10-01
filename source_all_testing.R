@@ -30,7 +30,8 @@
   db.file4 <<- "..\\Data\\TestingDBs\\CAMPCosumnes_25Oct2013_notForAnalyses\\CAMP.mdb"
   db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_29Jan2015\\CAMP.mdb"
   db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
-  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150501 - Copy/Data/CAMP.mdb"
+  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20151123/Data/CAMP.mdb"
+  #db.file8 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
     
   cat(paste("DB file:", db.file1, "\n"))
   cat(paste("DB file:", db.file2, "\n"))

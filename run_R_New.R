@@ -3,11 +3,11 @@ library(RODBC)
 
 
 testing <- TRUE           # points to different output folders.
-platform <- 'CAMP_RST20150501 - Copy'    # points to different platforms
+platform <- 'CAMP_RST20151123'    # points to different platforms
 
 if(testing == FALSE){
   paste(cat('testing == FALSE\n'))
-  source("\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150204/R-Interface/source_all.R")  
+  source("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20151123/R-Interface/source_all.R")  
 } else {
   paste(cat('testing == TRUE\n'))
   setwd(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/"))
@@ -45,6 +45,9 @@ for(testi in 22:dim(theExcel)[1]){
 
     river        <- droplevels(theExcel[testi,]$streamName)    
     
+    
+    
+    
     if(river == ''){
       db.file <- db.file1
     } else if(river == 'Sacramento River'){
@@ -72,13 +75,23 @@ for(testi in 22:dim(theExcel)[1]){
       river        <- 'american'  
       site         <- 57000 
       siteText     <- 'testing'
-      run          <- 3
-      runText      <- 'Fall'
+      run          <- 4
+      runText      <- 'Winter'
 #       min.date     <- "2013-10-01"
 #       max.date     <- "2014-09-29"
-      min.date     <- "2013-10-01"
-      max.date     <- "2014-09-29"
+      min.date     <- "2013-01-16"
+      max.date     <- "2013-06-08"
     }
+
+  river        <- ''  
+  site         <- 21000 
+  siteText     <- 'testing'
+  run          <- 3
+  runText      <- 'Fall'
+  min.date     <- "2013-11-01"
+  max.date     <- "2014-06-01"
+
+
 
     taxon        <- 161980
 #     if(testing == TRUE){    
