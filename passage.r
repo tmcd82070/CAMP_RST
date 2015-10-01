@@ -78,7 +78,6 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned')    # jason - 4/14/2015 - we summarize over unassigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
                                                                   #                   - the only reason we do this again is to get a different n.tot.
     
-<<<<<<< HEAD
     # bring in counts and stats of measured fish
     assd <- catch.df2[catch.df2$Unassd != 'Unassigned' ,c('trapVisitID','lifeStage','FinalRun','n.tot','mean.fl','sd.fl')]    # & catch.df2$FinalRun == run.name not sure why we need to restrict to run here
     colnames(assd) <- c('trapVisitID','lifeStage','FinalRun','n.Orig','mean.fl.Orig','sd.fl.Orig')
@@ -88,14 +87,6 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     unassd <- catch.df2[catch.df2$Unassd == 'Unassigned' ,c('trapVisitID','lifeStage','FinalRun','n.tot')]    
     colnames(unassd) <- c('trapVisitID','lifeStage','FinalRun','n.Unassd')
     catch.df <- merge(catch.dfA,unassd,by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
-=======
-    assd <- catch.df2[catch.df2$Unassd != 'Unassigned' ,c('trapVisitID','lifeStage','FinalRun','n.tot','mean.fl','sd.fl')]    # & catch.df2$FinalRun == run.name not sure why we need to restrict to run here
-    colnames(assd) <- c('trapVisitID','lifeStage','FinalRun','n.Orig','mean.fl.Orig','sd.fl.Orig')
-    catch.df <- merge(catch.df1,assd,by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
-    
-    
-    
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
     runs.found <- unique(catch.df$FinalRun)
     runs.found <- runs.found[ !is.na(runs.found) ]
@@ -143,11 +134,7 @@ F.passage <- function( site, taxon, run, min.date, max.date, by, output.file, ci
     } else {
         #   We have some of this run, compute production     
         
-<<<<<<< HEAD
         catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", 'n.Orig','mean.fl.Orig','sd.fl.Orig',"n.tot", "mean.fl", "sd.fl","n.Unassd")]     # jason 4/14/2015 - n.Orig col added in. 5/20/15 - n.Unassd added
-=======
-        catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", 'n.Orig','mean.fl.Orig','sd.fl.Orig',"n.tot", "mean.fl", "sd.fl")]     # jason 4/14/2015 - unassigned col added in
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 #         catch.df.ls <- catch.df[ indRun , c("trapVisitID", "FinalRun", "lifeStage", "includeCatchID", "n.tot", "mean.fl", "sd.fl")]
         
         #   ---- Merge in the visits to get zeros

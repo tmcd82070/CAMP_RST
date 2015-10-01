@@ -13,10 +13,6 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 #
 #  plot.file=file.root
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
   
 time.zone <- get("time.zone", env=.GlobalEnv )
 
@@ -80,13 +76,8 @@ ind <- list( batchDate=format(df$batchDate, "%Y-%m-%d"), trapPositionID=df$trapP
 est.catch <- tapply( df$n.tot, ind, sum )
 p.imputed <- tapply( df$gamEstimated, ind, mean )
 
-<<<<<<< HEAD
 est.catch2 <- tapply( df$n.Orig, ind, sum )       # we need to tally up the assigned catch
 est.catch3 <- tapply( df$n.Unassd, ind, sum )     # we need to tally up the unassigned catch
-=======
-est.catch2 <- tapply( df$n.Orig, ind, sum )       # we need to tally up the unassigned catch
-
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 
 tmp.est.catch <- est.catch   # save a copy of est.catch for counting traps later
@@ -97,7 +88,6 @@ tmp.est.catch <- est.catch   # save a copy of est.catch for counting traps later
 est.catch <- cbind( expand.grid( batchDate=dimnames(est.catch)[[1]], trapPositionID=dimnames(est.catch)[[2]]), 
                 catch=c(est.catch), imputed.catch=c(p.imputed) )
 est.catch2 <- cbind( expand.grid( batchDate=dimnames(est.catch2)[[1]], trapPositionID=dimnames(est.catch2)[[2]]), 
-<<<<<<< HEAD
                     assdCatch=c(est.catch2), imputed.catch=c(p.imputed) )    # jason add 4/17/2015.  need to tally up assigned catch
 est.catch3 <- cbind( expand.grid( batchDate=dimnames(est.catch3)[[1]], trapPositionID=dimnames(est.catch3)[[2]]), 
                      UnassdCatch=c(est.catch3), imputed.catch=c(p.imputed) )    # jason add 4/17/2015.  need to tally up unassigned catch
@@ -105,12 +95,6 @@ est.catch3 <- cbind( expand.grid( batchDate=dimnames(est.catch3)[[1]], trapPosit
 # get both total catch and assigned catch and unassigned catch.
 est.catch <- merge(est.catch,est.catch2,by=c('batchDate','trapPositionID','imputed.catch'))     # jason add 4/17/2015 - join assumes full join, i.e., dim(of both dfs) same
 est.catch <- merge(est.catch,est.catch3,by=c('batchDate','trapPositionID','imputed.catch'))     # jason add 5/20/2015 - join assumes full join, i.e., dim(of both dfs) same
-=======
-                    assdCatch=c(est.catch2), imputed.catch=c(p.imputed) )    # jason add 4/17/2015.  need to tally up unassigned catch
-
-# get both total catch and unassigned catch.
-est.catch <- merge(est.catch,est.catch2,by=c('batchDate','trapPositionID','imputed.catch'))     # jason add 4/17/2015 - join assumes full join, i.e., dim(of both dfs) same
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 est.catch$batchDate <- as.POSIXct( as.character(est.catch$batchDate), "%Y-%m-%d", tz=time.zone)                
 est.catch <- est.catch[order(est.catch$trapPositionID,est.catch$batchDate),]
 
@@ -205,11 +189,7 @@ catch.df.both.sum$shortdate <- NULL
 
 # full join here to bring in assd data data was observed but not randomly selected...i think
 masterCatch <- merge(preCatch,catch.df.both.sum,by=c('trapPositionID','batchDate'),all.x=TRUE,all.y=TRUE)
-<<<<<<< HEAD
 #masterCatch$unassdCatch <- masterCatch$n.tot.y - masterCatch$n.Orig
-=======
-masterCatch$unassdCatch <- masterCatch$n.tot.y - masterCatch$n.Orig
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 masterCatch <- masterCatch[, !(names(masterCatch) %in% c('assdCatch'))]    # we have NA for this var for batchDates with imputation -- its not good enough
 
@@ -241,11 +221,7 @@ masterCatch$indOld <- !is.na(masterCatch$imputedCatch) | !is.na(masterCatch$assd
 
 
 # make sure that totalCatch includes unassdCatch
-<<<<<<< HEAD
 masterCatch$totalCatch <- ifelse(masterCatch$UnassdCatch > 0 & is.na(masterCatch$totalCatch),masterCatch$UnassdCatch,masterCatch$totalCatch)
-=======
-masterCatch$totalCatch <- ifelse(masterCatch$unassdCatch > 0 & is.na(masterCatch$totalCatch),masterCatch$unassdCatch,masterCatch$totalCatch)
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 # make sure that totalCatch includes imputedCatch -- it was this way before, but breaking things up broke everything
 masterCatch$totalCatch <- ifelse(masterCatch$imputedCatch > 0 & is.na(masterCatch$totalCatch),masterCatch$imputedCatch,masterCatch$totalCatch)
@@ -254,11 +230,7 @@ masterCatch$totalCatch <- ifelse(masterCatch$imputedCatch > 0 & is.na(masterCatc
 masterCatch$totalCatch <- ifelse(masterCatch$assdCatch >= 0 & is.na(masterCatch$totalCatch),masterCatch$assdCatch,masterCatch$totalCatch)
 
 # make sure that imputed.catch is a 1 if no other source of fish for that day.
-<<<<<<< HEAD
 masterCatch$imputed.catch <- ifelse(masterCatch$imputedCatch >0 & is.na(masterCatch$imputed.catch) & is.na(masterCatch$UnassdCatch) & is.na(masterCatch$assdCatch),1.0,masterCatch$imputed.catch)
-=======
-masterCatch$imputed.catch <- ifelse(masterCatch$imputedCatch >0 & is.na(masterCatch$imputed.catch) & is.na(masterCatch$unassdCatch) & is.na(masterCatch$assdCatch),1.0,masterCatch$imputed.catch)
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 
 attr(masterCatch, "site.name") <- catch.df$siteName[1]

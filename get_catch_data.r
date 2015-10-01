@@ -88,7 +88,6 @@ visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeSta
 catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
 
-<<<<<<< HEAD
 
 # get summary counts of catch run vs. lifetstage for internal checking.
 totalFish <<- sum(catch$Unmarked)
@@ -96,8 +95,6 @@ totalRun <<- aggregate(catch$Unmarked, list(FinalRun=catch$FinalRun), FUN=sum)
 totalLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage), FUN=sum)
 totalRunXLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage,FinalRun=catch$FinalRun), FUN=sum)
 
-=======
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 catch$Unassd <- catch$lifeStage # jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
 #   ********************************************************************
 

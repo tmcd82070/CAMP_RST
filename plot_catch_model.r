@@ -15,7 +15,6 @@ F.plot.catch.model <- function( df, file=NA ){
 # df <- est.catch
 # df <- masterCatch
 
-<<<<<<< HEAD
   
   
 # jason -- 6/4/2015.  doug wants measured for now, so assdCatch always s/b plotted.
@@ -25,13 +24,6 @@ F.plot.catch.model <- function( df, file=NA ){
 # } else {
 #   catchMetric <- 'assdCatch'
 # }
-=======
-if( attr(df,"life.stage") == 'All'){
-  catchMetric <- 'totalCatch'
-} else {
-  catchMetric <- 'assdCatch'
-}
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 
 
 #   If file=NA, a pdf graphing device is assumed to be open already.

@@ -30,11 +30,8 @@
   db.file4 <<- "..\\Data\\TestingDBs\\CAMPCosumnes_25Oct2013_notForAnalyses\\CAMP.mdb"
   db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_29Jan2015\\CAMP.mdb"
   db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
-<<<<<<< HEAD
-  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150501 - Copy/Data/CAMP.mdb"
-=======
-  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150501/Data/TestingDBs/CAMPAmerican_11Nov2014.mdb"
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
+  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20151123/Data/CAMP.mdb"
+  #db.file8 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
     
   cat(paste("DB file:", db.file1, "\n"))
   cat(paste("DB file:", db.file2, "\n"))
@@ -121,10 +118,7 @@ source(	"plot_catch_model.r"	)
 source(	"plot_eff_model.r"	)
 source(	"plot_passage.r"	)
 source(	"release_summary.r"	)
-<<<<<<< HEAD
 source( "run_passage.r" )
-=======
->>>>>>> 9d98868ded31a228a275a2ef0e507154e8d0e2ca
 source(	"summarize_releases.r"	)
 source( "summarize_fish_visit.r" )  
 source( "all_catch_table.r" )
