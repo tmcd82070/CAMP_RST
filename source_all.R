@@ -23,12 +23,11 @@
     #db.file <<- "..\\Data\\WorkingVersionCAMP_LAR_16July2013.mdb"  # For trent's testing in 'code' directory
     #db.file <<- "..\\Data\\CAMPFeather_NewVersion1July2013.mdb"  # For trent's testing in 'code' directory
     #db.file <<- "..\\Data\\connie's caswell stanislaus file after doug adds finaRunIDs  CAMP.mdb"
+
+
+    db.file  <<- "..\\Data\\CAMP.mdb"    #   THE OFFICIAL DATA BASE
     
-#     db.file <<- "..\\CAMPStanislaus_16Sept2013.mdb"
-#     db.file <<- "..\\CAMPAmerican_6Feb2014.mdb"
-    db.file <<- "..\\Data\\CAMPAmerican24Oct2014.mdb"
-    
-    cat(paste("DB file:", db.file, "\n"))
+    cat(paste("DB file:", db.file ,"\n"))
 
     #   Parameter table.names is a list containing the mapping of table names in Access to table names in R. 
     #   This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
@@ -58,8 +57,8 @@
     luNoYes <- sqlFetch(ch, table.names["yes.no.codes"])
     No.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "no" ]
     Yes.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "yes" ]
-    close(ch)
- 
+    close(ch)      
+    
     #   Assign sample cut time for batch dates that are missing. 
     #   If a sample period ends before this time, batch date is the day the period ends. 
     #   If a sample period ends after this time, batch date is the next day following the end of the sampling period.
@@ -108,6 +107,7 @@ source(	"plot_catch_model.r"	)
 source(	"plot_eff_model.r"	)
 source(	"plot_passage.r"	)
 source(	"release_summary.r"	)
+source( "run_passage.r" )
 source(	"summarize_releases.r"	)
 source( "summarize_fish_visit.r" )
 source( "all_catch_table.r" )
@@ -122,7 +122,7 @@ source( "assign_batch_date.r" )
 source( "assign_gaplen.r" )
 #source( "check_for_missing.r" )
 #source( "biweekly_report.r" )
-#source( "weekly_effort.r" )
+source( "weekly_effort.r" )
 #source( "weekly_passage.r" )  # exclude. Same as F.passage with by="week"
 source( "lifestage_passage.r" )
 source( "bootstrap_passage.r" )

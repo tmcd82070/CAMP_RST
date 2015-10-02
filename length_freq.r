@@ -1,4 +1,4 @@
-F.length.frequency <- function( site, taxon, run, min.date, max.date, by.lifestage, output.file ){
+F.length.frequency <- function( site, taxon, run, min.date, max.date, output.file, by.lifestage ){
 #
 #   Plot frequency distribution of lengths.
 #
@@ -59,9 +59,10 @@ if(nrow(catch.df) == 0){
 
 #   Define plotting variables
 y <- catch.df$forkLength
-n <- catch.df$n
+n <- catch.df$Unmarked  #catch.df$n
 if( by.lifestage ){
-    lstage <- catch.df$lifeStageID
+#     lstage <- catch.df$lifeStageID
+    lstage <- catch.df$lifeStage
 } else {
     lstage <- rep(0, length(y))
 }
@@ -69,21 +70,23 @@ if( by.lifestage ){
 #   Drop obs if any critical data is missing
 #   If we are talking salmon here, limit the lifestages to fry, parr, and smolt
 drop <-  is.na(y) | is.na(lstage) | is.na(n)
-if( (length(taxon) == 1) & (taxon == 161980) ){
-    drop <- drop | (lstage > 8)
+if( (length(taxon) == 1) & (taxon == 161980) & by.lifestage == TRUE ){   # jason add the by.lifetage condition.  only evaluate if lstage setup to vary
+#     drop <- drop | (lstage > 8)
+  drop <- drop | !(lstage %in% c('Fry','Parr','Smolt'))  
 }
 y <- y[!drop]
 lstage <- lstage[!drop]
 n <- n[!drop]
 
 #   --------------------- Convert from lifestages the traps used to life stages that CAMP uses.  The conversion is in table rst.life.stages
-if( by.lifestage ){
-    u.l.s <- sort(unique(lstage))
-    for( l.s in u.l.s ){
-        camp.l.s <- rst.life.stage$lifeStageCAMPID[ rst.life.stage$lifeStageID == l.s ]
-        lstage[ lstage == l.s ] <- camp.l.s
-    }
-}
+# JASON OBSOLETE -- QUERY THAT GETS CATCH WORKS ON DESCRIPTORS INSTEAD OF IDS -- 1/26/2015
+# if( by.lifestage ){
+#     u.l.s <- sort(unique(lstage))
+#     for( l.s in u.l.s ){
+#         camp.l.s <- rst.life.stage$lifeStageCAMPID[ rst.life.stage$lifeStageID == l.s ]
+#         lstage[ lstage == l.s ] <- camp.l.s
+#     }
+# }
 
 #   -------------------- Rep the values for number of fish of that particular length
 y <- rep(y, n)
@@ -190,7 +193,7 @@ if( by.lifestage ){
     for( i in 1:nl ){
         ind <- life.stages[i] == lstage
         yy <- y[ind]
-        stage.name <- CAMP.life.stage$lifeStageCAMP[ CAMP.life.stage$lifeStageCAMPID == life.stages[i] ]
+        stage.name <- CAMP.life.stage$lifeStageCAMP[ CAMP.life.stage$lifeStageCAMP == life.stages[i] ]
         if( i == nl ){
             # This is the bottom panel, make room for x-axis ticks and label
             par(mar=c(5.1,2.1,.5,2.1))

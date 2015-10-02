@@ -65,7 +65,7 @@ INSERT INTO TempSamplingSummary
             )
     WHERE
         (
-            ((TrapVisit.visitTypeID)<5) AND ((TrapVisit.fishProcessedID) Not Like 2)
+            ((TrapVisit.visitTypeID)<5) AND ((TrapVisit.fishProcessedID) Not Like 2)) OR (((TrapVisit.visitTypeID)=1) AND ((TrapVisit.fishProcessedID)=2)
         )
     ORDER BY TrapVisit.trapPositionID, CDate([TrapVisit]![visitTime]);
 

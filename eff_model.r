@@ -24,6 +24,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
 #   It is possible to implement a GAM here using covariates like flow, time of day
 #   check was done, etc. and a smooting component.  For now, I will only implement a
 #   simple step function
+#   obs.eff.df <- eff 
+#   plot <- plot
+#   method <- method
+#   max.df.spline <- df.spline
 
 ans <- NULL
 traps <- sort( unique(obs.eff.df$TrapPositionID))

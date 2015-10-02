@@ -11,6 +11,8 @@ F.plot.eff.model <- function( fit, df, file ){
 #   Output:
 #   A time series plot of catch by date.
 #
+#   df <- ans
+#   file <- plot.file
 
 
 if( !is.na(file) ){
@@ -35,7 +37,31 @@ pred.y[!imputed] <- df$efficiency[!imputed]
 #if(length(dev.list()) > 1) windows()
 
 
+
 eff <- df$nCaught / df$nReleased
+
+# get subsite Names
+ch <- odbcConnectAccess(db.file)
+SubSites <- sqlFetch(ch, "SubSite")
+close(ch)
+
+# bring in subsite info on the data
+SubSites <- SubSites[,names(SubSites) %in% c('subSiteName','subSiteID')]
+names(SubSites)[names(SubSites) == 'subSiteID'] <- 'trapPositionID'
+attrA <- attr(df,"subsites")     # merge drops attributes...
+attrB <- attr(df,"site.name")
+df <- merge(df,SubSites,by=c('trapPositionID'),all.x=TRUE)
+df <- df[,c('trapPositionID','subSiteName','batchDate','nReleased','nCaught','efficiency','imputed.eff')]
+attr(df,"subsites") <- attrA     # ...so now, put them back in
+attr(df,"site.name") <- attrB
+
+
+# write out estimates.
+out.pass.graphs.eff <- paste(file, "_effTable.csv", sep="")
+sink(paste0(file,'_effTable.csv'))
+write.table( df, file=paste0(file,'_effTable.csv'), sep=",", append=FALSE, row.names=FALSE, col.names=TRUE)
+sink()
+
 
 plot( range(df$batchDate,na.rm=T), range(eff,na.rm=T), type="n", xlab="Date", 
     ylab="Efficiency proportion", xaxt="n" )
@@ -56,6 +82,7 @@ if( length(traps) == 1 ){
 my.pch <- 15 + 1:length(traps)
 for( i in 1:length(traps) ){
 
+  
     #   indicators for season and such
     ind.pts <- df$trapPositionID == traps[i] & pts
     ind.line <- df$trapPositionID == traps[i] & imputed
@@ -74,7 +101,7 @@ for( i in 1:length(traps) ){
     
     trials.season <- (strt <= df$batchDate[ind.line]) & (df$batchDate[ind.line] <= end)
 
-
+   
     #   Draw lines
     lines( df$batchDate[ ind.line ][trials.season & pre.season], df$efficiency[ ind.line ][trials.season & pre.season], lwd=3, col=my.colors[i] )
     lines( df$batchDate[ ind.line ][trials.season & during.season], df$efficiency[ ind.line ][trials.season & during.season], lwd=3, col=my.colors[i] )
@@ -109,7 +136,7 @@ mtext( side=3, at=max(df$batchDate), text= "Efficiency Trials", adj=1, cex=.75, 
 
 if( !is.na(file) ){
     dev.off(dev.cur())
-    ans <- out.pass.graphs
+    ans <- c(out.pass.graphs,out.pass.graphs.eff)
 } else {
     ans <- NULL
 }

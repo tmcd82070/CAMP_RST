@@ -17,7 +17,7 @@ if( !is.na(out.file) ){
     graphics.off()
     
     #   ---- Open PNG device
-    out.pass.graphs <- paste(out.file, "_passage.png", sep="")
+    out.pass.graphs <- paste(out.file, run.name,"_passage.png", sep="")    # added run.name to make all runs program work.  this will affect one run report, if it needs to be turned back on.
     if(file.exists(out.pass.graphs)){
         file.remove(out.pass.graphs)
     }
@@ -59,6 +59,8 @@ mtext( "Passage estimate (# fish)", side=2, line=2.25, cex=1.5)
 
 #   Add x axis labels
 s.by <- capwords(attr(df,"summarized.by"))
+jason.s.by <<- s.by
+
 
 if( casefold(s.by) == "day" ){
     season.len <- difftime( max(df$date), min(df$date), units="days")
@@ -114,12 +116,35 @@ if( casefold(s.by) == "day" ){
         # "weekly"  (yearly does not get plotted)   
         # jason -- add.  need a lookup table that maps days to our defined julian weeks here.  
       
-        dt1 <- df$date
-        dt2 <- c(df$date[-1] - 24*60*60, max(df$date))
-        dt1 <- format(dt1, "%d%b")
-        dt2 <- format(dt2, "%d%b")
-        dt <- paste(dt1, dt2, sep="-")
+        # jason add. -- copy from passage.r
+        db <- get( "db.file", env=.GlobalEnv )                                  #   Open ODBC channel
+        ch <- odbcConnectAccess(db)
+        the.dates <- sqlFetch( ch, "Dates" )                                    #   get the table that has the julian week labels.
+        the.dates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,julianWeek,julianWeekLabel))
+        close(ch)
+        
+        # can't figure out how to join on posix dates.  so cheating. 
+        df$date.alone <- strftime(df$date,format="%x")
+        the.dates$date.alone <- strftime(the.dates$uniqueDate,format="%x")
+        df2 <- merge(df,the.dates,by = c("date.alone"),all.x=TRUE)
+        df2 <- df2[order(df2$uniqueDate),]
+        
+        dt <- df2$julianWeekLabel   #paste0(myYear,'-',tmp.jday %/% 7 + 1)
+#         df <- subset(df, select = -c(date.alone,uniqueDate,julianWeek,julianWeekLabel) )   # jason - don't think we need this here.
         my.cex <- .75
+        for( i in 1:length(dt) ){
+          mtext( side=1, at=mp[i], text=dt[i], las=2, line=0.1, adj=1, cex=my.cex )
+        }     
+      
+      
+      
+#       old
+#         dt1 <- df$date
+#         dt2 <- c(df$date[-1] - 24*60*60, max(df$date))
+#         dt1 <- format(dt1, "%d%b")
+#         dt2 <- format(dt2, "%d%b")
+#         dt <- paste(dt1, dt2, sep="-")
+#         my.cex <- .75
     }
 
     for( i in 1:length(dt) ){

@@ -65,7 +65,6 @@ F.sql.error.check(catch)
 
 close(ch) 
 
-
 #   ******************************************************************
 #   Assign time zone (probably does not matter)
 time.zone <- get( "time.zone", env=.GlobalEnv )
@@ -98,12 +97,21 @@ catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),al
 visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
 visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
 
-
 #   ********************************************************************
 #   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
 catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
+
+
+# get summary counts of catch run vs. lifetstage for internal checking.
+totalFish <<- sum(catch$Unmarked)
+totalRun <<- aggregate(catch$Unmarked, list(FinalRun=catch$FinalRun), FUN=sum)
+totalLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage), FUN=sum)
+totalRunXLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage,FinalRun=catch$FinalRun), FUN=sum)
+
+catch$Unassd <- catch$lifeStage # jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
 #   ********************************************************************
+
 #   Expand the Plus counts
 catch <- F.expand.plus.counts( catch )
 
@@ -111,7 +119,7 @@ catch <- F.expand.plus.counts( catch )
 #   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"
 catch$FinalRun <- as.character( catch$FinalRun ) 
 catch$lifeStage <- as.character( catch$lifeStage ) 
-
+#catch$lifeStage <- as.character( catch$Unassd ) jason - possibly delete
 
 
 #   ********************************************************************

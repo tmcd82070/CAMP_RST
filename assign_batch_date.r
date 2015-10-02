@@ -2,6 +2,7 @@ F.assign.batch.date <- function( df ){
 #
 #   Assign batch data to records.
 #
+# df <- catch
 
 cuttime <- get( "samplePeriodCutTime", env=.GlobalEnv )
 midtime <- "00:00:00"   # this is the time of day assigned to batchDates.  Could be half way between cut times or (cuttime - 12*60*60).
@@ -51,7 +52,6 @@ if( "SampleDate" %in% names(df) ){
 } else {
     df$batchDate <- bDate
 }
-
 
 df
 }
