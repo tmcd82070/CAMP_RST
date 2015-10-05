@@ -114,7 +114,9 @@ if( nrow(catch) > 0 ){
 
     if(variable == 'unassigned'){
       
-      catch.fl <- catch.fl[is.nan(catch.fl$mean.fl),]
+      #catch.fl <- catch.fl[is.nan(catch.fl$mean.fl) ,] 
+      catch.fl <- catch.fl[is.nan(catch.fl$mean.fl) & (catch.fl$FinalRun == 'Unassiged' | catch.fl$lifeStage == 'Unassiged'),] # jason add 10/3/2015 to deal w/ rare situation of having
+      # no measured fish, but both finalrun and lifestage assigned.
       
     }
 

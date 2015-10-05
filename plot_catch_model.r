@@ -112,11 +112,8 @@ for( i in 1:length(traps) ){
 }
 
 
-<<<<<<< HEAD
-catch.df.sites <- unique(df[,c('trapPositionID','TrapPosition')])       # jason add
-=======
+#catch.df.sites <- unique(df[,c('trapPositionID','TrapPosition')])       # jason add   # delete later?  added by github merge process.
 catch.df.sites <- unique(na.omit(df[,c('trapPositionID','TrapPosition')]))       # jason add  
->>>>>>> 1681df75097bb99279e681458e0c6a432ebfcd37
 colnames(catch.df.sites) <- c('subSiteID','subSiteName')                         # jason add
 subsite.name <- catch.df.sites
 subsite.name$subSiteName <- as.character(subsite.name$subSiteName)

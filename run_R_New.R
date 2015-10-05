@@ -79,18 +79,22 @@ for(testi in 22:dim(theExcel)[1]){
       runText      <- 'Winter'
 #       min.date     <- "2013-10-01"
 #       max.date     <- "2014-09-29"
-      min.date     <- "2013-01-16"
-      max.date     <- "2013-06-08"
+      min.date     <- "2013-10-01"
+      max.date     <- "2014-09-29"
     }
 
   river        <- ''  
-  site         <- 21000 
+  site         <- 34000
   siteText     <- 'testing'
   run          <- 3
   runText      <- 'Fall'
-  min.date     <- "2013-11-01"
-  max.date     <- "2014-06-01"
+  min.date     <- "2005-12-01"
+  max.date     <- "2006-07-30"
 
+
+#   site <- '4000'
+#   min.date <- '2000-11-29'
+#   max.date <- '2001-06-21'
 
 
     taxon        <- 161980
@@ -118,7 +122,7 @@ for(testi in 22:dim(theExcel)[1]){
 #   F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=T"),   by.lifestage=FALSE   )
 #   F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=F"),   by.lifestage=TRUE    )
 #   F.weekly.effort   ( site, taxon,      min.date, max.date,            output.file                                         )  
-    F.run.passage     ( site, taxon,      min.date, max.date, by=by,        output.file=output.file,                     ci=TRUE            )
-#   F.lifestage.passage(site, taxon,      min.date, max.date,            output.file,                     ci=TRUE)
+#   F.run.passage     ( site, taxon,      min.date, max.date, by=by,        output.file=output.file,                     ci=TRUE            )
+    F.lifestage.passage(site, taxon,      min.date, max.date,            output.file,                     ci=TRUE)
   }
 }
