@@ -5,17 +5,50 @@ F.summarize.index <- function( dt, summarize.by ){
 #   dt = a POSIXct date vector
 #   summarize.by = a string equal to "week", "month", "year", or "day"
 #
+  
 
 
-#   ---- A utility function to deal with week 0
 f.week <- function( x ){
+    #   A utility to compute julian weeks 
     #   x = vector of POSIXct's
-    # Week 0 contains Jan 1.  Week 1 is first full week of the year.  Make week 0 part of last week of previous year
-    wk <- format( x, "%W" )
+
     yr <- format( x, "%Y" )
-    yr[ wk == "00" ] <- yr[ wk == max(as.numeric(wk)) ][1]  # previous year for week zeros.  Can't have more than 3 years in data.  
-                                                            # This is true because we restrict max.date-min.date<365
-    wk[ wk == "00" ] <- max( as.numeric(wk) )   # make week 0 part of last week of year previous
+
+#     jday <- as.numeric(format( x, "%j" ))   # for non-leap years, the count doesnt skip a day on 2/29.  we need it to do so for consistency over years.
+    
+    # ------------------------------------------------
+    myYear = as.POSIXlt(x)$year + 1900
+
+    leap <- rep(NA,length(myYear))
+    for(i in 1:length(myYear)){
+      if(myYear[i] %% 4 != 0){                         # wikipedia article on leap year.
+        leap[i] <- 0
+      } else if (myYear[i] %% 100 != 0){
+        leap[i] <- 1
+      } else if (myYear[i] %% 400 != 0){
+        leap[i] <- 0
+      } else {
+        leap[i] <- 1
+      }
+    }
+
+    tmp.jday <- rep(NA,length(myYear))
+    for(i in 1:length(myYear)){
+      if(leap[i] == 1){  # leap year -- feb 29th included.
+        tmp.jday[i] <- as.numeric(format(x[i], "%j"))
+      } else {           # not a leap year -- feb 29th not included. adjust.
+        if(as.numeric(format(x[i], "%j")) >= 60 ){            # 60 = feb 29th on leap years. 61 = mar 1st on leap years.
+          tmp.jday[i] <- as.numeric(format(x[i], "%j")) + 1     # this pushes march 1st for non-leap to day 61 instead of day 60.                 
+        } else {
+          tmp.jday[i] <- as.numeric(format(x[i], "%j"))
+        }
+      }
+    }
+    # ------------------------------------------------
+
+    wk <- trunc((tmp.jday - 1) / 7) + 1
+    wk <- formatC(wk, width=2, flag="0")  # to make sure sort order is correct
+    
     wk <- paste(yr, "-", wk, sep="")
     wk
 }

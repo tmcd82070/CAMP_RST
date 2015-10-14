@@ -74,6 +74,9 @@ cat("\n")
 
 cat(paste("Site = ", site, "\n"))
 
+
+
+
 if( !is.na(run) ){
     runs <- sqlQuery(ch, paste( "SELECT run, runID FROM", tables["run.codes"] ))
     F.sql.error.check(runs)
@@ -102,7 +105,7 @@ visit.vars <- c("visitTime",
                 "dataCollectedID")
 visit.vars.sql <- F.vec2sqlstr(tables["trap.visit"], visit.vars)
 visit.vars.sql <- paste( "Site.siteID,", visit.vars.sql )
-
+    
 
 s.tab <- tables["sites"]
 ss.tab <- tables["subsites"]
@@ -184,6 +187,21 @@ visit <- sqlQuery(ch, sql.visit)
 F.sql.error.check(visit)
 cat(paste("\nNumber of fish processing visits found:", nrow(visit), "\n"))
 
+if( nrow(visit) == 0 ){
+    #   No visits found, exit nicely.
+    odbcClose(ch)
+
+    attr(visit, "siteDescriptionID" ) <- site
+    attr(visit, "site.name") <- site.name
+    attr(visit, "site.abbr") <- site.abbr
+    attr(visit, "runID") <- run
+    attr(visit, "run.name") <- run.name
+    attr(visit, "run.season") <- run.season
+    
+    cat("Check dates...\n")
+    return(visit)   
+}
+
 
 #   This query pulls the trap re-starts
 sql.visit <- paste( "SELECT ", visit.vars.sql, 
@@ -205,6 +223,7 @@ cat("\n")
 restarts <- sqlQuery(ch, sql.visit)
 F.sql.error.check(restarts)
 cat(paste("\nNumber of start-stop visits found:", nrow(restarts), "\n"))
+
 
 #   Append restarts to end of visits.  Times will be sorted in assign_sample_period.r
 visit <- rbind(visit, restarts) 
@@ -253,12 +272,22 @@ cat(paste("\nNumber of trap visits:", nrow(visit), "\n"))
 cat(paste("First 10 visit records:\n"))
 print(visit[1:10,])
 
+#   Find subsiteID names
+#   Fetch subsite names
+subsite.names <- sqlQuery( ch, paste("SELECT subSiteID, subSiteName FROM", tables["subsites"], 
+        "WHERE (siteID =", site, ")" ))
+F.sql.error.check(subsite.names)
+subsite.names$subSiteName <- as.character(subsite.names$subSiteName)        
+
+subSites.found <- data.frame(subSiteID=sort(unique(visit$trapPositionID)))
+subSites.found <- merge( subSites.found, subsite.names, by="subSiteID", all.x=T )
 
 
 #   Store values as attribute for convienance.
 attr(visit, "siteDescriptionID" ) <- site
 attr(visit, "site.name") <- site.name
 attr(visit, "site.abbr") <- site.abbr
+attr(visit, "subsites" ) <- subSites.found
 attr(visit, "runID") <- run
 attr(visit, "run.name") <- run.name
 attr(visit, "run.season") <- run.season

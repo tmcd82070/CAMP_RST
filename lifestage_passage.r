@@ -15,166 +15,178 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     run.season <- data.frame( start=strt.dt, end=end.dt )
     dt.len <- difftime(end.dt, strt.dt, units="days")
     if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
-
-
-
-    #   *******
-    #   Open ODBC channel and retrieve tables we need
-    ch <- odbcConnectAccess(db.file)
-
-    sites <- sqlQuery( ch, paste("SELECT siteName, siteAbbreviation, siteID, streamName FROM", table.names["sites"], 
-            "WHERE (siteID =", site, ")" ))
-    F.sql.error.check(sites)        
-    site.abbr <- as.character(sites$siteAbbreviation)
-    site.name <- as.character(sites$siteName)
-
-    sp.codes <- sqlQuery(ch, paste("SELECT taxonID, commonName FROM", table.names["species.codes"]))
-    F.sql.error.check(sp.codes)
-    sp.commonName <- as.character(sp.codes$commonName[ sp.codes$taxonID %in% taxon ])
-
-
     
-    tmp <- paste("SELECT ",
-        table.names["life.stages"], ".lifeStage, ", 
-        table.names["life.stages"], ".lifeStageID, ", 
-        table.names["life.stages"], ".lifeStageCAMPID, ", 
-        table.names["CAMP.life.stages"], ".lifeStageCAMP ",
-        "FROM ",
-        table.names["CAMP.life.stages"],
-        " INNER JOIN ",
-        table.names["life.stages"],
-        " ON ", table.names["CAMP.life.stages"], ".lifeStageCAMPID = ", table.names["life.stages"], ".lifeStageCAMPID;", sep="")
-    rst.life.stage <- sqlQuery(ch, tmp)
-    F.sql.error.check(rst.life.stage)        
+    #   ---- Fetch efficiency data
+    release.df <- F.get.release.data( site, taxon, min.date, max.date  )
 
-    CAMP.life.stageIDs <- c(2,3,4,8,9,10,11,251)
-    CAMP.life.stages <- NULL
-    for( i in CAMP.life.stageIDs ){
-        CAMP.life.stages <- c(CAMP.life.stages, as.character(rst.life.stage$lifeStageCAMP[ rst.life.stage$lifeStageCAMPID == i ][1]))
+    if( nrow(release.df) == 0 ){
+        stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
+    }
+
+
+    #   ---- Fetch the catch and visit data 
+    tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
+    
+    catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
+    visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
+    
+    catch.dfX <- catch.df      # save for a small step below.  several dfs get named catch.df, so need to call this something else.
+    
+    #   Debugging
+#    tmp.catch0 <<- catch.df
+#    tmp.visit0 <<- visit.df
+#    print( table(catch.df$TrapStatus))
+    
+    if( nrow(catch.df) == 0 ){
+        stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
     }
     
+    #   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables 
+    
+    #catch.df <- F.summarize.fish.visit( catch.df )       jason turns off 4/15/2015
 
-    runs <- sqlFetch(ch, table.names["run.codes"] )
-    runs <- runs[ runs$runID < 200, ]
-    runs <- runs[order(runs$runID),]
-    
-    
-    cat("Runs under consideration:\n")
+    catch.df0 <- F.summarize.fish.visit( catch.df, 'unassigned' )   # jason - 5/20/2015 - we summarize over lifeStage, wrt to unassigned. 
+    catch.df1 <- F.summarize.fish.visit( catch.df, 'inflated' )     # jason - 4/14/2015 - we summarize over lifeStage, w/o regard to unassigned.  this is what has always been done.
+    catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned')      # jason - 4/14/2015 - we summarize over assigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
+                                                                    #                   - the only reason we do this again is to get a different n.tot.
+
+
+#   Debugging
+#    tmp.catch <<- catch.df
+#    print( table(catch.df$TrapStatus))
+#    cat("in lifestage_passage.r (hit return) ")
+#    readline()
+
+    #   ---- Compute the unique runs we need to do
+    runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    # get all instances over the two df.  jason change 4/17/2015 5/21/2015: don't think we need to worry about catch.df0.
+    runs <- runs[ !is.na(runs) ]
+    cat("\nRuns found between", min.date, "and", max.date, ":\n")
     print(runs)
 
 
-    cat("Life stages under consideration:\n")
-    print(cbind(CAMP.life.stageIDs, CAMP.life.stages))
+    #   ---- Compute the unique life stages we need to do
+    lstages <- unique(c(catch.df1$lifeStage,catch.df2$lifeStage))   # get all instances over the two df.  jason change 4/17/2015 5/21/2015: don't think we need to worry about catch.df0.
+    lstages <- lstages[ !is.na(lstages) ]   #   Don't need this,  I am pretty sure lifeStage is never missing here.
+    cat("\nLife stages found between", min.date, "and", max.date, ":\n")
+    print(lstages)
 
-
-
-    close(ch)
-
-
-    #   ********
-    #   An internal function to convert lifestages to CAMP lifestages
-    f.to.camp.lifestages <- function(lstage, rst.life.stage){
-        u.l.s <- sort(unique(lstage))
-        for( l.s in u.l.s ){
-            camp.l.s <- rst.life.stage$lifeStageCAMPID[ rst.life.stage$lifeStageID == l.s ]
-            lstage[ lstage == l.s ] <- camp.l.s
-        }
-        lstage
-    }
-
+    #   ---- Print the number of non-fishing periods
+    cat( paste("\nNumber of non-fishing intervals at all traps:", sum(visit.df$TrapStatus == "Not fishing"), "\n\n"))
+    
+    #   ---- Extract the unique trap visits.  This will be used in merge to get 0's later
+#    ind <- !duplicated( catch.df$trapVisitID ) & !is.na(catch.df$trapVisitID)
+#    visit.df <- catch.df[ind, ]
+#    visit.df <- visit.df[, !(names(visit.df) %in% c("FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl"))] 
 
     #   ********
     #   Loop over runs
-    ans <- lci <- uci <- matrix(0, length(CAMP.life.stages), length(runs$runID))
-    dimnames(ans)<-list(CAMP.life.stages, runs$run)
+    ans <- lci <- uci <- matrix(0, length(lstages), length(runs))
+    dimnames(ans)<-list(lstages, runs)
     
     
     out.fn.roots <- NULL
-    for( run in runs$runID ){
+    for( j in 1:length(runs) ){
 
-        tmp.mess <- paste("Processing run =", run, ", ", runs$run[which(run==runs$runID)])
-        cat(paste(tmp.mess, "\n\n"))
-
-        progbar <- winProgressBar( tmp.mess, label="Reading catch data" )
-        barinc <- 1 / (length(CAMP.life.stageIDs) * 6)
-
-        #   ---- Fetch the catch data
-        catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
+        run.name <<- runs[j]
         
-        cat(paste('Number of fish records for run', run, "=", nrow(catch.df), "\n"))
+        # jason puts together the catches based on total, unassigned, assigned.
+        assd <- catch.df2[catch.df2$Unassd != 'Unassigned' & catch.df2$FinalRun == run.name,c('trapVisitID','lifeStage','n.tot','mean.fl','sd.fl')]    
+        colnames(assd) <- c('trapVisitID','lifeStage','n.Orig','mean.fl.Orig','sd.fl.Orig')
+        catch.dfA <- merge(catch.df1,assd,by=c('trapVisitID','lifeStage'),all.x=TRUE)
+        unassd <- catch.df0[catch.df0$FinalRun == run.name,c('trapVisitID','lifeStage','n.tot')]
+        colnames(unassd) <- c('trapVisitID','lifeStage','n.Unassd')
+        catch.df <- merge(catch.dfA,unassd,by=c('trapVisitID','lifeStage'),all.x=TRUE)
+        
+        catch.df <- catch.df[order(catch.df$trapPositionID,catch.df$batchDate),]
+        
+        cat(paste(rep("*",80), collapse=""))
+        tmp.mess <- paste("Processing ", run.name)
+        cat(paste("\n", tmp.mess, "\n"))
+        cat(paste(rep("*",80), collapse=""))
+        cat("\n\n")
 
-        if( nrow(catch.df) > 0 ){
-            cat(paste('Number of missing lifestages=', sum(is.na(catch.df$lifeStageID)), ".  All converted to '251'.\n"))
+        progbar <- winProgressBar( tmp.mess, label="Lifestage X run processing" )
+        barinc <- 1 / (length(lstages) * 6)
+        assign( "progbar", progbar, pos=.GlobalEnv ) 
 
-            #   ---- get visits during the run.  Will need this later.
-            visit <- F.get.indiv.visit.data( site, run, min.date, max.date )
+        indRun <- (catch.df$FinalRun == run.name ) & !is.na(catch.df$FinalRun)   # Don't need is.na clause.  FinalRun is never missing here.
             
-            #   ---- Fetch efficiency data
-            release.df <- F.get.release.data( site, run, min.date, max.date  )
-            
-            #   ---- Convert R's missing to Camp's missing
-            catch.df$lifeStageID[ is.na(catch.df$lifeStageID) ] <- 251
-            
-            #   ---- Convert to CAMP lifestages
-            catch.df$lifeStageID <- f.to.camp.lifestages( catch.df$lifeStageID, rst.life.stage )
-            
-            #   ---- Loop over lifestages
-            for( ls in CAMP.life.stageIDs ){
-    
-                #   ---- Subset to just one life stage
-                catch.df.ls <- catch.df[ catch.df$lifeStageID == ls, ]
-                        
-                cat(paste("Lifestage=", ls, "; Run=", run, "; nrow(catch.df.ls)=", nrow(catch.df.ls), "\n"))
-                tmp.mess <- paste("Lifestage=", ls, "; Run=", run )
-                setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc, label=tmp.mess )                
-                                    
-                #   ---- Replicate some of the computations made in F.get.catch.  Imput missing catches.
-                if( nrow(catch.df.ls) > 0 ){
+        #   ---- Loop over lifestages
+        for( i in 1:length(lstages) ){
 
-                    catch.fl <- F.summarize.fish.visit( catch.df.ls )
-                    setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
+            ls <- lstages[i]
+            
+            #   ---- Subset to just one life stage and run
+            indLS <- (catch.df$lifeStage == ls) & !is.na(catch.df$lifeStage) #  Don't need is.na clause.  I don't think lifeStage can be missing here.
 
-                    catch.df.ls <- merge( visit, catch.fl, by="trapVisitID", all.x=T )
-                    setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
+            cat(paste("Lifestage=", ls, "; Run=", run.name, "; num records=", sum(indRun & indLS), "\n"))
+            tmp.mess <- paste("Lifestage=", ls )
+            setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc, label=tmp.mess )                
+                                
+            #   ---- If we caught this run and lifestage, compute passage estimate. 
+            if( any( indRun & indLS ) ){
 
-                    catch.df.ls$n.tot[ is.na(catch.df.ls$n.tot) ] <- 0
-                    catch.df.ls$n.hatchery[ is.na(catch.df.ls$n.hatchery) ] <- 0
-                    catch.df.ls$n.wild[ is.na(catch.df.ls$n.wild) ] <- 0
-                    catch.df.ls$n.morts[ is.na(catch.df.ls$n.morts) ] <- 0
-                    
-                    attr(catch.df.ls, "run.season") <- run.season
-                    attr(catch.df.ls, "site.abbr") <- site.abbr 
-                    attr(catch.df.ls, "species.name") <- attr(catch.df, "species.name")
-                    attr(catch.df.ls, "run.name") <- paste(CAMP.life.stages[CAMP.life.stageIDs == ls], runs$run[ runs$runID == run ])
+                catch.df.ls <- catch.df[ indRun & indLS, c("trapVisitID", "FinalRun", "lifeStage", 'n.Orig','mean.fl.Orig','sd.fl.Orig',"n.tot", "mean.fl", "sd.fl","n.Unassd")]
+
+                #   ---- Merge in the visits to get zeros
+                catch.df.ls <- merge( visit.df, catch.df.ls, by="trapVisitID", all.x=T )
+                setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
+
+                #   ---- Update the constant variables.  Missing n.tot when trap was fishing should be 0.
+                catch.df.ls$FinalRun[ is.na(catch.df.ls$FinalRun) ] <- run.name
+                catch.df.ls$lifeStage[ is.na(catch.df.ls$lifeStage) ] <- ls
+                catch.df.ls$n.tot[ is.na(catch.df.ls$n.tot) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0
+                catch.df.ls$n.Orig[ is.na(catch.df.ls$n.Orig) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0                
+                catch.df.ls$n.Unassd[ is.na(catch.df.ls$n.Unassd) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0                
+
+                #   ---- Add back in the missing trapVisitID rows.  These identify the gaps in fishing
+                #catch.df.ls <- rbind( catch.df.ls, catch.df[ is.na(catch.df$trapVisitID), ] )
                 
-                    #   ---- Compute passage
-                    out.fn.root <- paste0(output.file, "Stage",ls,"_Run",run ) 
-                    setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
-                    pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
-
-                    setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
-                    out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
-
-                    #print(pass)
-                    #readline()
-                    
-                    #   ---- Save
-                    ans[ which(ls==CAMP.life.stageIDs), which(run == runs$runID) ] <- pass$passage
-                    lci[ which(ls==CAMP.life.stageIDs), which(run == runs$runID) ] <- pass$lower.95
-                    uci[ which(ls==CAMP.life.stageIDs), which(run == runs$runID) ] <- pass$upper.95
-                    print(ans)
-                    setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
-                    
-                } 
+                #   ---- Update progress bar
+                out.fn.root <- paste0(output.file, ls, run.name ) 
+                setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
                 
-            }
+                #   Debugging
+#                tmp.c <<- catch.df.ls
+#                tmp.r <<- release.df
+
+                #   Debugging
+#                print(dim(visit.df))
+#                print(dim(catch.df.ls))
+#                print( table( tmp.c$FinalRun, useNA="always" ))
+#                print( table( tmp.c$lifeStage, useNA="always" ))
+#                print( table( tmp.c$trapVisitID, useNA="always" ))
+#                cat("in lifestage_passage (hit return) ")
+#                readline()
+                
+                #   ---- Compute passage
+                pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
+
+                #   ---- Update progress bar
+                setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
+                out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
+
+                #print(pass)
+                
+                #   ---- Save
+                ans[ i, j ] <- pass$passage
+                lci[ i, j ] <- pass$lower.95
+                uci[ i, j ] <- pass$upper.95
+                setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
+                
+            } 
+            
         }
+        
         
         close(progbar)
     }
     
 #    ans <<- ans
 #    ans <- get("ans")
+    
+    cat("Final lifeStage X run estimates:\n")
+    print(ans)
     
     #   ---- compute percentages of each life stage
     ans.pct <- matrix( colSums( ans ), byrow=T, ncol=ncol(ans), nrow=nrow(ans))
@@ -184,10 +196,13 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     
     #   ---- Write out the table
     df <- data.frame( dimnames(ans)[[1]], ans.pct[,1], ans[,1], lci[,1], uci[,1], stringsAsFactors=F )
-    for( j in 2:ncol(ans) ){
-        df <- cbind( df, data.frame( ans.pct[,j], ans[,j], lci[,j], uci[,j], stringsAsFactors=F ))
+    if( ncol(ans) > 1 ){
+        #   We have more than one run
+        for( j in 2:ncol(ans) ){
+            df <- cbind( df, data.frame( ans.pct[,j], ans[,j], lci[,j], uci[,j], stringsAsFactors=F ))
+        }
     }
-    names(df) <- c("LifeStage", paste( rep(runs$run, each=4), rep( c(".pctOfPassage",".passage",".lower.95", ".upper.95"), nrow(runs)), sep=""))
+    names(df) <- c("LifeStage", paste( rep(runs, each=4), rep( c(".propOfPassage",".passage",".lower95pctCI", ".upper95pctCI"), length(runs)), sep=""))
     
  
     #   ---- Append totals to bottom
@@ -206,10 +221,8 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
         cat(paste("Writing passage estimates to", out.pass.table, "\n"))
         
         sink(out.pass.table)
-        cat(paste("Site=,", site.name, "\n", sep=""))
-        cat(paste("Site abbreviation=,", site.abbr, "\n", sep=""))
-        cat(paste("Site ID=,", site, "\n", sep=""))
-        cat(paste("Species=,", sp.commonName, "\n", sep=""))
+        cat(paste("Site=,", catch.df$siteName[1], "\n", sep=""))
+        cat(paste("Site ID=,", catch.df$siteID[1], "\n", sep=""))
         cat(paste("Species ID=,", taxon, "\n", sep=""))
         cat(paste("Dates included=,", rs, "\n", sep=""))
 
@@ -219,15 +232,38 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
         sink()
     
         write.table( df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
+        out.fn.roots <- c(out.fn.roots, out.pass.table)
+        
+        ls.pass.df <<- df
+        
+        # Produce pie or bar charts
+        fl <- F.plot.lifestages( df, output.file, plot.pies=F )
+        if( fl == "ZEROS" ){
+            cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")
+            cat(paste("Working directory:", getwd(), "\n"))
+            cat(paste("R data frames saved in file:", "<none>", "\n\n"))
+            nf <- length(out.fn.roots)
+            cat(paste("Number of files created in working directory = ", nf, "\n"))
+            for(i in 1:length(out.fn.roots)){
+                 cat(paste(out.fn.roots[i], "\n", sep=""))
+            }    
+            cat("\n")
+            return(0)    
+        
+        } else {
+            out.fn.roots <- c(out.fn.roots, fl)
+        }
+        
+        #fl <- F.plot.runs( df, output.file, plot.pies=F )
+        #out.fn.roots <- c(out.fn.roots, fl)
     }
     
     #   ---- Write out message
     cat("SUCCESS - F.lifestage.passage\n\n")
     cat(paste("Working directory:", getwd(), "\n"))
     cat(paste("R data frames saved in file:", "<none>", "\n\n"))
-    nf <- length(out.fn.roots) + 1
+    nf <- length(out.fn.roots) 
     cat(paste("Number of files created in working directory = ", nf, "\n"))
-    cat(paste(out.pass.table, "\n"))
     for(i in 1:length(out.fn.roots)){
          cat(paste(out.fn.roots[i], "\n", sep=""))
      }    

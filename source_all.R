@@ -20,10 +20,14 @@
     #   =================== Global variables 
     
     #   Parameter db.file is a string containing the full or relative path to the data base
-    #db.file <<- "..\\Platform\\Data\\CAMP.mdb"  # For trent's testing in 'code' directory
-    db.file <<- "..\\Data\\CAMP.mdb"
+    #db.file <<- "..\\Data\\WorkingVersionCAMP_LAR_16July2013.mdb"  # For trent's testing in 'code' directory
+    #db.file <<- "..\\Data\\CAMPFeather_NewVersion1July2013.mdb"  # For trent's testing in 'code' directory
+    #db.file <<- "..\\Data\\connie's caswell stanislaus file after doug adds finaRunIDs  CAMP.mdb"
+
+
+    db.file  <<- "..\\Data\\CAMP.mdb"    #   THE OFFICIAL DATA BASE
     
-    cat(paste("DB file:", db.file, "\n"))
+    cat(paste("DB file:", db.file ,"\n"))
 
     #   Parameter table.names is a list containing the mapping of table names in Access to table names in R. 
     #   This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
@@ -47,12 +51,14 @@
                     fish.origin="luFishOrigin" )
                     
     #   Retreive the YES/NO codes from the luNoYes table.  Just in case they should ever change in the data base
+#     setwd('C:/Users/jmitchell/Desktop/CAMP_RST-master/Jason')
+#     ch <- odbcConnectAccess('CAMPStanislaus_16Sept2013.mdb')
     ch <- odbcConnectAccess(db.file)
     luNoYes <- sqlFetch(ch, table.names["yes.no.codes"])
     No.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "no" ]
     Yes.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "yes" ]
-    close(ch)
- 
+    close(ch)      
+    
     #   Assign sample cut time for batch dates that are missing. 
     #   If a sample period ends before this time, batch date is the day the period ends. 
     #   If a sample period ends after this time, batch date is the next day following the end of the sampling period.
@@ -64,6 +70,16 @@
     
     #   Write out the memory limit on this machine
     cat(paste("Memory limit:", memory.limit(), "Mb \n"))    
+    
+    #   Set time zone. NOTE: all times are assumed to be in this time zone.  
+    #   If not, they may be incorrect.  In any event, all times are forced to this time zone.
+    time.zone <<- "America/Los_Angeles"
+    
+    #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then, 
+    #  *************** Set the efficiency model to use. 
+    #
+    #   Specify the capture efficiency model
+    #eff.model.method <- 3
                     
 }
 .onAttach()
@@ -77,40 +93,52 @@ source(	"eff_model.r"	)
 source(	"est_catch.r"	)
 source(	"est_efficiency.r"	)
 source(	"est_passage.r"	)
-source(	"find_recaps.r"	)
+#source(	"find_recaps.r"	)
 source(	"get_catch_data.r"	)
+source(	"get_all_catch_data.r"	)
 source(	"get_release_data.r"	)
-source(	"latex_biweekly_table.r"	)
-source(	"odt_biweekly_table.r"	)
-source(	"latex_passage.r"	)
-source(	"latex_recapSummary.r"	)
+#source(	"latex_biweekly_table.r"	)
+#source(	"odt_biweekly_table.r"	)
+#source(	"latex_passage.r"	)
+#source(	"latex_recapSummary.r"	)
 source(	"passage.r"	)
 source( "annual_passage.r" )
 source(	"plot_catch_model.r"	)
 source(	"plot_eff_model.r"	)
 source(	"plot_passage.r"	)
 source(	"release_summary.r"	)
+source( "run_passage.r" )
 source(	"summarize_releases.r"	)
 source( "summarize_fish_visit.r" )
-source( "take_table.r" )
-source(	"vec2sqlstr.r"	)
+source( "all_catch_table.r" )
+#source(	"vec2sqlstr.r"	)
 source(	"size_by_date.r"	)
 source(	"get_indiv_fish_data.r"	)
 source(	"get_indiv_visit_data.r"	)
 source(	"length_freq.r"	)
 source( "sql_error_check.r" )
-source( "assign_sample_period.r" )
+#source( "assign_sample_period.r" )
 source( "assign_batch_date.r" )
 source( "assign_gaplen.r" )
-source( "check_for_missing.r" )
-source( "biweekly_report.r" )
+#source( "check_for_missing.r" )
+#source( "biweekly_report.r" )
 source( "weekly_effort.r" )
-source( "weekly_passage.r" )
+#source( "weekly_passage.r" )  # exclude. Same as F.passage with by="week"
 source( "lifestage_passage.r" )
 source( "bootstrap_passage.r" )
 source( "summarize_passage.r" )
 source( "summarize_index.r" )
 source( "expand_plus_counts.r" )
 source( "assign_1dim.r" )
-source( "assign_2dim.r" )
+source( "assign_2dim.r" )                             # stuck in an endless loop?  maybe doesnt matter.
 source( "get_all_fish_data.r" )
+source( "plot_lifestages.r" )
+#source( "get_life_stages.r" )
+source( "build_report_criteria.r" )
+source( "chinook_by_date.r" )
+source( "get_by_catch.r" )
+source( "by_catch_table.r" )
+source( "run_sqlFile.r" )
+source( "build_report_criteria_release.r" )
+
+

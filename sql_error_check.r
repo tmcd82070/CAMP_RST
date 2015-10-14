@@ -10,5 +10,5 @@ if( is.vector(obj) & length(obj) >= 2 ){
     }
 }
 
-1
+FALSE
 }

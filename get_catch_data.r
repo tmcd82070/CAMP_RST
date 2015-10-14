@@ -1,4 +1,4 @@
-F.get.catch.data <- function( site, taxon, run, min.date, max.date ){
+F.get.catch.data <- function( site, taxon, min.date, max.date ){
 #
 #   Fetch the catch data for a SINGLE TAXON from an Access data base. Do some initial
 #   computations, like dates.
@@ -20,112 +20,133 @@ F.get.catch.data <- function( site, taxon, run, min.date, max.date ){
 #   of the correct taxon, of the correct run, and between min and max dates. 
 #
 
-f.banner <- function( x ){
+#f.banner <- function( x ){
+#    cat("\n")
+#    cat(paste(rep("=",50), collapse="")); 
+#    cat(x); 
+#    cat(paste(rep("=",50), collapse="")); 
+#    cat("\n")
+#}
 
-    cat("\n")
-    cat(paste(rep("=",50), collapse="")); 
-    cat(x); 
-    cat(paste(rep("=",50), collapse="")); 
-    cat("\n")
+#   *****
+nvisits <- F.buildReportCriteria( site, min.date, max.date )
+
+if( nvisits == 0 ){
+    warning("Your criteria returned no trapVisit table records.")
+    return()
 }
 
 
-#   ================================================================================================
-#   Fetch the visit table. 
-f.banner("F.get.catch.data - Retrieving Visits")
-
-visit <- F.get.indiv.visit.data( site, run, min.date, max.date )
-
-
-#write.table(visit, file="Visits_test.csv", sep=",", row.names=F )
-
-#print(attributes(visit))
-
-#   Save some attributes for later
-site.name <- attr(visit, "site.name") 
-site.abbr <- attr(visit, "site.abbr")
-run.name <- attr(visit, "run.name")
-run.season <- attr(visit, "run.season")
+#   *****
+#   Open ODBC channel
+db <- get( "db.file", env=.GlobalEnv ) 
+ch <- odbcConnectAccess(db)
 
 
-   
-#   ================================================================================================
-#   Fetch raw catch data, one line per fish or group of fish of same length
-f.banner("Retrieving Fish")
+#   *****
+#   This SQL file develops the hours fished and TempSamplingSummary table 
+F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )   
 
-catch <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
-
-#   If 0 of the target taxon were caught, catch has 0 rows
-
-if( nrow(catch) >= 20 ) print(catch[1:20,]) else print(catch)
-
-#write.table(catch, file="catch_test.csv", sep=",", row.names=F )
-
-site.stream <- attr(catch, "site.stream") 
-subsite.string <- attr(catch, "subsites")
-taxon.string <- attr(catch, "taxonID" )
-sp.commonName <- attr(catch, "species.name")
-
-tmp.catch <<- catch
+#   *****
+#   This SQL generates times when the traps were not fishing
+F.run.sqlFile( ch, "QryNotFishing.sql" )   
 
 
-#   ================================================================================================
-#   Now, summarize fish by visit.  I.e., add up and compute mean fork lengths, etc over fish and subsites
-f.banner("Summarizing fish by visit")
+#   *****
+#   This SQL generates unmarked fish by run and life stage
+F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )   
 
-if( nrow(catch) > 0 ){
-    catch.fl <- F.summarize.fish.visit( catch )
-} else {
-    u.visits <- unique(visit$trapVisitID)
-    null <- rep(NA, length(u.visits))
-    catch.fl <- data.frame( trapVisitID=u.visits,
-                            n.tot=null, n.hatchery=null, n.wild=null, n.morts=null,
-                            mean.fl=null, mean.fl.hatchery=null, mean.fl.wild=null,
-                            sd.fl=null, sd.fl.hatchery=null, sd.fl.wild=null )
-}
+# stop('in the name of safety.')      # jason stop to show connie what can be output to the console window.  delete later probably.
+#   *****
+#   Now, fetch the result 
+catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
+F.sql.error.check(catch)
+
+close(ch) 
+
+#   ******************************************************************
+#   Assign time zone (probably does not matter)
+time.zone <- get( "time.zone", env=.GlobalEnv )
+attr(catch$StartTime, "tzone") <- time.zone
+attr(catch$EndTime, "tzone") <- time.zone
+
+#  jason add all this get includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST)
+time.zone <- get( "time.zone", env=.GlobalEnv )
+# includecatchID$StartTime <- includecatchID$timeSampleStarted 
+includecatchID$EndTime <- includecatchID$timeSampleEnded 
+includecatchID$ProjID <- includecatchID$projectDescriptionID
+includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL
+# attr(includecatchID$StartTime, "tzone") <- time.zone
+attr(includecatchID$EndTime, "tzone") <- time.zone
+includecatchID <- includecatchID[,c('trapPositionID','EndTime','ProjID','includeCatchID')]
+
+# sampleGearID ProjID trapPositionID trapVisitID
+catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
 
 
-#   ================================================================================================
-#   merge summed fish into visit data
-f.banner("Merging and cleaning up")
+#   ********************************************************************
+#   At this point, catch has all visits in it, even if no fish were caught.  
+#   It also has non-fishing intervals.  This is how you identify these intervals:
+#       1. zero catch = catch$Unmarked == 0  ($FinalRun and $LifeStage are both "Unassigned" for these lines)
+#       2. not fishing = catch$TrapStatus == "Not fishing"  (equivalently, $trapVisitID is missing for these lines.  Only time its missing.)
+#
+#   Pull apart the visits from the catch, because plus count expansion only applys to positive catches.    
+#   Recall, catch currently has multiple lines per trapVisit delineating fish with different fork lengths. 
 
-visit <- merge( visit, catch.fl, by="trapVisitID", all.x=T ) # keeps all records in visit, but could be missing in catch
+visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
+visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
+
+#   ********************************************************************
+#   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
+catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
 
-#   Visits where they did not catch any fish are just missing from catch.  After merge, these 
-#   visits have NA for n.  Change to 0.
-visit$n.tot[ is.na(visit$n.tot) ] <- 0
-visit$n.hatchery[ is.na(visit$n.hatchery) ] <- 0
-visit$n.wild[ is.na(visit$n.wild) ] <- 0
-visit$n.morts[ is.na(visit$n.morts) ] <- 0
+
+# get summary counts of catch run vs. lifetstage for internal checking.
+totalFish <<- sum(catch$Unmarked)
+totalRun <<- aggregate(catch$Unmarked, list(FinalRun=catch$FinalRun), FUN=sum)
+totalLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage), FUN=sum)
+totalRunXLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage,FinalRun=catch$FinalRun), FUN=sum)
+
+catch$Unassd <- catch$lifeStage # jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
+#   ********************************************************************
+
+#   Expand the Plus counts
+catch <- F.expand.plus.counts( catch )
 
 
-#   TaxonID for visits where they did not catch fish is missing.  Assign it. 
-taxon.composite <- paste(taxon, collapse="+")
-visit$taxonID <- rep(taxon.composite, nrow(visit))
+#   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"
+catch$FinalRun <- as.character( catch$FinalRun ) 
+catch$lifeStage <- as.character( catch$lifeStage ) 
+#catch$lifeStage <- as.character( catch$Unassd ) jason - possibly delete
 
-#warning("need to implement plus count methods, need to implement subsampling methods, add counts as other columns - n.parr, n.smolt, etc.")
 
-#   Sort
-visit <- visit[ order(visit$trapPositionID, visit$sampleStart), ]
+#   ********************************************************************
+#   Assign batch dates
+visits <- F.assign.batch.date( visits )
+catch <- F.assign.batch.date( catch )
+
 
 #   Assign attributes
-attr(visit, "siteID" ) <- site
-attr(visit, "site.name") <- site.name
-attr(visit, "site.abbr") <- site.abbr
-attr(visit, "runID") <- run
-attr(visit, "run.name") <- run.name
-attr(visit, "run.season") <- run.season
-attr(visit, "site.stream") <- site.stream 
-attr(visit, "subsites") <- subsite.string
-attr(visit, "taxonID" ) <- taxon.string 
-attr(visit, "species.name") <- sp.commonName
+attr(catch, "siteID" ) <- site
+attr(catch, "site.name") <- catch$siteName[1]
+#attr(catch, "site.abbr") <- catch$siteAbbreviation[1]
+#attr(catch, "runID") <- run
+#attr(catch, "run.name") <- run.name
+#attr(catch, "run.season") <- run.season
+#attr(catch, "site.stream") <- site.stream 
+attr(catch, "subsites") <- unique(catch$trapPositionID)
+#attr(catch, "taxonID" ) <- taxon.string 
+#attr(catch, "species.name") <- sp.commonName
+#
+cat("First 20 records of catch data frame...\n")
+if( nrow(catch) >= 20 ) print( catch[1:20,] ) else print( catch )
 
-cat("First 20 records of final catch data frame...\n")
-if( nrow(visit) >= 20 ) print( visit[1:20,] ) else print( visit )
+#f.banner("F.get.catch.data - Complete")
 
-f.banner("F.get.catch.data - Complete")
 
-visit
+#   Return two data frames. One containing positive catches.  The other containing visit and fishing information. 
+list( catch=catch, visit=visits )
 
 }
