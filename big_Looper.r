@@ -12,6 +12,9 @@ theExcel <- read.csv('theExcel.csv')
 theExcel <- theExcel[theExcel$Issues == '',]
 rownames(theExcel) <- NULL
 
+#testin!!!!
+
+
 # specify the range, in terms of theExcel rownames, to test.
 for(testi in 42:65){
   
