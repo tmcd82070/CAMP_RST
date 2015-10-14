@@ -1,6 +1,6 @@
 F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE ){
   #
-  #   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
+  #   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
   #   A table of passage estimates, with lifestages down the rows, and runs across the columns.
   #
   #   Input:
@@ -49,11 +49,15 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   
   #catch.df <- F.summarize.fish.visit( catch.df )       jason turns off 4/15/2015
   
-  catch.df0 <- F.summarize.fish.visit( catch.df, 'unassigned' )   # jason - 5/20/2015 - we summarize over lifeStage, wrt to unassigned. 
+  catch.df0 <- F.summarize.fish.visit( catch.df, 'unassigned' )   # jason - 5/20/2015 - we summarize over lifeStage, wrt to unassigned.   10/2/2015 - i think by 'unassigned,' i really mean 'unmeasured'???
   catch.df1 <- F.summarize.fish.visit( catch.df, 'inflated' )     # jason - 4/14/2015 - we summarize over lifeStage, w/o regard to unassigned.  this is what has always been done.
   catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned')      # jason - 4/14/2015 - we summarize over assigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
   #                   - the only reason we do this again is to get a different n.tot.
   
+  
+#   catch.df0[as.Date(catch.df0$batchDate) == '2000-11-30',]#'2005-12-19'
+#   catch.df1[as.Date(catch.df1$batchDate) == '2000-11-30',]
+#   catch.df2[as.Date(catch.df2$batchDate) == '2000-11-30',]
   
   #   Debugging
   #    tmp.catch <<- catch.df

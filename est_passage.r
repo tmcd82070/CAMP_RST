@@ -180,6 +180,8 @@ grand.df$check1 <- ifelse(grand.df$sum1 == grand.df$totalCatch,TRUE,FALSE)
 grand.df$check2 <- ifelse(grand.df$sum2 == grand.df$inflatedCatch,TRUE,FALSE)
 grand.df$check3 <- ifelse(grand.df$sum3 == grand.df$totalCatch,TRUE,FALSE)
 
+grand.df <<- grand.df
+
 if(sum(grand.df$check1 + grand.df$check2 + grand.df$check3) != nrow(grand.df)*3){
   stop('Issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Investigate est_passage.R, around line 176.')
 } else {

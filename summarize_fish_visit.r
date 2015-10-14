@@ -20,14 +20,14 @@ F.summarize.fish.visit <- function( catch,variable ){
   if(nrow(catch[catch$Unassd == 'Unassigned',]) > 0){
     catch[catch$Unassd == 'Unassigned',]$forkLength <- NA
   }
-  
+  doit <- 0
   
   
 if( nrow(catch) > 0 ){
 
   if(variable == 'unassigned'){         # fish counts with plus counts, but allow for pulling out the plus counted fish alone by code below.
     
-
+  catch <- catch[catch$Unassd == 'Unassigned',]   # add 10/12/2015 to make sure only true unassiged fish go through the unassigned sequence.
     
     #   These are variables that are constant within a trapVisit, run, and lifestage
     const.vars<-c("ProjID", "trapVisitID", "batchDate", "StartTime", "EndTime", "SampleMinutes", 
@@ -36,9 +36,12 @@ if( nrow(catch) > 0 ){
     
     #   indexes = all unique combinations of visit, run, and life stage
     #   indexes = NA for all gaps in the trapping sequence
+  if(nrow(catch) > 0){
     indexes <- tapply( 1:nrow(catch), list( catch$trapVisitID, catch$FinalRun, catch$lifeStage, catch$Unassd ) )  
+    doit <- 1
+  } 
     
-  } else if(variable == 'inflated'){    # fish counts with plus counts.  this is what was originally coded.
+} else if(variable == 'inflated'){    # fish counts with plus counts.  this is what was originally coded.
     
     #   These are variables that are constant within a trapVisit, run, and lifestage
     const.vars<-c("ProjID", "trapVisitID", "batchDate", "StartTime", "EndTime", "SampleMinutes", 
@@ -48,6 +51,7 @@ if( nrow(catch) > 0 ){
     #   indexes = all unique combinations of visit, run, and life stage
     #   indexes = NA for all gaps in the trapping sequence
     indexes <- tapply( 1:nrow(catch), list( catch$trapVisitID, catch$FinalRun, catch$lifeStage ) )  
+    doit <- 1
     
   } else if(variable == 'assigned'){     # fish counts without plus counts, so measured == assigned ONLY.  jason add - 4/15/2015.
     
@@ -60,9 +64,10 @@ if( nrow(catch) > 0 ){
     #   indexes = NA for all gaps in the trapping sequence
     
     indexes <- tapply( 1:nrow(catch), list( catch$trapVisitID, catch$FinalRun, catch$Unassd ) ) 
-    
+    doit <- 1
   }
   
+  if(doit == 1){
     #   Because of the gap lines, there are NA's in indexes (because there are NA's in trapVisitID). 
     #   Fix these.  To assure indexes is same length as catch, we cannot simply remove NA's here. 
     #   Solution: set them to -1, then remove -1 from u.ind.  This way the loop below 
@@ -111,12 +116,18 @@ if( nrow(catch) > 0 ){
 
     #   Sort the result by trap positing and trap visit
     catch.fl <- catch.fl[ order( catch.fl$trapPositionID, catch.fl$EndTime ), ]
-
+  
     if(variable == 'unassigned'){
-      
-      catch.fl <- catch.fl[is.nan(catch.fl$mean.fl),]
+            
+      catch.fl <- catch.fl[is.nan(catch.fl$mean.fl),]# & (catch.fl$FinalRun == 'Unassiged' | catch.fl$lifeStage == 'Unassiged'),] # jason add 10/3/2015 to deal w/ rare situation of having
+      # no measured fish, but both finalrun and lifestage assigned.      
       
     }
+  } else {
+    catch.fl <- data.frame(matrix(vector(), 0, 20,
+                           dimnames=list(c(), c("ProjID","trapVisitID","batchDate","StartTime","EndTime","SampleMinutes","TrapStatus","siteID","siteName","trapPositionID","TrapPosition","sampleGearID","sampleGear","halfConeID","HalfCone","FinalRun","lifeStage","n.tot","mean.fl","sd.fl")  )),
+                          stringsAsFactors=F)  # need to have at least an empty df with defined column names/vars
+  } # end doit
 
 } else {
     catch.fl <- NA

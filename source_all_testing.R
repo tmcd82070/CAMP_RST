@@ -31,7 +31,7 @@
   db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_29Jan2015\\CAMP.mdb"
   db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
   db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20151123/Data/CAMP.mdb"
-  #db.file8 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
+  db.file8 <<- "..\\Data\\TestingDBs\\CAMP_Mokelumne_9Sept2015\\CAMP.mdb"
     
   cat(paste("DB file:", db.file1, "\n"))
   cat(paste("DB file:", db.file2, "\n"))
@@ -40,6 +40,7 @@
   cat(paste("DB file:", db.file5, "\n"))
   cat(paste("DB file:", db.file6, "\n"))
   cat(paste("DB file:", db.file7, "\n"))
+  cat(paste("DB file:", db.file8, "\n"))
   
   #   Parameter table.names is a list containing the mapping of table names in Access to table names in R. 
   #   This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
