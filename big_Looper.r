@@ -13,7 +13,7 @@ theExcel <- theExcel[theExcel$Issues == '',]
 rownames(theExcel) <- NULL
 
 # specify the range, in terms of theExcel rownames, to test.
-for(testi in 11:33){
+for(testi in 42:65){
   
   for(byj in 1:4){
     
@@ -75,11 +75,11 @@ for(testi in 11:33){
 #     F.passage       ( site, taxon, run, min.date, max.date, by,        output.file,                ci                      )
 #   }
 
-#     F.release.summary ( site, taxon, run, min.date, max.date,            output.file                                         )
+#      F.release.summary ( site, taxon, run, min.date, max.date,            output.file                                         )
 #     F.size.by.date    ( site, taxon, run, min.date, max.date,            output.file                                         )
-#     F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=T"),   by.lifestage=FALSE   )
-#     F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=F"),   by.lifestage=TRUE    )
-#     F.weekly.effort   ( site, taxon,      min.date, max.date,            output.file                                         )  
+#      F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=T"),   by.lifestage=FALSE   )
+#      F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_lifestage=F"),   by.lifestage=TRUE    )
+#      F.weekly.effort   ( site, taxon,      min.date, max.date,            output.file                                         )  
     F.run.passage     ( site, taxon,      min.date, max.date, by=by,     output.file=output.file,         ci=TRUE            )
     F.lifestage.passage(site, taxon,      min.date, max.date,            output.file,                     ci=TRUE            )
   }
