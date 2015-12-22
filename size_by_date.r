@@ -100,7 +100,7 @@ plot( x, y, type="n", xlab="", ylab="", xaxt="n" )
 title( xlab="Date", cex.lab=1.5)
 title( ylab="Fork Length (mm)", cex.lab=1.5, line=2.5 )
 dts <- pretty(x)
-axis( side=1, at=dts, labels=format(dts, "%b%y") )
+axis( side=1, at=dts, labels=format(dts, "%d%b%y") )
 
 life.stages <- sort(unique( lstage ))
 cat(paste("Lifestages plotted:", paste(life.stages, collapse=", "), "\n"))

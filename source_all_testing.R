@@ -26,11 +26,11 @@
   
   db.file1 <<- "..\\Data\\TestingDBs\\CAMPBattleClear_29Jan2015\\CAMP.mdb"
   db.file2 <<- "..\\Data\\TestingDBs\\CAMP_RBDD_29Jan2015\\CAMP.mdb"
-  db.file3 <<- "..\\Data\\TestingDBs\\CAMPAmerican_29Jan2015\\CAMP.mdb"
+  db.file3 <<- "..\\Data\\TestingDBs\\CAMPAmerican2013_2015Database_23June2015\\CAMP.mdb"
   db.file4 <<- "..\\Data\\TestingDBs\\CAMPCosumnes_25Oct2013_notForAnalyses\\CAMP.mdb"
   db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_29Jan2015\\CAMP.mdb"
   db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
-  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20151123/Data/CAMP.mdb"
+  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20151130/Data/CAMP.mdb"
   db.file8 <<- "..\\Data\\TestingDBs\\CAMP_Mokelumne_9Sept2015\\CAMP.mdb"
     
   cat(paste("DB file:", db.file1, "\n"))

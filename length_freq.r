@@ -95,6 +95,9 @@ lstage <- rep(lstage, n)
 #   -------------------- An internal function to compute common break points 
 f.breaks<-function(x, near=10, width=2){
 
+  # x <- y
+  # near <- 10
+  # width <- 2
     lolim <- trunc( min(x)/near ) * near   # rounds down to nearest 'near' number, eg., near = 5, rounds down to nearest multiple of 5
     hilim <- ceiling( max(x)/near ) * near # rounds up to nearest 'near' number.
     bks <- seq(lolim, hilim, by=width)
@@ -109,7 +112,15 @@ f.max.bar.hgt <- function(x, bks){
 
 
 #   -------------------- An internal function to draw one length frequency plot
+
 f.len.freq<-function(x, bks, col, last=F, max.y, stage){
+  
+  # x <- yy
+  # bks <- bks
+  # col <- mycol[ i ]
+  # last <- TRUE
+  # max.y <- max.y
+  # stage <- stage.name
 
     #   Plot the bars
     if(last) {
@@ -127,9 +138,25 @@ f.len.freq<-function(x, bks, col, last=F, max.y, stage){
     h <- hist(x, breaks=bks, plot=F )  # get counts so can set ylim correctly
     y.at <- pretty(h$counts)
 
+#     h <- hist(x, breaks=bks, freq=T, xlab=xl, ylab="", main="", ylim=range(y.at),
+#               density=-1, col=col, xaxt=xa, cex.lab=2, cex.axis=1.25, yaxt="n" )
+   
+     
+# ----- jason update 12/16/2015 -------------------------------------------------------------------------------------------
     h <- hist(x, breaks=bks, freq=T, xlab=xl, ylab="", main="", ylim=range(y.at),
-        density=-1, col=col, xaxt=xa, cex.lab=2, cex.axis=1.25, yaxt="n" )
-        
+        density=-1, col=col, cex.lab=2, cex.axis=1.25, yaxt="n", xlim=range(bks), xaxt="n" )
+    
+    if(i == nl){     # last lifestage, so plot x-axis.
+      if((length(bks) %% 2) == 1){
+        bksL <- bks[c(TRUE,FALSE)]   # odd ticks
+      } else {
+        bksL <- c(bks[c(TRUE,FALSE)],bks[length(bks)])  # even ticks
+      }
+      axis( 1, at=bksL, labels=formatC(bksL, big.mark=","),cex.axis=0.85)
+    }
+# ----- jason update 12/16/2015 -------------------------------------------------------------------------------------------
+
+     
     axis( 2, at=y.at, labels=formatC(y.at, big.mark=",") )
 
     #   Smoothed density - If you want it

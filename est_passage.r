@@ -95,8 +95,24 @@ out.fn.list <- c(out.fn.list, attr(catch.and.fits, "out.fn.list"))
 #   Estimate trap efficiency for every batchDate of season.  Return value is
 #   data frame with columns $batchDate and $eff.  
 #   If plot=T, this produces a graph in a pdf.
+
+# ------ old as of 12/11/2015 -----------------------------
 f.banner(" Efficiency estimation ")
 bd <- sort( unique(catch$batchDate) )
+# --------------------------------------------------------
+
+
+# # ----- jason adds 12/11/2015 so that release.df has info on adjusted beg and end fishing days, for each trap
+# 
+# allDates <- catch.and.fits$allDates
+# release.df <- merge(release.df,allDates,by.x=c('trapPositionID'),by.y=c('trap'),all.x=TRUE)
+# 
+# f.banner("Efficiency estimation ")
+# bd <- strptime(sort( seq(as.Date(min(na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
+# # getting the bd to work here was tricky, due to time zones, etc.  
+# # ----- jason ends this new section -----------------------------------------------------------------
+
+
 
 
 eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df=3, plot=TRUE, plot.file=file.root )
@@ -191,8 +207,8 @@ if(sum(grand.df$check1 + grand.df$check2 + grand.df$check3) != nrow(grand.df)*3)
 
 #   The passage estimator
 grand.df$passage <- rep(NA, nrow(grand.df))
-grand.df$passage <- grand.df$totalCatch / grand.df$efficiency
-grand.df$passage <- round(grand.df$passage,1)   # round final passage estimate here so different summaries sum to the same number.
+grand.df$passage <- ifelse(!is.na(grand.df$efficiency),grand.df$totalCatch / grand.df$efficiency,0)
+#grand.df$passage <- round(grand.df$passage,1)   # round final passage estimate here so different summaries sum to the same number.
 
 # jason.catch <<- catch
 # jason.efficiency <<- efficiency
@@ -257,7 +273,7 @@ if( !is.na(file.root) ){
     names(tmp.df)[ names(tmp.df) == "imputed.catch" ] <- "propImputedCatch"
     names(tmp.df)[ names(tmp.df) == "imputed.eff" ] <- "propImputedEff"
     tmp.df$propImputedEff <- as.numeric(tmp.df$propImputedEff)  # convert to numbers, 0 or 1
-    tmp.df$passage <- round(tmp.df$passage)  # Round off passage
+    #tmp.df$passage <- round(tmp.df$passage)  # Round off passage
     tmp.df$totalCatch <- round(tmp.df$totalCatch,1)
     tmp.df$efficiency <- round(tmp.df$efficiency, 4)  
     

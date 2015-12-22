@@ -34,6 +34,18 @@ names(catch.fits) <- u.traps
 # catch.dff <<- catch.df   # save a copy for debugging
 
 
+
+
+
+# # ----------- jason adds 12.04.2015 to house results of buffer analysis. ---------------------------
+# 
+# the.zero.fits <- vector("list",length(unique(catch.df.ls$trapPositionID)))
+# allWinnerDates <- NULL   # jason adds
+# 
+# # ----------- jason adds 12.04.2015 to house results of buffer analysis. ---------------------------
+
+
+
 for( trap in u.traps ){
     cat(paste("==== Catch model for trapPositionID", trap, "========\n" ))
 
@@ -47,6 +59,63 @@ for( trap in u.traps ){
     #   On return, there is a value or imputed value for each day from start of season to end of season.
     
     
+    
+    
+#     # --------------- jason generalizes to run catch models over all possible buffering zero iterations.  12.4.2015.-----------------------------------------------
+#     buffs <- max.buff.days(df2)       # first value is zeros + NA in the beg, last is zeros + NA in the end. 3rd value is length of n.tot vector. 
+#     
+#     origBeg.date <- min(df2$batchDate)
+#     origEnd.date <- max(df2$batchDate)
+#     
+#     if( !(buffs[1] == buffs[3] & buffs[2] == buffs[3]) ){     # prob only need to check 1 of these conditions
+#       # 1st, assume both buffs are non-zero.
+#       iters <- buffs[1]*buffs[2]
+#       thisTrap <- vector("list",iters)
+#       allIter <- NULL
+#       bsSpine <- c('(Intercept)',paste0(rep('bs.sEnd',30),seq(1,30)))
+#       bsSpineDF <- data.frame(parms=bsSpine)
+#       for(bb in 0:0){#(buffs[1] - 1)){
+#         for(eb in 0:0){#(buffs[2] - 1)){
+#           df3 <- chuck.zeros(buffs[1],buffs[2],bb,eb,df2)     # bb and ef = number of zeros + NA to keep, before and after, respectively.  
+#           thisTrap[[buffs[2]*(bb) + (eb + 1)]] <- suppressWarnings( F.catch.model( df3 ) )  # df.and.fit is list of, $df2 contains data frame, $fit contains model, etc
+#           the.zero.fits[[match(trap,u.traps)]] <- thisTrap
+#           
+#           betas <- data.frame(values=unlist(the.zero.fits[[match(trap,u.traps)]][[buffs[2]*(bb) + (eb + 1)]]$fit$coefficients))
+#           betas$parms <- rownames(betas)
+#           betasT <- data.frame(t(merge(bsSpineDF,betas,by=c('parms'),all.x=TRUE)))
+#           betasT <- betasT[,c('X1','X2','X13','X24','X26','X27','X28','X29','X30','X31','X3','X4','X5','X6','X7','X8','X9','X10','X11','X12','X14','X15','X16','X17','X18','X19','X20','X21','X22','X23','X25')]
+#           colnames(betasT) <- bsSpine
+#           betasT <- betasT[-1,]
+#         
+#           beg.date <- head(the.zero.fits[[match(trap,u.traps)]][[buffs[2]*(bb) + (eb + 1)]]$df2,1)$batchDate
+#           end.date <- tail(the.zero.fits[[match(trap,u.traps)]][[buffs[2]*(bb) + (eb + 1)]]$df2,1)$batchDate
+#           thisIter <- cbind(betasT,beg.date,end.date,bZerosRem=buffs[1] - bb - 1,eZerosRem=buffs[2] - eb - 1,bZerosKept=bb,eZerosKept=eb)
+#           thisIter$AIC <- the.zero.fits[[match(trap,u.traps)]][[buffs[2]*(bb) + (eb + 1)]]$fit$aic
+#           thisIter$nrow <- nrow(df3)
+#           thisIter$Nrow <- nrow(df2[df2$trapPositionID == trap,])
+#           allIter <- rbind(allIter,thisIter)
+#         }
+#       }
+#       rownames(allIter) <- NULL
+#       #write.csv(allIter,paste0(output.file,' - ',run.name,' - ',trap,' - allIter.csv'))
+#       winner <- allIter[allIter$bZerosKept == 0 & allIter$eZerosKept == 0,]    # see what we have after throwing out the zeros.
+#       
+#       winnerDate <- winner[,c('bZerosRem','eZerosRem','bZerosKept','eZerosKept','nrow','Nrow','beg.date','end.date')]
+#       winnerDate$trap <- trap
+#       winnerDate$origBeg.date <- origBeg.date
+#       winnerDate$origEnd.date <- origEnd.date
+#       allWinnerDates <- rbind(allWinnerDates,winnerDate)
+#       
+#       df4 <- the.zero.fits[[match(trap,u.traps)]][[  buffs[1]*buffs[2] - winner$bZerosRem*buffs[2] - winner$eZerosRem  ]]$df2    # something happens to not fishing periods here?
+#       df2 <- df2[order(df2$batchDate),]
+#       df5 <- df2[ (1 + winner$bZerosRem) : (nrow(df2) - winner$eZerosRem),]     # this nrow(df4) != nrow(df5) in general.  df2 after fitting model gets screwy rows
+#       df2 <- df5        # put new df on track with previous code expectations.
+#     }
+#     # ------------ end jason generalizing ---------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    
+  
+    # keep the original in this format, with this structure, so all its dependencies continue to work as intended.  jason 12.4.2015.
     df.and.fit <- suppressWarnings( F.catch.model( df2 ) )  # df.and.fit is list of, $df2 contains data frame, $fit contains model, etc
      #jason.df.and.fit <<- df.and.fit
     df <- rbind( df, df.and.fit$df2)
@@ -66,6 +135,20 @@ for( trap in u.traps ){
 cat("in est_catch.r  DF")
 print( tapply(df$batchDate, df$trapPositionID, range) )
 cat("-------\n")
+
+
+
+
+# # ----- jason adds 12/11/2015 so we have something to tell the est_efficiency program those traps that end up with zero fish,
+# # ----- but may have release data
+# 
+# allDates <- merge(data.frame(trap=u.traps),allWinnerDates,by=c('trap'),all.x=TRUE)
+# 
+# 
+# # ----- end jason add. --------------------------
+
+
+
 
 
 #   Should probably save df into the Access data base for storage and potential use by others. 
@@ -252,7 +335,7 @@ if( !is.na(plot.file) ) {
 cat("Catch estimation complete...\n")
 
 
-ans <- list(catch=est.catch, fits=catch.fits, X.miss=X.miss, gaps=Gaps, bDates.miss=bDates.miss, trapsOperating=trapsOperating, true.imp=true.imp)
+ans <- list(catch=est.catch, fits=catch.fits, X.miss=X.miss, gaps=Gaps, bDates.miss=bDates.miss, trapsOperating=trapsOperating, true.imp=true.imp)#, allDates=allDates)
 
 attr(ans, "out.fn.list") <- out.fn
 

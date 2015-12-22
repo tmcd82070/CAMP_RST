@@ -167,6 +167,8 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       #                cat("in lifestage_passage (hit return) ")
       #                readline()
       
+
+      
       #   ---- Compute passage
       pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
       passby <- F.est.passage( catch.df.ls, release.df, by, out.fn.root, ci )
@@ -203,16 +205,24 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
           db <- get( "db.file", env=.GlobalEnv )                                  #   Open ODBC channel
           ch <- odbcConnectAccess(db)
           the.dates <- sqlFetch( ch, "Dates" )                                    #   get the table that has the julian week labels.
-          the.dates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,julianWeek,julianWeekLabel))
+          the.dates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(year,julianWeek,julianWeekLabel))
           close(ch)
+          the.dates$week <- paste0(the.dates$year,'-',formatC(the.dates$julianWeek, width=2, flag="0"))
+          the.dates <- unique(the.dates)
           
           # can't figure out how to join on posix dates.  so cheating. 
-          tmp.df$date.alone <- as.Date(strptime(tmp.df$date,format="%F"))
-          the.dates$date.alone <- as.Date(strptime(the.dates$uniqueDate,format="%F"))    # jason: from strftime to strptime. why the change?
-          tmp.df <- merge(tmp.df,the.dates,by = c("date.alone"),all.x=TRUE)
           
-          tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)    #paste0(myYear,'-',tmp.jday %/% 7 + 1)
-          tmp.df <- subset(tmp.df, select = -c(date.alone,uniqueDate,julianWeek,julianWeekLabel) )
+          tmp.df <- merge(tmp.df,the.dates,by=c('week'),all.x=TRUE)
+          tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)
+          tmp.df <- subset(tmp.df, select = -c(year,julianWeek,julianWeekLabel) )
+          
+          # possibly obsolete, 12/14/2015
+          #           tmp.df$date.alone <- as.Date(strptime(tmp.df$date,format="%F"))
+          #           the.dates$date.alone <- as.Date(strptime(the.dates$uniqueDate,format="%F"))    # jason: from strftime to strptime. why the change?
+          #           tmp.df <- merge(tmp.df,the.dates,by = c("date.alone"),all.x=TRUE)
+          #           
+          #           tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)    #paste0(myYear,'-',tmp.jday %/% 7 + 1)
+          #           tmp.df <- subset(tmp.df, select = -c(date.alone,uniqueDate,julianWeek,julianWeekLabel) )
         }
         
         tzn <- get("time.zone", .GlobalEnv )
@@ -255,6 +265,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
             }
           }
         } 
+        
         
         if(by == 'day'){
           nms <- gsub('date,', '', nms)     # by == day results in a slightly different format for tmp.df than the other three.

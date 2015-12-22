@@ -3,7 +3,7 @@ library(RODBC)
 
 
 testing <- TRUE           # points to different output folders.
-platform <- 'CAMP_RST20151123'    # points to different platforms
+platform <- 'CAMP_RST20151130'    # points to different platforms
 
 if(testing == FALSE){
   paste(cat('testing == FALSE\n'))
