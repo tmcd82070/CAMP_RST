@@ -330,6 +330,13 @@ if( !ci ){
     #   Row dimension of list items corresponds to (batch days x trap), columns correspond to iterations.
     #   We now need to average the cells over the traps, and summarize by time.  Do this by calling F.summarize.passage on each column
     
+    
+    db <- get( "db.file", env=.GlobalEnv )                                  #   Open ODBC channel
+    ch <- odbcConnectAccess(db)
+    the.dates <- sqlFetch( ch, "Dates" )                                    #   get the table that has the julian week labels.
+    the.dates <<- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
+    close(ch)
+    
 
     #   ===== Apply F.summarize to every column of pass
     f.sumize.pass <- function(p, s.by, bd){

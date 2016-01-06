@@ -12,7 +12,7 @@ F.size.by.date <- function( site, taxon, run, min.date, max.date, output.file ){
 #   A graph, in "file" of the length by date data. 
 #
 
-
+  
 
 library(quantreg)
 library(splines)
@@ -42,6 +42,43 @@ close(ch)
 
 catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
 
+
+
+
+
+#  grab non-valid Catch
+attributesSafe <- attributes(catch.df)
+db <- get( "db.file", env=.GlobalEnv ) 
+ch <- odbcConnectAccess(db)
+
+F.run.sqlFile( ch, "QryNonValidFishing.sql", R.TAXON=taxon )   
+nvCatch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_X_final" )        #   Now, fetch the result -- nvCatch = non-Valid Catch
+F.sql.error.check(nvCatch)
+
+close(ch)
+
+nvCatch <- nvCatch[ (nvCatch$Unmarked > 0), ]                         #  Subset the catches to just positives.  Toss the 0 catches.
+if(nrow(nvCatch) > 0){
+  nvCatch$Unassd <- nvCatch$lifeStage                                   #  jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
+  nvCatch2 <- F.expand.plus.counts( nvCatch )                           #  Expand the Plus counts
+  nvCatch2$includeCatchID <- 2                                          #  make this df match the catch.df
+  nvCatch3 <- F.assign.batch.date( nvCatch2 )                           #  clean up dates
+  nvCatch.df <- nvCatch3[,names(catch.df)]                              #  get both dfs lined up correctly
+  if(nrow(catch.df) > 0 & nrow(nvCatch.df) > 0){
+    catch.df <- rbind(catch.df,nvCatch.df)                                #  use a new catch.df with non-valid fishing included
+    attributes(catch.df) <- attributesSafe
+  } else if(nrow(catch.df) == 0 & nrow(nvCatch.df) > 0){
+    catch.df <- nvCatch.df
+    # no attributes to bring in -- do it now
+    attr(catch.df, "siteID" ) <- site
+    attr(catch.df, "site.name") <- catch.df$siteName[1]
+    attr(catch.df, "subsites") <- unique(catch.df$trapPositionID)
+  } else if(nrow(catch.df) > 0 & nrow(nvCatch.df) == 0){
+    catch.df <- catch.df
+    attributes(catch.df) <- attributesSafe
+  } # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
+} 
+
 if( nrow(catch.df) == 0 ){
     plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
     text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")
@@ -55,7 +92,7 @@ if( nrow(catch.df) == 0 ){
     return(catch.df)
 }
 
-
+if(class(catch.df$lifeStage) == 'factor'){catch.df$lifeStage <- as.character(droplevels(catch.df$lifeStage))}   # jason add
 
 #   ********
 #   Now plot
@@ -68,6 +105,7 @@ x <- catch.df$EndTime
 y <- catch.df$forkLength
 lstage <- catch.df$lifeStage
 n <- catch.df$Unmarked
+valid <- catch.df$includeCatchID
 
 #   Drop record if any critical data is missing
 #   If we are talking salmon here, limit the lifestages to fry, parr, and smolt
@@ -80,6 +118,7 @@ x <- x[!drop]
 y <- y[!drop]
 lstage <- lstage[!drop]
 n <- n[!drop]
+valid <- valid[!drop]
 
 #   Convert from lifestages the traps used to life stages that CAMP uses.  The conversion is in table rst.life.stages
 # JASON OBSOLETE -- QUERY THAT GETS CATCH WORKS ON DESCRIPTORS INSTEAD OF IDS -- 1/26/2015
@@ -93,6 +132,8 @@ n <- n[!drop]
 x <- rep(x, n)
 y <- rep(y, n)
 lstage <- rep(lstage, n)
+valid <- rep(valid, n)
+
 
 #   Main plot
 
@@ -119,9 +160,14 @@ for( l.s in life.stages ){
     jitx <- rnorm(sum(ind), sd=60*60*3)
     #jity <- rnorm(sum(ind), sd=diff(range(y))/100)
     jity <- 0
+    validv <- ifelse(valid[ind]==1,'Fishing','NotFishing')
     points( xx + jitx, yy + jity, col=mycol[ which(l.s == life.stages)], pch=mypch[ which(l.s == life.stages)] )
-    ans.pts <- rbind( ans.pts, data.frame(lifestage=l.s, date=xx, fork.length.mm=yy, date.jittered=xx+jitx, fork.length.mm.jittered=yy+jity ))
+    ans.pts <- rbind( ans.pts, data.frame(lifestage=l.s, date=xx, fork.length.mm=yy, date.jittered=xx+jitx, fork.length.mm.jittered=yy+jity, fishing.status=validv ))
 }
+
+ans.pts <- ans.pts[order(ans.pts$date, ans.pts$lifestage, ans.pts$date.jittered, ans.pts$fork.length.mm.jittered),]
+
+#95, 108, 122, 151, 152, 155
 
 #   Add quantile lines
 xx <- as.numeric(x) # no longer a POSIXct
@@ -168,7 +214,7 @@ if(rq.fit[1] == 'Singular design matrix'){
 
 #   ---- Close the graphics file
 dev.off()
-
+search()
 #   ---- Write out the csv's
 out.pts <- paste(output.file, "_size_by_date_points.csv", sep="")
 write.table( ans.pts, file=out.pts, sep=",", row.names=FALSE)

@@ -34,7 +34,7 @@ tmp.pct <- tmp3/sum(tmp3)
 tmp4 <- tmp3[ tmp.pct > 0.01 ]
 tmp4 <- c( sum(tmp3[tmp.pct <= 0.01]), tmp4)
 names(tmp4)[1] <- paste("Other (", sum(tmp.pct <= 0.01), " species)", sep="")
-names(tmp4) <- paste0("(",tmp4,") ",names(tmp4))   # update 12/16/2015 to add counts to species in chart.
+names(tmp4) <- paste0(names(tmp4)," (",tmp4,") ")   # update 12/22/2015 to add counts to species in chart.
 
 out.fn <- c(out.fn, paste(output.file, "_piechart.csv", sep=""))
 tmp2 <- data.frame( Species=names(tmp4), Count=tmp4, Proportion=tmp4/sum(tmp4) )

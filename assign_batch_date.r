@@ -2,7 +2,7 @@ F.assign.batch.date <- function( df ){
 #
 #   Assign batch data to records.
 #
-# df <- catch
+# df <- catch                      # df <- nvCatch2
 
 cuttime <- get( "samplePeriodCutTime", env=.GlobalEnv )
 midtime <- "00:00:00"   # this is the time of day assigned to batchDates.  Could be half way between cut times or (cuttime - 12*60*60).
@@ -11,8 +11,10 @@ time.zone <- get( "time.zone", env=.GlobalEnv )
 
 
 #   A sequence of dates at cuttime every day
-min.day <- min(df$EndTime) - 24*60*60
-max.day <- max(df$EndTime) + 2*24*60*60
+min.day <- as.POSIXlt( min(df$EndTime) - 24*60*60, format="%Y-%m-%d %H:%M:%S", tz=time.zone)
+max.day <- as.POSIXlt( max(df$EndTime) + 2*24*60*60, format="%Y-%m-%d %H:%M:%S", tz=time.zone)
+#min.day <- min(df$EndTime) - 24*60*60
+#max.day <- max(df$EndTime) + 2*24*60*60
 cut.seq <- seq( min.day, max.day, by=24*60*60 )
 cut.day <- format( cut.seq, "%Y-%m-%d" )
 cut.seq <- as.POSIXct( paste( cut.day, cuttime ), format="%Y-%m-%d %H:%M:%S", tz=time.zone)

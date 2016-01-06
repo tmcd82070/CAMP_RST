@@ -14,7 +14,7 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
 #
 
 
-#   Open a graphics device
+#  Open a graphics device
 if( !is.na(output.file) ){
     #   ---- Open PNG device
     out.graphs <- paste(output.file, "_len_freq.png", sep="")
@@ -40,6 +40,41 @@ if( by.lifestage ){
 
 catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
 
+
+
+#  grab non-valid Catch
+attributesSafe <- attributes(catch.df)
+db <- get( "db.file", env=.GlobalEnv ) 
+ch <- odbcConnectAccess(db)
+
+F.run.sqlFile( ch, "QryNonValidFishing.sql", R.TAXON=taxon )   
+nvCatch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_X_final" )        #   Now, fetch the result -- nvCatch = non-Valid Catch
+F.sql.error.check(nvCatch)
+
+close(ch)
+
+nvCatch <- nvCatch[ (nvCatch$Unmarked > 0), ]                         #  Subset the catches to just positives.  Toss the 0 catches.
+if(nrow(nvCatch) > 0){
+  nvCatch$Unassd <- nvCatch$lifeStage                                   #  jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
+  nvCatch2 <- F.expand.plus.counts( nvCatch )                           #  Expand the Plus counts
+  nvCatch2$includeCatchID <- 2                                          #  make this df match the catch.df
+  nvCatch3 <- F.assign.batch.date( nvCatch2 )                           #  clean up dates
+  nvCatch.df <- nvCatch3[,names(catch.df)]                              #  get both dfs lined up correctly
+  if(nrow(catch.df) > 0 & nrow(nvCatch.df) > 0){
+    catch.df <- rbind(catch.df,nvCatch.df)                                #  use a new catch.df with non-valid fishing included
+    attributes(catch.df) <- attributesSafe
+  } else if(nrow(catch.df) == 0 & nrow(nvCatch.df) > 0){
+    catch.df <- nvCatch.df
+    # no attributes to bring in -- do it now
+    attr(catch.df, "siteID" ) <- site
+    attr(catch.df, "site.name") <- catch.df$siteName[1]
+    attr(catch.df, "subsites") <- unique(catch.df$trapPositionID)
+  } else if(nrow(catch.df) > 0 & nrow(nvCatch.df) == 0){
+    catch.df <- catch.df
+    attributes(catch.df) <- attributesSafe
+  } # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
+} 
+
 if(nrow(catch.df) == 0){
     plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
     text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")
@@ -53,6 +88,10 @@ if(nrow(catch.df) == 0){
     cat("\n")    
     return(catch.df)
 }
+
+if(class(catch.df$lifeStage) == 'factor'){catch.df$lifeStage <- as.character(droplevels(catch.df$lifeStage))}   # jason add
+
+
 
 #   ********
 #   Now plot
@@ -146,7 +185,7 @@ f.len.freq<-function(x, bks, col, last=F, max.y, stage){
     h <- hist(x, breaks=bks, freq=T, xlab=xl, ylab="", main="", ylim=range(y.at),
         density=-1, col=col, cex.lab=2, cex.axis=1.25, yaxt="n", xlim=range(bks), xaxt="n" )
     
-    if(i == nl){     # last lifestage, so plot x-axis.
+    if(last){     # last lifestage, so plot x-axis.
       if((length(bks) %% 2) == 1){
         bksL <- bks[c(TRUE,FALSE)]   # odd ticks
       } else {

@@ -79,8 +79,8 @@ for(testi in 22:dim(theExcel)[1]){
       runText      <- 'Winter'
 #       min.date     <- "2013-10-01"
 #       max.date     <- "2014-09-29"
-      min.date     <- "2013-10-01"
-      max.date     <- "2014-09-29"
+      min.date     <- "2014-01-01"
+      max.date     <- "2014-02-14"
     }
 
   river        <- ''  
@@ -88,13 +88,13 @@ for(testi in 22:dim(theExcel)[1]){
   siteText     <- 'testing'
   run          <- 3
   runText      <- 'Fall'
-  min.date     <- "2005-12-01"
+  min.date     <- "2005-01-09"
   max.date     <- "2006-07-30"
 
 
 #   site <- '4000'
-#   min.date <- '2000-11-29'
-#   max.date <- '2001-06-21'
+#   min.date <- '2014-01-01'
+#   max.date <- '2014-07-30'
 
 
     taxon        <- 161980
