@@ -67,15 +67,18 @@ if(nrow(nvCatch) > 0){
   if(nrow(catch.df) > 0 & nrow(nvCatch.df) > 0){
     catch.df <- rbind(catch.df,nvCatch.df)                                #  use a new catch.df with non-valid fishing included
     attributes(catch.df) <- attributesSafe
+    disc <- 'Fork lengths include both valid and invalid trapping data.'
   } else if(nrow(catch.df) == 0 & nrow(nvCatch.df) > 0){
     catch.df <- nvCatch.df
     # no attributes to bring in -- do it now
     attr(catch.df, "siteID" ) <- site
     attr(catch.df, "site.name") <- catch.df$siteName[1]
     attr(catch.df, "subsites") <- unique(catch.df$trapPositionID)
+    disc <- 'Fork lengths include only invalid trapping data;  no valid data exists for selected criteria.'    
   } else if(nrow(catch.df) > 0 & nrow(nvCatch.df) == 0){
     catch.df <- catch.df
     attributes(catch.df) <- attributesSafe
+    disc <- 'Fork lengths include only valid trapping data;  no invalid data exists for selected criteria.'        
   } # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
 } 
 
@@ -199,6 +202,7 @@ dts <- attr(catch.df, "run.season")
 dts <- paste( format(dts$start, "%d%b%Y"), "to", format(dts$end, "%d%b%Y") )
 sp.string <- paste( sp.string, ", ", dts, sep="")
 title( main=sp.string, line=1, cex.main=1 )
+title( main=disc, line=0.25, cex.main=0.70)
 
 #   Legend
 if(rq.fit[1] == 'Singular design matrix'){  

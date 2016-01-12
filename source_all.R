@@ -2,7 +2,6 @@
 #   Thim mimics attaching a package.  Eventually this will be replaced when the real package is done.
 #
 .libPaths(.Library)   # check out libpaths -- 01/04/2016.
-#.libPaths(.libPaths()[length(.libPaths())])
 #remove(list=ls())   # erase everything; CAREFUL
 
 .onAttach <- function(){

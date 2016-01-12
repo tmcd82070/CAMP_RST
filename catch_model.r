@@ -262,7 +262,7 @@ repeat{
 
         pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
         pred <- exp(pred)
-        
+       
         #   Put things we need into a blank data frame suitable for inserting into catch.df
         new <- catch.df[1:ng,]   # initialize - do it this way to get classes and factor levels
         new$n.tot <- pred      # put imputed with plus counts.

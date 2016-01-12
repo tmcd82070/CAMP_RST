@@ -1,7 +1,7 @@
 #
 #   Thim mimics attaching a package.  Eventually this will be replaced when the real package is done.
 #
-
+.libPaths(.Library)   # check out libpaths -- 01/04/2016.
 #remove(list=ls())   # erase everything; CAREFUL
 
 .onAttach <- function(){
@@ -118,6 +118,7 @@ source( "annual_passage.r" )
 source(	"plot_catch_model.r"	)
 source(	"plot_eff_model.r"	)
 source(	"plot_passage.r"	)
+source( "plot.spline.r" )
 source(	"release_summary.r"	)
 source( "run_passage.r" )
 source(	"summarize_releases.r"	)
