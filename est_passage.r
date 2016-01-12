@@ -288,6 +288,8 @@ if( !is.na(file.root) ){
 
     tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','imputedCatch','totalCatch','propImputedCatch','efficiency','propImputedEff','passage')]    # rearrange columns
     
+    tmp.df <- tmp.df[order(tmp.df$subSiteID,tmp.df$batchDate),]   # need to sort now?  1/8/2016.
+    
     write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
     out.fn.list <- c(out.fn.list, out.fn)
 }

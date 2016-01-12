@@ -28,6 +28,7 @@ time.zone <- get("time.zone", env=.GlobalEnv )
 #   ---- Fill in the gaps for individual traps
 df <- NULL
 true.imp <- NULL
+allJBaseTable <- NULL
 u.traps <- unique( catch.df$trapPositionID )
 catch.fits <- X.miss <- Gaps <- bDates.miss <- vector("list", length(u.traps))   # lists to contain thing to save for bootstrapping 
 names(catch.fits) <- u.traps
@@ -118,6 +119,10 @@ for( trap in u.traps ){
     # keep the original in this format, with this structure, so all its dependencies continue to work as intended.  jason 12.4.2015.
     df.and.fit <- suppressWarnings( F.catch.model( df2 ) )  # df.and.fit is list of, $df2 contains data frame, $fit contains model, etc
      #jason.df.and.fit <<- df.and.fit
+    
+    jBaseTable <- plot_spline(trap,catch.df,df.and.fit,file="spline.pdf")
+   
+    allJBaseTable <- rbind(allJBaseTable,jBaseTable)
     df <- rbind( df, df.and.fit$df2)
     
    
@@ -135,6 +140,11 @@ for( trap in u.traps ){
 cat("in est_catch.r  DF")
 print( tapply(df$batchDate, df$trapPositionID, range) )
 cat("-------\n")
+
+# ---- output underlying data of splines plot ---
+write.csv(allJBaseTable,paste0(output.file,"_",catch.df$FinalRun[1],"_allJBaseTable.csv"))
+# ---- end output underlying data of splines plot ---
+
 
 
 

@@ -63,15 +63,18 @@ if(nrow(nvCatch) > 0){
   if(nrow(catch.df) > 0 & nrow(nvCatch.df) > 0){
     catch.df <- rbind(catch.df,nvCatch.df)                                #  use a new catch.df with non-valid fishing included
     attributes(catch.df) <- attributesSafe
+    disc <- 'Fork lengths include both valid and invalid trapping data.'
   } else if(nrow(catch.df) == 0 & nrow(nvCatch.df) > 0){
     catch.df <- nvCatch.df
     # no attributes to bring in -- do it now
     attr(catch.df, "siteID" ) <- site
     attr(catch.df, "site.name") <- catch.df$siteName[1]
     attr(catch.df, "subsites") <- unique(catch.df$trapPositionID)
+    disc <- 'Fork lengths include only invalid trapping data;  no valid data exists for selected criteria.'    
   } else if(nrow(catch.df) > 0 & nrow(nvCatch.df) == 0){
     catch.df <- catch.df
     attributes(catch.df) <- attributesSafe
+    disc <- 'Fork lengths include only valid trapping data;  no invalid data exists for selected criteria.'        
   } # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
 } 
 
@@ -285,9 +288,9 @@ if( by.lifestage ){
     #   Plot outer title 
     str.hgt <- strheight(main.l1, units="user", cex=2)  * 1.2 / .1
     plot(c(0,1), c(0,1), type="n", axes=F )
-    text( .5, 1 - str.hgt,  main.l1, adj=.5, cex=2 )
+    text( .5, 1 - str.hgt    ,  main.l1, adj=.5, cex=2 )
     text( .5, 1 - 2.1*str.hgt,  main.l2, adj=.5, cex=1.5 )
-
+    text( .5, 1 - 2.9*str.hgt,     disc, adj=.5, cex=1.0)
 } else {
 
     
@@ -296,9 +299,10 @@ if( by.lifestage ){
     cnts <- f.len.freq(y, bks, "orange", last=TRUE, max.y=f.max.bar.hgt(y, bks), stage="")
 
     #   Main title
-    title( main=main.l1, line=2, cex.main=1.5)
-    title( main=main.l2, line=1, cex.main=1 )
-    title( main="All life stages", line=0, cex.main=.75)
+    title( main=main.l1, line=3, cex.main=1.5)
+    title( main=main.l2, line=2, cex.main=1 )
+    title( main=disc   , line=1, cex.main=0.5)
+    title( main="All life stages", line=0, cex.main=.85)
     
     #   Y label
     title( ylab = "Frequency", cex.lab=2, line=2.5 )

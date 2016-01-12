@@ -79,17 +79,17 @@ for(testi in 22:dim(theExcel)[1]){
       runText      <- 'Winter'
 #       min.date     <- "2013-10-01"
 #       max.date     <- "2014-09-29"
-      min.date     <- "2014-01-01"
-      max.date     <- "2014-02-14"
+      min.date     <- "2012-10-01"
+      max.date     <- "2013-09-30"
     }
 
-  river        <- ''  
-  site         <- 34000
-  siteText     <- 'testing'
-  run          <- 3
-  runText      <- 'Fall'
-  min.date     <- "2005-01-09"
-  max.date     <- "2006-07-30"
+#   river        <- ''  
+#   site         <- 34000
+#   siteText     <- 'testing'
+#   run          <- 3
+#   runText      <- 'Fall'
+#   min.date     <- "2005-01-09"
+#   max.date     <- "2006-07-30"
 
 
 #   site <- '4000'

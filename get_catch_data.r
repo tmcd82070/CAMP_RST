@@ -112,6 +112,34 @@ totalRunXLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage,
 catch$Unassd <- catch$lifeStage # jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
 #   ********************************************************************
 
+
+# expand half-cone operations to full-cone.  this needs to happen prior to plus-counting.
+# catch$preUnmarked <- catch$Unmarked
+# catch$Unmarked <- ifelse(catch$halfConeID == 1,2*catch$preUnmarked,catch$preUnmarked)
+# 
+# tapply(catch$Unmarked, catch$halfConeID, sum)
+# 
+# catch.temp <- catch[catch$FinalRun == 'Fall',]
+# hcY <- data.frame(hcY=tapply(catch.temp[catch.temp$halfConeID == 1,]$Unmarked, catch.temp[catch.temp$halfConeID == 1,]$SampleDate, sum))
+# hcY$matchDate <- rownames(hcY)
+# hcN <- data.frame(hcN=tapply(catch.temp[catch.temp$halfConeID == 2,]$Unmarked, catch.temp[catch.temp$halfConeID == 2,]$SampleDate, sum))
+# hcN$matchDate <- rownames(hcN)
+# hc <- merge(hcY,hcN,by=c('matchDate'),all.x=TRUE,all.y=TRUE)
+# 
+# sum(hc$hcY[!is.na(hc$hcY)],hc$hcN[!is.na(hc$hcN)]) == sum(catch.temp$Unmarked)   # check if we have all the fish we should
+# 
+# 
+# plot(as.Date(hc$matchDate[!is.na(hc$hcY)]),hc$hcY[!is.na(hc$hcY)],col='red'  ,pch=19,xlim=c(min(as.Date(hc$matchDate)),max(as.Date(hc$matchDate))),ylim=c(0,max(hc$hcY,hc$hcN,na.rm=TRUE)))
+# par(new=TRUE)
+# plot(as.Date(hc$matchDate[!is.na(hc$hcN)]),hc$hcN[!is.na(hc$hcN)],col='black',pch=19,xlim=c(min(as.Date(hc$matchDate)),max(as.Date(hc$matchDate))),ylim=c(0,max(hc$hcY,hc$hcN,na.rm=TRUE)))
+# par(new=TRUE)
+# segments(min(as.Date(hc$matchDate)),mean(hc$hcY[!is.na(hc$hcY)]),max(as.Date(hc$matchDate)),mean(hc$hcY[!is.na(hc$hcY)]),col='red')
+# par(new=TRUE)
+# segments(min(as.Date(hc$matchDate)),mean(hc$hcN[!is.na(hc$hcN)]),max(as.Date(hc$matchDate)),mean(hc$hcN[!is.na(hc$hcN)]),col='black')
+
+
+
+
 #   Expand the Plus counts
 catch <- F.expand.plus.counts( catch )
 
@@ -126,6 +154,11 @@ catch$lifeStage <- as.character( catch$lifeStage )
 #   Assign batch dates
 visits <- F.assign.batch.date( visits )
 catch <- F.assign.batch.date( catch )
+
+
+
+
+
 
 
 #   Assign attributes
