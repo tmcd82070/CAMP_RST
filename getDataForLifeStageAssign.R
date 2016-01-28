@@ -6,16 +6,14 @@
 
 
 
-getDataForLifeStageAssign <- function(pathData,taxon,site,min.date,max.date){
+getDataForLifeStageAssign <- function(taxon,site,min.date,max.date){
 
-print('Data from:')
-print(tail(strsplit(pathData,'/')[[1]],1))
 
 
 require(RODBC)
 
 ## the string must be 'db.file', or else f'n 'build_Report_Criteria.r' won't work.
-db.file <<- paste0(pathData,"/CAMP.mdb")
+##db.file <<- paste0(pathData,"/CAMP.mdb")
 
 if(!file.exists(db.file)){
     print('file does not exist:')
@@ -28,11 +26,9 @@ nvisits <- F.buildReportCriteria( site, min.date, max.date )      # trent f'n to
 
 if( nvisits == 0 ){
   warning("Your criteria returned no trapVisit table records.")
+odbcCloseAll()
   return()
 }
-
-print('Data from:')
-print(tail(strsplit(pathData,'/')[[1]],1))
 
 
 db <- get( "db.file", env=.GlobalEnv )
@@ -42,8 +38,6 @@ F.run.sqlFile(ch, "QrySamplePeriod.sql", R.TAXON=taxon ) # trent f'n that works 
 ## ---- end building ----
 
 
-print('Data from:')
-print(tail(strsplit(pathData,'/')[[1]],1))
 
 
 ## ---- finally, the new query ----
@@ -54,12 +48,10 @@ F.sql.error.check(catch)   # trent function to make sure the table seems ok
 close(ch) # disconnect
 ## ---- end new query -----
 
-print('Data from:')
-print(tail(strsplit(pathData,'/')[[1]],1))
 
 ## return the data
 return(catch)
 
 
 
-} ## function
+} ##end getDataForLifeStageAssign function

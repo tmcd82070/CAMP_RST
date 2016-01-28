@@ -8,3 +8,4 @@ F.release.summary,Summarize releases.,Summarizes something cool about the fish a
 F.size.by.date,Plot fork length through season.,Plots fork length through time by age class. ,site:taxon:run:min.date:max.date:output.file
 F.length.frequency,Plot histograms of fork length.,"Plots histograms of fork length with respect to age classes, or collapsed together.",site:taxon:run:min.date:max.date:output.file:by.lifestage
 F.weekly.effort,Plot the weekly effort over time.,Plot the weekly effort over time.,site:taxon:min.date:max.date:output.file
+assignLifeStage,Assign Life Stage testing,Assign Life Stage,site:taxon:run:min.date:max.date:output.file
