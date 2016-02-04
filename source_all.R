@@ -7,18 +7,18 @@
 .onAttach <- function(){
     #   Attach the libraries we need for all or nearly all routines.
     library(RODBC)
-    
-    #   These are other libraries needed by certain routines.  These need to be installed, 
-    #   and will be attached by the routines that need them. 
+
+    #   These are other libraries needed by certain routines.  These need to be installed,
+    #   and will be attached by the routines that need them.
     #   library(quantreg)
     #   library(splines)
     #   library(MASS)
     #   library(mvtnorm)  # this is needed in F.bootstrap.passage
 
-    
 
-    #   =================== Global variables 
-    
+
+    #   =================== Global variables
+
     #   Parameter db.file is a string containing the full or relative path to the data base
     #db.file <<- "..\\Data\\WorkingVersionCAMP_LAR_16July2013.mdb"  # For trent's testing in 'code' directory
     #db.file <<- "..\\Data\\CAMPFeather_NewVersion1July2013.mdb"  # For trent's testing in 'code' directory
@@ -26,10 +26,10 @@
 
 
     db.file  <<- "..\\Data\\CAMP.mdb"    #   THE OFFICIAL DATA BASE
-    
+
     cat(paste("DB file:", db.file ,"\n"))
 
-    #   Parameter table.names is a list containing the mapping of table names in Access to table names in R. 
+    #   Parameter table.names is a list containing the mapping of table names in Access to table names in R.
     #   This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
     table.names <<- c(trap.visit="TrapVisit",
                     sites = "Site",
@@ -49,7 +49,7 @@
                     CAMP.life.stages="luLifeStageCAMP",
                     life.stages="luLifeStage",
                     fish.origin="luFishOrigin" )
-                    
+
     #   Retreive the YES/NO codes from the luNoYes table.  Just in case they should ever change in the data base
 #     setwd('C:/Users/jmitchell/Desktop/CAMP_RST-master/Jason')
 #     ch <- odbcConnectAccess('CAMPStanislaus_16Sept2013.mdb')
@@ -57,30 +57,30 @@
     luNoYes <- sqlFetch(ch, table.names["yes.no.codes"])
     No.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "no" ]
     Yes.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "yes" ]
-    close(ch)      
-    
-    #   Assign sample cut time for batch dates that are missing. 
-    #   If a sample period ends before this time, batch date is the day the period ends. 
+    close(ch)
+
+    #   Assign sample cut time for batch dates that are missing.
+    #   If a sample period ends before this time, batch date is the day the period ends.
     #   If a sample period ends after this time, batch date is the next day following the end of the sampling period.
     samplePeriodCutTime <<- "04:00:00"              # In military time
-    
-    #   Maximum gap, in hours, that is "okay".  Gaps in trapping smaller than this are ignored.  No catch is imputed for them. 
+
+    #   Maximum gap, in hours, that is "okay".  Gaps in trapping smaller than this are ignored.  No catch is imputed for them.
     #   Because gam model for imputation predicts an hourly rate, this max gap cannot be < 1 hour
     max.ok.gap <<- 2
-    
+
     #   Write out the memory limit on this machine
-    cat(paste("Memory limit:", memory.limit(), "Mb \n"))    
-    
-    #   Set time zone. NOTE: all times are assumed to be in this time zone.  
+    cat(paste("Memory limit:", memory.limit(), "Mb \n"))
+
+    #   Set time zone. NOTE: all times are assumed to be in this time zone.
     #   If not, they may be incorrect.  In any event, all times are forced to this time zone.
     time.zone <<- "America/Los_Angeles"
-    
-    #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then, 
-    #  *************** Set the efficiency model to use. 
+
+    #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then,
+    #  *************** Set the efficiency model to use.
     #
     #   Specify the capture efficiency model
     #eff.model.method <- 3
-                    
+
 }
 .onAttach()
 
@@ -142,3 +142,7 @@ source( "run_sqlFile.r" )
 source( "build_report_criteria_release.r" )
 
 
+## assigning life stage functions
+
+source('F.lifestage.passage.assignLS.R')
+source('getCatchDataWeight.R')
