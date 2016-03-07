@@ -1,4 +1,4 @@
-F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE ){
+F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL ){
 ##
 ##   Fetch the catch data for a SINGLE TAXON from an Access data base. Do some initial
 ##   computations, like dates.
@@ -16,7 +16,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE ){
 ##   min.date = minimum date for data to include. This is a text string in the format %Y-%m-%d, or YYYY-MM-DD
 ##   max.date = maximum date for data to include.  Same format as min.date
 ##   autoLS = FALSE, nothing new is done. autoLS =TRUE the life stage is assigned using a mixture distribution/clustering analysis
-##
+##   nLS = NULL, ignored if autoLS is false,
 ##
 ##
 ##   To be included in the catch data, a record has to be from the site,
@@ -130,8 +130,11 @@ if(autoLS){
     cat('\n')
     cat('\n')
     cat('\n')
-    return(catch)
-    stop('That is good enough')
+    catch <- assignLifeStage(DATA=catch,groupN=nLS)
+
+    ## for debugging
+    ##return(catch)
+    ##stop('That is good enough')
 }
 
 ######################################
