@@ -1,4 +1,4 @@
-F.lifestage.passage.assignLS <- function(site, taxon, min.date, max.date, output.file, ci=TRUE){
+F.lifestage.passage.assignLS2group <- function(site, taxon, min.date, max.date, output.file, ci=TRUE){
 ###
 ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
 ###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
@@ -7,6 +7,7 @@ F.lifestage.passage.assignLS <- function(site, taxon, min.date, max.date, output
 ###   site = site ID of the place we want, trap locaton
 ###   taxon = taxon number (from luTaxon) to retrieve
 ###
+
 
 
 ##############################################################################################################
@@ -31,8 +32,8 @@ F.lifestage.passage.assignLS <- function(site, taxon, min.date, max.date, output
 
     ##   ---- Fetch the catch and visit data
     ## autoLS=TRUE, uses mixture distribution to assign life stage
-    ## nLS = NULL, allows the routine to decide the number of life stages
-    tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,autoLS=TRUE,nLS=NULL)
+    ## nLS = 2, 2 life stages are fit
+    tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,autoLS=TRUE,nLS=2)
 
     catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
     visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later

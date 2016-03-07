@@ -9,3 +9,5 @@ F.size.by.date,Plot fork length through season.,Plots fork length through time b
 F.length.frequency,Plot histograms of fork length.,"Plots histograms of fork length with respect to age classes, or collapsed together.",site:taxon:run:min.date:max.date:output.file:by.lifestage
 F.weekly.effort,Plot the weekly effort over time.,Plot the weekly effort over time.,site:taxon:min.date:max.date:output.file
 F.lifestage.passage.assignLS,"Assigns lifestage, then estimates production by life stage and run.","Assigns life stage, then estimates production of all lifestages in all runs between two dates.",site:taxon:min.date:max.date:output.file:ci
+F.lifestage.passage.assignLS3group,"Assigns 3 lifestage groups, then estimates production by life stage and run.","Assigns life stage into 3 groups, then estimates production of all lifestages in all runs between two dates.",site:taxon:min.date:max.date:output.file:ci
+F.lifestage.passage.assignLS2group,"Assigns 2 lifestage groups, then estimates production by life stage and run.","Assigns life stage into 2 groups, then estimates production of all lifestages in all runs between two dates.",site:taxon:min.date:max.date:output.file:ci
