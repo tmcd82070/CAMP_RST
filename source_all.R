@@ -146,3 +146,6 @@ source( "build_report_criteria_release.r" )
 
 source('F.lifestage.passage.assignLS.R')
 source('getCatchDataWeight.R')
+source('getPackages.R')
+source('assignLifeStage.R')
+source('expandUnmarked.R')
