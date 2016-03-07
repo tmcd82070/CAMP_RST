@@ -5,7 +5,7 @@
 ###################################################
 
 
-expandData <- function(dat,colKeep,colRep){
+expandUnmarked <- function(dat,colKeep,colRep){
     ## dat = data frame
     ## colKeep = string vector of the columns names of the data to be repeated
     ## colRep = single string of the frequency to repeat the data
