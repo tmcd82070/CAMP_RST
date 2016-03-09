@@ -132,6 +132,11 @@ if(autoLS){
     cat('\n')
     catch <- assignLifeStage(DATA=catch,groupN=nLS)
 
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('The misture distribution estimation to assign life stage is over. \n')
+    cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^> \n')
     ## for debugging
     ##return(catch)
     ##stop('That is good enough')

@@ -145,7 +145,14 @@ source( "build_report_criteria_release.r" )
 ## assigning life stage functions
 
 source('F.lifestage.passage.assignLS.R')
+source('F.lifestage.passage.assignLS3group.R')
+source('F.lifestage.passage.assignLS2group.R')
 source('getCatchDataWeight.R')
 source('getPackages.R')
 source('assignLifeStage.R')
 source('expandUnmarked.R')
+source('assignLSCompare.R')
+
+## I'm not sure if this is needed but the rest of the passage estimation won't run without it.
+source('max_buff_days.r')
+source('chuck_zeros.r')

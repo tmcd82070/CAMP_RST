@@ -43,16 +43,22 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,save=FALSE){
     ##runDat <- subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
 
 
+    ## create list for saving mean vectors and variance covariance matrices from each mixture distribution
+    mixDistMUList <<- list()
+    mixDistSigmaList <<- list()
 ####################################################################
-    ## for big loop
+
+    saveName <- ''
+    save(DATA,file=paste0(output.file,'DATA',saveName,'.Rdata'))
+
     assignNew <- ddply(DATA,~FinalRun,assignLS,G=groupN)
     newLS <- merge(assignNew,DATA[,c('id','bioLS')],all.x=TRUE)
 
-
+    assignLSCompare(newLS)
 
     ##saveName <- gsub(' ','',paste0(as.character(assignNew[1,c('river','trap','year')]),collapse=''))
     saveName <- ''
-    save(newLS,file=paste0(output.file,'newLS',saveName,'.Rdata'))
+    save(newLS,output.file,mixDistMUList,mixDistSigmaList,file=paste0(output.file,'newLS',saveName,'.Rdata'))
 
 ####################################################################
 
@@ -69,7 +75,7 @@ return(newLS)
 ################################################################################
 
 
-assignLS <- function(runDat,K=NULL,USEWeight=NULL){
+assignLS <- function(runDat,G=NULL,USEWeight=NULL){
     cat('\n')
     cat('\n')
     cat('\n')
@@ -115,18 +121,7 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
 
 
-
-
-    nGroup <- 3 #start by fitting three groups
-
-    ## user overwrite choice of number of groups
-    if(!is.null(G)){
-        nGroup <- G
-    }
-
-
     runDat$days <- with(runDat,as.numeric(difftime(SampleDate,min(SampleDate),units='days')))
-
 
 
 
@@ -248,6 +243,10 @@ expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
     (Sigma <- clust[['parameters']]$variance$sigma)
     ## array of mean vectors, last dim indicates groups
     (mu <- clust[['parameters']]$mean)
+
+    ## save mixture distribution summary statistics
+    mixDistMUList[[length(mixDistMUList)+1]] <<- mu
+    mixDistSigmaList[[length(mixDistSigmaList)+1]] <<- Sigma
 
 
 ###################################
