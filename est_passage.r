@@ -16,7 +16,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 # summarize.by <- by
 # file.root <- out.fn.root
 # ci <- ci
-#
+
 #   Output,
 #   A data frame containing date, passage estimate, and SE of passage estimate.
 # 
@@ -59,7 +59,7 @@ jason.catch4.df$batchDate <- as.POSIXct(jason.catch4.df$batchDate,time.zone)
 jason.totCatch2.df <- catch.df[,c('trapVisitID','batchDate','trapPositionID','n.tot')]
 jason.totCatch3.df <- data.frame(with(jason.totCatch2.df,tapply(n.tot, list(batchDate,trapPositionID), sum, na.rm=T )))
 jason.totCatch4.df <- na.omit(reshape(jason.totCatch3.df,idvar='batchDate',ids=row.names(jason.totCatch3.df),times=names(jason.totCatch3.df),timevar='trapPositionID',varying=list(names(jason.totCatch3.df)),direction='long'))
-colnames(jason.totCatch4.df)[2] <- 'inflatedCatch'
+colnames(jason.totCatch4.df)[2] <- 'n.tot'
 jason.totCatch4.df$trapPositionID <- as.character(substr(jason.totCatch4.df$trapPositionID,2,nchar(jason.totCatch4.df$trapPositionID)))
 jason.totCatch4.df$batchDate <- as.POSIXct(jason.totCatch4.df$batchDate,time.zone)
 
@@ -74,13 +74,13 @@ if(usepb){
     tmp <- getWinProgressBar(progbar)
     setWinProgressBar(progbar, (2*tmp + 1)/3 )
 }
-catch <- catch.and.fits$catch
+catch <- catch.and.fits$catch   # note this doesn't have imputedCatch.
 
   # the catch dataframe in this list has the imputed values already overwriting the original numbers
 jason.catch.and.fits2.df <- catch.and.fits$true.imp
 jason.catch.and.fits3.df <- data.frame(with(jason.catch.and.fits2.df,tapply(n.tot, list(batchDate,trapPositionID), sum, na.rm=T )))
 jason.catch.and.fits4.df <- na.omit(reshape(jason.catch.and.fits3.df,idvar='batchDate',ids=row.names(jason.catch.and.fits3.df),times=names(jason.catch.and.fits3.df),timevar='trapPositionID',varying=list(names(jason.catch.and.fits3.df)),direction='long'))
-colnames(jason.catch.and.fits4.df)[2] <- 'ImputedCatch'
+colnames(jason.catch.and.fits4.df)[2] <- 'imputedCatch'
 jason.catch.and.fits4.df$trapPositionID <- as.character(substr(jason.catch.and.fits4.df$trapPositionID,2,nchar(jason.catch.and.fits4.df$trapPositionID)))
 jason.catch.and.fits4.df$batchDate <- as.POSIXct(jason.catch.and.fits4.df$batchDate,time.zone)
 
@@ -96,21 +96,21 @@ out.fn.list <- c(out.fn.list, attr(catch.and.fits, "out.fn.list"))
 #   data frame with columns $batchDate and $eff.  
 #   If plot=T, this produces a graph in a pdf.
 
-# ------ old as of 12/11/2015 -----------------------------
-f.banner(" Efficiency estimation ")
-bd <- sort( unique(catch$batchDate) )
-# --------------------------------------------------------
+# # ------ old as of 12/11/2015 -----------------------------
+# f.banner(" Efficiency estimation ")
+# bd <- sort( unique(catch$batchDate) )
+# # --------------------------------------------------------
 
 
-# # ----- jason adds 12/11/2015 so that release.df has info on adjusted beg and end fishing days, for each trap
-# 
-# allDates <- catch.and.fits$allDates
-# release.df <- merge(release.df,allDates,by.x=c('trapPositionID'),by.y=c('trap'),all.x=TRUE)
-# 
-# f.banner("Efficiency estimation ")
-# bd <- strptime(sort( seq(as.Date(min(na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
-# # getting the bd to work here was tricky, due to time zones, etc.  
-# # ----- jason ends this new section -----------------------------------------------------------------
+# ----- jason adds 12/11/2015 so that release.df has info on adjusted beg and end fishing days, for each trap
+
+allDates <- catch.and.fits$allDates
+release.df <- merge(release.df,allDates,by.x=c('trapPositionID'),by.y=c('trap'),all.x=TRUE)
+
+f.banner("Efficiency estimation ")
+bd <- strptime(sort( seq(as.Date(min(na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
+# getting the bd to work here was tricky, due to time zones, etc.  
+# ----- jason ends this new section -----------------------------------------------------------------
 
 
 
@@ -174,40 +174,44 @@ grand.df.rawCatch <- merge(grand.df,jason.catch4.df,by=c('trapPositionID','batch
 grand.df.rawCatch.Inflated <- merge(grand.df.rawCatch,jason.totCatch4.df,by=c('trapPositionID','batchDate'),all.x=TRUE)                 # bring in inflated catch (measured + plus counts)
 grand.df.rawCatch.Imputed <- merge(grand.df.rawCatch.Inflated ,jason.catch.and.fits4.df,by=c('trapPositionID','batchDate'),all.x=TRUE)  # bring in imputed catch
 
+
+#doit <- merge(grand.df.rawCatch.Imputed, catch.df3, by=c('trapPositionID','batchDate'),all.x=TRUE)   # bring in halfCone catch
+
 grand.df <- grand.df.rawCatch.Imputed
 
 # somewhere, there are comments that state that catches of NA mean zero.  so, replace NA in each of 
 # rawCatch and ImputedCatch with zero. 
-grand.df$assignedCatch <- ifelse(is.na(grand.df$rawCatch), 0, grand.df$rawCatch)
-grand.df$inflatedCatch <- ifelse(is.na(grand.df$inflatedCatch), 0, grand.df$inflatedCatch)
-grand.df$unassignedCatch <- ifelse(is.na(grand.df$UnassdCatch), 0, grand.df$UnassdCatch)
-grand.df$imputedCatch <- ifelse(is.na(grand.df$ImputedCatch), 0, round(grand.df$ImputedCatch,1))
-grand.df$totalCatch <- ifelse(is.na(grand.df$inflatedCatch + grand.df$imputedCatch), 0, round(grand.df$inflatedCatch + grand.df$imputedCatch,1))
+grand.df$imputedCatch <- ifelse(is.na(grand.df$imputedCatch), 0, round(grand.df$imputedCatch,1))
+grand.df$rawCatch <- ifelse(is.na(grand.df$rawCatch), 0, grand.df$rawCatch)
+grand.df$n.tot <- ifelse(is.na(grand.df$n.tot), 0, grand.df$n.tot)  # the preTotalCatch
 
-grand.df$rawCatch <- grand.df$ImputedCatch <- grand.df$catch <- grand.df$UnassdCatch <- NULL       
+
+grand.df$totalEstimatedCatch <- round(grand.df$n.tot + grand.df$imputedCatch,1)
+
+grand.df$rawCatch <- grand.df$catch <- NULL       
 
 # check and make sure that assignedCatch + unassignedCatch + imputedCatch = totalCatch
 # check and make sure that assignedCatch + unassignedCatch = inflatedCatch
 # check and make sure that inflatedCatch + imputedCatch = totalCatch
-grand.df$sum1 <- grand.df$assignedCatch + grand.df$unassignedCatch + grand.df$imputedCatch
-grand.df$sum2 <- grand.df$assignedCatch + grand.df$unassignedCatch
-grand.df$sum3 <- grand.df$inflatedCatch + grand.df$imputedCatch
-grand.df$check1 <- ifelse(grand.df$sum1 == grand.df$totalCatch,TRUE,FALSE)
-grand.df$check2 <- ifelse(grand.df$sum2 == grand.df$inflatedCatch,TRUE,FALSE)
-grand.df$check3 <- ifelse(grand.df$sum3 == grand.df$totalCatch,TRUE,FALSE)
+grand.df$sum1 <- grand.df$modAssignedCatch + grand.df$modUnassignedCatch + grand.df$imputedCatch
+grand.df$sum2 <- grand.df$modAssignedCatch + grand.df$modUnassignedCatch
+grand.df$sum3 <- grand.df$halfConeAssignedCatch + grand.df$halfConeUnassignedCatch + grand.df$assignedCatch + grand.df$unassignedCatch + grand.df$imputedCatch
+grand.df$check1 <- ifelse(grand.df$sum1 == grand.df$totalEstimatedCatch,TRUE,FALSE)
+grand.df$check2 <- ifelse(grand.df$sum2 == grand.df$n.tot,TRUE,FALSE)
+grand.df$check3 <- ifelse(grand.df$sum3 == grand.df$totalEstimatedCatch,TRUE,FALSE)
 
 grand.df <<- grand.df
 
 if(sum(grand.df$check1 + grand.df$check2 + grand.df$check3) != nrow(grand.df)*3){
   stop('Issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Investigate est_passage.R, around line 176.')
 } else {
-  cat('No issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Continuing...\n')
+  cat('No issue with summation of halfConeAssignedCatch, halfConeUnassignedCatch, assignedCatch, unassignedCatch, modAssignedCatch, modUnassignedCatch, imputedCatch, and/or totalEstimatedCatch.  Continuing...\n')
 }
 
 
 #   The passage estimator
 grand.df$passage <- rep(NA, nrow(grand.df))
-grand.df$passage <- ifelse(!is.na(grand.df$efficiency),grand.df$totalCatch / grand.df$efficiency,0)
+grand.df$passage <- grand.df$totalEstimatedCatch / grand.df$efficiency   #ifelse(!is.na(grand.df$efficiency),grand.df$totalEstimatedCatch / grand.df$efficiency,0)
 #grand.df$passage <- round(grand.df$passage,1)   # round final passage estimate here so different summaries sum to the same number.
 
 # jason.catch <<- catch
@@ -273,9 +277,10 @@ if( !is.na(file.root) ){
     names(tmp.df)[ names(tmp.df) == "imputed.catch" ] <- "propImputedCatch"
     names(tmp.df)[ names(tmp.df) == "imputed.eff" ] <- "propImputedEff"
     tmp.df$propImputedEff <- as.numeric(tmp.df$propImputedEff)  # convert to numbers, 0 or 1
-    #tmp.df$passage <- round(tmp.df$passage)  # Round off passage
-    tmp.df$totalCatch <- round(tmp.df$totalCatch,1)
+    tmp.df$passage <- round(tmp.df$passage)  # Round off passage
+    tmp.df$totalCatch <- round(tmp.df$totalEstimatedCatch,1)
     tmp.df$efficiency <- round(tmp.df$efficiency, 4)  
+    tmp.df$halfConeAdj <- tmp.df$halfConeAssignedCatch + tmp.df$halfConeUnassignedCatch
     
     # Merge in subsiteNames
     # ssiteNames <- attr(catch, "subsites")    # jason turn off
@@ -286,7 +291,7 @@ if( !is.na(file.root) ){
 
      #tmp.df$includeCatchID <- ifelse(is.na(tmp.df$includeCatchID),NA,ifelse(tmp.df$includeCatchID == 1,'Yes',ifelse(tmp.df$includeCatchID == 12,'Yes+No','No')))
 
-    tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','imputedCatch','totalCatch','propImputedCatch','efficiency','propImputedEff','passage')]    # rearrange columns
+    tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','halfConeAdj','imputedCatch','totalEstimatedCatch','propImputedCatch','efficiency','propImputedEff','passage')]    # rearrange columns
     
     tmp.df <- tmp.df[order(tmp.df$subSiteID,tmp.df$batchDate),]   # need to sort now?  1/8/2016.
     

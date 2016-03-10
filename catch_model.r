@@ -14,7 +14,8 @@ F.catch.model <- function( catch.df ){
 #   'gamEstimated' is true for these new lines. Batch date is assigned based on EndTime, as usual. 
 #   This applies for all days between start.day and end.day.
 
-# catch.df <- df2
+# catch.df <- df2      # from est_catch_trapN.r
+# catch.df <- df3      # from est_catch.r
 
 #   Sort the data frame properly, by trapPosition and date of visit
 #   This puts the gaps in their correct locations 
@@ -83,17 +84,23 @@ if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
         }
         
         if( p.night < 0.9 ){
-            cur.fit <- glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd + night, family=poisson, data=catch.df )
+            cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd + night, family=poisson, data=catch.df ),error=function(e) e )
         } else {
-            cur.fit <- glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df )
+            cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df ),error=function(e) e )
         }
-        cur.AIC <- AIC( cur.fit )
-    
-        cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
-    
         
-        if( !cur.fit$converged | cur.fit$boundary | cur.df > 15 | cur.AIC > (fit.AIC - 2) ){
-            break
+        if(class(cur.fit)[1] == 'simpleError'){
+          cur.AIC <- NA
+          cat(paste0("Model fell apart;  tryCatch caught the output.  You may wish to investigate for trap ",trap,".\n"))
+        } else {
+          cur.AIC <- AIC( cur.fit )
+          cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
+        }
+
+        if( is.na(cur.AIC) ){
+          break
+        } else if( !cur.fit$converged | cur.fit$boundary | cur.df > 15 | cur.AIC > (fit.AIC - 2) ){
+          break
         } else {
             fit <- cur.fit
             fit.AIC <- cur.AIC
@@ -108,6 +115,7 @@ if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
 #print(cbind(pred, catch.df$n.tot, catch.df$log.sampleLengthHrs, catch.df$sampleEnd, catch.df$night)[1:20,])
 #lines(catch.df$sampleEnd, pred, col="red" )
 #
+
 print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
 
 
@@ -149,7 +157,8 @@ jason.new <- NULL
 
 repeat{
 
-   
+    #if( i == 3) break    # debugging.
+  
     if( i >= nrow(catch.df) ) break   # Don't do last line because no need to check.  After end, no more gaps by def'n.
     
     #print(catch.df[i,])
@@ -168,7 +177,7 @@ repeat{
         #   We have a missing value = a period of time >max.ok.gap with no estimate of fish 
         
         #   i.gapLens is length of all intervals that we want to predict for.  They all sum to total of gap.
-        i.gapLens <- c(rep(24, floor(catch.df$SampleMinutes[i]/ (24*60))), (catch.df$SampleMinutes[i]/60) %% 24 )
+        i.gapLens <- c(rep(24, floor(catch.df$SampleMinutes[i]/ (24*60))), (catch.df$SampleMinutes[i]/60) %% 24 )   # length of SampleMinutes, in hours
         
         #   Make sure last interval is > max.ok.gap
         ng <- length(i.gapLens)
@@ -264,10 +273,18 @@ repeat{
         pred <- exp(pred)
        
         #   Put things we need into a blank data frame suitable for inserting into catch.df
-        new <- catch.df[1:ng,]   # initialize - do it this way to get classes and factor levels
-        new$n.tot <- pred      # put imputed with plus counts.
-        new$n.Unassd <- 0      # we've already accounted for these?
-        new$n.Orig <- NA       # jason add 4/17/2015 ... we want imputed values to go into tot, and not mess with unassigned numbers
+        new <- catch.df[1:ng,]         # initialize - do it this way to get classes and factor levels -- note that if we add a lot of not fishing days, these become NA rows.  
+                                       # observe that we don't update TrapStatus for example, so only the vars we use later are made to be pretty. 
+        new$n.tot <- pred              # put imputed with plus counts.
+        new$n.Unassd <- 0              # we've already accounted for these?
+        new$n.Orig <- NA               # jason add 4/17/2015 ... we want imputed values to go into tot, and not mess with unassigned numbers
+        new$n.Orig2 <- 0               # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
+        new$halfConeAssignedCatch <- 0     # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
+        new$halfConeUnassignedCatch <- 0   # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
+        new$assignedCatch <- 0             # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
+        new$unassignedCatch <- 0           # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
+        new$modAssignedCatch <- 0          # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
+        new$modUnassignedCatch <- 0        # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
         new$SampleMinutes   <- i.gapLens * 60
         new$EndTime <- sEnd
         new$StartTime <- sStart
@@ -278,15 +295,21 @@ repeat{
         new$trapPositionID <- catch.df$trapPositionID[i]
         new <- F.assign.batch.date( new )     
         
-       print(new)                                             # jason turn on
-       print(c(nrow.catch.df=nrow(catch.df), i=i, ng=ng))     # jason turn on
+       #print(new)                                             # jason turn on
+       #print(c(nrow.catch.df=nrow(catch.df), i=i, ng=ng))     # jason turn on
 
        # pull out the actual imputed numbers only for checking daily counts in baseTable.
        jason.new <- rbind(jason.new,new)                                      # 
         
-        #   Insert new data frame into catch.df
+       #   Insert new data frame into catch.df
+       # degenerate case -- trap 42080, rbdd, 9/23/1998, fall, chucking zeros, results in 2 not fishing cases, and 2 fishing cases.
+       # somehow, the code immediately above is throwing in an extra not-fishing.  maybe because the first line is a not
+       # fishing?  not sure why.  this is the problem -- expand rbind here to allow for not fishing when i = 1.
+#        if(i == 1){                                                    # we only have this true if first row of catch.df is Not fishing
+#          catch.df <- rbind( new, catch.df[(i+1):nrow(catch.df),] )    # jason allows this condition if i = 1 is Not fishing, 1/22/2016.
+#        } else {
         catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
-
+       # }
 #        print(c(nrow.catch.df=nrow(catch.df)))
      
         #   Save model matrix used to make predictions for use in bootstrapping
@@ -311,11 +334,16 @@ repeat{
 }
 
 
+
+
+
+
 #   If there are no gaps, all.new.dat, all.gaplens, and all.bdates are NULL. Turn these into NA so that 
 #   storing them in a list in function est_catch works.  (assigning NULL to list item collapses the list)
 if( is.null( all.new.dat )){
     all.new.dat <- NA
 }
+
 if( is.null( all.gaplens )){
     all.gaplens <- NA
 }
@@ -325,6 +353,10 @@ if( is.null( all.bdates )){
 } else {
     class(all.bdates) <- class(sEnd)
     attr(all.bdates, "tzone") <- time.zone   
+}
+
+if( is.null( jason.new )){
+  jason.new <- data.frame(batchDate=as.POSIXlt(character()),trapVisitID=character(),trapPositionID=character(),n.tot=integer(),stringsAsFactors=FALSE) 
 }
 
 #print(all.bdates)

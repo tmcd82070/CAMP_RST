@@ -1,7 +1,7 @@
 #
 #   Thim mimics attaching a package.  Eventually this will be replaced when the real package is done.
 #
-.libPaths(.Library)   # check out libpaths -- 01/04/2016.
+
 #remove(list=ls())   # erase everything; CAREFUL
 
 .onAttach <- function(){
@@ -25,13 +25,12 @@
   #db.file <<- "..\\Data\\connie's caswell stanislaus file after doug adds finaRunIDs  CAMP.mdb"
   
   db.file1 <<- "..\\Data\\TestingDBs\\CAMPBattleClear_29Jan2015\\CAMP.mdb"
-  db.file2 <<- "..\\Data\\TestingDBs\\CAMP_RBDD_29Jan2015\\CAMP.mdb"
-  db.file3 <<- "..\\Data\\TestingDBs\\CAMPAmerican2013_2015Database_23June2015\\CAMP.mdb"
+  db.file2 <<- "..\\Data\\TestingDBs\\CAMP_RBDD_19June20151\\CAMP.mdb"
+  db.file3 <<- "..\\Data\\TestingDBs\\CAMPAmerican_29Jan2015\\CAMP.mdb"
   db.file4 <<- "..\\Data\\TestingDBs\\CAMPCosumnes_25Oct2013_notForAnalyses\\CAMP.mdb"
   db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_29Jan2015\\CAMP.mdb"
   db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
-  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20151130/Data/CAMP.mdb"
-  db.file8 <<- "..\\Data\\TestingDBs\\CAMP_Mokelumne_9Sept2015\\CAMP.mdb"
+  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150501/Data/TestingDBs/CAMPAmerican_11Nov2014.mdb"
     
   cat(paste("DB file:", db.file1, "\n"))
   cat(paste("DB file:", db.file2, "\n"))
@@ -40,7 +39,6 @@
   cat(paste("DB file:", db.file5, "\n"))
   cat(paste("DB file:", db.file6, "\n"))
   cat(paste("DB file:", db.file7, "\n"))
-  cat(paste("DB file:", db.file8, "\n"))
   
   #   Parameter table.names is a list containing the mapping of table names in Access to table names in R. 
   #   This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
@@ -80,6 +78,11 @@
   #   Because gam model for imputation predicts an hourly rate, this max gap cannot be < 1 hour
   max.ok.gap <<- 2
   
+  #   Maximum gap, in minutes, that is NOT okay.  Values of "Not fishing" greater than this value, in minutes,
+  #   constitute a gap in fishing for which models should not spline.  In other words, they are a large enough
+  #   break in data to split splines into two separate models.  
+  fishingGapMinutes <<- 10080
+  
   #   Write out the memory limit on this machine
   cat(paste("Memory limit:", memory.limit(), "Mb \n"))    
   
@@ -113,16 +116,14 @@ source(	"get_release_data.r"	)
 #source(	"odt_biweekly_table.r"	)
 #source(	"latex_passage.r"	)
 #source(	"latex_recapSummary.r"	)
-source(	"passage.r"	)
-source( "annual_passage.r" )
+source(	"run_passage.r"	)
+#source( "annual_passage.r" )
 source(	"plot_catch_model.r"	)
 source(	"plot_eff_model.r"	)
 source(	"plot_passage.r"	)
-source( "plot.spline.r" )
 source(	"release_summary.r"	)
-source( "run_passage.r" )
 source(	"summarize_releases.r"	)
-source( "summarize_fish_visit.r" )  
+source( "summarize_fish_visit.r" )
 source( "all_catch_table.r" )
 #source(	"vec2sqlstr.r"	)
 source(	"size_by_date.r"	)
@@ -153,4 +154,11 @@ source( "get_by_catch.r" )
 source( "by_catch_table.r" )
 source( "run_sqlFile.r" )
 source( "build_report_criteria_release.r" )
+
+source( "plot_spline.R" )
+source( "accounting.r" )
+source( "getTheData.r" )
+source( "max_buff_days.r ")
+source( "chuck_zeros.r" )
+source( "est_catch_trapN.r" )
 

@@ -27,6 +27,14 @@ F.run.sqlFile <- function( ch, sqlFile, echo=TRUE, check.drops=FALSE, ... ){
 #
 #   
 
+# ch <- ch
+# sqlFile <- "QryFishingGaps.sql"
+# echo=TRUE
+# check.drops=FALSE
+# R.FISHGAPMIN=fishingGapMinutes 
+  
+  
+  
 #   --- This is an internal function to check for SQL errors
 f.sql.error.check <- function( obj ){
 #   Note: this aborts everything when an error occurs. 

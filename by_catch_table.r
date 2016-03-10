@@ -50,7 +50,7 @@ if( !is.na(output.file) ){
     
 }
 
-pie(tmp4, col=rainbow(length(tmp4)), radius=.65)
+pie(tmp4, col=rainbow(length(tmp4)), radius=.65, cex=0.75)
 
 if( !is.na(output.file) ){
     dev.off(dev.cur())

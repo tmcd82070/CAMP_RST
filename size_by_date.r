@@ -40,11 +40,17 @@ close(ch)
 #   ********
 #   Retrieve basic data set, one line per fish or group of fish of same length.
 
-catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
+catch.df  <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
+
+# don't drop includeCatchID here.  this is a contrast with length_freq.r
+catch.df$preUnmarked <- catch.df$halfConeAssignedCatch <- catch.df$halfConeUnassignedCatch <- catch.df$assignedCatch <- catch.df$unassignedCatch <- catch.df$modUnassignedCatch <- catch.df$modAssignedCatch <- NULL
 
 
-
-
+# if catch.df has no data, it doesn't get batchDates added.  
+if(nrow(catch.df) == 0){
+  names(catch.df)[names(catch.df) == 'SampleDate'] <- 'batchDate'
+  #catch.df <-  data.frame(catch.df,batchDate=integer(0))
+}
 
 #  grab non-valid Catch
 attributesSafe <- attributes(catch.df)
@@ -55,9 +61,16 @@ F.run.sqlFile( ch, "QryNonValidFishing.sql", R.TAXON=taxon )
 nvCatch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_X_final" )        #   Now, fetch the result -- nvCatch = non-Valid Catch
 F.sql.error.check(nvCatch)
 
+#   Fetch run name
+tables <- get( "table.names", env=.GlobalEnv )
+runs <- sqlQuery(ch, paste( "SELECT run, runID FROM", tables["run.codes"] ))
+F.sql.error.check(runs)
+run.name <- as.character(runs$run[ runs$runID == run ])
+
 close(ch)
 
-nvCatch <- nvCatch[ (nvCatch$Unmarked > 0), ]                         #  Subset the catches to just positives.  Toss the 0 catches.
+
+nvCatch <- nvCatch[ (nvCatch$Unmarked > 0) & nvCatch$FinalRun == run.name, ]        #  Subset the catches to just positives.  Toss the 0 catches.
 if(nrow(nvCatch) > 0){
   nvCatch$Unassd <- nvCatch$lifeStage                                   #  jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
   nvCatch2 <- F.expand.plus.counts( nvCatch )                           #  Expand the Plus counts
@@ -67,20 +80,20 @@ if(nrow(nvCatch) > 0){
   if(nrow(catch.df) > 0 & nrow(nvCatch.df) > 0){
     catch.df <- rbind(catch.df,nvCatch.df)                                #  use a new catch.df with non-valid fishing included
     attributes(catch.df) <- attributesSafe
-    disc <- 'Fork lengths include both valid and invalid trapping data.'
+    disc <- 'Plotted fork lengths include data from both successful and unsuccessful fishing.'
   } else if(nrow(catch.df) == 0 & nrow(nvCatch.df) > 0){
     catch.df <- nvCatch.df
     # no attributes to bring in -- do it now
-    attr(catch.df, "siteID" ) <- site
-    attr(catch.df, "site.name") <- catch.df$siteName[1]
-    attr(catch.df, "subsites") <- unique(catch.df$trapPositionID)
-    disc <- 'Fork lengths include only invalid trapping data;  no valid data exists for selected criteria.'    
-  } else if(nrow(catch.df) > 0 & nrow(nvCatch.df) == 0){
+    attributesSafe$row.names <- rownames(nvCatch.df)    # need row.names attr to be something, or else catch.df goes back to zero data
+    attributes(catch.df) <- attributesSafe
+    disc <- 'Plotted fork lengths include data from only unsuccessful fishing.'    
+  } 
+} else if(nrow(catch.df) > 0 & nrow(nvCatch) == 0){
     catch.df <- catch.df
     attributes(catch.df) <- attributesSafe
-    disc <- 'Fork lengths include only valid trapping data;  no invalid data exists for selected criteria.'        
-  } # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
-} 
+    disc <- 'Plotted fork lengths include data from only successful fishing.'        
+} # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
+
 
 if( nrow(catch.df) == 0 ){
     plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
@@ -163,7 +176,7 @@ for( l.s in life.stages ){
     jitx <- rnorm(sum(ind), sd=60*60*3)
     #jity <- rnorm(sum(ind), sd=diff(range(y))/100)
     jity <- 0
-    validv <- ifelse(valid[ind]==1,'Fishing','NotFishing')
+    validv <- ifelse(valid[ind]==1,'Fishing was successful.','Fishing was not successful.')
     points( xx + jitx, yy + jity, col=mycol[ which(l.s == life.stages)], pch=mypch[ which(l.s == life.stages)] )
     ans.pts <- rbind( ans.pts, data.frame(lifestage=l.s, date=xx, fork.length.mm=yy, date.jittered=xx+jitx, fork.length.mm.jittered=yy+jity, fishing.status=validv ))
 }

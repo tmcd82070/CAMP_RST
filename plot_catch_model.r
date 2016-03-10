@@ -12,18 +12,18 @@ F.plot.catch.model <- function( df, file=NA ){
 #
 
 
-# df <- est.catch
 # df <- masterCatch
+#  file <- plot.file
 
-  # test
+
   
   
 # jason -- 6/4/2015.  doug wants measured for now, so assdCatch always s/b plotted.
 # jason -- 6/15/2015. doug changed his mind. back to totalCatch
 # if( attr(df,"life.stage") == 'All'){
-  catchMetric <- 'totalCatch'
+  catchMetric <- 'totalEstimatedCatch'  #'totalCatch'
 # } else {
-#   catchMetric <- 'assdCatch'
+#   catchMetric <- 'modAssignedCatch'   #'assdCatch'
 # }
 
 
@@ -56,10 +56,10 @@ imputed <- df$imputed.catch > 0 & !is.na(df$imputed.catch)
 # jason turn on -- have to be creative -- imputed and unassd catch generally on
 # different scales, since imputed based on plus-counts, but unassigned on raw catches.
 
-if(catchMetric == 'assdCatch'){
-  rng.y <- range(df$assdCatch[ df$assdCatch < Inf], na.rm=T) 
+if(catchMetric == 'modAssignedCatch'){#'assdCatch'){
+  rng.y <- range(df$modAssignedCatch[ df$modAssignedCatch < Inf], na.rm=T) #range(df$assdCatch[ df$assdCatch < Inf], na.rm=T) 
 } else {
-  rng.y <- range(df$totalCatch[ df$totalCatch < Inf], na.rm=T)
+  rng.y <- range(df$totalEstimatedCatch[ df$totalEstimatedCatch < Inf], na.rm=T)#range(df$totalCatch[ df$totalCatch < Inf], na.rm=T)
 }
 
 plot( range(df$batchDate), rng.y, type="n", xlab="Date", ylab="Daily Raw (un-inflated) catch", xaxt="n", yaxt="n" )
@@ -78,7 +78,12 @@ if( length(traps) == 1 ){
 } else {
     my.colors <- rainbow(length(traps))
 }
-my.pch <- 15 + 1:length(traps)
+if( length(traps) > 10){
+  my.pch <- c(15 + 1:10,seq(1,length(traps) - 10))
+} else {
+  my.pch <- 15 + 1:length(traps)
+}
+
 for( i in 1:length(traps) ){
 
 #   This adds the smoothed interpolation model to the plot.  
@@ -88,25 +93,25 @@ for( i in 1:length(traps) ){
     # jason 4/20/3015 -- use new var indOld?
   if(catchMetric == 'totalCatch'){
     
-    ind <- df$trapPositionID == traps[i] & !is.na(df$assdCatch)
-    lines( supsmu(df$batchDate[ind], df$totalCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
+    ind <- df$trapPositionID == traps[i] & !is.na(df$modAssignedCatch)#ind <- df$trapPositionID == traps[i] & !is.na(df$assdCatch)
+    lines( supsmu(df$batchDate[ind], df$totalEstimatedCatch[ind]), lwd=2, lty=1, col=my.colors[i] )  #lines( supsmu(df$batchDate[ind], df$totalCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
     
     ind <- df$trapPositionID == traps[i] & imputed
     points( df$batchDate[ ind ], df$imputedCatch[ ind ], pch=my.pch[i]-15, col=my.colors[i], cex=1 )    # jason 4/17/2015 - jason changes catch to imputedCatch
 
     ind <- df$trapPositionID == traps[i] & !imputed
-    points( df$batchDate[ ind ], df$totalCatch[ ind ], pch=my.pch[i], col=my.colors[i] )              # jason 4/17/2015 - jason changes catch to assdCatch
+    points( df$batchDate[ ind ], df$totalEstimatedCatch[ ind ], pch=my.pch[i], col=my.colors[i] )#points( df$batchDate[ ind ], df$totalCatch[ ind ], pch=my.pch[i], col=my.colors[i] )              # jason 4/17/2015 - jason changes catch to assdCatch
     
   } else {
     
-    ind <- df$trapPositionID == traps[i] & !is.na(df$assdCatch)
-    lines( supsmu(df$batchDate[ind], df$assdCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
+    ind <- df$trapPositionID == traps[i] & !is.na(df$modAssignedCatch)#ind <- df$trapPositionID == traps[i] & !is.na(df$assdCatch)
+    lines( supsmu(df$batchDate[ind], df$modAssignedCatch[ind]), lwd=2, lty=1, col=my.colors[i] )  #lines( supsmu(df$batchDate[ind], df$assdCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
     
     ind <- df$trapPositionID == traps[i] & imputed
     points( df$batchDate[ ind ], df$imputedCatch[ ind ], pch=my.pch[i]-15, col=my.colors[i], cex=1 )    # jason 4/17/2015 - jason changes catch to imputedCatch
     
     ind <- df$trapPositionID == traps[i] & !imputed
-    points( df$batchDate[ ind ], df$assdCatch[ ind ], pch=my.pch[i], col=my.colors[i] )              # jason 4/17/2015 - jason changes catch to assdCatch
+    points( df$batchDate[ ind ], df$modAssignedCatch[ ind ], pch=my.pch[i], col=my.colors[i] )  #points( df$batchDate[ ind ], df$assdCatch[ ind ], pch=my.pch[i], col=my.colors[i] )              # jason 4/17/2015 - jason changes catch to assdCatch
     
   }
 

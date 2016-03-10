@@ -56,14 +56,50 @@ F.run.sqlFile( ch, "QryNotFishing.sql" )
 #   This SQL generates unmarked fish by run and life stage
 F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )   
 
-# stop('in the name of safety.')      # jason stop to show connie what can be output to the console window.  delete later probably.
-#   *****
 #   Now, fetch the result 
 catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+
+
+# add 3/8/2016 -- look for long gaps.
+theLongCatches <- catch[catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]      # fishingGapMinutes set in source file -- it's global.
+nLongCatches <- nrow(theLongCatches)
+if(nLongCatches > 0){
+  
+  warning("Long gaps were found in the data so the LongGapLoop series will be run.")
+  
+  # SQL code to find the gaps, and modify trapPositionIDs accordingly. 
+  F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
+  
+  # get the updated results
+  catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+  
+  catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   # this becomes the master catch df
+  
+} else {
+  
+  # no long gaps to worry about.  so just keep going with the version of catch that we already
+  # pulled in from the mdb.
+  
+}
+
+
+
+
+
+
+
+
+
+
 includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
 F.sql.error.check(catch)
 
 close(ch) 
+
+if(nvisits > 0 & nrow(catch) == 0){
+  warning("Your criteria returned no catch records.  Check to make sure valid Fishing occurred within your date range.")
+  stop
+}
 
 #   ******************************************************************
 #   Assign time zone (probably does not matter)
@@ -105,43 +141,76 @@ catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
 # get summary counts of catch run vs. lifetstage for internal checking.
 totalFish <<- sum(catch$Unmarked)
-totalRun <<- aggregate(catch$Unmarked, list(FinalRun=catch$FinalRun), FUN=sum)
-totalLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage), FUN=sum)
-totalRunXLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage,FinalRun=catch$FinalRun), FUN=sum)
+
+# jason adds the if here 1/12/2016, since for some reports, we could have 0 valid catch, but non-zero invalid catch.  
+# aggregate doesn't work on zero rows, thus requiring the if-clause.
+if(nrow(catch) > 0){
+  totalRun <<- aggregate(catch$Unmarked, list(FinalRun=catch$FinalRun), FUN=sum)
+  totalLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage), FUN=sum)
+  totalRunXLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage,FinalRun=catch$FinalRun), FUN=sum)
+}
 
 catch$Unassd <- catch$lifeStage # jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
 #   ********************************************************************
+catchSave <<- catch
+nHalfCone <- nrow(catch[catch$halfConeID == 1,])
+if(nHalfCone > 0){   # do a different plus-count algorithm in this case.  1/14/2016.
+  
+  preCatch <- catch
+  
+  # expand half-cone operations to full-cone.  this needs to happen prior to plus-counting.
+  catch$preUnmarked <- catch$Unmarked
+  catch$Unmarked <- ifelse(catch$halfConeID == 1,2*catch$preUnmarked,catch$preUnmarked)
+  catch$preUnmarked <- NULL    # served its purpose -- also, plus-counting duplicates these numbers 
 
+  #   Expand the Plus counts
+  preCatch2 <- F.expand.plus.counts( preCatch )
+  catch2 <- F.expand.plus.counts( catch )
+  
+  names(preCatch2)[names(preCatch2) == 'Unmarked'] <- 'preUnmarked'    # now, put this variable back to preUnmarked, to prepare for merge
+  test <- merge(catch2,preCatch2[,c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','Unassd','preUnmarked')],by=c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','Unassd'),all.x=TRUE)
+  
+  possiblyOff <- test[is.na(test$preUnmarked),]   # possible trouble spots
+  test$preUnmarked[is.na(test$preUnmarked)] <- 0   # unassigned fish that were not assigned to a certain category before, but were after -or- fish that were assigned a diff lifestage and finalrun between preCatch and catch
+  
+  
+  test$halfConeAssignedCatch   <- ifelse(test$halfConeID == 1 & test$Unassd != 'Unassigned',test$Unmarked - test$preUnmarked,0)    # halfConeAdj have to originate from a halfCone trapping instance.
+  test$halfConeUnassignedCatch <- ifelse(test$halfConeID == 1 & test$Unassd == 'Unassigned',test$Unmarked - test$preUnmarked,0)    # halfConeAdj have to originate from a halfCone trapping instance.
+  
 
-# expand half-cone operations to full-cone.  this needs to happen prior to plus-counting.
-# catch$preUnmarked <- catch$Unmarked
-# catch$Unmarked <- ifelse(catch$halfConeID == 1,2*catch$preUnmarked,catch$preUnmarked)
-# 
-# tapply(catch$Unmarked, catch$halfConeID, sum)
-# 
-# catch.temp <- catch[catch$FinalRun == 'Fall',]
-# hcY <- data.frame(hcY=tapply(catch.temp[catch.temp$halfConeID == 1,]$Unmarked, catch.temp[catch.temp$halfConeID == 1,]$SampleDate, sum))
-# hcY$matchDate <- rownames(hcY)
-# hcN <- data.frame(hcN=tapply(catch.temp[catch.temp$halfConeID == 2,]$Unmarked, catch.temp[catch.temp$halfConeID == 2,]$SampleDate, sum))
-# hcN$matchDate <- rownames(hcN)
-# hc <- merge(hcY,hcN,by=c('matchDate'),all.x=TRUE,all.y=TRUE)
-# 
-# sum(hc$hcY[!is.na(hc$hcY)],hc$hcN[!is.na(hc$hcN)]) == sum(catch.temp$Unmarked)   # check if we have all the fish we should
-# 
-# 
-# plot(as.Date(hc$matchDate[!is.na(hc$hcY)]),hc$hcY[!is.na(hc$hcY)],col='red'  ,pch=19,xlim=c(min(as.Date(hc$matchDate)),max(as.Date(hc$matchDate))),ylim=c(0,max(hc$hcY,hc$hcN,na.rm=TRUE)))
-# par(new=TRUE)
-# plot(as.Date(hc$matchDate[!is.na(hc$hcN)]),hc$hcN[!is.na(hc$hcN)],col='black',pch=19,xlim=c(min(as.Date(hc$matchDate)),max(as.Date(hc$matchDate))),ylim=c(0,max(hc$hcY,hc$hcN,na.rm=TRUE)))
-# par(new=TRUE)
-# segments(min(as.Date(hc$matchDate)),mean(hc$hcY[!is.na(hc$hcY)]),max(as.Date(hc$matchDate)),mean(hc$hcY[!is.na(hc$hcY)]),col='red')
-# par(new=TRUE)
-# segments(min(as.Date(hc$matchDate)),mean(hc$hcN[!is.na(hc$hcN)]),max(as.Date(hc$matchDate)),mean(hc$hcN[!is.na(hc$hcN)]),col='black')
+  test$assignedCatch   <- ifelse(test$Unassd != 'Unassigned',test$Unmarked - test$halfConeAssignedCatch,0)
+  test$unassignedCatch <- ifelse(test$Unassd == 'Unassigned',test$Unmarked - test$halfConeUnassignedCatch,0)
+  
+  # deal with awkwardness of doing the plus-count routine two times with slightly different data (due to plus-counting)
+  #                                    ,after 'times2' - before 'times2'
+  test$off <- ifelse(test$halfConeID==2,test$Unmarked - test$preUnmarked,test$Unmarked - test$halfConeAssignedCatch - test$halfConeUnassignedCatch - test$preUnmarked)
+  #                                    , should be zero  
+  
+  test$preUnmarked <- ifelse(test$halfConeID == 2 & test$off != 0,test$Unmarked,test$preUnmarked)    
+  test$off2 <- ifelse(test$halfConeID==2,test$Unmarked - test$preUnmarked,test$Unmarked - test$halfConeAssignedCatch - test$halfConeUnassignedCatch - test$preUnmarked)
 
+#   look <- test[,c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','Unassd','trapPositionID','SampleDate','TrapStatus','TrapPosition','halfConeID','Unmarked','preUnmarked','halfConeAssignedCatch','halfConeUnassignedCatch','assignedCatch','unassignedCatch')]
+#   look[as.Date(look$SampleDate) == '2014-02-28' & look$TrapPosition == 'Gate 8',]
+  
+  test$modUnassignedCatch <- test$halfConeUnassignedCatch + test$unassignedCatch
+  test$modAssignedCatch <- test$halfConeAssignedCatch + test$assignedCatch
 
+  test$off <- test$off2 <- NULL
+  
+  catch <- test
 
-
-#   Expand the Plus counts
-catch <- F.expand.plus.counts( catch )
+} else {
+  
+  # data query where all are full catch -- just set the fancy variables to zero. 
+  catch <- F.expand.plus.counts( catch )
+  catch$preUnmarked <- catch$Unmarked
+  catch$halfConeAssignedCatch <- 0
+  catch$halfConeUnassignedCatch <- 0
+  catch$assignedCatch   <- ifelse(catch$Unassd != 'Unassigned',catch$Unmarked - catch$halfConeAssignedCatch,0)
+  catch$unassignedCatch <- ifelse(catch$Unassd == 'Unassigned',catch$Unmarked - catch$halfConeUnassignedCatch,0)
+  catch$modUnassignedCatch <- catch$halfConeUnassignedCatch + catch$unassignedCatch
+  catch$modAssignedCatch <- catch$halfConeAssignedCatch + catch$assignedCatch
+}
 
 
 #   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"
@@ -149,16 +218,10 @@ catch$FinalRun <- as.character( catch$FinalRun )
 catch$lifeStage <- as.character( catch$lifeStage ) 
 #catch$lifeStage <- as.character( catch$Unassd ) jason - possibly delete
 
-
 #   ********************************************************************
-#   Assign batch dates
-visits <- F.assign.batch.date( visits )
-catch <- F.assign.batch.date( catch )
-
-
-
-
-
+#   Assign batch dates -- jason adds the ifs 1/16/2016 to allow zero row visits and catch dfs to pass through
+if(nrow(visits) > 0){visits <- F.assign.batch.date( visits )}
+if(nrow(catch) > 0){catch <- F.assign.batch.date( catch )}
 
 
 #   Assign attributes

@@ -5,6 +5,12 @@ F.plot.lifestages <- function( df, file.root, plot.pies=FALSE ){
 #   df = a table with lifestages down the rows and runs across the columns.
 #   plot.pies = If TRUE, pie charts are produced
 #
+  
+#   df <- df
+#   file.root <- output.file
+#   plot.pies <- F
+  
+  
 
 #   Get passage columns and totals row indices
 pass.cols <- grep( "passage", names(df) )
@@ -121,17 +127,25 @@ if( plot.pies ){
             par(mar=c(0,4.1,1.5,2.1))
 
             tmp<-barplot( y, ylim=c(0,1.35), xaxt="n", col="orange", yaxt="n" )
-            axis( 2, at=c(0,.25,.5,.75,1) )
-            text( max(tmp)+.4*(tmp[2]-tmp[1]), 1.15, run.names[j], adj=1, cex=2)
+            if(nrow(tmp) == 1){  # 2/29/2016 - jason adds to allow for one bar.  don't know why this is happening now.
+              axis( 2, at=c(0,.25,.5,.75,1) )
+              text( 1.7*max(tmp), 1.15, run.names[j], adj=1, cex=2)
+            } else {
+              axis( 2, at=c(0,.25,.5,.75,1) )
+              text( max(tmp)+.4*(tmp[2]-tmp[1]), 1.15, run.names[j], adj=1, cex=2)
+            }
+
             
-            
+
             n <- formatC(round(df2[1,j]),big.mark=",",digits=8)
             n <- gsub(" ", "", n)
             axis( 1, at=tmp[1], labels=paste("n=",n,sep=""), tick=F, line=-1 )
-            for( i in 2:length(tmp)){
-                n <- formatC(round(df2[i,j]),big.mark=",",digits=8)
-                n <- gsub(" ", "", n)
-                axis( 1, at=tmp[i], labels=n, tick=F, line=-1 )
+            if ( length(tmp) > 1){# jason change 2/29/2016 -- i basically got rid of unassigned?
+              for( i in 2:length(tmp)){#2:length(tmp)){   
+                  n <- formatC(round(df2[i,j]),big.mark=",",digits=8)
+                  n <- gsub(" ", "", n)
+                  axis( 1, at=tmp[i], labels=n, tick=F, line=-1 )
+              }
             }
         }
         

@@ -68,6 +68,11 @@
     #   Because gam model for imputation predicts an hourly rate, this max gap cannot be < 1 hour
     max.ok.gap <<- 2
     
+    #   Maximum gap, in minutes, that is NOT okay.  Values of "Not fishing" greater than this value, in minutes,
+    #   constitute a gap in fishing for which models should not spline.  In other words, they are a large enough
+    #   break in data to split splines into two separate models.  
+    fishingGapMinutes <<- 10080
+    
     #   Write out the memory limit on this machine
     cat(paste("Memory limit:", memory.limit(), "Mb \n"))    
     
@@ -101,6 +106,7 @@ source(	"get_release_data.r"	)
 #source(	"odt_biweekly_table.r"	)
 #source(	"latex_passage.r"	)
 #source(	"latex_recapSummary.r"	)
+source( "run_passage.r" )
 source(	"passage.r"	)
 source( "annual_passage.r" )
 source(	"plot_catch_model.r"	)
@@ -141,4 +147,10 @@ source( "by_catch_table.r" )
 source( "run_sqlFile.r" )
 source( "build_report_criteria_release.r" )
 
+source( "plot_spline.R" )
+source( "accounting.r" )
+source( "getTheData.r" )
+source( "max_buff_days.r ")
+source( "chuck_zeros.r" )
+source( "est_catch_trapN.r" )
 

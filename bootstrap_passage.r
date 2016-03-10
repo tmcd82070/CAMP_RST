@@ -22,7 +22,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 # sum.by <- summarize.by
 # R <- 100
 # ci=T <- ci 
-  
+#   
   
 library(mvtnorm)
 
@@ -30,7 +30,14 @@ conf <- 0.95   # this is the confidence level of the confidence intervals
 
 #cat("---- entering bootstrap\n")
 
-
+# get julian weeks and be done with it
+if(sum.by == 'week'){
+  db <- get( "db.file", env=.GlobalEnv )                                  #   Open ODBC channel
+  ch <- odbcConnectAccess(db)
+  the.dates <- sqlFetch( ch, "Dates" )                                    #   get the table that has the julian week labels.
+  the.dates <<- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
+  close(ch)
+}
 
 #   ---- Compute THE estimate.  F.summarize.passage first averages over traps then sums by sum.by
 #        When this returns, n.orig is a data frame with columns
@@ -55,7 +62,7 @@ if( !ci ){
 
     
     #   These giant matrices will hold bootstrap iterations
-    c.pred <- matrix( grand.df$totalCatch, nrow=nrow(grand.df), ncol=R )      # jason change to totalCatch.  
+    c.pred <- matrix( grand.df$totalEstimatedCatch, nrow=nrow(grand.df), ncol=R )      # jason change to totalEstimatedCatch.  
     e.pred <- matrix( grand.df$efficiency, nrow=nrow(grand.df), ncol=R )
 
     
@@ -146,8 +153,8 @@ if( !ci ){
                 #   It is possible for number of non-zero catches to be 0 (they never caught anything)
                 #   In the latter case, coefficient is large negative and causes estimates to blow. 
                 #   Trap this situation.  The correct estimate in this case is 0.
-                if( (length(beta) == 1) & (beta[1] < -10)){
-                    rbeta <- matrix( -10, nrow=R, ncol=1 )
+                if( (length(beta) == 1) & (beta[1] < -2)){
+                    rbeta <- matrix( -2, nrow=R, ncol=1 )
                 } else {
                     # Generate random coefficients       
                     rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector. rbeta is R X (n coef)
@@ -193,7 +200,12 @@ if( !ci ){
 
 #                cat("in bootstrap.passage.r.  hit return...")
 #                readline()
-
+                print(table(grand.df[grand.df$imputed.catch > 0,]$trapPositionID))
+                cat(paste0('ind.mat - ',dim(ind.mat)[1],'\n'))
+                cat(paste0('grand.df - ',dim(grand.df)[1],'\n'))
+                cat(paste0('trap.ind - ',length(trap.ind),'\n'))
+                cat(paste0('pred - ',dim(pred)[1],'\n'))
+                cat(paste0('c.pred - ',dim(c.pred)[1],'\n'))
                 
                 c.pred[ind.mat] <- pred   # replaces imputed values with other realizations contained in pred.  This is nrow(grand.df) X R, or (n.batch.days*n.traps) X R
             }
@@ -201,7 +213,7 @@ if( !ci ){
         
 #        cat("...Catch BS complete")
         
-        
+        pred <<- pred
         
         #   *=*=*=*=*=*=*=* Generate random realizations of EFFICIENCY
 
@@ -319,8 +331,15 @@ if( !ci ){
 
     #   *=*=*=*=*=*=*=* Estimate passage
     #         c.pred and e.pred are the same size, so just divide
+    test <- ifelse(grand.df$imputed.catch > 0 & grand.df$imputed.catch < 1,grand.df$totalEstimatedCatch - grand.df$imputedCatch,0)
+    c.pred <- apply(c.pred,2,function(x) x + test)
     c.pred <- c.pred / e.pred    # Re-use the c.pred matrix to save space
 
+    
+
+    
+
+    
     #   Debugging
     assign("ce.pred", c.pred, pos=.GlobalEnv)
     
@@ -330,22 +349,16 @@ if( !ci ){
     #   Row dimension of list items corresponds to (batch days x trap), columns correspond to iterations.
     #   We now need to average the cells over the traps, and summarize by time.  Do this by calling F.summarize.passage on each column
     
-    
-    db <- get( "db.file", env=.GlobalEnv )                                  #   Open ODBC channel
-    ch <- odbcConnectAccess(db)
-    the.dates <- sqlFetch( ch, "Dates" )                                    #   get the table that has the julian week labels.
-    the.dates <<- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
-    close(ch)
-    
-
     #   ===== Apply F.summarize to every column of pass
-    f.sumize.pass <- function(p, s.by, bd){
+    f.sumize.pass <- function(p, s.by, bd){#}, imp.catch){
         #   Internal function to summarize catch by s.by
-        df <- data.frame( batchDate=bd, passage=p, imputed.catch=1 )  # we will not use inputed.catch.  Having F.summarize.passage average imputed catch wastes some time. 
+        df <- data.frame( batchDate=bd, passage=p, imputed.catch=1 )  # jason turns off 2/17/2016:  "we will not use inputed.catch.  Having F.summarize.passage average imputed catch wastes some time." 
+#         df <- data.frame( batchDate=bd, passage=p, imputed.catch=imp.catch )  # we WILL use inputed.catch. 
+#         rownames(df) <- NULL  # jason adds to make it look like the old df
         n <- F.summarize.passage( df, s.by )
         n$passage
     }
-    pass <- apply( c.pred, 2, f.sumize.pass, s.by=sum.by, bd=grand.df$batchDate )
+    pass <- apply( c.pred, 2, f.sumize.pass, s.by=sum.by, bd=grand.df$batchDate)#, imp.catch=grand.df$imputed.catch)
     pass <- matrix( unlist(pass), n.len, R )
     
 #    setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
@@ -372,12 +385,44 @@ if( !ci ){
 
 }
 
+
 #   ---- Append lower and upper end points and return
 names(ans) <- paste0( c("lower.", "upper."), conf*100 )
 ans <- data.frame( n.orig, ans, stringsAsFactors=F )
 
 #cat("In bootstrap_passage.r.  HIt return...")
 #readline()
+
+# # jason makes some bootstrap graphs.
+# png(filename='C:/Users/jmitchell/Desktop/bs.png',res=200,width=40,height=48,units="in")
+# par(mfrow=c(24,10))
+# for(iter in 1:240){
+#   d <- ans[iter,]
+#   
+#   p <- mean( pass[iter,] > x.orig, na.rm=TRUE)
+#   
+#   # bg color
+#   rgb.palette <- colorRampPalette(c("red","pink","white"),space="rgb")
+#   h <- rev(rgb.palette(101))
+#   
+#   par( mar = c(2,1,2,1) )
+#   hist(pass[iter,],breaks=dim(pass)[2]/10,col="white",border="white",main="")  # breaks dependent on sample size
+#   par(new=TRUE)
+#   rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col=h[round(100*p,0) + 1])#round(100*d$pct.imputed.catch,0) + 1])
+#   par(new=TRUE)
+#   lines(x=rep(d$lower.95,20),y=seq(0,100,length.out=20),lwd=3,type="l",col="blue")
+#   lines(x=rep(d$upper.95,20),y=seq(0,100,length.out=20),lwd=3,type="l",col="blue")
+#   lines(x=rep(d$passage,20),y=seq(0,100,length.out=20),lwd=3,type="l",col="green")
+#   par(new=TRUE)
+#   hist(pass[iter,],breaks=dim(pass)[2]/10,col="white",main=paste0(d$s.by," - ",round(d$passage,0)," - (",round(d$lower.95,0),",",round(d$upper.95,0),") - ",round(d$pct.imputed.catch,2)," - p=",round(p,2)))  # breaks dependent on sample size
+# 
+#   #rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col=h[round(d$pct.imputed.catch,0)*100 + 1])
+#   
+# }
+# dev.off()
+# par(mfrow=c(1,1))
+
+
 
 ans 
 

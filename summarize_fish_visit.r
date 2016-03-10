@@ -14,6 +14,7 @@ F.summarize.fish.visit <- function( catch,variable ){
   
 #   catch <- catch.df
 #   variable <- 'unassigned'
+#   variable <- 'halfcone'
   
 
   # jason add - first pass assumed that unassigned fork length is NA.  but...not NA for one day in run i'm investigating.  force this.
@@ -65,7 +66,32 @@ if( nrow(catch) > 0 ){
     
     indexes <- tapply( 1:nrow(catch), list( catch$trapVisitID, catch$FinalRun, catch$Unassd ) ) 
     doit <- 1
+  } else if (variable %in% c('halfConeAssignedCatch','halfConeUnassignedCatch','assignedCatch','unassignedCatch','modAssignedCatch','modUnassignedCatch')){    # fish counts of half-cone expansions
+    
+    #   These are variables that are constant within a trapVisit, run, and lifestage
+    const.vars<-c("ProjID", "trapVisitID", "batchDate", "StartTime", "EndTime", "SampleMinutes", 
+                  "TrapStatus", "siteID", "siteName", "trapPositionID", "TrapPosition", "sampleGearID", 
+                  "sampleGear", "halfConeID", "HalfCone", "FinalRun", "lifeStage", "Unassd" )                     
+    
+    #   indexes = all unique combinations of visit, run, and life stage
+    #   indexes = NA for all gaps in the trapping sequence
+    
+    indexes <- tapply( 1:nrow(catch), list( catch$trapVisitID, catch$FinalRun, catch$lifeStage ) ) 
+    doit <- 1
+    
+           if(variable == 'halfConeAssignedCatch')  {catch$Unmarked <- catch$halfConeAssignedCatch     # code below expects a variable named Unmarked.  Let's make this easy.
+    } else if(variable == 'halfConeUnassignedCatch'){catch$Unmarked <- catch$halfConeUnassignedCatch   # code below expects a variable named Unmarked.  Let's make this easy.
+    } else if(variable == 'assignedCatch')          {catch$Unmarked <- catch$assignedCatch             # code below expects a variable named Unmarked.  Let's make this easy.
+    } else if(variable == 'unassignedCatch')        {catch$Unmarked <- catch$unassignedCatch           # code below expects a variable named Unmarked.  Let's make this easy.
+    } else if(variable == 'modAssignedCatch')       {catch$Unmarked <- catch$modAssignedCatch          # code below expects a variable named Unmarked.  Let's make this easy.
+    } else if(variable == 'modUnassignedCatch')     {catch$Unmarked <- catch$modUnassignedCatch        # code below expects a variable named Unmarked.  Let's make this easy.
+    }
   }
+  
+  
+
+  
+  
   
   if(doit == 1){
     #   Because of the gap lines, there are NA's in indexes (because there are NA's in trapVisitID). 

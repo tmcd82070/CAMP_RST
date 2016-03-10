@@ -1,4 +1,4 @@
-max.buff.days <- function(df){
+max.buff.days <- function(df,trap){
   
   # df <- df2
   

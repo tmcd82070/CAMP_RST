@@ -30,7 +30,7 @@ if( sum(release.df$Recaps, na.rm=T) <= 0 ){
 time.zone <- get("time.zone", env=.GlobalEnv)
 
 #   ---- Fix up the data frame
-rel.df <- release.df[,c("releaseID", "ReleaseDate", "nReleased",  "HrsToFirstVisitAfter", "HrsToLastVisitAfter", "trapPositionID", "meanRecapTime", "Recaps")]#,'beg.date','end.date')]
+rel.df <- release.df[,c("releaseID", "ReleaseDate", "nReleased",  "HrsToFirstVisitAfter", "HrsToLastVisitAfter", "trapPositionID", "meanRecapTime", "Recaps",'beg.date','end.date')]
 rel.df$batchDate <- rep(NA, nrow(rel.df))
 names(rel.df)[ names(rel.df) == "meanRecapTime" ] <- "EndTime"
 

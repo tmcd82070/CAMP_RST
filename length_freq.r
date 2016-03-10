@@ -40,7 +40,13 @@ if( by.lifestage ){
 
 catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
 
+catch.df$includeCatchID <- catch.df$preUnmarked <- catch.df$halfConeAssignedCatch <- catch.df$halfConeUnassignedCatch <- catch.df$assignedCatch <- catch.df$unassignedCatch <- catch.df$modUnassignedCatch <- catch.df$modAssignedCatch <- NULL
 
+# if catch.df has no data, it doesn't get batchDates added.  
+if(nrow(catch.df) == 0){
+  names(catch.df)[names(catch.df) == 'SampleDate'] <- 'batchDate'
+  #catch.df <-  data.frame(catch.df,batchDate=integer(0))
+}
 
 #  grab non-valid Catch
 attributesSafe <- attributes(catch.df)
@@ -51,9 +57,15 @@ F.run.sqlFile( ch, "QryNonValidFishing.sql", R.TAXON=taxon )
 nvCatch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_X_final" )        #   Now, fetch the result -- nvCatch = non-Valid Catch
 F.sql.error.check(nvCatch)
 
+#   Fetch run name
+tables <- get( "table.names", env=.GlobalEnv )
+runs <- sqlQuery(ch, paste( "SELECT run, runID FROM", tables["run.codes"] ))
+F.sql.error.check(runs)
+run.name <- as.character(runs$run[ runs$runID == run ])
+
 close(ch)
 
-nvCatch <- nvCatch[ (nvCatch$Unmarked > 0), ]                         #  Subset the catches to just positives.  Toss the 0 catches.
+nvCatch <- nvCatch[ (nvCatch$Unmarked > 0) & nvCatch$FinalRun == run.name, ]   #  Subset the catches to just positives.  Toss the 0 catches.
 if(nrow(nvCatch) > 0){
   nvCatch$Unassd <- nvCatch$lifeStage                                   #  jason add to ID the unassigned lifeStage -- necessary to separate measured vs caught.
   nvCatch2 <- F.expand.plus.counts( nvCatch )                           #  Expand the Plus counts
@@ -63,20 +75,21 @@ if(nrow(nvCatch) > 0){
   if(nrow(catch.df) > 0 & nrow(nvCatch.df) > 0){
     catch.df <- rbind(catch.df,nvCatch.df)                                #  use a new catch.df with non-valid fishing included
     attributes(catch.df) <- attributesSafe
-    disc <- 'Fork lengths include both valid and invalid trapping data.'
+    disc <- 'Plotted fork lengths include data from both successful and unsuccessful fishing.'
   } else if(nrow(catch.df) == 0 & nrow(nvCatch.df) > 0){
     catch.df <- nvCatch.df
     # no attributes to bring in -- do it now
-    attr(catch.df, "siteID" ) <- site
-    attr(catch.df, "site.name") <- catch.df$siteName[1]
-    attr(catch.df, "subsites") <- unique(catch.df$trapPositionID)
-    disc <- 'Fork lengths include only invalid trapping data;  no valid data exists for selected criteria.'    
-  } else if(nrow(catch.df) > 0 & nrow(nvCatch.df) == 0){
-    catch.df <- catch.df
+    attributesSafe$row.names <- rownames(nvCatch.df)    # need row.names attr to be something, or else catch.df goes back to zero data
     attributes(catch.df) <- attributesSafe
-    disc <- 'Fork lengths include only valid trapping data;  no invalid data exists for selected criteria.'        
-  } # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
-} 
+    disc <- 'Plotted fork lengths include data from only unsuccessful fishing.'    
+  } 
+} else if(nrow(catch.df) > 0 & nrow(nvCatch) == 0){
+  catch.df <- catch.df
+  attributes(catch.df) <- attributesSafe
+  disc <- 'Plotted fork lengths include data from only successful fishing.'     
+} # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
+
+
 
 if(nrow(catch.df) == 0){
     plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
@@ -286,11 +299,11 @@ if( by.lifestage ){
     text( .5, .5, "Frequency", adj=.5, srt=90, cex=2 )
 
     #   Plot outer title 
-    str.hgt <- strheight(main.l1, units="user", cex=2)  * 1.2 / .1
+    str.hgt <- strheight(main.l1, units="user", cex=2)  * 0.8 / .1
     plot(c(0,1), c(0,1), type="n", axes=F )
-    text( .5, 1 - str.hgt    ,  main.l1, adj=.5, cex=2 )
-    text( .5, 1 - 2.1*str.hgt,  main.l2, adj=.5, cex=1.5 )
-    text( .5, 1 - 2.9*str.hgt,     disc, adj=.5, cex=1.0)
+    text( .5, 1 - str.hgt    ,  main.l1, adj=.5, cex=1.5 )
+    text( .5, 1 - 2.4*str.hgt,  main.l2, adj=.5, cex=1.1 )
+    text( .5, 1 - 3.3*str.hgt,     disc, adj=.5, cex=0.75)
 } else {
 
     

@@ -1,6 +1,6 @@
 F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, ci=TRUE ){
 #
-#   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
+#   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
 #   A table of passage estimates, with lifestages down the rows, and runs across the columns.
 #
 #   Input:
@@ -16,6 +16,9 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     dt.len <- difftime(end.dt, strt.dt, units="days")
     if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
     
+    #   ---- Start a progress bar
+    progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching efficiency data" )
+    
     #   ---- Fetch efficiency data
     release.df <- F.get.release.data( site, taxon, min.date, max.date  )
 
@@ -23,7 +26,8 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
         stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
     }
 
-
+    setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
+    
     #   ---- Fetch the catch and visit data 
     tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
     
@@ -49,7 +53,12 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
     catch.df1 <- F.summarize.fish.visit( catch.df, 'inflated' )     # jason - 4/14/2015 - we summarize over lifeStage, w/o regard to unassigned.  this is what has always been done.
     catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned')      # jason - 4/14/2015 - we summarize over assigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
                                                                     #                   - the only reason we do this again is to get a different n.tot.
-
+    catch.df3 <- F.summarize.fish.visit( catch.df, 'halfConeAssignedCatch' )     # jason - 1/14/2016
+    catch.df4 <- F.summarize.fish.visit( catch.df, 'halfConeUnassignedCatch' )   # jason - 1/14/2016
+    catch.df5 <- F.summarize.fish.visit( catch.df, 'assignedCatch' )             # jason - 1/14/2016
+    catch.df6 <- F.summarize.fish.visit( catch.df, 'unassignedCatch' )           # jason - 1/14/2016
+    catch.df7 <- F.summarize.fish.visit( catch.df, 'modAssignedCatch' )          # jason - 1/14/2016
+    catch.df8 <- F.summarize.fish.visit( catch.df, 'modUnassignedCatch' )        # jason - 1/14/2016
 
 #   Debugging
 #    tmp.catch <<- catch.df
@@ -66,6 +75,10 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
 
     #   ---- Compute the unique life stages we need to do
     lstages <- unique(c(catch.df1$lifeStage,catch.df2$lifeStage))   # get all instances over the two df.  jason change 4/17/2015 5/21/2015: don't think we need to worry about catch.df0.
+    
+                                                  # only added to lifestage passage code.
+    lstages <- lstages[lstages != 'Unassigned']   # jason add 2/25/2016 -- i have 2 unassigned fish.  plus-count issue?  possibly due to *2 for half-cone operations
+    
     lstages <- lstages[ !is.na(lstages) ]   #   Don't need this,  I am pretty sure lifeStage is never missing here.
     cat("\nLife stages found between", min.date, "and", max.date, ":\n")
     print(lstages)
@@ -97,6 +110,43 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
         colnames(unassd) <- c('trapVisitID','lifeStage','n.Unassd')
         catch.df <- merge(catch.dfA,unassd,by=c('trapVisitID','lifeStage'),all.x=TRUE)
         
+        
+        
+        
+        
+        
+        
+        
+        # jason brings halfcone counts along for the ride 1/14/2016 -- only for run_passage, and not run lifestage?
+        names(catch.df3)[names(catch.df3) == 'n.tot'] <- 'halfConeAssignedCatch'
+        names(catch.df4)[names(catch.df4) == 'n.tot'] <- 'halfConeUnassignedCatch'
+        names(catch.df5)[names(catch.df5) == 'n.tot'] <- 'assignedCatch'
+        names(catch.df6)[names(catch.df6) == 'n.tot'] <- 'unassignedCatch'
+        names(catch.df7)[names(catch.df7) == 'n.tot'] <- 'modAssignedCatch'
+        names(catch.df8)[names(catch.df8) == 'n.tot'] <- 'modUnassignedCatch'
+        
+        catch.df <- merge(catch.df,catch.df3[,c('trapVisitID','lifeStage','FinalRun','halfConeAssignedCatch')],by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
+        catch.df <- merge(catch.df,catch.df4[,c('trapVisitID','lifeStage','FinalRun','halfConeUnassignedCatch')],by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
+        catch.df <- merge(catch.df,catch.df5[,c('trapVisitID','lifeStage','FinalRun','assignedCatch')],by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
+        catch.df <- merge(catch.df,catch.df6[,c('trapVisitID','lifeStage','FinalRun','unassignedCatch')],by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
+        catch.df <- merge(catch.df,catch.df7[,c('trapVisitID','lifeStage','FinalRun','modAssignedCatch')],by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
+        catch.df <- merge(catch.df,catch.df8[,c('trapVisitID','lifeStage','FinalRun','modUnassignedCatch')],by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
+        
+        theSumsBefore <<- accounting(catch.df,"byRun")
+        
+        catch.df <- catch.df[order(catch.df$trapPositionID,catch.df$batchDate),]
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         catch.df <- catch.df[order(catch.df$trapPositionID,catch.df$batchDate),]
         
         cat(paste(rep("*",80), collapse=""))
@@ -124,9 +174,9 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
             setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc, label=tmp.mess )                
                                 
             #   ---- If we caught this run and lifestage, compute passage estimate. 
-            if( any( indRun & indLS ) ){
+            if( any( indRun & indLS ) ){  # 2/25/2016.  jason observes that this should probably check if we have at least one caught fish --- and not all zeros.
 
-                catch.df.ls <- catch.df[ indRun & indLS, c("trapVisitID", "FinalRun", "lifeStage", 'n.Orig','mean.fl.Orig','sd.fl.Orig',"n.tot", "mean.fl", "sd.fl","n.Unassd")]
+                catch.df.ls <- catch.df[ indRun & indLS, c("trapVisitID", "FinalRun", "lifeStage", 'n.Orig','mean.fl.Orig','sd.fl.Orig',"n.tot", "mean.fl", "sd.fl","n.Unassd",'halfConeAssignedCatch','halfConeUnassignedCatch','assignedCatch','unassignedCatch','modAssignedCatch','modUnassignedCatch')]
 
                 #   ---- Merge in the visits to get zeros
                 catch.df.ls <- merge( visit.df, catch.df.ls, by="trapVisitID", all.x=T )
@@ -139,6 +189,23 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
                 catch.df.ls$n.Orig[ is.na(catch.df.ls$n.Orig) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0                
                 catch.df.ls$n.Unassd[ is.na(catch.df.ls$n.Unassd) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0                
 
+                
+                
+                
+                catch.df.ls$halfConeAssignedCatch[ is.na(catch.df.ls$halfConeAssignedCatch) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0    
+                catch.df.ls$halfConeUnassignedCatch[ is.na(catch.df.ls$halfConeUnassignedCatch) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0  
+                catch.df.ls$assignedCatch[ is.na(catch.df.ls$assignedCatch) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0  
+                catch.df.ls$unassignedCatch[ is.na(catch.df.ls$unassignedCatch) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0  
+                catch.df.ls$modAssignedCatch[ is.na(catch.df.ls$modAssignedCatch) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0  
+                catch.df.ls$modUnassignedCatch[ is.na(catch.df.ls$modUnassignedCatch) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0  
+                
+                
+                
+                
+                
+                
+                
+                
                 #   ---- Add back in the missing trapVisitID rows.  These identify the gaps in fishing
                 #catch.df.ls <- rbind( catch.df.ls, catch.df[ is.na(catch.df$trapVisitID), ] )
                 
@@ -159,6 +226,12 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
 #                cat("in lifestage_passage (hit return) ")
 #                readline()
                 
+                # jason add 2/25/2016 -- deal with traps with all zero fish.
+                # see if we have non-zero fish for a trap, given the lifestage and run.
+                theSums <- tapply(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$n.Orig,list(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$trapPositionID),FUN=sum)
+                theZeros <- names(theSums[theSums == 0])
+                catch.df.ls <- catch.df.ls[!(catch.df.ls$trapPositionID %in% theZeros),]
+
                 #   ---- Compute passage
                 pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
 
@@ -237,6 +310,11 @@ F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, c
         ls.pass.df <<- df
         
         # Produce pie or bar charts
+        
+        # 2/29/2016 -- F.plot.lifestages needs the LifeStage in the rowname.  i have a case where this doesn't happen, where we only
+        # have Parr (so one LifeStage).  I do not know why this hasn't popped up before...
+        
+        rownames(df) <- df$LifeStage
         fl <- F.plot.lifestages( df, output.file, plot.pies=F )
         if( fl == "ZEROS" ){
             cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")

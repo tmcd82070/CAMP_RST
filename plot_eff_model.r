@@ -79,7 +79,11 @@ if( length(traps) == 1 ){
 } else {
     my.colors <- rainbow(length(traps))
 }
-my.pch <- 15 + 1:length(traps)
+if( length(traps) > 10){
+  my.pch <- c(15 + 1:10,seq(1,length(traps) - 10))
+} else {
+  my.pch <- 15 + 1:length(traps)
+}
 for( i in 1:length(traps) ){
 
   
