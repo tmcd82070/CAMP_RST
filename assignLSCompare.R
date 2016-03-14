@@ -5,111 +5,191 @@
 ###################################################
 
 
-assignLSCompare <- function(data,save=TRUE){
+assignLSCompare <- function(Data,SAVE=TRUE){
+
+    ## get needed packages
+    getPackages(c('plyr','ellipse'))
+
+    ## order the levels of the life stage
+    LS <- as.character(unique(Data[,'lifeStage']))
+    lvl <- c(LS[grepl('small',LS,ignore.case=TRUE)],
+             LS[grepl('med',LS,ignore.case=TRUE)],
+             LS[grepl('Large',LS,ignore.case=TRUE)],
+             LS[grepl('^all',LS,ignore.case=TRUE)],
+             LS[grepl('^unass',LS,ignore.case=TRUE)])
+    Data[,'lifeStage'] <- factor(Data[,'lifeStage'],levels=lvl,ordered=TRUE)
 
 
-    getPackages('ellipse')
+    ## for debugging
+    ##data <- subset(Data,FinalRun=='Spring')
 
+    compare <- function(data,save){
 
-    ## confusion matrix
-    cvTab <- with(data,table(bioLS,lifeStage,useNA='ifany'))
-    cat('Confusion Matrix \n')
-    print(cvTab)
-    if(save){
-        write.csv(cvTab,paste0(output.file,'ConfusionMatrix.csv'))
-    }
-    head(data)
+        ## this run
+        (fRun <- as.character(data[1,'FinalRun']))
 
-    mixIndex <- data.frame(lifeStage=c('Small','Medium','Large'),col=c('red','green','blue'),stringsAsFactors=FALSE)
-    bioIndex <- data.frame(bioLS=c('Fry','Parr','Smolt'),pch=1:3,stringsAsFactors=FALSE)
-    plotIndex <- cbind(mixIndex,bioIndex)
-
-
-    plotData <- merge(merge(data,mixIndex,all.x=TRUE),bioIndex,all.x=TRUE)
-
-    nrow(plotData)
-    nrow(data)
-    head(plotData)
-
-    addEllipse <- function(type='forkLength'){
-
-        ## if type is not a variable do nothing
-        if(!type%in%rownames(mixDistMUList[[1]])){
+        if(grepl('unass',fRun,ignore.case=TRUE)){
             return(NULL)
         }
 
-        vars <- c('days',type)
+        LSlvl <- as.character(unique(data[,'lifeStage']))
 
-        for(i in seq_along(mixDistMUList)){
-            mu <- mixDistMUList[[i]]
-            Sigma <- mixDistSigmaList[[i]]
+        if(sum(!grepl('unass',LSlvl,ignore.case=TRUE))==0){
+            return(NULL)
+        }
+
+
+
+        cat('\n')
+        cat('\n')
+        cat('\n')
+        cat('Generating comparison results for run =',fRun,'\n')
+
+
+        ## confusion matrix
+        cvTab <- with(data,table(bioLS,lifeStage,useNA='ifany'))
+        cat('Confusion Matrix \n')
+
+        ## remove columns with all zero values
+        cvTab <- cvTab[,colSums(abs(cvTab))!=0]
+        print(cvTab)
+
+
+        if(save){
+            write.csv(cvTab,paste0(output.file,gsub(' ','',fRun),'ConfusionMatrix.csv'))
+        }
+        head(data)
+
+        ## mixture distribution life stage level colors
+        mixIndex <- data.frame(lifeStage=c('Small','Medium','Large','All'),col=c('red','green','blue','orange'),stringsAsFactors=FALSE)
+
+        ## biologist life stage symbols
+        bioIndex <- data.frame(bioLS=c('Fry','Parr','Smolt'),pch=1:3,stringsAsFactors=FALSE)
+
+        plotData <- merge(merge(data,mixIndex,all.x=TRUE),bioIndex,all.x=TRUE)
+
+        nrow(plotData)
+        nrow(data)
+        head(plotData)
+
+        ## add ellipse to the figure
+        addEllipse <- function(run){
+
+            vars <- c('days','forkLength')
+
+            mu <- mixDistMUList[[run]]
+            Sigma <- mixDistSigmaList[[run]]
             for(j in 1:ncol(mu)){
                 points(ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')
 
             } # end for j
+
+            return(NULL)
+        } # end addEllipse function
+
+
+
+
+
+        monthLabel <- data.frame(month.abb,first=c('01-01','02-01','03-01','04-01','05-01','06-01','07-01','08-01','09-01','10-01','11-01','12-01'),stringsAsFactors=FALSE)
+
+        for(i in 1:nrow(monthLabel)){
+            j <- 1;goodMonth <- FALSE
+
+            while(!goodMonth){
+                firstDay <- with(plotData,mean(days[format(SampleDate,'%m-%d')==paste0(formatC(i,width=2,flag=0),'-',formatC(j,width=2,flag=0))]))
+
+                if(!is.na(firstDay)){
+                    monthLabel[i,'days'] <- firstDay-(j-1)
+                    goodMonth <- TRUE
+                }else if(j>31){
+                    goodMonth <- TRUE
+                    monthLabel[i,'days'] <- NA
+                }else{
+                    j <- j+1
+                }
+
+            } # end while
         } # end for i
-        return(NULL)
-    } # end addEllipse function
+
+
+        monthLabel
 
 
 
+        cat('\n')
+        cat('\n')
+        cat('\n')
+        cat('Saving comparison figure.\n')
+        if(save){
+            pdf(file=paste0(output.file,gsub(' ','',fRun),'plotLifeStageAssignComparison.pdf'),width=7)
+        }else{
+            windows(width=7)
+        }
+        ##par(mfrow=c(1,2))
 
-
-    monthLabel <- data.frame(month.abb,first=c('01-01','02-01','03-01','04-01','05-01','06-01','07-01','08-01','09-01','10-01','11-01','12-01'),stringsAsFactors=FALSE)
-
-    for(i in 1:nrow(monthLabel)){
-        j <- 1;goodMonth <- FALSE
-
-        while(!goodMonth){
-            firstDay <- with(plotData,mean(days[format(SampleDate,'%m-%d')==paste0(formatC(i,width=2,flag=0),'-',formatC(j,width=2,flag=0))]))
-
-            if(!is.na(firstDay)){
-                monthLabel[i,'days'] <- firstDay-(j-1)
-                goodMonth <- TRUE
-            }else if(j>31){
-                goodMonth <- TRUE
-                monthLabel[i,'days'] <- NA
-            }else{
-                j <- j+1
-            }
-
-        } # end while
-    } # end for i
-
-
-    monthLabel
-
-    leg <- "with(plotIndex,legend('topleft',legend=c(lifeStage,bioLS),col=c(col,rep('black',3)),pch=c(rep(20,3),pch),ncol=2,bg='white'))"
-
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('Saving comparison figure.\n')
-    if(save){
-        pdf(file=paste0(output.file,'plotLifeStageAssignComparison.pdf'),width=14)
-    }else{
-        windows(width=14)
-    }
-    par(mfrow=c(1,2))
-
-    ## plot forklength and date
-    with(plotData,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n'))
-    addEllipse('forkLength')
-    eval(parse(text=leg))
-    with(monthLabel,axis(1,at=days,label=month.abb))
-
-
-    if(nrow(subset(plotData,!is.na(weight)))>0){
-        ## plot weight and date
-        with(plotData,plot(days,weight,col=as.character(col),pch=pch,xlab='Sample Date',ylab='Weight (g)',xaxt='n'))
-        addEllipse(type='weight')
-        eval(parse(text=leg))
+        ## plot forklength and date
+        with(plotData,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n',main=fRun))
+        addEllipse(fRun)
         with(monthLabel,axis(1,at=days,label=month.abb))
-    }
 
-    if(save){
-        graphics.off()
-    }
+
+        with(plotData,table(col,pch))
+
+
+        ## legend info for mixture life stage
+        legMix <- mixIndex[mixIndex$lifeStage%in%LSlvl[!grepl('^unass',LSlvl,ignore.case=TRUE)],]
+        legMix$pch <- 20
+
+        ## legend info for biologist life stage
+        biolvl <- as.character(unique(data[,'bioLS']))
+        havebiolvl <- c(biolvl[grepl('^fry',biolvl,ignore.case=TRUE)],
+        biolvl[grepl('^parr',biolvl,ignore.case=TRUE)],
+        biolvl[grepl('^smolt',biolvl,ignore.case=TRUE)])
+        legBio <- bioIndex[bioIndex$bioLS%in%havebiolvl,]
+        names(legBio) <- c('lifeStage','pch')
+        legBio$col <- 'black'
+        legBio <- legBio[,c('lifeStage','col','pch')]
+
+
+
+        legMix
+        legBio
+
+
+        d <- nrow(legMix) - nrow(legBio)
+
+        if(d==0){
+
+            legAll <- rbind(legMix,legBio)
+
+        }else if(d>0){
+            addRow <- as.data.frame(matrix(NA,nrow=d,ncol=ncol(legMix)))
+            names(addRow) <- names(legMix)
+            legAll <- rbind(legMix,legBio,addRow)
+        }else if(d<0){
+            addRow <- as.data.frame(matrix(NA,nrow=abs(d),ncol=ncol(legMix)))
+            names(addRow) <- names(legMix)
+            legAll <- rbind(legMix,addRow,legBio)
+        }
+        legAll
+
+
+        with(legAll,legend('topleft',legend=lifeStage,col=col,pch=pch,ncol=2,bg='white'))
+
+
+        if(save){
+            graphics.off()
+        }
+
+        return(NULL)
+    }# end compare function
+
+    ## for debugging
+    ##ddply(Data,~FinalRun,compare,save=FALSE)
+
+    ddply(Data,~FinalRun,compare,save=SAVE)
+
 
     return(NULL)
 } # end function assignLSCompare

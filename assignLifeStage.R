@@ -48,22 +48,21 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,save=FALSE){
     mixDistSigmaList <<- list()
 ####################################################################
 
-    saveName <- ''
-    save(DATA,file=paste0(output.file,'DATA',saveName,'.Rdata'))
+
+    ## save data before assignment
+    save(DATA,file=paste0(output.file,'DATA.Rdata'))
 
     assignNew <- ddply(DATA,~FinalRun,assignLS,G=groupN)
     newLS <- merge(assignNew,DATA[,c('id','bioLS')],all.x=TRUE)
 
+    ## save data after assignment
+    save(newLS,output.file,mixDistMUList,mixDistSigmaList,file=paste0(output.file,'newLS.Rdata'))
+
     assignLSCompare(newLS)
 
-    ##saveName <- gsub(' ','',paste0(as.character(assignNew[1,c('river','trap','year')]),collapse=''))
-    saveName <- ''
-    save(newLS,output.file,mixDistMUList,mixDistSigmaList,file=paste0(output.file,'newLS',saveName,'.Rdata'))
-
-####################################################################
 
 
-return(newLS)
+    return(newLS)
 } # end assignLifeStage
 
 
@@ -92,7 +91,7 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
     ## if final run is unassigned OR if number of fish with fork length <100
     ## then make life stage unassigned and return
-    if(grepl('unassign',fRun,ignore.case=TRUE)| nFL<100){
+    if(grepl('unassign',fRun,ignore.case=TRUE)| nFL<sample.size.forkLength){
         runDat$lifeStage <- 'Unassigned'
         return(runDat)
     }
@@ -104,7 +103,7 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     (nFLW <- sum(runDat[with(runDat,!is.na(forkLength)&!is.na(weight)),'Unmarked']))
     ## won't use weight unless enough there is enough data
     useWeight <- FALSE
-    if(nW/nFL > .5 & nFLW > 100){
+    if(nW/nFL > .5 & nFLW > sample.size.forkLengthAndWeight){
         useWeight <- TRUE
     }
 
@@ -125,11 +124,12 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
 
 
-cat('Min Unmarked value:',with(runDat,min(Unmarked)),'\n')
+    cat('Min Unmarked value:',with(runDat,min(Unmarked)),'\n')
 
 
-cat('Expanding data \n\n')
-expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
+    cat('Expanding data \n\n')
+    expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
+
 
 
 ## subset data to be used for analysis
@@ -162,8 +162,9 @@ expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
         return(as.vector(abs(d%*%comb)))
     }
 
-    ## need the cluster means to be at this far apart in the forklength dimension
-    minMeanDiff <- 10
+    ## need the cluster means to be at least this far apart in the forklength dimension otherwise the number of groups is reduced
+    ## The reduction only happens if the number of groups is not specified by the user
+    minMeanDiff <- forkLength.mean.diff
 
 
 
@@ -198,16 +199,22 @@ expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
 
         if(min(pairDiff(meanFL))<minMeanDiff){
             print(nGroup)
-            nGroup <- nGroup-1
-            if(nGroup==1){
-                runDat$lifeStage <- 'Unassigned'
-                runDat[with(runDat,!is.na(forkLength)),'lifeStage'] <- 'Medium'
-                return(runDat)
+            if(nGroup == 1){
+                goodClust <- TRUE
+            }else{
+                nGroup <- nGroup-1
             }
+            ## if(nGroup==1){
+            ##     runDat$lifeStage <- 'Unassigned'
+            ##     runDat[with(runDat,!is.na(forkLength)),'lifeStage'] <- 'Medium'
+            ##     return(runDat)
+            ## }
         }else{
             goodClust <- TRUE
         }
     }
+
+    ##summary(clustTemp)
 
     clust <- clustTemp
     cat('Mclust is finished \n')
@@ -219,7 +226,7 @@ expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
 
     ## get group names based on number of groups
     if(nGroup==1){
-        groupName <- 'Medium'
+        groupName <- 'All'
     }else if(nGroup==2){
         groupName <- c('Small','Large')
     }else if(nGroup==3){
@@ -248,6 +255,11 @@ expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
     mixDistMUList[[length(mixDistMUList)+1]] <<- mu
     mixDistSigmaList[[length(mixDistSigmaList)+1]] <<- Sigma
 
+    names(mixDistMUList)[length(mixDistMUList)] <<- as.character(fRun)
+    names(mixDistSigmaList)[length(mixDistSigmaList)] <<- as.character(fRun)
+
+    ##    mixDistSigmaList
+    ##    mixDistMUList
 
 ###################################
     ## for debugging
