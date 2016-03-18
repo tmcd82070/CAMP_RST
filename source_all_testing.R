@@ -7,31 +7,33 @@
 .onAttach <- function(){
   #   Attach the libraries we need for all or nearly all routines.
   library(RODBC)
-  
-  #   These are other libraries needed by certain routines.  These need to be installed, 
-  #   and will be attached by the routines that need them. 
+
+  #   These are other libraries needed by certain routines.  These need to be installed,
+  #   and will be attached by the routines that need them.
   #   library(quantreg)
   #   library(splines)
   #   library(MASS)
   #   library(mvtnorm)  # this is needed in F.bootstrap.passage
-  
-  
-  
-  #   =================== Global variables 
-  
+
+
+
+  #   =================== Global variables
+
   #   Parameter db.file is a string containing the full or relative path to the data base
   #db.file <<- "..\\Data\\WorkingVersionCAMP_LAR_16July2013.mdb"  # For trent's testing in 'code' directory
   #db.file <<- "..\\Data\\CAMPFeather_NewVersion1July2013.mdb"  # For trent's testing in 'code' directory
   #db.file <<- "..\\Data\\connie's caswell stanislaus file after doug adds finaRunIDs  CAMP.mdb"
-  
-  db.file1 <<- "..\\Data\\TestingDBs\\CAMPBattleClear_29Jan2015\\CAMP.mdb"
+
+  db.file1 <<- "..\\Data\\TestingDBs\\CAMP_BattleClear_13Jan2016\\CAMP.mdb"
   db.file2 <<- "..\\Data\\TestingDBs\\CAMP_RBDD_19June20151\\CAMP.mdb"
-  db.file3 <<- "..\\Data\\TestingDBs\\CAMPAmerican_29Jan2015\\CAMP.mdb"
+  db.file3 <<- "..\\Data\\TestingDBs\\CAMPAmerican2013_2015Database_23June2015\\CAMP.mdb"
   db.file4 <<- "..\\Data\\TestingDBs\\CAMPCosumnes_25Oct2013_notForAnalyses\\CAMP.mdb"
-  db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_29Jan2015\\CAMP.mdb"
-  db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_29Jan2015\\CAMP.mdb"
+  db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_17Nov2015\\CAMP.mdb"
+  db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_08Oct2015\\CAMP.mdb"
   db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150501/Data/TestingDBs/CAMPAmerican_11Nov2014.mdb"
-    
+  db.file8 <<- "..\\Data\\TestingDBs\\CAMPMokelumne23Sept2015\\CAMP.mdb"
+  db.fileA <<- "..\\Data\\TestingDBs\\CAMPRST20150706_KnightsTisdale\\CAMP.mdb"
+
   cat(paste("DB file:", db.file1, "\n"))
   cat(paste("DB file:", db.file2, "\n"))
   cat(paste("DB file:", db.file3, "\n"))
@@ -39,8 +41,10 @@
   cat(paste("DB file:", db.file5, "\n"))
   cat(paste("DB file:", db.file6, "\n"))
   cat(paste("DB file:", db.file7, "\n"))
-  
-  #   Parameter table.names is a list containing the mapping of table names in Access to table names in R. 
+  cat(paste("DB file:", db.file8, "\n"))
+  cat(paste("DB file:", db.fileA, "\n"))
+
+  #   Parameter table.names is a list containing the mapping of table names in Access to table names in R.
   #   This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
   table.names <<- c(trap.visit="TrapVisit",
                     sites = "Site",
@@ -60,42 +64,53 @@
                     CAMP.life.stages="luLifeStageCAMP",
                     life.stages="luLifeStage",
                     fish.origin="luFishOrigin" )
-  
+
   #   Retreive the YES/NO codes from the luNoYes table.  Just in case they should ever change in the data base
-  
+
   ch <- odbcConnectAccess(db.file7)
   luNoYes <- sqlFetch(ch, table.names["yes.no.codes"])
   No.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "no" ]
   Yes.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "yes" ]
   close(ch)
-  
-  #   Assign sample cut time for batch dates that are missing. 
-  #   If a sample period ends before this time, batch date is the day the period ends. 
+
+  #   Assign sample cut time for batch dates that are missing.
+  #   If a sample period ends before this time, batch date is the day the period ends.
   #   If a sample period ends after this time, batch date is the next day following the end of the sampling period.
   samplePeriodCutTime <<- "04:00:00"              # In military time
-  
-  #   Maximum gap, in hours, that is "okay".  Gaps in trapping smaller than this are ignored.  No catch is imputed for them. 
+
+  #   Maximum gap, in hours, that is "okay".  Gaps in trapping smaller than this are ignored.  No catch is imputed for them.
   #   Because gam model for imputation predicts an hourly rate, this max gap cannot be < 1 hour
   max.ok.gap <<- 2
-  
+
   #   Maximum gap, in minutes, that is NOT okay.  Values of "Not fishing" greater than this value, in minutes,
   #   constitute a gap in fishing for which models should not spline.  In other words, they are a large enough
-  #   break in data to split splines into two separate models.  
+  #   break in data to split splines into two separate models.
   fishingGapMinutes <<- 10080
-  
+
+  #   The size of the knotting mesh we use to spline, where "size" is the number of data points that constitute a
+  #   splining bit.  A knotMesh of 15 indicates that each additional spline, in a fit, requires an additional
+  #   15 data points to be added.  So, a linear fit (over an intercept-only model) requires at least 15 data points,
+  #   while a quadratic (over a linear) requires at least 30 data points.  This global variable is used in R
+  #   program catch_model.R.
+  knotMesh <<- 15
+
+  #   The multiplication factor to use for expanding out fish caught during halfCone operations.  This global variable
+  #   us used in R program get_catch_data.r.
+  halfConeMulti <<- 2
+
   #   Write out the memory limit on this machine
-  cat(paste("Memory limit:", memory.limit(), "Mb \n"))    
-  
-  #   Set time zone. NOTE: all times are assumed to be in this time zone.  
+  cat(paste("Memory limit:", memory.limit(), "Mb \n"))
+
+  #   Set time zone. NOTE: all times are assumed to be in this time zone.
   #   If not, they may be incorrect.  In any event, all times are forced to this time zone.
   time.zone <<- "America/Los_Angeles"
-  
-  #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then, 
-  #  *************** Set the efficiency model to use. 
+
+  #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then,
+  #  *************** Set the efficiency model to use.
   #
   #   Specify the capture efficiency model
   #eff.model.method <- 3
-  
+
 }
 .onAttach()
 

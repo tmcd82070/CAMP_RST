@@ -4,18 +4,18 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
 #   computations, like dates.
 #
 #   input:
-#   site = site ID of place we want to do estimates for. 
-#   run = run ID of fish we want to do estimates for.  This is only used to find trap visits which 
+#   site = site ID of place we want to do estimates for.
+#   run = run ID of fish we want to do estimates for.  This is only used to find trap visits which
 #       might have caught released fish.  I.e., it is only used in a call to F.get.indiv.visit.data below.
 #   min.date = minimum date for data to include. This is a text string in the format %Y-%m-%d, or YYYY-MM-DD
 #   max.date = maximum date for data to include.  Same format as min.date
 
 
-#   There is some differences of opinion on whether taxon should be included here.  Mike convinced me that we did not need to. But, 
-#   Connie's SQL, which we converted to uses taxon.  I will go with Connie's SQL and use taxon. 
+#   There is some differences of opinion on whether taxon should be included here.  Mike convinced me that we did not need to. But,
+#   Connie's SQL, which we converted to uses taxon.  I will go with Connie's SQL and use taxon.
 
 
-#   *****  
+#   *****
 #   Run report criteria for trap visits. Builds TempReportCriteria_Trapvisit.
 nvisits <- F.buildReportCriteria( site, min.date, max.date )
 
@@ -39,17 +39,17 @@ if( nreleases == 0 ){
 
 #   *****
 #   Open ODBC channel
-db <- get( "db.file", env=.GlobalEnv ) 
+db <- get( "db.file", env=.GlobalEnv )
 ch <- odbcConnectAccess(db)
 
 #   *****
-#   This SQL file develops the TempSamplingSummary table 
-F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )  
+#   This SQL file develops the TempSamplingSummary table
+F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
 
 
 #   *****
-#   This SQL file develops the hours fished and TempSamplingSummary table 
-F.run.sqlFile( ch, "QryEfficiencyTests.sql", R.TAXON=taxon )   
+#   This SQL file develops the hours fished and TempSamplingSummary table
+F.run.sqlFile( ch, "QryEfficiencyTests.sql", R.TAXON=taxon )
 
 
 #   *****
@@ -62,7 +62,7 @@ F.sql.error.check(release.visit)
 
 # jason.release.visit <<- release.visit
 
-close(ch) 
+close(ch)
 
 #   Assign time zones to date-time columns
 time.zone <- get( "time.zone", env=.GlobalEnv )
@@ -71,32 +71,35 @@ attr(release.visit$ReleaseDate, "tzone")<-time.zone
 attr(release.visit$VisitTime, "tzone")<-time.zone
 
 
-#   In release.visit, there is one record for every trap visit within releaseTime (e.g., 7 days) 
+#   In release.visit, there is one record for every trap visit within releaseTime (e.g., 7 days)
 #   after each release, even if the trap visit did not catch any marked fish.  i.e., the 0's are in here
 #   because all combinations of (releaseID, trapPositionID, trapVisitID) upon which marked fish could have
 #    been cause are here.
-#   
-#   At times, more than one release was "going", and a single trap visit 
+#
+#   At times, more than one release was "going", and a single trap visit
 #   could have caught fish from multiple releases.
 #
-# For a specific release, release.visit tells 
+# For a specific release, release.visit tells
 #   how many fish from the release were captured on subsequent trap visits to each trap.  In future,
 #   we may want to do something fancy like a removal estimator or other analysis
-#   that requires recapture information through time (over multiple visits). If so, You will want to use 
-#   this data frame (release.visit). 
+#   that requires recapture information through time (over multiple visits). If so, You will want to use
+#   this data frame (release.visit).
 #
-#   However, for now, we will collapse the trap visits and compute total number of each release's fish captured ever.  
-# tmp <<- release.visit 
+#   However, for now, we will collapse the trap visits and compute total number of each release's fish captured ever.
+# tmp <<- release.visit
 
 #   *****
 #   Drop any rows that are flagged as "Do not include"
 release.visit <- release.visit[ (release.visit$IncludeTest == "Yes") & (release.visit$IncludeCatch == "Yes"), ]
 
-
+#   Adjust by 'times 2' for halfCone adjustment -- 3/16/2016.  BUT -- use the halfConeMulti global var, and not just "*2".
+release.visit$halfConeAdj <- ifelse(release.visit$HalfCone == 'Yes',(halfConeMulti - 1)*release.visit$Recaps,0)   # we want to allow for multipliers other than 2.0 here.
+release.visit$oldRecaps <- release.visit$Recaps
+release.visit$Recaps <- release.visit$oldRecaps + release.visit$halfConeAdj
 
 #   Sum over trapVisits at a trapPosition
 
-by.list <- list(trapPositionID = release.visit$trapPositionID, 
+by.list <- list(trapPositionID = release.visit$trapPositionID,
             releaseID = release.visit$releaseID )
 
 ind  <- tapply( release.visit$Recaps, by.list, FUN=NULL)
@@ -112,9 +115,9 @@ for( g in u.groups ){
 
     #   Compute time to first and last visit after release, even if they did not catch any marked fish
     tmp.hdiff <- as.numeric( difftime(tmp$VisitTime, tmp$ReleaseDate, units="hours") )
-    one.row$HrsToFirstVisitAfter <-  min( tmp.hdiff ) 
+    one.row$HrsToFirstVisitAfter <-  min( tmp.hdiff )
     one.row$HrsToLastVisitAfter <-  max( tmp.hdiff )
-    
+
     #   Mean fork length of released fish that were captured
     if( one.row$Recaps == 0 ){
         # This case should not happen
@@ -123,41 +126,41 @@ for( g in u.groups ){
         one.row$meanTimeAtLargeHrs <- NA
     } else {
         #one.row$meanForkLength <- sum(tmp$n * tmp$forkLengthMM, na.rm=T) / one.row$n
-    
+
         #   Mean time released fish were caught
         tmp.v <- as.numeric(tmp$VisitTime)
         one.row$meanRecapTime <- sum(tmp.v * tmp$Recaps, na.rm=T) / one.row$Recaps
-        
+
         #   Mean time at large, in hours
         one.row$meanTimeAtLargeHrs <- sum(tmp.hdiff * tmp$Recaps, na.rm=T) / one.row$Recaps
 
     }
-    
+
 
     one.row <- one.row[,-which( names(one.row) %in% c("VisitTime", "trapVisitID", "SampleMinutes")) ]   # drop columns that are we are summing over
-    
-    
+
+
     ans <- rbind(ans, data.frame(one.row))
-}    
- 
- 
+}
+
+
 class(ans$meanRecapTime) <- class(release.visit$VisitTime)
 attr(ans$meanRecapTime, "tzone") <- attr(release.visit$VisitTime, "tzone")
 
-    
+
 # ans.check <<- ans
 
-cat("First 20 records of RELEASE table:\n")  
+cat("First 20 records of RELEASE table:\n")
 print( ans[1:min(nrow(ans),20),] )
 
 
-#   Store values of some header info as attribute for convienance. 
+#   Store values of some header info as attribute for convienance.
 attr(ans, "taxonID" ) <- taxon
 #attr(ans, "species.name") <- sp.commonName
 attr(ans, "siteID" ) <- site
 #attr(ans, "site.stream" ) <- site.stream
 #attr(ans, "site.name") <- site.name
-#attr(ans, "site.abbr") <- site.abbr  
+#attr(ans, "site.abbr") <- site.abbr
 #attr(ans, "runID") <- run
 #attr(ans, "run.name") <- run.name
 #attr(ans, "run.season") <- run.season
