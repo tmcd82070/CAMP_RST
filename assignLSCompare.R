@@ -5,10 +5,11 @@
 ###################################################
 
 
+
 assignLSCompare <- function(Data,SAVE=TRUE){
 
     ## get needed packages
-    getPackages(c('plyr','ellipse'))
+    getPackages(c('plyr','ellipse','tidyr'))
 
     ## order the levels of the life stage
     LS <- as.character(unique(Data[,'lifeStage']))
@@ -21,7 +22,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
 
 
     ## for debugging
-    ##data <- subset(Data,FinalRun=='Spring')
+    ##data <- subset(Data,FinalRun=='Fall')
 
     compare <- function(data,save){
 
@@ -47,13 +48,11 @@ assignLSCompare <- function(Data,SAVE=TRUE){
 
 
         ## confusion matrix
-        cvTab <- with(data,table(bioLS,lifeStage,useNA='ifany'))
+        compareDF <- ddply(data,~bioLS+lifeStage,summarize,fish=sum(Unmarked))
+        cvTab <- spread(compareDF,key=lifeStage,value=fish,fill=0)
+
         cat('Confusion Matrix \n')
-
-        ## remove columns with all zero values
-        cvTab <- cvTab[,colSums(abs(cvTab))!=0]
         print(cvTab)
-
 
         if(save){
             write.csv(cvTab,paste0(output.file,gsub(' ','',fRun),'ConfusionMatrix.csv'))
