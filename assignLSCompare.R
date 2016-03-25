@@ -55,7 +55,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         print(cvTab)
 
         if(save){
-            write.csv(cvTab,paste0(output.file,gsub(' ','',fRun),'ConfusionMatrix.csv'))
+            write.csv(cvTab,paste0(output.file,gsub(' ','',fRun),'ConfusionMatrix.csv'),row.names=FALSE)
         }
         head(data)
 
