@@ -150,7 +150,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     catch.df <- merge(catch.df,catch.df7[,c('trapVisitID','lifeStage','FinalRun','modAssignedCatch')],by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
     catch.df <- merge(catch.df,catch.df8[,c('trapVisitID','lifeStage','FinalRun','modUnassignedCatch')],by=c('trapVisitID','lifeStage','FinalRun'),all.x=TRUE)
 
-    theSumsBefore <<- accounting(catch.df,"byRun")
+    #theSumsBefore <<- accounting(catch.df,"byRun")
 
     catch.df <- catch.df[order(catch.df$trapPositionID,catch.df$batchDate),]
 

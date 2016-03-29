@@ -40,7 +40,15 @@ if( by.lifestage ){
 
 catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
 
-catch.df$includeCatchID <- catch.df$preUnmarked <- catch.df$halfConeAssignedCatch <- catch.df$halfConeUnassignedCatch <- catch.df$assignedCatch <- catch.df$unassignedCatch <- catch.df$modUnassignedCatch <- catch.df$modAssignedCatch <- NULL
+# jason 3/25/2016 -- drop oldTrapPositionID here.  code assumes that var not here
+catch.df$includeCatchID <-
+  catch.df$preUnmarked <-
+  catch.df$halfConeAssignedCatch <-
+  catch.df$oldtrapPositionID <-
+  catch.df$halfConeUnassignedCatch <-
+  catch.df$assignedCatch <-
+  catch.df$unassignedCatch <-
+  catch.df$modUnassignedCatch <- catch.df$modAssignedCatch <- NULL
 
 # if catch.df has no data, it doesn't get batchDates added.  
 if(nrow(catch.df) == 0){

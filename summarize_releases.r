@@ -34,13 +34,16 @@ comment  <- gsub("\r\n\r\n", ". ", as.character(release.df$ReleaseComments))
 dt       <- release.df$ReleaseDate
 mean.vis   <- release.df$meanRecapTime
 mean.atLarge   <- release.df$meanTimeAtLargeHrs
+nFishRecaps <- ifelse(release.df$HalfCone == 'Yes',release.df$Recaps / halfConeMulti,release.df$Recaps)
+nHalfConeRecaps <- release.df$Recaps - nFishRecaps
+HalfCone <- release.df$HalfCone
 
 class( dt ) <- class( release.df$meanRecapTime )
 class( mean.vis ) <- class( release.df$meanRecapTime )
 
 
-ans <- data.frame(TrapPosition=trapPos, releaseTime=dt, ReleaseID=ReleaseID,  nReleased=nRelease, 
-    nRecaps=nRcap, meanRecapTime=mean.vis, meanTimeAtLargeHrs = mean.atLarge,
+ans <- data.frame(TrapPosition=trapPos, releaseTime=dt, ReleaseID=ReleaseID,  nReleased=nRelease, HalfCone=HalfCone,
+    nFishRecaps=nFishRecaps,nHalfConeRecaps=nHalfConeRecaps,nRecaps=nRcap, meanRecapTime=mean.vis, meanTimeAtLargeHrs = mean.atLarge,
     IncludeTest=Include, ReleaseComment=comment )
 
 ans <- ans[ order(ans$releaseTime), ]

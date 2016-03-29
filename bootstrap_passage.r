@@ -45,6 +45,9 @@ if(sum.by == 'week'){
 n.orig <- F.summarize.passage( grand.df, sum.by )
 cat("back from summarize\n")
 
+# write.csv(grand.df,'C:/Users/jmitchell/Desktop/Incorrect.grand.df.csv')
+# write.csv(n.orig,'C:/Users/jmitchell/Desktop/Incorrect.n.orig.csv')
+
 #   ---- If confidence intervals are called for, do them, otherwise return.
 n.len <- nrow(n.orig)
 n.grand.df <- nrow(grand.df)
@@ -84,6 +87,8 @@ if( !ci ){
 #        print(catch.fits)
 #        print(catch.Xmiss)
 #        print(catch.gapLens)
+        
+        # cat(paste("catch.fits=",names(catch.fits),"\n"))
 
         ind <- which(trapID == names(catch.fits))
         if( length(ind) > 0 ){
@@ -93,21 +98,21 @@ if( !ci ){
 
 #            setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
 
-
             bd.miss <- catch.bDates.miss[[trap]]
 
+
             #   Debugging
-#            print(bd.miss)
-#            cat("in bootstrap_passage.r (hit return)...")
-#            readline()
+           print(bd.miss)
+           cat("in bootstrap_passage.r (hit return)...")
+           # readline()
 
             if( all(!is.na(bd.miss)) ){
                 #   We have some gaps
 #                setWinProgressBar( bootbar, getWinProgressBar(bootbar) + barinc )
 
-        #        print(names(catch.Xmiss))
-        #        print(names(catch.gapLens))
-        #        print(nrow(grand.df))
+#                print(names(catch.Xmiss))
+#                print(names(catch.gapLens))
+#                print(nrow(grand.df))
 
                 # Variance matrix
                 #   We must cut down the over-dispersion parameter to avoid obviously
@@ -137,7 +142,7 @@ if( !ci ){
 #                print(c(df.resid=c.fit$df.residual))
 #                cat(paste("sig=", "\n"))
 #                print(sig)
-#                cat("in bootstrap_passage.r (hit return)...")
+               cat("in bootstrap_passage.r (hit return)...")
 #                readline()
 
 
@@ -145,7 +150,7 @@ if( !ci ){
                 # Coefficients
                 beta <- coef( c.fit )
 
-#                cat(paste("beta=", beta, "\n"))
+               # cat(paste("beta=", beta, "\n"))
 #                tmp <- chol.default( sig, pivot=TRUE )
 #                print.default(tmp)
 
@@ -165,7 +170,10 @@ if( !ci ){
 #                cat(paste("rbeta=", "\n"))
 #                print(rbeta[1:20,])
 #                print(dim(rbeta))
-
+# 
+#                cat(paste("gaps=", "\n"))
+#                print(gaps[1:20,])
+#                print(dim(gaps))
 
                 # Predict catches using random coefficients
                 # When computed, pred is a matrix where each column is a random realization of model predictions
@@ -200,12 +208,12 @@ if( !ci ){
 
 #                cat("in bootstrap.passage.r.  hit return...")
 #                readline()
-                print(table(grand.df[grand.df$imputed.catch > 0,]$trapPositionID))
-                cat(paste0('ind.mat - ',dim(ind.mat)[1],'\n'))
-                cat(paste0('grand.df - ',dim(grand.df)[1],'\n'))
-                cat(paste0('trap.ind - ',length(trap.ind),'\n'))
-                cat(paste0('pred - ',dim(pred)[1],'\n'))
-                cat(paste0('c.pred - ',dim(c.pred)[1],'\n'))
+#                 print(table(grand.df[grand.df$imputed.catch > 0,]$trapPositionID))
+#                 cat(paste0('ind.mat - ',dim(ind.mat)[1],'\n'))
+#                 cat(paste0('grand.df - ',dim(grand.df)[1],'\n'))
+#                 cat(paste0('trap.ind - ',length(trap.ind),'\n'))
+#                 cat(paste0('pred - ',dim(pred)[1],'\n'))
+#                 cat(paste0('c.pred - ',dim(c.pred)[1],'\n'))
 
                 c.pred[ind.mat] <- pred   # replaces imputed values with other realizations contained in pred.  This is nrow(grand.df) X R, or (n.batch.days*n.traps) X R
             }
@@ -213,7 +221,7 @@ if( !ci ){
 
 #        cat("...Catch BS complete")
 
-        pred <<- pred
+        #pred <<- pred
 
         #   *=*=*=*=*=*=*=* Generate random realizations of EFFICIENCY
 

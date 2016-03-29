@@ -4,8 +4,6 @@ F.chinookByDate.table <- function(site, min.date, max.date, output.file ){
 #
 
 
-
-
 #   ---- Retrieve all chinook records between two dates. 
 #        run does not work at this point
 taxon <- 161980

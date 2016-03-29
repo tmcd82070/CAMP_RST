@@ -100,23 +100,18 @@ sunrise <- as.POSIXct( paste(format(catch.df$EndTime, "%Y-%m-%d"), "07:00:00"), 
 catch.df$night <- 0
 catch.df$pct.night <- 0
 
-# trapping before the sun goes down to trapping after the sun comes up.
 ind <- (catch.df$StartTime <= sunset) & (sunrise <= catch.df$EndTime)
 catch.df$night[ind] <- 1
 catch.df$pct.night[ind] <- 1
 
-# trapping before the sun goes down to trapping before the sun comes up.
 ind <- (catch.df$StartTime <= sunset) & (sunrise > catch.df$EndTime)
 catch.df$night[ind] <- 1
 catch.df$pct.night[ind] <- (as.numeric(catch.df$EndTime[ind]) - as.numeric(sunset[ind])) / (as.numeric(sunrise[ind]) - as.numeric(sunset[ind]))
 
-# trapping after the sun goes down to trapping after the sun comes up.
 ind <- (catch.df$sampleStart > sunset) & (sunrise <= catch.df$EndTime)
 catch.df$night[ind] <- 1
 catch.df$pct.night[ind] <- (as.numeric(sunrise[ind]) - as.numeric(catch.df$StartTime[ind])) / (as.numeric(sunrise[ind]) - as.numeric(sunset[ind]))
 
-# trapping after the sun goes down to trapping before the sun comes up.
-# nothing here?
 
 
 
@@ -135,7 +130,11 @@ modelDF <- catch.df[,c('n.tot','log.sampleLengthHrs','night')]
 #   Fit null model.  The gap catches are NA here, so they are dropped from the fit.  Later, they are replaced.
 nightVec <- catch.df[!is.na(catch.df$n.tot),]$night    # jason add 3/16/2016 - doing gaps in fishing leads to small timeframes -- can have no variability in night var -- all 1!  deal with this possibility.
 if( p.night < 0.9 & (length(nightVec) != sum(nightVec)) ){
-    fit <- glm( n.tot ~ offset(log.sampleLengthHrs)  + night, family=poisson, data=catch.df )
+  
+    # 3/22/2016 -- turn off night for now, until after it can be fixed.
+    #fit <- glm( n.tot ~ offset(log.sampleLengthHrs)  + night, family=poisson, data=catch.df )
+
+    fit <- glm( n.tot ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
 } else {
     fit <- glm( n.tot ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
 }
@@ -172,7 +171,9 @@ if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
         }
 
         if( p.night < 0.9 & (length(nightVec) != sum(nightVec)) ){
-            cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd + night, family=poisson, data=catch.df ),error=function(e) e )
+            # 3/22/2016 -- we get rid of night for now, until it can be fixed later.
+            #cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd + night, family=poisson, data=catch.df ),error=function(e) e ) 
+            cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df ),error=function(e) e )
         } else {
             cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df ),error=function(e) e )
         }
@@ -268,7 +269,8 @@ print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
 #est.days <- seq(start.day, end.day, by=24*60*60 )
 #est.days <- format( est.days, "%Y-%m-%d" )
 
-night.in <- "night" %in% attr(fit$terms, "term.labels")
+# 3/22/2016 -- we turn off the night variable.  so, force night.in as zero.
+night.in <- 0#"night" %in% attr(fit$terms, "term.labels")
 
 catch.df$gamEstimated <- FALSE
 

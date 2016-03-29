@@ -174,10 +174,8 @@ if(nHalfCone > 0){   # do a different plus-count algorithm in this case.  1/14/2
   possiblyOff <- test[is.na(test$preUnmarked),]   # possible trouble spots
   test$preUnmarked[is.na(test$preUnmarked)] <- 0   # unassigned fish that were not assigned to a certain category before, but were after -or- fish that were assigned a diff lifestage and finalrun between preCatch and catch
 
-
   test$halfConeAssignedCatch   <- ifelse(test$halfConeID == 1 & test$Unassd != 'Unassigned',test$Unmarked - test$preUnmarked,0)    # halfConeAdj have to originate from a halfCone trapping instance.
   test$halfConeUnassignedCatch <- ifelse(test$halfConeID == 1 & test$Unassd == 'Unassigned',test$Unmarked - test$preUnmarked,0)    # halfConeAdj have to originate from a halfCone trapping instance.
-
 
   test$assignedCatch   <- ifelse(test$Unassd != 'Unassigned',test$Unmarked - test$halfConeAssignedCatch,0)
   test$unassignedCatch <- ifelse(test$Unassd == 'Unassigned',test$Unmarked - test$halfConeUnassignedCatch,0)
@@ -205,8 +203,8 @@ if(nHalfCone > 0){   # do a different plus-count algorithm in this case.  1/14/2
   # data query where all are full catch -- just set the fancy variables to zero.
   catch <- F.expand.plus.counts( catch )
   catch$preUnmarked <- catch$Unmarked
-  catch$halfConeAssignedCatch <- 0
-  catch$halfConeUnassignedCatch <- 0
+  if(nrow(catch) > 0){catch$halfConeAssignedCatch <- 0}
+  if(nrow(catch) > 0){catch$halfConeUnassignedCatch <- 0}
   catch$assignedCatch   <- ifelse(catch$Unassd != 'Unassigned',catch$Unmarked - catch$halfConeAssignedCatch,0)
   catch$unassignedCatch <- ifelse(catch$Unassd == 'Unassigned',catch$Unmarked - catch$halfConeUnassignedCatch,0)
   catch$modUnassignedCatch <- catch$halfConeUnassignedCatch + catch$unassignedCatch

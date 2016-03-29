@@ -23,7 +23,7 @@ rownames(theExcel) <- NULL
 
 
 # specify the range, in terms of theExcel rownames, to test.
-for(testi in 1:77){#34:49){   
+for(testi in 13:33){#34:49){
 
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
@@ -75,31 +75,29 @@ for(testi in 1:77){#34:49){
   to           <- "Doug Threloff, USFWS CAMP Coordinator"
   return.addr  <- "FISH AND WILDLIFE SERVICE!USFWS Caswell State Park Office!1234 Abbey Rd.!Caswell, California  96080!(530) 527-3043, FAX (530) 529-0292"
 
-#   for(byj in 1:4){
-# 
-#     if(byj == 1){
-#       by <- 'day'
-#     } else if(byj == 2){
-#       by <- 'week'
-#     } else if(byj == 3){
-#       by <- 'month'
-#     } else if(byj == 4){
-#       by <- 'year'
-#     }
-# 
-#     output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
-# 
-#     F.run.passage      (site, taxon,      min.date, max.date, by=by,     output.file=output.file,         ci=TRUE            )
-#   }
+  for(byj in 1:4){
+
+    if(byj == 1){
+      by <- 'day'
+    } else if(byj == 2){
+      by <- 'week'
+    } else if(byj == 3){
+      by <- 'month'
+    } else if(byj == 4){
+      by <- 'year'
+    }
+
+    output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
+
+    F.run.passage      (site, taxon,      min.date, max.date, by=by,     output.file=output.file,         ci=TRUE            )
+  }
   by <- 'All'
   output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
-#   F.lifestage.passage   (site, taxon,      min.date, max.date,            output.file,                     ci=TRUE            )
-#   F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
-#   F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
-#   F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
-  F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
-  F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
-  
+  F.lifestage.passage(site, taxon,      min.date, max.date,            output.file,                     ci=TRUE            )
+ #F.byCatch.table   ( site,             min.date, max.date,            output.file                                         )
+ #F.release.summary ( site, taxon, run, min.date, max.date,            output.file                                         )
+ #F.weekly.effort   ( site, taxon,      min.date, max.date,            output.file                                         )
+
 #   runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
 #   run.names <- c('Spring','Fall','Late Fall','Winter')
 #   for(j in 1:4){

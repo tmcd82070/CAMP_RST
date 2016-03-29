@@ -280,10 +280,10 @@ est.catch <- est.catch[order(est.catch$trapPositionID,est.catch$batchDate),]
 
 
 # more fish accounting
-theSumsMiddle <- accounting(est.catch,"byTrap")
-if(!is.null(est.catch1)){
-  theSumsMiddle <<- merge(theSumsMiddle,est.catch1,by=c('Traps'),all.x=TRUE)
-}
+# theSumsMiddle <- accounting(est.catch,"byTrap")
+# if(!is.null(est.catch1)){
+#   theSumsMiddle <<- merge(theSumsMiddle,est.catch1,by=c('Traps'),all.x=TRUE)
+# }
 
 
 # 1/28/2016 -- all of this moved to new function est_catch_trapN, so as to get correct Ntraps per day, which

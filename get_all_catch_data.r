@@ -47,7 +47,7 @@ F.run.sqlFile( ch, "QrySumChinookByTrap.sql", R.TAXON=taxon )
 visit <- sqlFetch( ch, "TempChinookSampling_i_final" )
 F.sql.error.check(visit)
 
-
+close(ch)
 #   ******
 #   Fetch run name
 #run.name <- sqlQuery( ch, paste("SELECT run AS runName FROM luRun WHERE runID=", run ))

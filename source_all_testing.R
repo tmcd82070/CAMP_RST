@@ -32,7 +32,7 @@
   db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_08Oct2015\\CAMP.mdb"
   db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150501/Data/TestingDBs/CAMPAmerican_11Nov2014.mdb"
   db.file8 <<- "..\\Data\\TestingDBs\\CAMPMokelumne23Sept2015\\CAMP.mdb"
-  db.fileA <<- "..\\Data\\TestingDBs\\CAMPRST20150706_KnightsTisdale\\CAMP.mdb"
+  db.fileA <<- "..\\Data\\TestingDBs\\CAMPKnightsTinsdaleNEW_04Feb2016\\CAMP.mdb"
 
   cat(paste("DB file:", db.file1, "\n"))
   cat(paste("DB file:", db.file2, "\n"))
@@ -171,9 +171,9 @@ source( "run_sqlFile.r" )
 source( "build_report_criteria_release.r" )
 
 source( "plot_spline.R" )
-source( "accounting.r" )
-source( "getTheData.r" )
 source( "max_buff_days.r ")
 source( "chuck_zeros.r" )
 source( "est_catch_trapN.r" )
 
+# source( "accounting.r" )
+# source( "getTheData.r" )
