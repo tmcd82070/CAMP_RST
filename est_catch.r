@@ -163,7 +163,6 @@ for( trap in u.traps ){
 #     }
     df <- rbind( df, df.and.fit$df2)
 
-
     catch.fits[[which(trap==u.traps)]] <- df.and.fit$fit
     X.miss[[which(trap==u.traps)]] <- df.and.fit$X.for.missings
     Gaps[[which(trap==u.traps)]] <- df.and.fit$gaps
@@ -182,6 +181,7 @@ cat("-------\n")
 # ---- output underlying data of splines plot ---
 #write.csv(allJBaseTable,paste0(output.file,"_",catch.df$FinalRun[1],"_",lsLabel,"_allJBaseTable.csv"))
 # ---- end output underlying data of splines plot ---
+
 
 
 

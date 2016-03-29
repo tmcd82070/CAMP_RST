@@ -100,7 +100,6 @@ if(nrow(nvCatch) > 0){
     disc <- 'Plotted fork lengths include data from only successful fishing.'        
 } # nrow(catch.df) == 0 condition below will catch situation when no records ever found.
 
-
 if( nrow(catch.df) == 0 ){
     plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
     text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")

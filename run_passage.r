@@ -346,10 +346,12 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         sink()
 
         tmp.df$date <- NULL                                              # jason add:  make sure the whole column of date doesnt print.
+
         #   Write out the table
 
         # task 2.4, 1/8/2016:  if passage = 0, force propImputedCatch to be zero.
         tmp.df$propImputedCatch <- ifelse(tmp.df$passage == 0,0,tmp.df$propImputedCatch)
+
 
         write.table( tmp.df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
 
@@ -365,7 +367,6 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       attr(passby, "lifestage.name" ) <- "All lifestages"
 
       passby$passage <- round(passby$passage,0)   # task 2.4: 1/8/2016.  make the passage csv and barplot passage png agree on integer fish.
-
       out.f <- F.plot.passage( passby, out.file=output.fn )
       out.fn.roots <- c(out.fn.roots, out.f)
     }

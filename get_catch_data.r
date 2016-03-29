@@ -211,7 +211,6 @@ if(nHalfCone > 0){   # do a different plus-count algorithm in this case.  1/14/2
   catch$modAssignedCatch <- catch$halfConeAssignedCatch + catch$assignedCatch
 }
 
-
 #   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"
 catch$FinalRun <- as.character( catch$FinalRun )
 catch$lifeStage <- as.character( catch$lifeStage )
@@ -221,7 +220,6 @@ catch$lifeStage <- as.character( catch$lifeStage )
 #   Assign batch dates -- jason adds the ifs 1/16/2016 to allow zero row visits and catch dfs to pass through
 if(nrow(visits) > 0){visits <- F.assign.batch.date( visits )}
 if(nrow(catch) > 0){catch <- F.assign.batch.date( catch )}
-
 
 #   Assign attributes
 attr(catch, "siteID" ) <- site

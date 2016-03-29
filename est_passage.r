@@ -352,7 +352,6 @@ if( !is.na(file.root) ){
      #tmp.df$includeCatchID <- ifelse(is.na(tmp.df$includeCatchID),NA,ifelse(tmp.df$includeCatchID == 1,'Yes',ifelse(tmp.df$includeCatchID == 12,'Yes+No','No')))
 
     tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','halfConeAdj','imputedCatch','totalEstimatedCatch','propImputedCatch','efficiency','propImputedEff','passage')]    # rearrange columns
-
     tmp.df <- tmp.df[order(tmp.df$subSiteID,tmp.df$batchDate),]   # need to sort now?  1/8/2016.
 
     write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
