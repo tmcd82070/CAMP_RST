@@ -163,6 +163,10 @@ source('getPackages.R')
 source('assignLifeStage.R')
 source('expandUnmarked.R')
 source('assignLSCompare.R')
+source('passageWithLifeStageAssign.R')
+source('F.lifestage.passage.assignLS2groupNoWeight.R')
+source('F.lifestage.passage.assignLS3groupNoWeight.R')
+source('F.lifestage.passage.assignLSNoWeight.R')
 
 ## I'm not sure if this is needed but the rest of the passage estimation won't run without it.
 source('max_buff_days.r')

@@ -12,12 +12,12 @@ assignLSCompare <- function(Data,SAVE=TRUE){
     getPackages(c('plyr','ellipse','tidyr'))
 
     ## order the levels of the life stage
-    LS <- as.character(unique(Data[,'lifeStage']))
-    lvl <- c(LS[grepl('small',LS,ignore.case=TRUE)],
+    (LS <- as.character(unique(Data[,'lifeStage'])))
+    (lvl <- c(LS[grepl('small',LS,ignore.case=TRUE)],
              LS[grepl('med',LS,ignore.case=TRUE)],
              LS[grepl('Large',LS,ignore.case=TRUE)],
              LS[grepl('^all',LS,ignore.case=TRUE)],
-             LS[grepl('^unass',LS,ignore.case=TRUE)])
+             LS[grepl('^unass',LS,ignore.case=TRUE)]))
     Data[,'lifeStage'] <- factor(Data[,'lifeStage'],levels=lvl,ordered=TRUE)
 
 
@@ -33,7 +33,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
             return(NULL)
         }
 
-        LSlvl <- as.character(unique(data[,'lifeStage']))
+        (LSlvl <- as.character(unique(data[,'lifeStage'])))
 
         if(sum(!grepl('unass',LSlvl,ignore.case=TRUE))==0){
             return(NULL)
@@ -57,7 +57,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         if(save){
             write.csv(cvTab,paste0(output.file,gsub(' ','',fRun),'ConfusionMatrix.csv'),row.names=FALSE)
         }
-        head(data)
+        ##head(data)
 
         ## mixture distribution life stage level colors
         mixIndex <- data.frame(lifeStage=c('Small','Medium','Large','All'),col=c('red','green','blue','orange'),stringsAsFactors=FALSE)
@@ -67,12 +67,13 @@ assignLSCompare <- function(Data,SAVE=TRUE){
 
         plotData <- merge(merge(data,mixIndex,all.x=TRUE),bioIndex,all.x=TRUE)
 
-        nrow(plotData)
-        nrow(data)
-        head(plotData)
+        ##nrow(plotData)
+        ##nrow(data)
+        ##head(plotData)
 
         ## add ellipse to the figure
         addEllipse <- function(run){
+            ## add ellipse to the figure
 
             vars <- c('days','forkLength')
 
@@ -84,6 +85,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
             } # end for j
 
             return(NULL)
+
         } # end addEllipse function
 
 
@@ -127,13 +129,16 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         }
         ##par(mfrow=c(1,2))
 
+        ## title for figure
+        varUsed <- paste(rownames(mixDistMUList[[fRun]]),collapse=", ")
+        plotMain <- paste0(fRun,'\nVariables used to assign lifestage: ',gsub('days','date',varUsed))
         ## plot forklength and date
-        with(plotData,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n',main=fRun))
+        with(plotData,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n',main=plotMain))
         addEllipse(fRun)
         with(monthLabel,axis(1,at=days,label=month.abb))
 
 
-        with(plotData,table(col,pch))
+        ##with(plotData,table(col,pch))
 
 
         ## legend info for mixture life stage
@@ -149,15 +154,12 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         names(legBio) <- c('lifeStage','pch')
         legBio$col <- 'black'
         legBio <- legBio[,c('lifeStage','col','pch')]
+        ##legMix
+        ##legBio
 
 
-
-        legMix
-        legBio
-
-
+        ## prepares the legend so the color and pch match up correctly
         d <- nrow(legMix) - nrow(legBio)
-
         if(d==0){
 
             legAll <- rbind(legMix,legBio)

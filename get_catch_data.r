@@ -1,4 +1,4 @@
-F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL ){
+F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL ){
 ##
 ##   Fetch the catch data for a SINGLE TAXON from an Access data base. Do some initial
 ##   computations, like dates.
@@ -16,8 +16,8 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
 ##   min.date = minimum date for data to include. This is a text string in the format %Y-%m-%d, or YYYY-MM-DD
 ##   max.date = maximum date for data to include.  Same format as min.date
 ##   autoLS = FALSE, nothing new is done. autoLS =TRUE the life stage is assigned using a mixture distribution/clustering analysis
-##   nLS = NULL, ignored if autoLS is false,
-##
+##   nLS = NULL, ignored if autoLS is false, specify the number of groups to be fit
+##   useWeight = NULL, ignored if autoLS is false, NULL = program decides if to use weight, FALSE = weight is not used for assigning lifestage
 ##
 ##   To be included in the catch data, a record has to be from the site,
 ##   of the correct taxon, of the correct run, and between min and max dates.
@@ -119,7 +119,7 @@ visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeSta
 catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
 ######################################
-## Jared Addition
+## Jared's Addition
 ## this is where the life stage assignment will happen from a function call
 if(autoLS){
     cat('Starting mixture distribution estimation to assign life stage. \n')
@@ -130,7 +130,7 @@ if(autoLS){
     cat('\n')
     cat('\n')
     cat('\n')
-    catch <- assignLifeStage(DATA=catch,groupN=nLS)
+    catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)
 
     cat('\n')
     cat('\n')
