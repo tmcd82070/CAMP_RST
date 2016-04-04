@@ -98,6 +98,23 @@
   #   us used in R program get_catch_data.r.
   halfConeMulti <<- 2
 
+  
+  # ----- Constants for the life stage assignment -----
+  #   number of fish with measured forklength required to assign life stage
+  sample.size.forkLength <<- 100
+  
+  #   number of fish with measured forklength and weight required to use weight in the assignment
+  sample.size.forkLengthAndWeight <<- 100
+  
+  #   the proportion of fish with weight to fish with forklength needs to be over this number to use weight
+  weight.prop.forkLength <<- .5
+  
+  #   When the number of groups is not specified the clustering starts with 3 groups and reduces the number of the forklength means are less forkLength.mean.diff
+  forkLength.mean.diff <<- 10
+  
+  # ----- End constraints for life stage assignment -----
+  
+  
   #   Write out the memory limit on this machine
   cat(paste("Memory limit:", memory.limit(), "Mb \n"))
 

@@ -8,8 +8,8 @@ require("mvtnorm")
 
 library(RODBC)
 
-testing <- TRUE                   # points to different output folders.
-platform <- 'CAMP_RST20160201'    # points to different platforms
+testing <- TRUE                               # points to different output folders.
+platform <- 'CAMP_RST20160601-DougXXX-4.5'    # points to different platforms
 
 paste(cat('testing == TRUE\n'))
 setwd(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/"))
