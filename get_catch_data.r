@@ -1,100 +1,102 @@
-F.get.catch.data <- function( site, taxon, min.date, max.date ){
-#
-#   Fetch the catch data for a SINGLE TAXON from an Access data base. Do some initial
-#   computations, like dates.
-#
-#   input:
-#   db = full path and name of the Access data base to retrieve data from
-#   tables = vector with named components containing names
-#           of the table in db to pull values from
-#   site = site ID of place we want to do estimates for.
-#   taxon = the taxon number(s) (from luTaxon) to retrieve.  If a scalar, only
-#       one taxon is retrieved.  If vector of taxon id's, the sum of all
-#       taxons is retrieved.
-#   run = the single run ID of the fish we want.  If run = NA, all records for the fish
-#       will be pulled.
-#   min.date = minimum date for data to include. This is a text string in the format %Y-%m-%d, or YYYY-MM-DD
-#   max.date = maximum date for data to include.  Same format as min.date
-#
-#   To be included in the catch data, a record has to be from the site,
-#   of the correct taxon, of the correct run, and between min and max dates.
-#
-
-#f.banner <- function( x ){
-#    cat("\n")
-#    cat(paste(rep("=",50), collapse=""));
-#    cat(x);
-#    cat(paste(rep("=",50), collapse=""));
-#    cat("\n")
-#}
-
-#   *****
-nvisits <- F.buildReportCriteria( site, min.date, max.date )
-
-if( nvisits == 0 ){
+F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL ){
+  ##
+  ##   Fetch the catch data for a SINGLE TAXON from an Access data base. Do some initial
+  ##   computations, like dates.
+  ##
+  ##   input:
+  ##   db = full path and name of the Access data base to retrieve data from
+  ##   tables = vector with named components containing names
+  ##           of the table in db to pull values from
+  ##   site = site ID of place we want to do estimates for.
+  ##   taxon = the taxon number(s) (from luTaxon) to retrieve.  If a scalar, only
+  ##       one taxon is retrieved.  If vector of taxon id's, the sum of all
+  ##       taxons is retrieved.
+  ##   run = the single run ID of the fish we want.  If run = NA, all records for the fish
+  ##       will be pulled.
+  ##   min.date = minimum date for data to include. This is a text string in the format %Y-%m-%d, or YYYY-MM-DD
+  ##   max.date = maximum date for data to include.  Same format as min.date
+  ##   autoLS = FALSE, nothing new is done. autoLS =TRUE the life stage is assigned using a mixture distribution/clustering analysis
+  ##   nLS = NULL, ignored if autoLS is false, specify the number of groups to be fit
+  ##   useWeight = NULL, ignored if autoLS is false, NULL = program decides if to use weight, FALSE = weight is not used for assigning lifestage
+  ##
+  ##   To be included in the catch data, a record has to be from the site,
+  ##   of the correct taxon, of the correct run, and between min and max dates.
+  ##
+  
+  ##f.banner <- function( x ){
+  ##    cat("\n")
+  ##    cat(paste(rep("=",50), collapse=""));
+  ##    cat(x);
+  ##    cat(paste(rep("=",50), collapse=""));
+  ##    cat("\n")
+  ##}
+  
+  ##   *****
+  
+if(autoLS){
+  ## this is the catch data with weight
+  catch <- getCatchDataWeight(taxon,site,min.date,max.date)
+  ## need to open a channel for later
+  db <- get( "db.file", env=.GlobalEnv )
+  ch <- odbcConnectAccess(db)
+}else{  # old, original way, prior to lifeStage assignment algorithm.
+  nvisits <- F.buildReportCriteria( site, min.date, max.date )
+    
+  if( nvisits == 0 ){
     warning("Your criteria returned no trapVisit table records.")
     return()
-}
-
-
-#   *****
-#   Open ODBC channel
-db <- get( "db.file", env=.GlobalEnv )
-ch <- odbcConnectAccess(db)
-
-
-#   *****
-#   This SQL file develops the hours fished and TempSamplingSummary table
-F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
-
-#   *****
-#   This SQL generates times when the traps were not fishing
-F.run.sqlFile( ch, "QryNotFishing.sql" )
-
-
-#   *****
-#   This SQL generates unmarked fish by run and life stage
-F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )
-
-#   Now, fetch the result
-catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-
-
+  }
+    
+  #   *****
+  #   Open ODBC channel
+  db <- get( "db.file", env=.GlobalEnv )
+  ch <- odbcConnectAccess(db)
+  
+  #   *****
+  #   This SQL file develops the hours fished and TempSamplingSummary table
+  F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
+    
+  #   *****
+  #   This SQL generates times when the traps were not fishing
+  F.run.sqlFile( ch, "QryNotFishing.sql" )
+    
+  #   *****
+  #   This SQL generates unmarked fish by run and life stage
+  F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )
+    
+  #   *****
+  #   Now, fetch the result
+  catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+    
+} #end else
+  
 # add 3/8/2016 -- look for long gaps.
 theLongCatches <- catch[catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]      # fishingGapMinutes set in source file -- it's global.
 nLongCatches <- nrow(theLongCatches)
 if(nLongCatches > 0){
-
+    
   warning("Long gaps were found in the data so the LongGapLoop series will be run.")
-
+    
   # SQL code to find the gaps, and modify trapPositionIDs accordingly.
   F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
-
+    
   # get the updated results
   catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-
+    
   catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   # this becomes the master catch df
-
+    
 } else {
-
+    
   # no long gaps to worry about.  so just keep going with the version of catch that we already
   # pulled in from the mdb.
   catch$oldtrapPositionID <- catch$trapPositionID    # these two are the same.  include for compatibility.
-
-}
-
-
-
-
-
-
-
-
-
+    
+} 
+  
 
 includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
 F.sql.error.check(catch)
-
+  
 close(ch)
 
 if(nvisits > 0 & nrow(catch) == 0){
@@ -137,6 +139,33 @@ visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeSta
 #   ********************************************************************
 #   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
 catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
+
+
+######################################
+## Jared's Addition
+## this is where the life stage assignment will happen from a function call
+if(autoLS){
+    cat('Starting mixture distribution estimation to assign life stage. \n')
+    ##write.csv(catch,paste0(output.file,site,'.csv'),row.names=FALSE)
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  # swap out old catch with the new catch.
+
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('The misture distribution estimation to assign life stage is over. \n')
+    cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^> \n')
+    ## for debugging
+    ##return(catch)
+    ##stop('That is good enough')
+}
+
+######################################
 
 
 
@@ -199,7 +228,7 @@ if(nHalfCone > 0){   # do a different plus-count algorithm in this case.  1/14/2
   catch <- test
 
 } else {
-
+  
   # data query where all are full catch -- just set the fancy variables to zero.
   catch <- F.expand.plus.counts( catch )
   catch$preUnmarked <- catch$Unmarked
@@ -237,7 +266,6 @@ cat("First 20 records of catch data frame...\n")
 if( nrow(catch) >= 20 ) print( catch[1:20,] ) else print( catch )
 
 #f.banner("F.get.catch.data - Complete")
-
 
 #   Return two data frames. One containing positive catches.  The other containing visit and fishing information.
 list( catch=catch, visit=visits )
