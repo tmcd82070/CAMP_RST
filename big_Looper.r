@@ -2,9 +2,13 @@
 
 # install RODBC
 # install mvtnorm
-install.packages(c("RODBC","mvtnorm"))
+install.packages(c("RODBC","mvtnorm","plyr","mclust","car","tidyr"))
 require("RODBC")
 require("mvtnorm")
+require("plyr")    # these get added in the program run.
+require("mclust")
+require("car")
+require("tidyr")
 
 library(RODBC)
 
@@ -15,7 +19,7 @@ paste(cat('testing == TRUE\n'))
 setwd(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/"))
 source(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/source_all_testing.R"))
 
-theExcel <- read.csv('theExcel.csv')
+theExcel <- read.csv(paste0('\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',platform,'/R-Interface/Helper/theExcel.csv'))
 theExcel <- theExcel[theExcel$Issues == '',]
 rownames(theExcel) <- NULL
 
@@ -23,7 +27,7 @@ rownames(theExcel) <- NULL
 
 
 # specify the range, in terms of theExcel rownames, to test.
-for(testi in 1:77){#34:49){   
+for(testi in 1:1){#34:49){   
 
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
@@ -56,7 +60,7 @@ for(testi in 1:77){#34:49){
     run          <- theExcel[testi,]$RunID
     runText      <- as.character(droplevels(theExcel[testi,]$SalmonRun))
     min.date     <- as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))
-    max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))
+    max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))#"2013-03-16" #
   } else {
 #     river        <- 'american'
 #     site         <- 57000
@@ -94,11 +98,20 @@ for(testi in 1:77){#34:49){
   by <- 'All'
   output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
 #   F.lifestage.passage   (site, taxon,      min.date, max.date,            output.file,                     ci=TRUE            )
+  
+  # ----- automatic lifestage assignment functions --- added 4/4/2016 based on jared's work -----
+  F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, output.file, ci=TRUE)         # lifestage to 2 groups, use weight var
+#   F.lifestage.passage.assignLS2groupNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE) # lifestage to 2 groups, don't use weight var
+#   F.lifestage.passage.assignLS3group(site, taxon, min.date, max.date, output.file, ci=TRUE)         # lifestage to 3 groups, use weight var
+#   F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE) # lifestage to 3 groups, don't use weight var
+#   F.lifestage.passage.assignLS(site, taxon, min.date, max.date, output.file, ci=TRUE)               # let program decide 2/3 groups, use/don't use weight var
+#   F.lifestage.passage.assignLSNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE)       # let program decide 2/3 groups, don't use weight var
+
 #   F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
 #   F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
 #   F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
-  F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
-  F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
+#   F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
+#   F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
   
 #   runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
 #   run.names <- c('Spring','Fall','Late Fall','Winter')

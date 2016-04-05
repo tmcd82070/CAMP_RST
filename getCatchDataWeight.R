@@ -22,7 +22,7 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
     }
 
     ## ---- build the other queries connie mentions in her new sql query ----
-    nvisits <- F.buildReportCriteria( site, min.date, max.date )      # trent f'n to build first report in a query sequence
+    nvisits <<- F.buildReportCriteria( site, min.date, max.date )      # trent f'n to build first report in a query sequence
 
     if( nvisits == 0 ){
         warning("Your criteria returned no trapVisit table records.")

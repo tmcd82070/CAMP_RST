@@ -77,7 +77,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
 
             vars <- c('days','forkLength')
 
-            mu <- mixDistMUList[[run]]
+            mu <<- mixDistMUList[[run]]
             Sigma <- mixDistSigmaList[[run]]
             for(j in 1:ncol(mu)){
                 points(ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')
@@ -89,7 +89,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         } # end addEllipse function
 
 
-
+        save.image(file="C:/Users/jmitchell/Desktop/FirstLineBigLooper.RData")
 
 
         monthLabel <- data.frame(month.abb,first=c('01-01','02-01','03-01','04-01','05-01','06-01','07-01','08-01','09-01','10-01','11-01','12-01'),stringsAsFactors=FALSE)

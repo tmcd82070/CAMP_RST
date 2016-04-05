@@ -195,3 +195,18 @@ source( "est_catch_trapN.r" )
 
 # source( "accounting.r" )
 # source( "getTheData.r" )
+
+# ----- assigning life stage functions -----
+
+source('F.lifestage.passage.assignLS.R')
+source('F.lifestage.passage.assignLS3group.R')
+source('F.lifestage.passage.assignLS2group.R')
+source('getCatchDataWeight.R')
+source('getPackages.R')
+source('assignLifeStage.R')
+source('expandUnmarked.R')
+source('assignLSCompare.R')
+source('passageWithLifeStageAssign.R')
+source('F.lifestage.passage.assignLS2groupNoWeight.R')
+source('F.lifestage.passage.assignLS3groupNoWeight.R')
+source('F.lifestage.passage.assignLSNoWeight.R')
