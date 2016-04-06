@@ -2,13 +2,15 @@
 
 # install RODBC
 # install mvtnorm
-install.packages(c("RODBC","mvtnorm","plyr","mclust","car","tidyr"))
+install.packages(c("RODBC","mvtnorm","plyr","mclust","car"))
+install.packages(c("tidyr","ellipse"))
 require("RODBC")
 require("mvtnorm")
 require("plyr")    # these get added in the program run.
 require("mclust")
 require("car")
 require("tidyr")
+require("ellipse")
 
 library(RODBC)
 
@@ -60,7 +62,7 @@ for(testi in 1:1){#34:49){
     run          <- theExcel[testi,]$RunID
     runText      <- as.character(droplevels(theExcel[testi,]$SalmonRun))
     min.date     <- as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))
-    max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))#"2013-03-16" #
+    max.date     <- "2013-03-16" #as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))##
   } else {
 #     river        <- 'american'
 #     site         <- 57000
