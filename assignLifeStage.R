@@ -50,21 +50,22 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
     mixDistSigmaList <<- list()
 ####################################################################
 
-
+    neededCols <- c('id','SampleDate','FinalRun','forkLength','weight','Unmarked')
     ## save data before assignment
     save(DATA,file=paste0(output.file,'DATA.Rdata'))
 
-    assignNew <- ddply(DATA,~FinalRun,assignLS,G=groupN,USEWeight=USEWeight)
-    newLS <- merge(assignNew,DATA[,c('id','bioLS')],all.x=TRUE)
+    assignNew <- ddply(DATA[,needCols],~FinalRun,assignLS,G=groupN,USEWeight=USEWeight)
+    DATA <- merge(assignNew,DATA)
 
     ## save data after assignment
-    save(newLS,output.file,mixDistMUList,mixDistSigmaList,file=paste0(output.file,'newLS.Rdata'))
+    save(DATA,output.file,mixDistMUList,mixDistSigmaList,file=paste0(output.file,'newLS.Rdata'))
 
-    assignLSCompare(newLS)
+    neededCols <- c('lifeStage','SampleDate','FinalRun','forkLength','weight','Unmarked')
+    assignLSCompare(DATA[,neededCols])
 
 
 
-    return(newLS)
+    return(DATA)
 } # end assignLifeStage
 
 
@@ -97,6 +98,7 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
         runDat$lifeStage <- 'Unassigned'
         return(runDat)
     }
+
 
 
     ## number of fish with a weight
@@ -152,7 +154,7 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     }
 
     cat('nrow(expDat):',nrow(expDat),'\n')
-    cat('sum(inRow)',sum(inRow),'\n')
+    cat('sum(inRow):',sum(inRow),'\n')
 
 
     pairDiff <- function(vec){
@@ -187,38 +189,56 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
 
 
-    ## if cluster with user specified number of groups
+    ## fit cluster with user specified number of groups
     if(goodClust){
-        clustTemp <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
-    }
+        clust <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
+    }else{ #else start with 3 groups
+        clust <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
+        (meanFL <- clust[['parameters']]$mean['forkLength',])
+
+        ## fit 2 groups if means are close
+        if(min(pairDiff(meanFL))<minMeanDiff){
+            nGroup <- nGroup-1
+            clust <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
+            (meanFL <- clust[['parameters']]$mean['forkLength',])
+
+            ## fit 1 group if means are close
+            if(min(pairDiff(meanFL))<minMeanDiff){
+                nGroup <- nGroup-1
+                clust <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
+                (meanFL <- clust[['parameters']]$mean['forkLength',])
+            } # end fit 1 groups
+
+       } # end fit 2 groups
+
+
+    }# end else (start with 3 groups)
 
 
     ## allow computer to choose
-    while(!goodClust){
-        clustTemp <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
+    ## while(!goodClust){
+    ##     clustTemp <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
+    ##     (meanFL <- clust[['parameters']]$mean['forkLength',])
 
-        (meanFL <- clustTemp[['parameters']]$mean['forkLength',])
-
-        if(min(pairDiff(meanFL))<minMeanDiff){
-            print(nGroup)
-            if(nGroup == 1){
-                goodClust <- TRUE
-            }else{
-                nGroup <- nGroup-1
-            }
-            ## if(nGroup==1){
-            ##     runDat$lifeStage <- 'Unassigned'
-            ##     runDat[with(runDat,!is.na(forkLength)),'lifeStage'] <- 'Medium'
-            ##     return(runDat)
-            ## }
-        }else{
-            goodClust <- TRUE
-        }
-    }
+    ##     if(min(pairDiff(meanFL))<minMeanDiff){
+    ##         print(nGroup)
+    ##         if(nGroup == 1){
+    ##             goodClust <- TRUE
+    ##         }else{
+    ##             nGroup <- nGroup-1
+    ##         }
+    ##         ## if(nGroup==1){
+    ##         ##     runDat$lifeStage <- 'Unassigned'
+    ##         ##     runDat[with(runDat,!is.na(forkLength)),'lifeStage'] <- 'Medium'
+    ##         ##     return(runDat)
+    ##         ## }
+    ##     }else{
+    ##         goodClust <- TRUE
+    ##     }
+    ## }
 
     ##summary(clustTemp)
 
-    clust <- clustTemp
     cat('Mclust is finished \n')
     ##summary(clust)
 
@@ -281,10 +301,10 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     expDat[with(expDat,is.na(group)),'group'] <- -1
 
 
-    ddply(expDat,~group,summarize,FL=mean(forkLength))
+    ##ddply(expDat,~group,summarize,FL=mean(forkLength))
 
 
-##    row <- subset(expDat,id%in%c(1,2))
+    ##row <- subset(expDat,id%in%c(1,2))
     collapseRow <- function(row){
 
         row[,'Unmarked'] <- nrow(row)
@@ -300,22 +320,27 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
         return(row[1,])
     }
 
+    cat('nrow(expDat):',nrow(expDat),'\n')
+    cat('Before collapsing:\n')
+    cat('nrow(runDat):',nrow(runDat),'\n')
+    cat('with(runDat,sum(Unmarked)):',with(runDat,sum(Unmarked)),'\n')
     ## this is the collapse data
     ## should have the same number of rows at runDat
-    collapseDat <- ddply(expDat,~id,collapseRow)
-
-
-    cat('nrow(expDat):',nrow(expDat),'\n')
-    cat('nrow(collapseDat):',nrow(collapseDat),'\n')
+    runDat <- ddply(expDat,~id,collapseRow)
+    cat('After collapsing:')
     cat('nrow(runDat):',nrow(runDat),'\n')
-    cat('with(runDat,sum(Unmarked))',with(runDat,sum(Unmarked)),'\n')
-    cat('with(collapseDat,sum(Unmarked))',with(collapseDat,sum(Unmarked)),'\n')
+    cat('with(runDat,sum(Unmarked)):',with(runDat,sum(Unmarked)),'\n')
+
+
+    ## This is not needed any more, remove to not take up memory
+    expDat <- NULL
+    cat('Done with collapsing the data.\n')
 
 
     ## ddply(collapseDat,~group,summarize,FL=mean(forkLength,na.rm=TRUE))
     ## mu
 
-    with(runDat,sum(is.na(forkLength)))
+    ##with(runDat,sum(is.na(forkLength)))
 
     ## for debugging
     ## M <- mu
@@ -348,19 +373,23 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
 
 
+    ## If weight was used some fish may only have a weight or forklength
+    ## This if statement assigns lifestage to fish with either a weight or a forklength
+
+
     if(useWeight){
         ## where there is a weight but no forklength
-        haveWnoFL <- with(collapseDat,group==-1&is.na(forkLength)&!is.na(weight))
+        haveWnoFL <- with(runDat,group==-1&is.na(forkLength)&!is.na(weight))
 
         if(sum(haveWnoFL)>0){
-            collapseDat <- malDistAssign(dat=collapseDat,w=haveWnoFL,M=mu,S=Sigma,varHave='weight')
+            runDat <- malDistAssign(dat=runDat,w=haveWnoFL,M=mu,S=Sigma,varHave='weight')
         }
 
         ## where there is a forklength but no weight
-        haveFLnoW <- with(collapseDat,group==-1&is.na(weight)&!is.na(forkLength))
+        haveFLnoW <- with(runDat,group==-1&is.na(weight)&!is.na(forkLength))
 
         if(sum(haveFLnoW)>0){
-            collapseDat <- malDistAssign(dat=collapseDat,w=haveFLnoW,M=mu,S=Sigma,varHave='forkLength')
+            runDat <- malDistAssign(dat=runDat,w=haveFLnoW,M=mu,S=Sigma,varHave='forkLength')
         }
 
 
@@ -373,12 +402,12 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     ##ddply(collapseDat[haveFLnoW,],~group,summarize,FL=mean(forkLength,na.rm=TRUE))
 
 
-    newLS <- merge(collapseDat,labelToName,all.x=TRUE)
-    newLS$lifeStage <- factor(newLS$lifeStage,levels=c(groupName,'Unassigned'),ordered=TRUE)
-    cat('with(newLS,sum(is.na(forkLength))):',with(newLS,sum(is.na(forkLength))),'\n')
+    runDat <- merge(runDat,labelToName,all.x=TRUE)
+    runDat$lifeStage <- factor(newLS$lifeStage,levels=c(groupName,'Unassigned'),ordered=TRUE)
+    cat('with(runDat,sum(is.na(forkLength))):',with(runDat,sum(is.na(forkLength))),'\n')
 
 
 
-    return(newLS)
+    return(runDat[,c('id','lifestage')])
 
 } # end assignLS

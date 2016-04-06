@@ -65,7 +65,8 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         ## biologist life stage symbols
         bioIndex <- data.frame(bioLS=c('Fry','Parr','Smolt'),pch=1:3,stringsAsFactors=FALSE)
 
-        plotData <- merge(merge(data,mixIndex,all.x=TRUE),bioIndex,all.x=TRUE)
+        ## data to be plotted now
+        data <- merge(merge(data,mixIndex,all.x=TRUE),bioIndex,all.x=TRUE)
 
         ##nrow(plotData)
         ##nrow(data)
@@ -98,7 +99,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
             j <- 1;goodMonth <- FALSE
 
             while(!goodMonth){
-                firstDay <- with(plotData,mean(days[format(SampleDate,'%m-%d')==paste0(formatC(i,width=2,flag=0),'-',formatC(j,width=2,flag=0))]))
+                firstDay <- with(data,mean(days[format(SampleDate,'%m-%d')==paste0(formatC(i,width=2,flag=0),'-',formatC(j,width=2,flag=0))]))
 
                 if(!is.na(firstDay)){
                     monthLabel[i,'days'] <- firstDay-(j-1)
@@ -133,12 +134,12 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         varUsed <- paste(rownames(mixDistMUList[[fRun]]),collapse=", ")
         plotMain <- paste0(fRun,'\nVariables used to assign lifestage: ',gsub('days','date',varUsed))
         ## plot forklength and date
-        with(plotData,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n',main=plotMain))
+        with(data,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n',main=plotMain))
         addEllipse(fRun)
         with(monthLabel,axis(1,at=days,label=month.abb))
 
 
-        ##with(plotData,table(col,pch))
+        ##with(data,table(col,pch))
 
 
         ## legend info for mixture life stage
