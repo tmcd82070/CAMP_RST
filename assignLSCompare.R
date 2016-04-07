@@ -8,6 +8,10 @@
 
 assignLSCompare <- function(Data,SAVE=TRUE){
 
+    ## keep only needed columns
+    Data <- Data[,c('days','lifeStage','SampleDate','FinalRun','forkLength','weight','Unmarked','bioLS')]
+
+
     ## get needed packages
     getPackages(c('plyr','ellipse','tidyr'))
 
@@ -65,7 +69,8 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         ## biologist life stage symbols
         bioIndex <- data.frame(bioLS=c('Fry','Parr','Smolt'),pch=1:3,stringsAsFactors=FALSE)
 
-        plotData <- merge(merge(data,mixIndex,all.x=TRUE),bioIndex,all.x=TRUE)
+        ## data to be plotted now
+        data <- merge(merge(data,mixIndex,all.x=TRUE),bioIndex,all.x=TRUE)
 
         ##nrow(plotData)
         ##nrow(data)
@@ -77,10 +82,10 @@ assignLSCompare <- function(Data,SAVE=TRUE){
 
             vars <- c('days','forkLength')
 
-            mu <<- mixDistMUList[[run]]
+            mu <- mixDistMUList[[run]]
             Sigma <- mixDistSigmaList[[run]]
             for(j in 1:ncol(mu)){
-                points(ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')
+                points(ellipse::ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')
 
             } # end for j
 
@@ -88,9 +93,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
 
         } # end addEllipse function
 
-
-        #save.image(file="C:/Users/jmitchell/Desktop/FirstLineBigLooper.RData")
-
+       ## save.image(file="C:/Users/jmitchell/Desktop/FirstLineBigLooper.RData")
 
         monthLabel <- data.frame(month.abb,first=c('01-01','02-01','03-01','04-01','05-01','06-01','07-01','08-01','09-01','10-01','11-01','12-01'),stringsAsFactors=FALSE)
 
@@ -98,7 +101,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
             j <- 1;goodMonth <- FALSE
 
             while(!goodMonth){
-                firstDay <- with(plotData,mean(days[format(SampleDate,'%m-%d')==paste0(formatC(i,width=2,flag=0),'-',formatC(j,width=2,flag=0))]))
+                firstDay <- with(data,mean(days[format(SampleDate,'%m-%d')==paste0(formatC(i,width=2,flag=0),'-',formatC(j,width=2,flag=0))]))
 
                 if(!is.na(firstDay)){
                     monthLabel[i,'days'] <- firstDay-(j-1)
@@ -114,7 +117,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         } # end for i
 
 
-        monthLabel
+        ##monthLabel
 
 
 
@@ -133,12 +136,12 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         varUsed <- paste(rownames(mixDistMUList[[fRun]]),collapse=", ")
         plotMain <- paste0(fRun,'\nVariables used to assign lifestage: ',gsub('days','date',varUsed))
         ## plot forklength and date
-        with(plotData,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n',main=plotMain))
+        with(data,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n',main=plotMain))
         addEllipse(fRun)
         with(monthLabel,axis(1,at=days,label=month.abb))
 
 
-        ##with(plotData,table(col,pch))
+        ##with(data,table(col,pch))
 
 
         ## legend info for mixture life stage
@@ -191,6 +194,10 @@ assignLSCompare <- function(Data,SAVE=TRUE){
 
     ddply(Data,~FinalRun,compare,save=SAVE)
 
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('End assignLSCompare function.\n')
 
     return(NULL)
 } # end function assignLSCompare
