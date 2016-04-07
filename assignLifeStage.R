@@ -49,20 +49,33 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
     mixDistMUList <<- list()
     mixDistSigmaList <<- list()
 ####################################################################
+cat('The memory size is',memory.limit(NA),'\n')
+cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
+cat('The current amount of memory in use is', memory.size(FALSE),'\n')
 
-    neededCols <- c('id','SampleDate','FinalRun','forkLength','weight','Unmarked')
+
     ## save data before assignment
     save(DATA,file=paste0(output.file,'DATA.Rdata'))
 
-    assignNew <- ddply(DATA[,needCols],~FinalRun,assignLS,G=groupN,USEWeight=USEWeight)
-    DATA <- merge(assignNew,DATA)
+
+    assignNew <- ddply(DATA,~FinalRun,assignLS,G=groupN,USEWeight=USEWeight)
+    DATA <- merge(assignNew[,c('id','lifeStage','days')],DATA)
+
+
+cat('The memory size is',memory.limit(NA),'\n')
+cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
+cat('The current amount of memory in use is', memory.size(FALSE),'\n')
+
 
     ## save data after assignment
     save(DATA,output.file,mixDistMUList,mixDistSigmaList,file=paste0(output.file,'newLS.Rdata'))
 
-    neededCols <- c('lifeStage','SampleDate','FinalRun','forkLength','weight','Unmarked')
-    assignLSCompare(DATA[,neededCols])
 
+    assignLSCompare(DATA)
+
+cat('The memory size is',memory.limit(NA),'\n')
+cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
+cat('The current amount of memory in use is', memory.size(FALSE),'\n')
 
 
     return(DATA)
@@ -83,6 +96,11 @@ assignLS <- function(runDat,G=NULL,USEWeight=NULL){
     cat('\n')
 cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>','\n')
 
+    ## keep only needed columns
+    runDat <- runDat[,c('id','SampleDate','FinalRun','forkLength','weight','Unmarked')]
+
+
+
     ## final run
     (fRun <- with(runDat,unique(FinalRun)))
 
@@ -96,6 +114,9 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     ## then make life stage unassigned and return
     if(grepl('unassign',fRun,ignore.case=TRUE)| nFL<sample.size.forkLength){
         runDat$lifeStage <- 'Unassigned'
+
+        cat('\n')
+        cat('Final run is either unassigned or there is not enough fish with a forklength. Life stage is being written as unassigned. \n')
         return(runDat)
     }
 
@@ -403,11 +424,11 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
 
     runDat <- merge(runDat,labelToName,all.x=TRUE)
-    runDat$lifeStage <- factor(newLS$lifeStage,levels=c(groupName,'Unassigned'),ordered=TRUE)
+    runDat$lifeStage <- factor(runDat$lifeStage,levels=c(groupName,'Unassigned'),ordered=TRUE)
     cat('with(runDat,sum(is.na(forkLength))):',with(runDat,sum(is.na(forkLength))),'\n')
 
+print(head(runDat))
 
-
-    return(runDat[,c('id','lifestage')])
+    return(runDat)
 
 } # end assignLS
