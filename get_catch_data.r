@@ -22,7 +22,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   ##   To be included in the catch data, a record has to be from the site,
   ##   of the correct taxon, of the correct run, and between min and max dates.
   ##
-  
+
   ##f.banner <- function( x ){
   ##    cat("\n")
   ##    cat(paste(rep("=",50), collapse=""));
@@ -30,9 +30,9 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   ##    cat(paste(rep("=",50), collapse=""));
   ##    cat("\n")
   ##}
-  
+
   ##   *****
-  
+
 if(autoLS){
   ## this is the catch data with weight
   catch <- getCatchDataWeight(taxon,site,min.date,max.date)
@@ -41,62 +41,62 @@ if(autoLS){
   ch <- odbcConnectAccess(db)
 }else{  # old, original way, prior to lifeStage assignment algorithm.
   nvisits <- F.buildReportCriteria( site, min.date, max.date )
-    
+
   if( nvisits == 0 ){
     warning("Your criteria returned no trapVisit table records.")
     return()
   }
-    
+
   #   *****
   #   Open ODBC channel
   db <- get( "db.file", env=.GlobalEnv )
   ch <- odbcConnectAccess(db)
-  
+
   #   *****
   #   This SQL file develops the hours fished and TempSamplingSummary table
   F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
-    
+
   #   *****
   #   This SQL generates times when the traps were not fishing
   F.run.sqlFile( ch, "QryNotFishing.sql" )
-    
+
   #   *****
   #   This SQL generates unmarked fish by run and life stage
   F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )
-    
+
   #   *****
   #   Now, fetch the result
   catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-    
+
 } #end else
-  
+
 # add 3/8/2016 -- look for long gaps.
 theLongCatches <- catch[catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]      # fishingGapMinutes set in source file -- it's global.
 nLongCatches <- nrow(theLongCatches)
 if(nLongCatches > 0){
-    
+
   warning("Long gaps were found in the data so the LongGapLoop series will be run.")
-    
+
   # SQL code to find the gaps, and modify trapPositionIDs accordingly.
   F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
-    
+
   # get the updated results
   catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-    
+
   catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   # this becomes the master catch df
-    
+
 } else {
-    
+
   # no long gaps to worry about.  so just keep going with the version of catch that we already
   # pulled in from the mdb.
   catch$oldtrapPositionID <- catch$trapPositionID    # these two are the same.  include for compatibility.
-    
-} 
-  
+
+}
+
 
 includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
 F.sql.error.check(catch)
-  
+
 close(ch)
 
 if(nvisits > 0 & nrow(catch) == 0){
@@ -158,7 +158,7 @@ if(autoLS){
     cat('\n')
     cat('\n')
     cat('\n')
-    cat('The misture distribution estimation to assign life stage is over. \n')
+    cat('The mixture distribution estimation to assign life stage is over. \n')
     cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^> \n')
     ## for debugging
     ##return(catch)
@@ -228,7 +228,7 @@ if(nHalfCone > 0){   # do a different plus-count algorithm in this case.  1/14/2
   catch <- test
 
 } else {
-  
+
   # data query where all are full catch -- just set the fancy variables to zero.
   catch <- F.expand.plus.counts( catch )
   catch$preUnmarked <- catch$Unmarked
