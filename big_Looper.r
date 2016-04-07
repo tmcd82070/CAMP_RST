@@ -12,7 +12,7 @@ require("car")
 require("tidyr")
 require("ellipse")
 
-library(RODBC)
+#library(RODBC)  don't need?  4/6/2016
 
 testing <- TRUE                               # points to different output folders.
 platform <- 'CAMP_RST20160601-DougXXX-4.5'    # points to different platforms
@@ -62,7 +62,7 @@ for(testi in 1:1){#34:49){
     run          <- theExcel[testi,]$RunID
     runText      <- as.character(droplevels(theExcel[testi,]$SalmonRun))
     min.date     <- as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))
-    max.date     <- "2013-03-16" #as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))##
+    max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))#"2013-03-16" #
   } else {
 #     river        <- 'american'
 #     site         <- 57000
@@ -102,7 +102,8 @@ for(testi in 1:1){#34:49){
 #   F.lifestage.passage   (site, taxon,      min.date, max.date,            output.file,                     ci=TRUE            )
   
   # ----- automatic lifestage assignment functions --- added 4/4/2016 based on jared's work -----
-  F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, output.file, ci=TRUE)         # lifestage to 2 groups, use weight var
+  
+  beg <- Sys.time(); F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, output.file, ci=TRUE);  end <- Sys.time(); diff.time <- end - beg # lifestage to 2 groups, use weight var
 #   F.lifestage.passage.assignLS2groupNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE) # lifestage to 2 groups, don't use weight var
 #   F.lifestage.passage.assignLS3group(site, taxon, min.date, max.date, output.file, ci=TRUE)         # lifestage to 3 groups, use weight var
 #   F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE) # lifestage to 3 groups, don't use weight var
