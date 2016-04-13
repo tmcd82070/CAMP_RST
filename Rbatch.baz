@@ -1,3 +1,2 @@
 cd R-Interface
-"..\R-Portable\App\R-Portable\bin\i386\RTerm.exe" --no-restore --no-save < run_R.r > "..\Outputs\run_R.out" 2>&1
-::"..\R\bin\i386\RTerm.exe" --no-restore --no-save < run_R.r > "..\Outputs\run_R.out" 2>&1
+"..\R\bin\i386\RTerm.exe" --no-restore --no-save < run_R.r > "..\Outputs\run_R.out" 2>&1
