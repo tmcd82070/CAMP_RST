@@ -9,29 +9,29 @@
 
 getPackages <- function(needPackage){
     ## install packages if not installed, then loads the packages
-  
-  
+
+
 #   require("plyr")
 #   require("mclust")
 #   require("car")
-  
-#     packList <- installed.packages()[,'Package']
-# 
-#     needInstall <- needPackage[!needPackage%in%packList]
-#     cat('need install:\n')
-#     cat(needInstall,'\n')
-#     if(length(needInstall)>0){
-# 
-#         local({r <- getOption("repos");
-#             r["CRAN"] <- "http://cran.us.r-project.org";
-#             options(repos=r)})
-#         lapply(needInstall,install.packages)
-#     }
-#     cat('packages to load:', '\n')
-#     cat(needPackage, '\n')
-# 
-#     for(p in needPackage){
-#         eval(parse(text=paste0('require(',p,')')))
-#     }
-#     return(NULL)
+
+    packList <- installed.packages()[,'Package']
+
+    needInstall <- needPackage[!needPackage%in%packList]
+    cat('need install:\n')
+    cat(needInstall,'\n')
+    if(length(needInstall)>0){
+
+        local({r <- getOption("repos");
+            r["CRAN"] <- "http://cran.us.r-project.org";
+            options(repos=r)})
+        lapply(needInstall,install.packages)
+    }
+    cat('packages to load:', '\n')
+    cat(needPackage, '\n')
+
+    for(p in needPackage){
+        eval(parse(text=paste0('require(',p,')')))
+    }
+    return(NULL)
 } ## end getPackages
