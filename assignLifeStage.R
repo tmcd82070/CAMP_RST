@@ -7,8 +7,6 @@
 ## This function will be called within F.get.catch.data
 ## The purpose is to replace the life stage column with an updated assignment based on a clustering routine
 
-
-
 assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
     ## DATA = the catch data
     ## groupN = the number of life stage groups to fit, NULL allows the program to decide
@@ -49,10 +47,8 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
     mixDistMUList <<- list()
     mixDistSigmaList <<- list()
 ####################################################################
-cat('The memory size is',memory.limit(NA),'\n')
-cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
-cat('The current amount of memory in use is', memory.size(FALSE),'\n')
 
+    memoryUsage()
 
     ## save data before assignment
     save(DATA,file=paste0(output.file,'DATA.Rdata'))
@@ -62,10 +58,7 @@ cat('The current amount of memory in use is', memory.size(FALSE),'\n')
     DATA <- merge(assignNew[,c('id','lifeStage','days')],DATA)
 
 
-cat('The memory size is',memory.limit(NA),'\n')
-cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
-cat('The current amount of memory in use is', memory.size(FALSE),'\n')
-
+    memoryUsage()
 
     ## save data after assignment
     save(DATA,output.file,mixDistMUList,mixDistSigmaList,file=paste0(output.file,'newLS.Rdata'))
@@ -73,10 +66,7 @@ cat('The current amount of memory in use is', memory.size(FALSE),'\n')
 
     assignLSCompare(DATA)
 
-cat('The memory size is',memory.limit(NA),'\n')
-cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
-cat('The current amount of memory in use is', memory.size(FALSE),'\n')
-
+    memoryUsage()
 
     return(DATA)
 } # end assignLifeStage
@@ -155,6 +145,8 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     cat('Expanding data \n\n')
     expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
 
+### maybe remove runDat here
+
 
 
 ## subset data to be used for analysis
@@ -209,6 +201,12 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     cat('Starting Mclust \n')
 
 
+    memoryUsage()
+
+    gc()
+
+
+    memoryUsage()
 
     ## fit cluster with user specified number of groups
     if(goodClust){
@@ -432,3 +430,12 @@ print(head(runDat))
     return(runDat)
 
 } # end assignLS
+
+
+
+## report the memory
+memoryUsage <- function(){
+    cat('The memory size is',memory.limit(NA),'\n')
+    cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
+    cat('The current amount of memory in use is', memory.size(FALSE),'\n')
+}
