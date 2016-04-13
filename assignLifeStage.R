@@ -22,7 +22,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
 
 
     ## required packages
-    needPack <- c('plyr','mclust','car')
+    needPack <- c('Rcpp','plyr','mclust','car')
     getPackages(needPack) # loads and installs if needed
 
     ## create id column to keep track of expanding and collapsing the data
