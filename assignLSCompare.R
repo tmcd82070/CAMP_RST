@@ -83,6 +83,10 @@ assignLSCompare <- function(Data,SAVE=TRUE){
             vars <- c('days','forkLength')
 
             mu <- mixDistMUList[[run]]
+            if(is.na(mu)){
+                return(NULL)
+            }
+
             Sigma <- mixDistSigmaList[[run]]
             for(j in 1:ncol(mu)){
                 points(ellipse::ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')

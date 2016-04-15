@@ -40,7 +40,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
 
 
     ## for debugging
-    ##runDat <- subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
+    ##runDat <- subset(DATA,FinalRun=='Fall');with(runDat,unique(FinalRun))
 
 
     ## create list for saving mean vectors and variance covariance matrices from each mixture distribution
@@ -54,8 +54,56 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
     save(DATA,file=paste0(output.file,'DATA.Rdata'))
 
 
-    assignNew <- ddply(DATA,~FinalRun,assignLS,G=groupN,USEWeight=USEWeight)
-    DATA <- merge(assignNew[,c('id','lifeStage','days')],DATA)
+
+    ## This function wraps the assign life stage into a try statement
+    assignTry <- function(runDat,G=NULL,USEWeight=NULL){
+
+        out <- tryCatch({
+
+            assignLS(runDat=runDat,G=G,USEWeight=USEWeight)
+
+        },
+          error=function(cond){
+              message('Assigning life stage produced an error.')
+              message('Here is the original error message:')
+              message(cond)
+
+              cat('\n')
+              runDat$days <- with(runDat,as.numeric(difftime(SampleDate,min(SampleDate),units='days')))
+              fRun <- with(runDat,as.character(unique(FinalRun)))
+              runDat$lifeStage <- 'All'
+              runDat$lifeStage[is.na(runDat$forkLength)] <- 'Unassigned'
+              mu <- NA
+              Sigma <- NA
+              ## save mixture distribution summary statistics
+              mixDistMUList[[length(mixDistMUList)+1]] <<- mu
+              mixDistSigmaList[[length(mixDistSigmaList)+1]] <<- Sigma
+
+              names(mixDistMUList)[length(mixDistMUList)] <<- as.character(fRun)
+              names(mixDistSigmaList)[length(mixDistSigmaList)] <<- as.character(fRun)
+
+
+
+              cat('\n')
+              cat('Life stage is being written as All, due to the error. \n')
+              return(runDat)
+          },
+                        finally={
+                            message('End tryCatch')
+
+                        }) #end tryCatch
+        return(out)
+    }
+
+    assignNew <- ddply(DATA,~FinalRun,assignTry,G=groupN,USEWeight=USEWeight)
+
+
+
+
+##    assignNew <- ddply(DATA,~FinalRun,assignLS,G=groupN,USEWeight=USEWeight)
+
+
+  DATA <- merge(assignNew[,c('id','lifeStage','days')],DATA)
 
 
     memoryUsage()
@@ -89,6 +137,7 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     ## keep only needed columns
     runDat <- runDat[,c('id','SampleDate','FinalRun','forkLength','weight','Unmarked')]
 
+    runDat$days <- with(runDat,as.numeric(difftime(SampleDate,min(SampleDate),units='days')))
 
 
     ## final run
@@ -132,10 +181,6 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     }else{
         cat('Weight will NOT be used in the analysis. \n')
     }
-
-
-
-    runDat$days <- with(runDat,as.numeric(difftime(SampleDate,min(SampleDate),units='days')))
 
 
 
