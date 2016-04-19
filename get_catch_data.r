@@ -70,29 +70,14 @@ if(autoLS){
 
 } #end else
 
-# add 3/8/2016 -- look for long gaps.
-theLongCatches <- catch[catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]      # fishingGapMinutes set in source file -- it's global.
-nLongCatches <- nrow(theLongCatches)
-if(nLongCatches > 0){
 
-  warning("Long gaps were found in the data so the LongGapLoop series will be run.")
-
-  # SQL code to find the gaps, and modify trapPositionIDs accordingly.
-  F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
-
-  # get the updated results
-  catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-
-  catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   # this becomes the master catch df
-
-} else {
-
-  # no long gaps to worry about.  so just keep going with the version of catch that we already
-  # pulled in from the mdb.
-  catch$oldtrapPositionID <- catch$trapPositionID    # these two are the same.  include for compatibility.
-
-}
-
+  
+  
+  
+  
+  
+  
+  
 
 includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
 F.sql.error.check(catch)
@@ -155,6 +140,13 @@ if(autoLS){
     cat('\n')
     catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  # swap out old catch with the new catch.
 
+    # for debugging
+    jCatch <<- catch
+    catch <- jCatch
+    
+    catch$lifeStage <- catch$bioLS
+    catch$bioLS <- NULL
+    
     cat('\n')
     cat('\n')
     cat('\n')
@@ -166,6 +158,66 @@ if(autoLS){
 }
 
 ######################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# add 3/8/2016 -- look for long gaps.
+theLongCatches <- catch[catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]      # fishingGapMinutes set in source file -- it's global.
+nLongCatches <- nrow(theLongCatches)
+if(nLongCatches > 0){
+  
+  warning("Long gaps were found in the data so the LongGapLoop series will be run.")
+  
+  db <- get( "db.file", env=.GlobalEnv )
+  ch <- odbcConnectAccess(db)
+  
+  # SQL code to find the gaps, and modify trapPositionIDs accordingly.
+  F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
+  
+  # get the updated results
+  catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+  
+  catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   # this becomes the master catch df
+  
+} else {
+  
+  # no long gaps to worry about.  so just keep going with the version of catch that we already
+  # pulled in from the mdb.
+  catch$oldtrapPositionID <- catch$trapPositionID    # these two are the same.  include for compatibility.
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -268,6 +320,7 @@ if( nrow(catch) >= 20 ) print( catch[1:20,] ) else print( catch )
 #f.banner("F.get.catch.data - Complete")
 
 #   Return two data frames. One containing positive catches.  The other containing visit and fishing information.
+#tmp.df <- list (catch=catch, visit=visits)
 list( catch=catch, visit=visits )
 
 }

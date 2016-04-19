@@ -2,8 +2,16 @@
 
 # install RODBC
 # install mvtnorm
-install.packages(c("RODBC","mvtnorm","plyr","mclust","car"))
-install.packages(c("tidyr","ellipse"))
+install.packages(c("RODBC"))
+install.packages(c("mvtnorm"))
+install.packages(c("plyr"))
+install.packages(c("mclust"))
+install.packages(c("car"))
+install.packages(c("tidyr"))
+install.packages(c("ellipse"))
+install.packages(c("dplyr"))
+install.packages(c("Rcpp"))
+
 require("RODBC")
 require("mvtnorm")
 require("plyr")    # these get added in the program run.
@@ -11,8 +19,11 @@ require("mclust")
 require("car")
 require("tidyr")
 require("ellipse")
+require("dplyr")
 
-#library(RODBC)  don't need?  4/6/2016
+
+
+
 
 testing <- TRUE                               # points to different output folders.
 platform <- 'CAMP_RST20160601-DougXXX-4.5'    # points to different platforms
@@ -61,8 +72,8 @@ for(testi in 1:1){#34:49){
     siteText     <- as.character(droplevels(theExcel[testi,]$Site))
     run          <- theExcel[testi,]$RunID
     runText      <- as.character(droplevels(theExcel[testi,]$SalmonRun))
-    min.date     <- as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))
-    max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))#"2013-03-16" #
+    min.date     <- "2007-01-15"  #as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))#
+    max.date     <- "2007-02-15"  #as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))##"2013-03-16" #
   } else {
 #     river        <- 'american'
 #     site         <- 57000
@@ -99,17 +110,25 @@ for(testi in 1:1){#34:49){
 #   }
   by <- 'All'
   output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
-#   F.lifestage.passage   (site, taxon,      min.date, max.date,            output.file,                     ci=TRUE            )
+  
+  beg0 <- Sys.time(); F.lifestage.passage               (site, taxon, min.date, max.date, output.file, ci=TRUE);                          end0 <- Sys.time(); diff.time0 <- end0 - beg0;
   
   # ----- automatic lifestage assignment functions --- added 4/4/2016 based on jared's work -----
   
-  beg <- Sys.time(); F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, output.file, ci=TRUE);  end <- Sys.time(); diff.time <- end - beg # lifestage to 2 groups, use weight var
-#   F.lifestage.passage.assignLS2groupNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE) # lifestage to 2 groups, don't use weight var
-#   F.lifestage.passage.assignLS3group(site, taxon, min.date, max.date, output.file, ci=TRUE)         # lifestage to 3 groups, use weight var
-#   F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE) # lifestage to 3 groups, don't use weight var
-#   F.lifestage.passage.assignLS(site, taxon, min.date, max.date, output.file, ci=TRUE)               # let program decide 2/3 groups, use/don't use weight var
-#   F.lifestage.passage.assignLSNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE)       # let program decide 2/3 groups, don't use weight var
+  # Start writing to an output file
 
+  sink(paste0(output.file,'J1.txt')); beg1 <- Sys.time(); F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, paste0(output.file,"_",'J1'), ci=TRUE);         end1 <- Sys.time(); diff.time1 <- end1 - beg1; sink(); # lifestage to 2 groups, use weight var
+  sink(paste0(output.file,'J2.txt')); beg2 <- Sys.time(); F.lifestage.passage.assignLS2groupNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J2'), ci=TRUE); end2 <- Sys.time(); diff.time2 <- end2 - beg2; sink(); # lifestage to 2 groups, don't use weight var
+  sink(paste0(output.file,'J3.txt')); beg3 <- Sys.time(); F.lifestage.passage.assignLS3group(site, taxon, min.date, max.date, paste0(output.file,"_",'J3'), ci=TRUE);         end3 <- Sys.time(); diff.time3 <- end3 - beg3; sink(); # lifestage to 3 groups, use weight var
+  sink(paste0(output.file,'J4.txt')); beg4 <- Sys.time(); F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J4'), ci=TRUE); end4 <- Sys.time(); diff.time4 <- end4 - beg4; sink(); # lifestage to 3 groups, don't use weight var
+  sink(paste0(output.file,'J5.txt')); beg5 <- Sys.time(); F.lifestage.passage.assignLS(site, taxon, min.date, max.date, paste0(output.file,"_",'J5'), ci=TRUE);               end5 <- Sys.time(); diff.time5 <- end5 - beg5; sink(); # let program decide 2/3 groups, use/don't use weight var
+  sink(paste0(output.file,'J6.txt')); beg6 <- Sys.time(); F.lifestage.passage.assignLSNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J6'), ci=TRUE);       end6 <- Sys.time(); diff.time6 <- end6 - beg6; sink(); # let program decide 2/3 groups, don't use weight var
+  
+  # output time stats
+  testi.time <- data.frame(testi=rep(paste0("Run ",testi),7),file=c('J0','J1','J2','J3','J4','J5','J6'),times=c(diff.time0, diff.time1, diff.time2, diff.time3, diff.time4, diff.time5, diff.time6))
+  write.csv(testi.time,paste0(output.file,'JStuffTime.csv'))
+
+  
 #   F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
 #   F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
 #   F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
