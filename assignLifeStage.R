@@ -7,8 +7,6 @@
 ## This function will be called within F.get.catch.data
 ## The purpose is to replace the life stage column with an updated assignment based on a clustering routine
 
-
-
 assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
     ## DATA = the catch data
     ## groupN = the number of life stage groups to fit, NULL allows the program to decide
@@ -42,30 +40,80 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
 
 
     ## for debugging
-    ##runDat <- subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
+    ##runDat <- subset(DATA,FinalRun=='Fall');with(runDat,unique(FinalRun))
 
 
     ## create list for saving mean vectors and variance covariance matrices from each mixture distribution
     mixDistMUList <<- list()
     mixDistSigmaList <<- list()
 ####################################################################
-cat('The memory size is',memory.limit(NA),'\n')
-cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
-cat('The current amount of memory in use is', memory.size(FALSE),'\n')
 
+    memoryUsage()
 
     ## save data before assignment
     save(DATA,file=paste0(output.file,'DATA.Rdata'))
 
 
-    assignNew <- ddply(DATA,~FinalRun,assignLS,G=groupN,USEWeight=USEWeight)
-    DATA <- merge(assignNew[,c('id','lifeStage','days')],DATA)
+
+    ## This function wraps the assign life stage into a try statement
+    assignTry <- function(runDat,G=NULL,USEWeight=NULL){
+
+        out <- tryCatch({
+
+            assignLS(runDat=runDat,G=G,USEWeight=USEWeight)
+
+        },
+          error=function(cond){
+              message('Assigning life stage produced an error.')
+              message('Here is the original error message:')
+              message(cond)
+
+              cat('\n')
+              runDat$days <- with(runDat,as.numeric(difftime(SampleDate,min(SampleDate),units='days')))
+              fRun <- with(runDat,as.character(unique(FinalRun)))
+              runDat$lifeStage <- 'Fail'
+              ##runDat$lifeStage[is.na(runDat$forkLength)] <- 'Unassigned'
+              mu <- NA
+              Sigma <- NA
+              ## save mixture distribution summary statistics
+              mixDistMUList[[length(mixDistMUList)+1]] <<- mu
+              mixDistSigmaList[[length(mixDistSigmaList)+1]] <<- Sigma
+
+              names(mixDistMUList)[length(mixDistMUList)] <<- as.character(fRun)
+              names(mixDistSigmaList)[length(mixDistSigmaList)] <<- as.character(fRun)
+              cat(site,'\n')
+              cat(min.date,'\n')
+              cat(max.date,'\n')
+              cat(fRun,'\n')
+              cat(as.character(cond),'\n')
+              assignCheck <- data.frame(site=site,minDate=min.date,maxDate=max.date,run=fRun,assignment=as.character(cond),stringsAsFactors=FALSE)
+
+              write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
 
 
-cat('The memory size is',memory.limit(NA),'\n')
-cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
-cat('The current amount of memory in use is', memory.size(FALSE),'\n')
+              cat('\n')
+              cat('Life stage is being written as All, due to the error. \n')
+              return(runDat)
+          },
+                        finally={
+                            message('End tryCatch')
 
+                        }) #end tryCatch
+        return(out)
+    }
+
+    assignNew <- ddply(DATA,~FinalRun,assignTry,G=groupN,USEWeight=USEWeight)
+
+
+
+
+##    assignNew <- ddply(DATA,~FinalRun,assignLS,G=groupN,USEWeight=USEWeight)
+
+
+  DATA <- merge(assignNew[,c('id','lifeStage','days')],DATA)
+
+
+    memoryUsage()
 
     ## save data after assignment
     save(DATA,output.file,mixDistMUList,mixDistSigmaList,file=paste0(output.file,'newLS.Rdata'))
@@ -73,10 +121,7 @@ cat('The current amount of memory in use is', memory.size(FALSE),'\n')
 
     assignLSCompare(DATA)
 
-cat('The memory size is',memory.limit(NA),'\n')
-cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
-cat('The current amount of memory in use is', memory.size(FALSE),'\n')
-
+    memoryUsage()
 
     return(DATA)
 } # end assignLifeStage
@@ -99,6 +144,7 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     ## keep only needed columns
     runDat <- runDat[,c('id','SampleDate','FinalRun','forkLength','weight','Unmarked')]
 
+    runDat$days <- with(runDat,as.numeric(difftime(SampleDate,min(SampleDate),units='days')))
 
 
     ## final run
@@ -106,6 +152,13 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
     cat('Assigning life stage for run:', as.character(fRun),'\n')
     cat('\n')
+
+
+    ## this dataframe is for testing purposes
+    assignCheck <- data.frame(site=site,minDate=min.date,maxDate=max.date,run=fRun,stringsAsFactors=FALSE)
+
+
+
 
     ## number of fish with a forklength
     (nFL <- sum(runDat[with(runDat,!is.na(forkLength)),'Unmarked']))
@@ -115,6 +168,8 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     if(grepl('unassign',fRun,ignore.case=TRUE)| nFL<sample.size.forkLength){
         runDat$lifeStage <- 'Unassigned'
 
+        assignCheck$assignment <- 'low sample size/unassigned run'
+        write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
         cat('\n')
         cat('Final run is either unassigned or there is not enough fish with a forklength. Life stage is being written as unassigned. \n')
         return(runDat)
@@ -145,15 +200,13 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
 
 
-    runDat$days <- with(runDat,as.numeric(difftime(SampleDate,min(SampleDate),units='days')))
-
-
-
     cat('Min Unmarked value:',with(runDat,min(Unmarked)),'\n')
 
 
     cat('Expanding data \n\n')
     expDat <- expandUnmarked(runDat,c('id','forkLength','weight','days'),'Unmarked')
+
+### maybe remove runDat here
 
 
 
@@ -199,6 +252,10 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     if(!is.null(G)){
         nGroup <- G
         goodClust <- TRUE
+
+        ## This is for testing purposes
+        assignCheck$assignment <- paste('The set number of groups is',G)
+        ##
     }else{
         nGroup <- 3 #start by fitting three groups
         goodClust <- FALSE
@@ -209,6 +266,12 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     cat('Starting Mclust \n')
 
 
+    memoryUsage()
+
+    gc()
+
+
+    memoryUsage()
 
     ## fit cluster with user specified number of groups
     if(goodClust){
@@ -266,6 +329,13 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
     cat('Number of groups fit in the analysis:',nGroup,'\n')
     cat('\n')
+
+    ## This is for testing purposes
+    if(is.null(assignCheck$assignment)){
+        assignCheck$assignment <- paste('The final number of groups is',nGroup)
+    }
+    write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+
 
     ## get group names based on number of groups
     if(nGroup==1){
@@ -432,3 +502,12 @@ print(head(runDat))
     return(runDat)
 
 } # end assignLS
+
+
+
+## report the memory
+memoryUsage <- function(){
+    cat('The memory size is',memory.limit(NA),'\n')
+    cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
+    cat('The current amount of memory in use is', memory.size(FALSE),'\n')
+}
