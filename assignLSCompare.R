@@ -21,7 +21,8 @@ assignLSCompare <- function(Data,SAVE=TRUE){
              LS[grepl('med',LS,ignore.case=TRUE)],
              LS[grepl('Large',LS,ignore.case=TRUE)],
              LS[grepl('^all',LS,ignore.case=TRUE)],
-             LS[grepl('^unass',LS,ignore.case=TRUE)]))
+             LS[grepl('^unass',LS,ignore.case=TRUE)],
+              LS[grepl('^fail',LS,ignore.case=TRUE)]))
     Data[,'lifeStage'] <- factor(Data[,'lifeStage'],levels=lvl,ordered=TRUE)
 
 
@@ -38,6 +39,12 @@ assignLSCompare <- function(Data,SAVE=TRUE){
         }
 
         (LSlvl <- as.character(unique(data[,'lifeStage'])))
+
+        if(any(grepl('fail',LSlvl,ignore.case=TRUE))){
+            return(NULL)
+        }
+
+
 
         if(sum(!grepl('unass',LSlvl,ignore.case=TRUE))==0){
             return(NULL)

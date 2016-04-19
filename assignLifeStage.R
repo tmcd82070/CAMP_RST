@@ -71,8 +71,8 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
               cat('\n')
               runDat$days <- with(runDat,as.numeric(difftime(SampleDate,min(SampleDate),units='days')))
               fRun <- with(runDat,as.character(unique(FinalRun)))
-              runDat$lifeStage <- 'All'
-              runDat$lifeStage[is.na(runDat$forkLength)] <- 'Unassigned'
+              runDat$lifeStage <- 'Fail'
+              ##runDat$lifeStage[is.na(runDat$forkLength)] <- 'Unassigned'
               mu <- NA
               Sigma <- NA
               ## save mixture distribution summary statistics
@@ -81,7 +81,14 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
 
               names(mixDistMUList)[length(mixDistMUList)] <<- as.character(fRun)
               names(mixDistSigmaList)[length(mixDistSigmaList)] <<- as.character(fRun)
+              cat(site,'\n')
+              cat(min.date,'\n')
+              cat(max.date,'\n')
+              cat(fRun,'\n')
+              cat(as.character(cond),'\n')
+              assignCheck <- data.frame(site=site,minDate=min.date,maxDate=max.date,run=fRun,assignment=as.character(cond),stringsAsFactors=FALSE)
 
+              write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
 
 
               cat('\n')
@@ -146,6 +153,13 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     cat('Assigning life stage for run:', as.character(fRun),'\n')
     cat('\n')
 
+
+    ## this dataframe is for testing purposes
+    assignCheck <- data.frame(site=site,minDate=min.date,maxDate=max.date,run=fRun,stringsAsFactors=FALSE)
+
+
+
+
     ## number of fish with a forklength
     (nFL <- sum(runDat[with(runDat,!is.na(forkLength)),'Unmarked']))
 
@@ -154,6 +168,8 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     if(grepl('unassign',fRun,ignore.case=TRUE)| nFL<sample.size.forkLength){
         runDat$lifeStage <- 'Unassigned'
 
+        assignCheck$assignment <- 'low sample size/unassigned run'
+        write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
         cat('\n')
         cat('Final run is either unassigned or there is not enough fish with a forklength. Life stage is being written as unassigned. \n')
         return(runDat)
@@ -236,6 +252,10 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
     if(!is.null(G)){
         nGroup <- G
         goodClust <- TRUE
+
+        ## This is for testing purposes
+        assignCheck$assignment <- paste('The set number of groups is',G)
+        ##
     }else{
         nGroup <- 3 #start by fitting three groups
         goodClust <- FALSE
@@ -309,6 +329,13 @@ cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^>
 
     cat('Number of groups fit in the analysis:',nGroup,'\n')
     cat('\n')
+
+    ## This is for testing purposes
+    if(is.null(assignCheck$assignment)){
+        assignCheck$assignment <- paste('The final number of groups is',nGroup)
+    }
+    write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+
 
     ## get group names based on number of groups
     if(nGroup==1){
