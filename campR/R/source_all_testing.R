@@ -1,0 +1,296 @@
+#' @export .onAttach
+#' 
+#' @title .onAttach
+#' 
+#' @description
+#' 
+#'    Thim mimics attaching a package.  Eventually this will be replaced when the real package is done.
+#' 
+#' 
+#' @param  <describe argument>
+#' 
+#' @details <other comments found in file>
+#' remove(list=ls())   # erase everything; CAREFUL
+#'    Attach the libraries we need for all or nearly all routines.
+#'    These are other libraries needed by certain routines.  These need to be installed,
+#'    and will be attached by the routines that need them.
+#'    library(quantreg)
+#'    library(splines)
+#'    library(MASS)
+#'    library(mvtnorm)  # this is needed in F.bootstrap.passage
+#'    =================== Global variables
+#'    Parameter db.file is a string containing the full or relative path to the data base
+#' db.file <<- "..\\Data\\WorkingVersionCAMP_LAR_16July2013.mdb"  # For trent's testing in 'code' directory
+#' db.file <<- "..\\Data\\CAMPFeather_NewVersion1July2013.mdb"  # For trent's testing in 'code' directory
+#' db.file <<- "..\\Data\\connie's caswell stanislaus file after doug adds finaRunIDs  CAMP.mdb"
+#'    Parameter table.names is a list containing the mapping of table names in Access to table names in R.
+#'    This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
+#'    Retreive the YES/NO codes from the luNoYes table.  Just in case they should ever change in the data base
+#'    Assign sample cut time for batch dates that are missing.
+#'    If a sample period ends before this time, batch date is the day the period ends.
+#'    If a sample period ends after this time, batch date is the next day following the end of the sampling period.
+#'    Maximum gap, in hours, that is "okay".  Gaps in trapping smaller than this are ignored.  No catch is imputed for them.
+#'    Because gam model for imputation predicts an hourly rate, this max gap cannot be < 1 hour
+#'    Maximum gap, in minutes, that is NOT okay.  Values of "Not fishing" greater than this value, in minutes,
+#'    constitute a gap in fishing for which models should not spline.  In other words, they are a large enough
+#'    break in data to split splines into two separate models.
+#'    The size of the knotting mesh we use to spline, where "size" is the number of data points that constitute a
+#'    splining bit.  A knotMesh of 15 indicates that each additional spline, in a fit, requires an additional
+#'    15 data points to be added.  So, a linear fit (over an intercept-only model) requires at least 15 data points,
+#'    while a quadratic (over a linear) requires at least 30 data points.  This global variable is used in R
+#'    program catch_model.R.
+#'    The multiplication factor to use for expanding out fish caught during halfCone operations.  This global variable
+#'    us used in R program get_catch_data.r.
+#'  ----- Constants for the life stage assignment -----
+#'    number of fish with measured forklength required to assign life stage
+#'    number of fish with measured forklength and weight required to use weight in the assignment
+#'    the proportion of fish with weight to fish with forklength needs to be over this number to use weight
+#'    When the number of groups is not specified the clustering starts with 3 groups and reduces the number of the forklength means are less forkLength.mean.diff
+#'  ----- End constraints for life stage assignment -----
+#'    Write out the memory limit on this machine
+#'    Set time zone. NOTE: all times are assumed to be in this time zone.
+#'    If not, they may be incorrect.  In any event, all times are forced to this time zone.
+#'   *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then,
+#'   *************** Set the efficiency model to use.
+#' 
+#'    Specify the capture efficiency model
+#' eff.model.method <- 3
+#'    --------------------------------------------------------
+#'    Source code
+#' source(	"find_recaps.r"	)
+#' source(	"latex_biweekly_table.r"	)
+#' source(	"odt_biweekly_table.r"	)
+#' source(	"latex_passage.r"	)
+#' source(	"latex_recapSummary.r"	)
+#' source( "annual_passage.r" )
+#' source(	"vec2sqlstr.r"	)
+#' source( "assign_sample_period.r" )
+#' source( "check_for_missing.r" )
+#' source( "biweekly_report.r" )
+#' source( "weekly_passage.r" )  # exclude. Same as F.passage with by="week"
+#' source( "get_life_stages.r" )
+#'  source( "accounting.r" )
+#'  source( "getTheData.r" )
+#'  ----- assigning life stage functions -----
+#' 
+#' @return <describe return value>
+#' 
+#' @author WEST Inc.
+#' 
+#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' 
+#' @examples
+#' <insert examples>
+#' 
+#
+#   Thim mimics attaching a package.  Eventually this will be replaced when the real package is done.
+#
+.libPaths(.Library)   # check out libpaths -- 01/04/2016.
+#remove(list=ls())   # erase everything; CAREFUL
+
+.onAttach <- function(){
+  #   Attach the libraries we need for all or nearly all routines.
+  library(RODBC)
+
+  #   These are other libraries needed by certain routines.  These need to be installed,
+  #   and will be attached by the routines that need them.
+  #   library(quantreg)
+  #   library(splines)
+  #   library(MASS)
+  #   library(mvtnorm)  # this is needed in F.bootstrap.passage
+
+
+
+  #   =================== Global variables
+
+  #   Parameter db.file is a string containing the full or relative path to the data base
+  #db.file <<- "..\\Data\\WorkingVersionCAMP_LAR_16July2013.mdb"  # For trent's testing in 'code' directory
+  #db.file <<- "..\\Data\\CAMPFeather_NewVersion1July2013.mdb"  # For trent's testing in 'code' directory
+  #db.file <<- "..\\Data\\connie's caswell stanislaus file after doug adds finaRunIDs  CAMP.mdb"
+
+  db.file1 <<- "..\\Data\\TestingDBs\\CAMP_BattleClear_13Jan2016\\CAMP.mdb"
+  db.file2 <<- "..\\Data\\TestingDBs\\CAMP_RBDD_19June20151\\CAMP.mdb"
+  db.file3 <<- "..\\Data\\TestingDBs\\CAMPAmerican2013_2015Database_23June2015\\CAMP.mdb"
+  db.file4 <<- "..\\Data\\TestingDBs\\CAMPCosumnes_25Oct2013_notForAnalyses\\CAMP.mdb"
+  db.file5 <<- "..\\Data\\TestingDBs\\CAMPFeather_17Nov2015\\CAMP.mdb"
+  db.file6 <<- "..\\Data\\TestingDBs\\CAMPStanislaus_08Oct2015\\CAMP.mdb"
+  db.file7 <<- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20150501/Data/TestingDBs/CAMPAmerican_11Nov2014.mdb"
+  db.file8 <<- "..\\Data\\TestingDBs\\CAMPMokelumne23Sept2015\\CAMP.mdb"
+  db.fileA <<- "..\\Data\\TestingDBs\\CAMPKnightsTinsdaleNEW_04Feb2016\\CAMP.mdb"
+
+  cat(paste("DB file:", db.file1, "\n"))
+  cat(paste("DB file:", db.file2, "\n"))
+  cat(paste("DB file:", db.file3, "\n"))
+  cat(paste("DB file:", db.file4, "\n"))
+  cat(paste("DB file:", db.file5, "\n"))
+  cat(paste("DB file:", db.file6, "\n"))
+  cat(paste("DB file:", db.file7, "\n"))
+  cat(paste("DB file:", db.file8, "\n"))
+  cat(paste("DB file:", db.fileA, "\n"))
+
+  #   Parameter table.names is a list containing the mapping of table names in Access to table names in R.
+  #   This was used to facility painless table name changes in Access.  This should not change unless tables or table names in Access change.
+  table.names <<- c(trap.visit="TrapVisit",
+                    sites = "Site",
+                    project = "ProjectDescription",
+                    subsites = "SubSite",
+                    catch = "CatchRaw",
+                    release="Release",
+                    mark.applied="MarkApplied",
+                    catch = "CatchRaw",
+                    mark.found="MarkExisting",
+                    trap.visit="TrapVisit",
+                    species.codes="luTaxon",
+                    run.codes ="luRun",
+                    rel.x.target="ReleaseXTargetSite",
+                    LAD = "LengthAtDate",
+                    yes.no.codes="luNoYes",
+                    CAMP.life.stages="luLifeStageCAMP",
+                    life.stages="luLifeStage",
+                    fish.origin="luFishOrigin" )
+
+  #   Retreive the YES/NO codes from the luNoYes table.  Just in case they should ever change in the data base
+
+  ch <- odbcConnectAccess(db.file7)
+  luNoYes <- sqlFetch(ch, table.names["yes.no.codes"])
+  No.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "no" ]
+  Yes.code <<- luNoYes$noYesID[ casefold(luNoYes$noYes) == "yes" ]
+  close(ch)
+
+  #   Assign sample cut time for batch dates that are missing.
+  #   If a sample period ends before this time, batch date is the day the period ends.
+  #   If a sample period ends after this time, batch date is the next day following the end of the sampling period.
+  samplePeriodCutTime <<- "04:00:00"              # In military time
+
+  #   Maximum gap, in hours, that is "okay".  Gaps in trapping smaller than this are ignored.  No catch is imputed for them.
+  #   Because gam model for imputation predicts an hourly rate, this max gap cannot be < 1 hour
+  max.ok.gap <<- 2
+
+  #   Maximum gap, in minutes, that is NOT okay.  Values of "Not fishing" greater than this value, in minutes,
+  #   constitute a gap in fishing for which models should not spline.  In other words, they are a large enough
+  #   break in data to split splines into two separate models.
+  fishingGapMinutes <<- 10080
+
+  #   The size of the knotting mesh we use to spline, where "size" is the number of data points that constitute a
+  #   splining bit.  A knotMesh of 15 indicates that each additional spline, in a fit, requires an additional
+  #   15 data points to be added.  So, a linear fit (over an intercept-only model) requires at least 15 data points,
+  #   while a quadratic (over a linear) requires at least 30 data points.  This global variable is used in R
+  #   program catch_model.R.
+  knotMesh <<- 15
+
+  #   The multiplication factor to use for expanding out fish caught during halfCone operations.  This global variable
+  #   us used in R program get_catch_data.r.
+  halfConeMulti <<- 2
+
+  
+  # ----- Constants for the life stage assignment -----
+  #   number of fish with measured forklength required to assign life stage
+  sample.size.forkLength <<- 100
+  
+  #   number of fish with measured forklength and weight required to use weight in the assignment
+  sample.size.forkLengthAndWeight <<- 100
+  
+  #   the proportion of fish with weight to fish with forklength needs to be over this number to use weight
+  weight.prop.forkLength <<- .5
+  
+  #   When the number of groups is not specified the clustering starts with 3 groups and reduces the number of the forklength means are less forkLength.mean.diff
+  forkLength.mean.diff <<- 10
+  
+  # ----- End constraints for life stage assignment -----
+  
+  
+  #   Write out the memory limit on this machine
+  cat(paste("Memory limit:", memory.limit(), "Mb \n"))
+
+  #   Set time zone. NOTE: all times are assumed to be in this time zone.
+  #   If not, they may be incorrect.  In any event, all times are forced to this time zone.
+  time.zone <<- "America/Los_Angeles"
+
+  #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then,
+  #  *************** Set the efficiency model to use.
+  #
+  #   Specify the capture efficiency model
+  #eff.model.method <- 3
+
+}
+.onAttach()
+
+#   --------------------------------------------------------
+#   Source code
+
+source(  "capwords.r"	)
+source(	"catch_model.r"	)
+source(	"eff_model.r"	)
+source(	"est_catch.r"	)
+source(	"est_efficiency.r"	)
+source(	"est_passage.r"	)
+#source(	"find_recaps.r"	)
+source(	"get_catch_data.r"	)
+source(	"get_all_catch_data.r"	)
+source(	"get_release_data.r"	)
+#source(	"latex_biweekly_table.r"	)
+#source(	"odt_biweekly_table.r"	)
+#source(	"latex_passage.r"	)
+#source(	"latex_recapSummary.r"	)
+source(	"run_passage.r"	)
+#source( "annual_passage.r" )
+source(	"plot_catch_model.r"	)
+source(	"plot_eff_model.r"	)
+source(	"plot_passage.r"	)
+source( "plot.spline.r" )
+source(	"release_summary.r"	)
+source(	"summarize_releases.r"	)
+source( "summarize_fish_visit.r" )
+source( "all_catch_table.r" )
+#source(	"vec2sqlstr.r"	)
+source(	"size_by_date.r"	)
+source(	"get_indiv_fish_data.r"	)
+source(	"get_indiv_visit_data.r"	)
+source(	"length_freq.r"	)
+source( "sql_error_check.r" )
+#source( "assign_sample_period.r" )
+source( "assign_batch_date.r" )
+source( "assign_gaplen.r" )
+#source( "check_for_missing.r" )
+#source( "biweekly_report.r" )
+source( "weekly_effort.r" )
+#source( "weekly_passage.r" )  # exclude. Same as F.passage with by="week"
+source( "lifestage_passage.r" )
+source( "bootstrap_passage.r" )
+source( "summarize_passage.r" )
+source( "summarize_index.r" )
+source( "expand_plus_counts.r" )
+source( "assign_1dim.r" )
+source( "assign_2dim.r" )                             # stuck in an endless loop?  maybe doesnt matter.
+source( "get_all_fish_data.r" )
+source( "plot_lifestages.r" )
+#source( "get_life_stages.r" )
+source( "build_report_criteria.r" )
+source( "chinook_by_date.r" )
+source( "get_by_catch.r" )
+source( "by_catch_table.r" )
+source( "run_sqlFile.r" )
+source( "build_report_criteria_release.r" )
+
+source( "plot_spline.R" )
+source( "max_buff_days.r ")
+source( "chuck_zeros.r" )
+source( "est_catch_trapN.r" )
+
+# source( "accounting.r" )
+# source( "getTheData.r" )
+
+# ----- assigning life stage functions -----
+
+source('F.lifestage.passage.assignLS.R')
+source('F.lifestage.passage.assignLS3group.R')
+source('F.lifestage.passage.assignLS2group.R')
+source('getCatchDataWeight.R')
+source('getPackages.R')
+source('assignLifeStage.R')
+source('expandUnmarked.R')
+source('assignLSCompare.R')
+source('passageWithLifeStageAssign.R')
+source('F.lifestage.passage.assignLS2groupNoWeight.R')
+source('F.lifestage.passage.assignLS3groupNoWeight.R')
+source('F.lifestage.passage.assignLSNoWeight.R')

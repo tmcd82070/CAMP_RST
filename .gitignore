@@ -164,3 +164,6 @@ pip-log.txt
 .Rproj.user
 .Rhistory
 .RData
+CAMP_RST.Rproj
+Helper/
+Obsolete/
