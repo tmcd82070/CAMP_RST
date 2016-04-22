@@ -27,15 +27,6 @@
 #'    of the correct taxon, of the correct run, and between min and max dates.
 #' 
 #' 
-#' f.banner <- function( x ){
-#'     cat("\n")
-#'     cat(paste(rep("=",50), collapse=""));
-#'     cat(x);
-#'     cat(paste(rep("=",50), collapse=""));
-#'     cat("\n")
-#' }
-#' 
-#'    *****
 #' 
 #' 
 #' @param  site <describe argument>

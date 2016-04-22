@@ -47,17 +47,6 @@ Fetch the catch data for a SINGLE TAXON from an Access data base. Do some initia
 
    To be included in the catch data, a record has to be from the site,
    of the correct taxon, of the correct run, and between min and max dates.
-
-
-f.banner <- function( x ){
-    cat("\n")
-    cat(paste(rep("=",50), collapse=""));
-    cat(x);
-    cat(paste(rep("=",50), collapse=""));
-    cat("\n")
-}
-
-   *****
 }
 \details{
 <other comments found in file>

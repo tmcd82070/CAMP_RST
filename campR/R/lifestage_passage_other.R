@@ -4,7 +4,7 @@
 #' 
 #' @description
 #' 
-#'    ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
+#'    ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
 #'    A table of passage estimates, with lifestages down the rows, and runs across the columns.
 #' 
 #'    Input:
@@ -20,82 +20,6 @@
 #' @param  ci=TRUE  <describe argument>
 #' 
 #' @details <other comments found in file>
-#'    ********
-#'    Check that times are less than 1 year apart
-#'    ---- Fetch efficiency data
-#'    ---- Fetch the catch and visit data 
-#'    Debugging
-#'     tmp.catch0 <<- catch.df
-#'     tmp.visit0 <<- visit.df
-#'     print( table(catch.df$TrapStatus))
-#'    ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables 
-#' catch.df <- F.summarize.fish.visit( catch.df )       jason turns off 4/15/2015
-#'                    - the only reason we do this again is to get a different n.tot.
-#'    Debugging
-#'     tmp.catch <<- catch.df
-#'     print( table(catch.df$TrapStatus))
-#'     cat("in lifestage_passage.r (hit return) ")
-#'     readline()
-#'    #   ---- Compute the unique runs we need to do
-#'    runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    # get all instances over the two df.  jason change 4/17/2015 5/21/2015: don't think we need to worry about catch.df0.
-#'    runs <- runs[ !is.na(runs) ]
-#'    cat("\nRuns found between", min.date, "and", max.date, ":\n")
-#'    print(runs)
-#'    ---- Compute the unique life stages we need to do
-#'    ---- Print the number of non-fishing periods
-#'    ---- Extract the unique trap visits.  This will be used in merge to get 0's later
-#'     ind <- !duplicated( catch.df$trapVisitID ) & !is.na(catch.df$trapVisitID)
-#'     visit.df <- catch.df[ind, ]
-#'     visit.df <- visit.df[, !(names(visit.df) %in% c("FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl"))] 
-#'    ********
-#'    Loop over runs
-#'    for( j in 1:length(runs) ){
-#'      
-#'      
-#'  jason puts together the catches based on total, unassigned, assigned.
-#'      
-#'      cat(paste(rep("*",80), collapse=""))
-#'      tmp.mess <- paste("Processing ", run.name)
-#'      cat(paste("\n", tmp.mess, "\n"))
-#'      cat(paste(rep("*",80), collapse=""))
-#'      cat("\n\n")
-#'      
-#'      
-#'    ---- Loop over lifestages
-#'    ---- Subset to just one life stage and run
-#'        cat(paste("Lifestage=", ls, "; Run=", run.name, "; num records=", sum(indRun & indLS), "\n"))
-#'    ---- If we caught this run and lifestage, compute passage estimate. 
-#'    ---- Merge in the visits to get zeros
-#'    ---- Update the constant variables.  Missing n.tot when trap was fishing should be 0.
-#'    ---- Add back in the missing trapVisitID rows.  These identify the gaps in fishing
-#' catch.df.ls <- rbind( catch.df.ls, catch.df[ is.na(catch.df$trapVisitID), ] )
-#'    ---- Update progress bar
-#'    Debugging
-#'                 tmp.c <<- catch.df.ls
-#'                 tmp.r <<- release.df
-#'    Debugging
-#'                 print(dim(visit.df))
-#'                 print(dim(catch.df.ls))
-#'                 print( table( tmp.c$FinalRun, useNA="always" ))
-#'                 print( table( tmp.c$lifeStage, useNA="always" ))
-#'                 print( table( tmp.c$trapVisitID, useNA="always" ))
-#'                 cat("in lifestage_passage (hit return) ")
-#'                 readline()
-#'    ---- Compute passage
-#'    ---- Update progress bar
-#' print(pass)
-#'    ---- Save
-#'    }
-#'     ans <<- ans
-#'     ans <- get("ans")
-#'    ---- compute percentages of each life stage
-#'    ---- Write out the table
-#'    We have more than one run
-#'    ---- Append totals to bottom
-#'  Produce pie or bar charts
-#' fl <- F.plot.runs( df, output.file, plot.pies=F )
-#' out.fn.roots <- c(out.fn.roots, fl)
-#'    ---- Write out message
 #' 
 #' @return <describe return value>
 #' 
@@ -108,7 +32,7 @@
 #' 
 F.lifestage.passage.other <- function( site, taxon, min.date, max.date, output.file, ci=TRUE ){
   #
-  #   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
+  #   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
   #   A table of passage estimates, with lifestages down the rows, and runs across the columns.
   #
   #   Input:

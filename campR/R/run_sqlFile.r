@@ -9,17 +9,11 @@
 #'   
 #'   
 #'   
-#'   F.run.sqlFile( ch, "QryBuildReportCriteria.sql", SITE=site,
-#'   STRT.DT=format(strt.dt, "%m/%d/%Y"), END.DT=format(end.dt, "%m/%d/%Y") )
-#'   
-#'   
-#'   
-#'   
 #' @return FALSE, assuming successful completion of a SQL query.  Otherwise, an 
 #'   error message to either the Console window, if running directly via R, or 
 #'   to the run_R.out file, if running via the Platform.
 #'   
-#' @section:  Details: Function F.sql_error_check is used immediately after the
+#' @details Function F.sql_error_check is used immediately after the
 #' use of RODBC function sqlQuery, which queries an Access database via a text
 #' string formatted as a SQL query. Function sqlQuery, if successful, results in
 #' a dataframe, possibly with zero rows. Otherwise, a character vector with

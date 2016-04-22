@@ -20,10 +20,10 @@ Function \code{F.catch.model} serves two main purposes.  The first utilizes
   periods when the trap was not functioning.
 }
 \details{
-\section{Splines}: Prior to model fitting, \code{trapVisitIDs} are identified
-  as possible night-time trapping instances via examination of StartTimes and
-  EndTimes along with calculated sunrises and sunsets.  As of the 1.5 release,
-  all sunrises and sunsets are set to 7:00 AM and 7:00 PM local time.  Given
+\bold{Splines}: Prior to model fitting, \code{trapVisitIDs} are identified
+as possible night-time trapping instances via examination of StartTimes and
+EndTimes along with calculated sunrises and sunsets.  As of the 1.5 release,
+all sunrises and sunsets are set to 7:00 AM and 7:00 PM local time.  Given
   daylight and trapping times, all trapVisitIDs with some portion of trapping
   taking place at night are identified, along with the overall proportion of a
   trapping instance that takes place at night.
@@ -52,16 +52,18 @@ Function \code{F.catch.model} serves two main purposes.  The first utilizes
   table below summarizes the relationship between the number of data points (or trapping instances) and maximal
   model possible.
 
- \tabular{cc}{
-   dof \tab model type                               \tab n trapping instances \tab model-form
-   0   \tab intercept-only                           \tab 15
-   1   \tab linear                                   \tab 30
-   2   \tab quadratic                                \tab 45
-   3   \tab cubic                                    \tab 60
-   4   \tab cubic spline with one internal knot      \tab 75
-   5   \tab cubis spline with two internal knots     \tab 90
-   ... \tab ...                                      \tab ...
-   k   \tab cubic spline with (k - 3) internal knots \tab 15*(k - 1)           \tab \beta_0 + \beta_1 + \beta_2
+ \tabular{cll}{
+  \bold{Number of}    \tab                           \tab \bold{Number of} \cr
+  \bold{Coefficients} \tab \bold{Model Type}         \tab \bold{Efficiency Trials} \cr
+        ------------  \tab ---------------------------------------- \tab -------------------- \cr
+   0   \tab intercept-only                           \tab 15 \cr
+   1   \tab linear                                   \tab 30 \cr
+   2   \tab quadratic                                \tab 45 \cr
+   3   \tab cubic                                    \tab 60 \cr
+   4   \tab cubic spline with one internal knot      \tab 75 \cr
+   5   \tab cubis spline with two internal knots     \tab 90 \cr
+   ... \tab ...                                      \tab ... \cr
+   k                  \tab cubic spline with (k - 3) internal knots \tab 15*(k - 1) \cr
  }
 
    When required, cubic splines utilize function bs to obtain an appropriate
@@ -70,7 +72,7 @@ Function \code{F.catch.model} serves two main purposes.  The first utilizes
    no intercept, although all cubic-spline Poisson catch models
    utilizes an overall intercept, so as to center models along the outcome axis.
 
-\section{Imputation}:
+\bold{Imputation}: <describe imputation>
 }
 \section{}{
   Imputation:  The trap-specific imputation procedure utilizes the final catch spline result obtained

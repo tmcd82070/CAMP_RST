@@ -14,21 +14,15 @@ generally, an ODBC database.}
 
 \item{sqlFile}{A text file containing one or more SQL-formatted query strings.}
 
-\item{...}{Additional parameters needed for evaluation of the underlying SQL queries contained in sqlFile.  See 'Details.'
-
-
-
-
-F.run.sqlFile( ch, "QryBuildReportCriteria.sql", SITE=site,
-STRT.DT=format(strt.dt, "%m/%d/%Y"), END.DT=format(end.dt, "%m/%d/%Y") )}
+\item{...}{Additional parameters needed for evaluation of the underlying SQL queries contained in sqlFile.  See 'Details.'}
 }
 \value{
 FALSE, assuming successful completion of a SQL query.  Otherwise, an 
   error message to either the Console window, if running directly via R, or 
   to the run_R.out file, if running via the Platform.
 }
-\section{}{
-  Details: Function F.sql_error_check is used immediately after the
+\details{
+Function F.sql_error_check is used immediately after the
 use of RODBC function sqlQuery, which queries an Access database via a text
 string formatted as a SQL query. Function sqlQuery, if successful, results in
 a dataframe, possibly with zero rows. Otherwise, a character vector with

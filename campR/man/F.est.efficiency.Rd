@@ -49,20 +49,6 @@ Estimate trap efficiency for every sample period.
 }
 \details{
 <other comments found in file>
-   Replace any NA meanEndTimes with releaseTime plus mean of HrsToFirstVisitAfter and HrsToLastVisitAfter . This will assign a batch date.  
-   ---- Assign batch date to efficiency trials based on meanEndTime (really weighted meanVisitTime)
-       Sum by batch dates.  This combines release and catches over trials that occured close together in time
-   ================== done with data manipulations ===========================
-       Compute efficiency
-cat("All observed efficiency trial data...\n")
-print(eff.est)
-   ---- Figure out which days have efficiency data.
-   Assign attributes for plotting
-cat("((((((((((((In est_efficiency.r))))))))))))\n")
-print(eff)
-print(bd)
-readline()
-   ---- If there are missing days, imput them
 }
 \examples{
 <insert examples>
