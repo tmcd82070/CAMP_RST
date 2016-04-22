@@ -1,16 +1,21 @@
-source('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/R-Interface/Helper/getTheData.R')
+
 
 getRiverPassage <- function(thePlatform,theRiver,stemB){
 
-  # thePlatform <- 'CAMP_RST20160601-DougXXX-4.5'
-  # theRiver <- 'Sacramento River'
-  # stemB <- '//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/Outputs'
+  #stemB <- NULL    # clear out
+
+#   thePlatform <- 'CAMP_RST20160601-DougXXX-4.5'
+#   theRiver <- 'Feather River'
+#   stemB <- '//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/Outputs'
+  
+  source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",thePlatform,"/R-Interface/Helper/getTheData.R"))
   
   stemB <- paste0(stemB,"/",theRiver)#,"/doug hold")
   
   filesB <- list.files(stemB)
   ls_passageB <- filesB[grep('lifestage_passage_table.csv',filesB)]
-  #passageB <- filesB[grep('passage_table.csv',filesB)]
+  times <- filesB[grep('JStuffTime.csv',filesB)]
+  checks <- filesB[grep('AssignCheck.csv',filesB)]
   
   openTheseB <- unique(data.frame(file=c(ls_passageB),stringsAsFactors=FALSE))
   for(i in 1:nrow(openTheseB)){
@@ -28,14 +33,64 @@ getRiverPassage <- function(thePlatform,theRiver,stemB){
   bigDFB$testi <- testByB[c(TRUE,FALSE)]
   bigDFB$by <- testByB[c(FALSE,TRUE)]
   bigDFB
+  
+  
+  
+  getTimes <- function(stemB,times){
+    
+    allTimes <- NULL
+    for(i in 1:length(times)){
+      oneTime <- read.csv(paste0(stemB,'/',times[i]))
+      allTimes <- rbind(allTimes,oneTime)
+    }
+    allTimes$file <- ifelse(allTimes$file == 'J0','lifestage',as.character(droplevels(allTimes$file)))
+    allTimes$X <- NULL
+    allTimes
+  }
+  
+  timesDFB <- getTimes(stemB,times)
+  
+  #http://stackoverflow.com/questions/15897236/whats-the-equivalent-to-excels-left-and-right-in-r
+  left <- function (string,char){
+    substr(string,1,char)
+  }
+  right <- function (string, char){
+    substr(string,nchar(string)-(char-1),nchar(string))
+  }
+  
+  getChecks <- function(stemB,checks){
+    
+    allChecks <- NULL
+    for(i in 1:length(checks)){
+      oneCheck <- read.csv(paste0(stemB,'/',checks[i]))
+      oneCheck$testi <- strsplit(checks[i],"--")[[1]][1]
+      oneCheck$file <- left(right(strsplit(checks[i],"-")[[1]][7],17),2)
+      allChecks <- rbind(allChecks,oneCheck)
+    }
+    #theTesti <- unique(allChecks$testi)
+    allChecks$site <- allChecks$minDate <- allChecks$maxDate <- NULL
+    allChecks
+  }
+  
+  checksDFB <- getChecks(stemB,checks)
+  
+  
+  
+  temp1 <- merge(checksDFB,timesDFB,by=c('testi','file'),all.x=TRUE,all.y=TRUE)
+  temp2 <- merge(bigDFB,temp1,by=c('testi','file','run'),all.x=TRUE)
+  
+  #write.csv(ame,"C:/Users/jmitchell/Desktop/ame.csv")
+  temp2
 }
 
-sac <- getRiverPassage('CAMP_RST20160201','Sacramento River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-ame <- getRiverPassage('CAMP_RST20160201','American River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-fea <- getRiverPassage('CAMP_RST20160201','Feather River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-mok <- getRiverPassage('CAMP_RST20160201','Mokelumne River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-sta <- getRiverPassage('CAMP_RST20160201','Stanislaus River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-kni <- getRiverPassage('CAMP_RST20160201',"Knight's Landing",'//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
+thePlatform <- 'CAMP_RST20160601-DougXXX-4.5'
+
+sac <- getRiverPassage(thePlatform,'Sacramento River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
+ame <- getRiverPassage(thePlatform,'American River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
+fea <- getRiverPassage(thePlatform,'Feather River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
+mok <- getRiverPassage(thePlatform,'Mokelumne River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
+sta <- getRiverPassage(thePlatform,'Stanislaus River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
+kni <- getRiverPassage(thePlatform,"Knight's Landing",paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
 
 all <- rbind(sac,ame,fea,mok,sta,kni)
 nrow(all)

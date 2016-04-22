@@ -11,6 +11,7 @@ install.packages(c("tidyr"))
 install.packages(c("ellipse"))
 install.packages(c("dplyr"))
 install.packages(c("Rcpp"))
+install.packages(c("lazyeval"))
 
 require("RODBC")
 require("mvtnorm")
@@ -20,6 +21,7 @@ require("car")
 require("tidyr")
 require("ellipse")
 require("dplyr")
+require("lazyeval")
 
 
 
@@ -40,7 +42,7 @@ rownames(theExcel) <- NULL
 
 
 # specify the range, in terms of theExcel rownames, to test.
-for(testi in 1:1){#34:49){   
+for(testi in 1:33){#34:49){   
 
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
@@ -72,8 +74,8 @@ for(testi in 1:1){#34:49){
     siteText     <- as.character(droplevels(theExcel[testi,]$Site))
     run          <- theExcel[testi,]$RunID
     runText      <- as.character(droplevels(theExcel[testi,]$SalmonRun))
-    min.date     <- "2007-01-15"  #as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))#
-    max.date     <- "2007-02-15"  #as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))##"2013-03-16" #
+    min.date     <- as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))#"2007-01-15"  #
+    max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))#"2007-02-15"  #
   } else {
 #     river        <- 'american'
 #     site         <- 57000
@@ -111,18 +113,20 @@ for(testi in 1:1){#34:49){
   by <- 'All'
   output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   
-  beg0 <- Sys.time(); F.lifestage.passage               (site, taxon, min.date, max.date, output.file, ci=TRUE);                          end0 <- Sys.time(); diff.time0 <- end0 - beg0;
+  beg0 <- beg1 <- beg2 <- beg3 <- beg4 <- beg5 <- beg6 <- 0  # set up so jared's function can return the J report.
+  
+  beg0 <- Sys.time(); F.lifestage.passage               (site, taxon, min.date, max.date, output.file, ci=TRUE);                          end0 <- Sys.time(); diff.time0 <- as.numeric(end0 - beg0,units="hours");
   
   # ----- automatic lifestage assignment functions --- added 4/4/2016 based on jared's work -----
   
   # Start writing to an output file
 
-  sink(paste0(output.file,'J1.txt')); beg1 <- Sys.time(); F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, paste0(output.file,"_",'J1'), ci=TRUE);         end1 <- Sys.time(); diff.time1 <- end1 - beg1; sink(); # lifestage to 2 groups, use weight var
-  sink(paste0(output.file,'J2.txt')); beg2 <- Sys.time(); F.lifestage.passage.assignLS2groupNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J2'), ci=TRUE); end2 <- Sys.time(); diff.time2 <- end2 - beg2; sink(); # lifestage to 2 groups, don't use weight var
-  sink(paste0(output.file,'J3.txt')); beg3 <- Sys.time(); F.lifestage.passage.assignLS3group(site, taxon, min.date, max.date, paste0(output.file,"_",'J3'), ci=TRUE);         end3 <- Sys.time(); diff.time3 <- end3 - beg3; sink(); # lifestage to 3 groups, use weight var
-  sink(paste0(output.file,'J4.txt')); beg4 <- Sys.time(); F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J4'), ci=TRUE); end4 <- Sys.time(); diff.time4 <- end4 - beg4; sink(); # lifestage to 3 groups, don't use weight var
-  sink(paste0(output.file,'J5.txt')); beg5 <- Sys.time(); F.lifestage.passage.assignLS(site, taxon, min.date, max.date, paste0(output.file,"_",'J5'), ci=TRUE);               end5 <- Sys.time(); diff.time5 <- end5 - beg5; sink(); # let program decide 2/3 groups, use/don't use weight var
-  sink(paste0(output.file,'J6.txt')); beg6 <- Sys.time(); F.lifestage.passage.assignLSNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J6'), ci=TRUE);       end6 <- Sys.time(); diff.time6 <- end6 - beg6; sink(); # let program decide 2/3 groups, don't use weight var
+  sink(paste0(output.file,'J1.txt')); beg1 <- Sys.time(); F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, paste0(output.file,"_",'J1'), ci=TRUE);         end1 <- Sys.time(); diff.time1 <- as.numeric(end1 - beg1,units="hours"); sink(); # lifestage to 2 groups, use weight var
+  sink(paste0(output.file,'J2.txt')); beg2 <- Sys.time(); F.lifestage.passage.assignLS2groupNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J2'), ci=TRUE); end2 <- Sys.time(); diff.time2 <- as.numeric(end2 - beg2,units="hours"); sink(); # lifestage to 2 groups, don't use weight var
+  sink(paste0(output.file,'J3.txt')); beg3 <- Sys.time(); F.lifestage.passage.assignLS3group(site, taxon, min.date, max.date, paste0(output.file,"_",'J3'), ci=TRUE);         end3 <- Sys.time(); diff.time3 <- as.numeric(end3 - beg3,units="hours"); sink(); # lifestage to 3 groups, use weight var
+  sink(paste0(output.file,'J4.txt')); beg4 <- Sys.time(); F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J4'), ci=TRUE); end4 <- Sys.time(); diff.time4 <- as.numeric(end4 - beg4,units="hours"); sink(); # lifestage to 3 groups, don't use weight var
+  sink(paste0(output.file,'J5.txt')); beg5 <- Sys.time(); F.lifestage.passage.assignLS(site, taxon, min.date, max.date, paste0(output.file,"_",'J5'), ci=TRUE);               end5 <- Sys.time(); diff.time5 <- as.numeric(end5 - beg5,units="hours"); sink(); # let program decide 2/3 groups, use/don't use weight var
+  sink(paste0(output.file,'J6.txt')); beg6 <- Sys.time(); F.lifestage.passage.assignLSNoWeight(site, taxon, min.date, max.date, paste0(output.file,"_",'J6'), ci=TRUE);       end6 <- Sys.time(); diff.time6 <- as.numeric(end6 - beg6,units="hours"); sink(); # let program decide 2/3 groups, don't use weight var
   
   # output time stats
   testi.time <- data.frame(testi=rep(paste0("Run ",testi),7),file=c('J0','J1','J2','J3','J4','J5','J6'),times=c(diff.time0, diff.time1, diff.time2, diff.time3, diff.time4, diff.time5, diff.time6))

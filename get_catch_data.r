@@ -39,6 +39,7 @@ if(autoLS){
   ## need to open a channel for later
   db <- get( "db.file", env=.GlobalEnv )
   ch <- odbcConnectAccess(db)
+  close(ch)
 }else{  # old, original way, prior to lifeStage assignment algorithm.
   nvisits <- F.buildReportCriteria( site, min.date, max.date )
 
@@ -67,7 +68,7 @@ if(autoLS){
   #   *****
   #   Now, fetch the result
   catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-
+  close(ch)
 } #end else
 
 
@@ -79,51 +80,10 @@ if(autoLS){
   
   
 
-includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
-F.sql.error.check(catch)
-
-close(ch)
-
-if(nvisits > 0 & nrow(catch) == 0){
-  warning("Your criteria returned no catch records.  Check to make sure valid Fishing occurred within your date range.")
-  stop
-}
-
-#   ******************************************************************
-#   Assign time zone (probably does not matter)
-time.zone <- get( "time.zone", env=.GlobalEnv )
-attr(catch$StartTime, "tzone") <- time.zone
-attr(catch$EndTime, "tzone") <- time.zone
-
-#  jason add all this get includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST)
-time.zone <- get( "time.zone", env=.GlobalEnv )
-# includecatchID$StartTime <- includecatchID$timeSampleStarted
-includecatchID$EndTime <- includecatchID$timeSampleEnded
-includecatchID$ProjID <- includecatchID$projectDescriptionID
-includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL
-# attr(includecatchID$StartTime, "tzone") <- time.zone
-attr(includecatchID$EndTime, "tzone") <- time.zone
-includecatchID <- includecatchID[,c('trapPositionID','EndTime','ProjID','includeCatchID')]
-
-# sampleGearID ProjID trapPositionID trapVisitID
-catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
 
 
-#   ********************************************************************
-#   At this point, catch has all visits in it, even if no fish were caught.
-#   It also has non-fishing intervals.  This is how you identify these intervals:
-#       1. zero catch = catch$Unmarked == 0  ($FinalRun and $LifeStage are both "Unassigned" for these lines)
-#       2. not fishing = catch$TrapStatus == "Not fishing"  (equivalently, $trapVisitID is missing for these lines.  Only time its missing.)
-#
-#   Pull apart the visits from the catch, because plus count expansion only applys to positive catches.
-#   Recall, catch currently has multiple lines per trapVisit delineating fish with different fork lengths.
 
-visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
-visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
 
-#   ********************************************************************
-#   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
-catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
 
 ######################################
@@ -138,6 +98,15 @@ if(autoLS){
     cat('\n')
     cat('\n')
     cat('\n')
+    
+    # jason adds so we can see which of the J reports this run comes from.  
+    if(exists("testing")){
+      if(testing == TRUE){
+        theBegs <- c(beg0,beg1,beg2,beg3,beg4,beg5,beg6)
+        theJ <- max(theBegs)
+        numJ <<- which(c(theBegs) == theJ) - 1
+      }
+    }
     catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  # swap out old catch with the new catch.
 
     # for debugging
@@ -178,7 +147,6 @@ if(autoLS){
 
 
 
-
 # add 3/8/2016 -- look for long gaps.
 theLongCatches <- catch[catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]      # fishingGapMinutes set in source file -- it's global.
 nLongCatches <- nrow(theLongCatches)
@@ -197,6 +165,8 @@ if(nLongCatches > 0){
   
   catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   # this becomes the master catch df
   
+  close(ch)
+  
 } else {
   
   # no long gaps to worry about.  so just keep going with the version of catch that we already
@@ -211,12 +181,54 @@ if(nLongCatches > 0){
 
 
 
+db <- get( "db.file", env=.GlobalEnv )
+ch <- odbcConnectAccess(db)
+includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
+F.sql.error.check(catch)
+
+close(ch)
+
+if(nvisits > 0 & nrow(catch) == 0){
+  warning("Your criteria returned no catch records.  Check to make sure valid Fishing occurred within your date range.")
+  stop
+}
+
+#   ******************************************************************
+#   Assign time zone (probably does not matter)
+time.zone <- get( "time.zone", env=.GlobalEnv )
+attr(catch$StartTime, "tzone") <- time.zone
+attr(catch$EndTime, "tzone") <- time.zone
+
+#  jason add all this get includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST)
+time.zone <- get( "time.zone", env=.GlobalEnv )
+# includecatchID$StartTime <- includecatchID$timeSampleStarted
+includecatchID$EndTime <- includecatchID$timeSampleEnded
+includecatchID$ProjID <- includecatchID$projectDescriptionID
+includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL
+# attr(includecatchID$StartTime, "tzone") <- time.zone
+attr(includecatchID$EndTime, "tzone") <- time.zone
+includecatchID <- includecatchID[,c('trapPositionID','EndTime','ProjID','includeCatchID')]
+
+# sampleGearID ProjID trapPositionID trapVisitID
+catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
 
 
 
+#   ********************************************************************
+#   At this point, catch has all visits in it, even if no fish were caught.
+#   It also has non-fishing intervals.  This is how you identify these intervals:
+#       1. zero catch = catch$Unmarked == 0  ($FinalRun and $LifeStage are both "Unassigned" for these lines)
+#       2. not fishing = catch$TrapStatus == "Not fishing"  (equivalently, $trapVisitID is missing for these lines.  Only time its missing.)
+#
+#   Pull apart the visits from the catch, because plus count expansion only applys to positive catches.
+#   Recall, catch currently has multiple lines per trapVisit delineating fish with different fork lengths.
 
+visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
+visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
 
-
+#   ********************************************************************
+#   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
+catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
 
 
 
