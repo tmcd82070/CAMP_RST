@@ -4,11 +4,10 @@
 
 
 #   Need these lines to attach necessary libraries.
-#   KAREN: THESE LINES WILL ALWAYS BE HERE.
-library(RODBC)
-setwd('T:/Working/Jason')
-source("T:/Working/Jason/source_all.R")
-# source("../source_all.r")  # this will approximate loading the package, replace with library(campRst)
+#setwd('T:/Working/Jason')
+
+library(campR)
+GlobalVars()
 
 #   These parameters will be supplied by Karen's interface
 #   Parameters to the function "F.passage" are "site:taxon:run:year:by:db.file"
@@ -54,7 +53,7 @@ passage <- F.passage( site, taxon, run, min.date, max.date, by, output.file, ci 
 
 ##F.weekly.passage( site, taxon, run, min.date, max.date, output.file )
 #
-F.release.summary(site,taxon,run,min.date,max.date,output.file)
+#F.release.summary(site,taxon,run,min.date,max.date,output.file)
 #
 #
 #
