@@ -177,7 +177,7 @@ for( trap in traps ){
                 #   Go with the mean model
                 cat("Fewer than 10 trials found.  Mean efficiency model used\n")
             } else {
-                require(splines)
+                #require(splines)
         
                 cur.df <- 3
                 repeat{

@@ -3,17 +3,20 @@ Type: Package
 Title: CAMP RST R routines
 Version: 1.0.0
 Date: 2016-04-19
+Author: Trent McDonald
 Maintainer: Trent McDonald <tmcdonald@west-inc.com>
 Description: R routines for the CAMP R platform
-Authors@R: c(person("Trent", "McDonald", email="tmcdonald@west-inc.com", role=c("cre","aut")),
- person("Jason", "Mitchel", email="jmitchel@west-inc.com", role=c("aut")),
- person("Jared", "Studyvin", email="jstudyvin@west-inc.com", role=c("aut")))
 License: GNU General Public License
 RoxygenNote: 5.0.1
+Depends: RODBC
 Imports: 
  quantreg, 
  splines, 
  MASS,
  mvtnorm,
- RODBC
+ Rcpp,
+ plyr,
+ mclust,
+ car,
+ tools
 

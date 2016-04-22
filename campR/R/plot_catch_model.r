@@ -25,8 +25,6 @@
 #' @param  file=NA  <describe argument>
 #' 
 #' @details <other comments found in file>
-#'    catchMetric <- 'modAssignedCatch'   #'assdCatch'
-#'  }
 #'    If file=NA, a pdf graphing device is assumed to be open already.
 #'    Shut down all graphics devices
 #'    ---- Open PNG device

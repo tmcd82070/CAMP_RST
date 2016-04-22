@@ -3,22 +3,16 @@
 #' @title F.biweekly.report
 #' 
 #' @description
-#' F.biweekly.report <- function(  site, min.date, max.date, output.type, from, to, return.addr ){  Reinistate this line when karen fixed the interface
 #' 
 #'    Generate a bi-weekly report
 #' 
-#'    output.type = "pdf" or "odt"
-#' 
-#' 
-#'    add these 4 variables back to the parameters when Karen gets the interface fixed 
 #' 
 #' @param   site <describe argument>
 #' @param  min.date <describe argument>
 #' @param  max.date  <describe argument>
 #' 
 #' @details <other comments found in file>
-#' NA
-#'     library(RODBC)
+#'
 #' 
 #' @return <describe return value>
 #' 
@@ -30,12 +24,6 @@
 #' <insert examples>
 #' 
 F.biweekly.report <- function(  site, min.date, max.date ){
-#F.biweekly.report <- function(  site, min.date, max.date, output.type, from, to, return.addr ){  Reinistate this line when karen fixed the interface
-#
-#   Generate a bi-weekly report
-#
-#   output.type = "pdf" or "odt"
-#
 
 #   add these 4 variables back to the parameters when Karen gets the interface fixed 
     output.type <- "odt"   # or "pdf"
@@ -50,7 +38,7 @@ outfn.name <- paste(input.name, "_", format(Sys.time(),"%d%b%y"), sep="")
 
 if( output.type == "pdf" ){
 #    library(RODBC)
-    library(tools)
+#    library(tools)
     
     intex.fn <- paste(input.name, ".Rnw", sep="")
     outtex.fn <- paste(outfn.name, ".tex", sep="")
@@ -59,7 +47,7 @@ if( output.type == "pdf" ){
     system( paste("texify.exe --pdf", outtex.fn ))
 
 } else if( output.type == "odt" ){
-    library(odfWeave)
+#    library(odfWeave)
 
     inodt.fn <- paste(input.name, ".odt", sep="")
     outodt.fn <- paste(outfn.name, ".odt", sep="")

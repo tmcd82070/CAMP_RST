@@ -93,9 +93,6 @@ F.size.by.date <- function( site, taxon, run, min.date, max.date, output.file ){
 
   
 
-library(quantreg)
-library(splines)
-
 #   Open a graphics device
 if( !is.na(output.file) ){
     #   ---- Open PNG device

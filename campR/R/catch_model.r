@@ -2,12 +2,10 @@
 #'
 #' @param catch.df A data frame containing all requested trapping data for a
 #'   particular trapPosition.  See 'Details'.
-#' @return Function F.catch.model serves two main purposes.  The first utilizes
-#'   cubic splines to estimate total catch per trapping position over the date
-#'   range provided.  The second utilizes spline results to impute estimates for
-#'   periods when the trap was not functioning.
-#'
-#' @section:  Cubic splines: Prior to model fitting, trapVisitIDs are identified
+#'   
+#' @details 
+#' 
+#' \section{Splines}: Prior to model fitting, \code{trapVisitIDs} are identified
 #'   as possible night-time trapping instances via examination of StartTimes and
 #'   EndTimes along with calculated sunrises and sunsets.  As of the 1.5 release,
 #'   all sunrises and sunsets are set to 7:00 AM and 7:00 PM local time.  Given
@@ -57,8 +55,12 @@
 #'    no intercept, although all cubic-spline Poisson catch models
 #'    utilizes an overall intercept, so as to center models along the outcome axis.
 #'
-#' @section:  Imputation:
+#' \section{Imputation}:
 #'
+#' @return Function \code{F.catch.model} serves two main purposes.  The first utilizes
+#'   cubic splines to estimate total catch per trapping position over the date
+#'   range provided.  The second utilizes spline results to impute estimates for
+#'   periods when the trap was not functioning.
 #'
 #' @seealso blah blah blah
 #'
@@ -66,8 +68,10 @@
 #'
 #'
 #' @examples
-#' F.catch.model( catch.df ) # maybe later we'll make this happen.
+#' F.catch.model( catch.df ) 
+#' 
 #' @export
+#' 
 F.catch.model <- function( catch.df ){
 #
 #   Compute and estimate of catch for all days that are missing in the input data set.
@@ -117,7 +121,7 @@ catch.df$pct.night[ind] <- (as.numeric(sunrise[ind]) - as.numeric(catch.df$Start
 
 #   Fit a rate model.
 
-library(splines)
+#library(splines)
 
 #catch.df <- catch.df[ catch.df$TrapStatus == "Fishing", ]
 
