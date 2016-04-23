@@ -4,7 +4,8 @@
 \alias{GlobalVars}
 \title{CAMP RST Global Variables}
 \usage{
-GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb",
+GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb", output.dir = "..\\\\outputs",
+  sql.code.dir = file.path(find.package("campR"), "sql"),
   samplePeriodCutTime = "04:00:00", max.ok.gap = 2,
   fishingGapMinutes = 10080, knotMesh = 15, halfConeMulti = 2,
   sample.size.forkLength = 100, sample.size.forkLengthAndWeight = 100,
@@ -15,8 +16,15 @@ GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb",
 \item{db.file}{Character string giving the full path and name of the CAMP Access data base file.
 Path relative to \code{getwd()} can be used.}
 
+\item{output.dir}{Directory for all output.}
+
+\item{sql.code.dir}{Directory containing all the SQL code required by \code{campR}. 
+Defaults to the \code{sql} directory of the \emph{installed} \code{campR} package.
+By default, all SQL code should be placed in the \code{inst/sql} directory in the 
+\code{campR} code repository.}
+
 \item{samplePeriodCutTime}{String giving the sample period cut off for batch date assignment, in military time.
-Current value is "04:00:00". This is used to assign batch dates that are missing. 
+Default value is "04:00:00". This is used to assign batch dates that are missing. 
 If a sample period ends before this time on a particular day, 
 the batch date assigned is the previous day. If a sample period ends after 
 this time, batch date assigned is the day that the sampling period ends (i.e., current day). For example, assuming 
@@ -24,40 +32,40 @@ this time, batch date assigned is the day that the sampling period ends (i.e., c
 catch to the previous day.  A sample period ending at 07:00:00 (7 am)
 would assign catch to the current day.  See routine \code{\link{assign.batchdates}}.}
 
-\item{max.ok.gap}{Maximum gap, in hours, that is "okay". Current value is 2. Gaps in trapping smaller than 
+\item{max.ok.gap}{Maximum gap, in hours, that is "okay". Default value is 2. Gaps in trapping smaller than 
 this are ignored.  No catch is imputed for them. Gaps in trapping bigger than this get assigned an imputed catch 
 from the GAM model.  Because the GAM model for imputation predicts an 
 hourly rate, this max gap cannot be < 1 hour.}
 
-\item{fishingGapMinutes}{Maximum gap, in minutes, that is NOT okay.  Current value is 10,080 minutes or 7 days. 
+\item{fishingGapMinutes}{Maximum gap, in minutes, that is NOT okay.  Default value is 10,080 minutes or 7 days. 
 Gaps in fishing greater than 
 this constitute a "big" gap, and no imputation is performed.  The GAM models are unstable for "big" gaps.  
 In these cases, the season is broken into two periods (before and after the gap) and treated as two separate traps.}
 
-\item{knotMesh}{The number of data points required per smoothing spline knot. Current value is 15.
+\item{knotMesh}{The number of data points required per smoothing spline knot. Default value is 15.
    For example, \code{knotMesh == 15} means each additional knot in a smoothing spline requires an additional
 15 data points.  A linear fit requires at least 15 data points,
 a quadratic requires at least 30 data points, a spline with 3 knots required 45, 4 knots requires 60, etc. 
 This restriction is put in place to help assure smoothing splines have adequate support and are stable.}
 
 \item{halfConeMulti}{The multiplication factor to use for expanding fish caught during halfCone operations.
-Current value is 2. For example, if 15 fish were caught during half cone operation, the analysis considers this 
+Default value is 2. For example, if 15 fish were caught during half cone operation, the analysis considers this 
 \code{halfConeMulti*15} fish.}
 
 \item{sample.size.forkLength}{Number of fish with measured forklength required to assign life stage. 
-Current value is 100.}
+Default value is 100.}
 
 \item{sample.size.forkLengthAndWeight}{Number of fish with measured forklength 
-\emph{and} weight required to use weight in the assignment of life stage.  Current value is 100.}
+\emph{and} weight required to use weight in the assignment of life stage.  Default value is 100.}
 
 \item{weight.prop.forkLength}{The minimum proportion of fish with weight to fish with forklength 
-in order to use weight in assignment of life stage. Current value is 0.5.}
+in order to use weight in assignment of life stage. Default value is 0.5.}
 
 \item{forkLength.mean.diff}{When the number of life stage groups (2 or 3) is not specified the clustering 
 algorithm starts with 3 groups and reduces groups if the mean difference in forklength between groups is less 
-than this number. Units are same as forklengths (mm). Current value is 10 mm.}
+than this number. Units are same as forklengths (mm). Default value is 10 mm.}
 
-\item{time.zone}{Time zone to assign to all times.  Current value is "America/Los_Angeles", or Pacific time.
+\item{time.zone}{Time zone to assign to all times.  Default value is "America/Los_Angeles", or Pacific time.
 It would likely never happen, but these routines cannot correctly account for times in two different zones. 
 For example, one trap in one time zone, and another trap in a second zone.  This might only happen if a 
 future analysis combined sites over large areas (e.g., states). 
@@ -91,6 +99,9 @@ One additional global variable is defined. \code{table.names} is a list containi
 \examples{
 #Change data base file 
 GlobalVars(db.file="../../Platform/data/StanislawCAMP.mdb" ) 
+
+#Change where output goes 
+GlobalVars(ouput.dir="~/Camp_output" ) 
 
 }
 \author{

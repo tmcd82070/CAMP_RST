@@ -5,7 +5,8 @@
 \alias{F.run.sqlFile}
 \title{Opens, formats, and runs all SQL queries from a text file.}
 \usage{
-F.run.sqlFile(ch, sqlFile, echo = TRUE, check.drops = FALSE, ...)
+F.run.sqlFile(ch, sqlFile, echo = TRUE, check.drops = FALSE, sql.code.dir,
+  ...)
 }
 \arguments{
 \item{ch}{Output originating from a call to RODBC function odbcConnectAccess,
@@ -13,6 +14,8 @@ which essentially opens a connection between R and Access, or more
 generally, an ODBC database.}
 
 \item{sqlFile}{A text file containing one or more SQL-formatted query strings.}
+
+\item{sql.code.dir}{Directory storing all SQL code for the CAMP RST platform.}
 
 \item{...}{Additional parameters needed for evaluation of the underlying SQL queries contained in sqlFile.  See 'Details.'}
 }

@@ -5,7 +5,8 @@
 #'   generally, an ODBC database.
 #' @param sqlFile A text file containing one or more SQL-formatted query strings.
 #' @param ... Additional parameters needed for evaluation of the underlying SQL queries contained in sqlFile.  See 'Details.'
-#'   
+#' 
+#' @param sql.code.dir Directory storing all SQL code for the CAMP RST platform.   
 #'   
 #'   
 #'   
@@ -40,7 +41,7 @@
 #' 
 #' @export
 
-F.run.sqlFile <- function( ch, sqlFile, echo=TRUE, check.drops=FALSE, ... ){
+F.run.sqlFile <- function( ch, sqlFile, echo=TRUE, check.drops=FALSE, sql.code.dir, ... ){
 #
 #   This function opens the file sqlFile, and runs the sql statements contained therein.
 #
@@ -75,7 +76,12 @@ F.run.sqlFile <- function( ch, sqlFile, echo=TRUE, check.drops=FALSE, ... ){
 # check.drops=FALSE
 # R.FISHGAPMIN=fishingGapMinutes 
   
-  
+if( missing(sql.code.dir) ){
+	sql.code.dir <- get("sql.code.dir", pos=.GlobalEnv)
+}	
+
+sqlFile <- file.path(sql.code.dir, sqlFile)
+	 
   
 #   --- This is an internal function to check for SQL errors
 f.sql.error.check <- function( obj ){
