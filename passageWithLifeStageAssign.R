@@ -7,7 +7,7 @@
 
 passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,nLS=NULL,weightUse=NULL){
 ###
-###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
+###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
 ###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
 ###
 ###   Input:
@@ -241,23 +241,6 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
             }
 
         }
-        
-        #   ---- Update progress bar
-        setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
-        out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
-        
-        #print(pass)
-        
-        #   ---- Save
-        ans[ i, j ] <- pass$passage
-        lci[ i, j ] <- pass$lower.95
-        uci[ i, j ] <- pass$upper.95
-        setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
-        
-      }
-      
-    }
-    
     
     close(progbar)
   }
