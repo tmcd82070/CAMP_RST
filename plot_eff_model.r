@@ -14,21 +14,21 @@
 #'   deriving from efficiency trials.
 #'   
 #' @examples 
-example <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
-                      batchDate=as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="%F"),tz="America/Los_Angeles"),
-                      nReleased=c(rep(NA,40),1050,rep(NA,15),844,rep(NA,23),rep(NA,40),1050,rep(NA,15),844,rep(NA,23)),
-                      nCaught=c(rep(NA,40),52,rep(NA,15),10,rep(NA,23),rep(NA,40),71,rep(NA,15),15,rep(NA,23)),
-                      efficiency=c(rep(0.03273495,80),rep(0.04540655,80)),
-                      imputed.eff=c(rep("Yes",160)))
-subsites <- data.frame(subSiteName=c('Left Bank','Right Bank'),subSiteID=c(12345,98765))
-subsites$subSiteName <- as.character(droplevels(subsites$subSiteName))
-attr(example,"subsites") <- subsites
-attr(example,"site.name") <- as.factor(c("A River in the Central Valley"))
-                
-setwd(paste0("C:/Users/",Sys.getenv("USERNAME"),"/Documents/"))
-
-fileName <- "myEff.png"
-F.plot.eff.model(df=example, file=fileName)
+# example <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
+#                       batchDate=as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="%F"),tz="America/Los_Angeles"),
+#                       nReleased=c(rep(NA,40),1050,rep(NA,15),844,rep(NA,23),rep(NA,40),1050,rep(NA,15),844,rep(NA,23)),
+#                       nCaught=c(rep(NA,40),52,rep(NA,15),10,rep(NA,23),rep(NA,40),71,rep(NA,15),15,rep(NA,23)),
+#                       efficiency=c(rep(0.03273495,80),rep(0.04540655,80)),
+#                       imputed.eff=c(rep("Yes",160)))
+# subsites <- data.frame(subSiteName=c('Left Bank','Right Bank'),subSiteID=c(12345,98765))
+# subsites$subSiteName <- as.character(droplevels(subsites$subSiteName))
+# attr(example,"subsites") <- subsites
+# attr(example,"site.name") <- as.factor(c("A River in the Central Valley"))
+#                 
+# setwd(paste0("C:/Users/",Sys.getenv("USERNAME"),"/Documents/"))
+# 
+# fileName <- "myEff.png"
+# F.plot.eff.model(df=example, file=fileName)
 #' 
 #' 
 F.plot.eff.model <- function( df, file ){
