@@ -36,10 +36,11 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   if(autoLS){
     ## this is the catch data with weight
     catch <- getCatchDataWeight(taxon,site,min.date,max.date)
+    catch <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes >= 30,]
     ## need to open a channel for later
-    db <- get( "db.file", env=.GlobalEnv )
-    ch <- odbcConnectAccess(db)
-    close(ch)
+#     db <- get( "db.file", env=.GlobalEnv )
+#     ch <- odbcConnectAccess(db)
+#     close(ch)
   }else{  # old, original way, prior to lifeStage assignment algorithm.
     nvisits <- F.buildReportCriteria( site, min.date, max.date )
     
@@ -105,13 +106,16 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
         theBegs <- c(beg0,beg1,beg2,beg3,beg4,beg5,beg6)
         theJ <- max(theBegs)
         numJ <<- which(c(theBegs) == theJ) - 1
+        if(length(numJ) > 1){
+          numJ <<- numJ[2]  # a tie -- happens during testing.
+        }
       }
     }
     catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  # swap out old catch with the new catch.
     
     # for debugging
     jCatch <<- catch
-    catch <- jCatch
+    #catch <- jCatch
     
     catch$lifeStage <- catch$bioLS
     catch$bioLS <- NULL

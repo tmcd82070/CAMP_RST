@@ -40,7 +40,7 @@ rownames(theExcel) <- NULL
 
 
 # specify the range, in terms of theExcel rownames, to test.
-for(testi in 1:33){#34:49){   
+for(testi in 3:33){#34:49){   
   
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
