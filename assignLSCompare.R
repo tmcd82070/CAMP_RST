@@ -8,6 +8,9 @@
 
 assignLSCompare <- function(Data,SAVE=TRUE){
   
+  # Data <- DATA
+  # SAVE <- TRUE
+  
   ## keep only needed columns
   Data <- Data[,c('days','lifeStage','SampleDate','FinalRun','forkLength','weight','Unmarked','bioLS')]
   

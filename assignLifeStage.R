@@ -12,9 +12,9 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
   ## groupN = the number of life stage groups to fit, NULL allows the program to decide
   ## USEWeight = should weight be used in the mixture distribution, NULL allows the program to decide
   
-#   DATA=catch
-#   groupN=nLS
-#   USEWeight=weightUse
+  # Data <- DATA
+  # groupN <- xxx
+  # USEWeight <- NULL
   
   if(!is.null(groupN)){
     if(!(groupN%in%c(2,3))){
