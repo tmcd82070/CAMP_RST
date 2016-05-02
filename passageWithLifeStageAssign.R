@@ -220,7 +220,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
                 catch.df.ls <- catch.df.ls[!(catch.df.ls$trapPositionID %in% theZeros),]
                 
                 #   ---- Compute passage
-                if(nrow(catch.df.ls) > 0 & sum(catch.df.ls$n.Orig > 0)){
+                if(nrow(catch.df.ls) > 0 & sum(as.numeric(theSums)) > 0){
                   pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
                 } else {
                   pass <- data.frame(passage=0,lower.95=0,upper.95=0)  # we need something for the matrix down below if ALL traps have zero fish in df theZeros above.
