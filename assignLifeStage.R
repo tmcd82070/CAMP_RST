@@ -92,10 +92,17 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
       cat(fRun,'\n')
       cat(as.character(cond),'\n')
       assignCheck <- data.frame(site=site,minDate=min.date,maxDate=max.date,run=fRun,assignment=as.character(cond),stringsAsFactors=FALSE)
+<<<<<<< Updated upstream
 
       write.csv(assignCheck,paste0(output.file,site,fRun,'J',numJ,'AssignCheck.csv'),row.names=FALSE)
 
 
+=======
+      
+      write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+      
+      
+>>>>>>> Stashed changes
       cat('\n')
       cat('Life stage is being written as All, due to the error. \n')
       return(runDat)
@@ -175,7 +182,7 @@ assignLS <- function(runDat,G=NULL,USEWeight=NULL){
     runDat$lifeStage <- 'Unassigned'
 
     assignCheck$assignment <- 'low sample size/unassigned run'
-    write.csv(assignCheck,paste0(output.file,site,fRun,'J',numJ,'AssignCheck.csv'),row.names=FALSE)
+    write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
     cat('\n')
     cat('Final run is either unassigned or there is not enough fish with a forklength. Life stage is being written as unassigned. \n')
     return(runDat)
@@ -345,9 +352,15 @@ assignLS <- function(runDat,G=NULL,USEWeight=NULL){
   if(is.null(assignCheck$assignment)){
     assignCheck$assignment <- paste('The final number of groups is',nGroup)
   }
+<<<<<<< Updated upstream
   write.csv(assignCheck,paste0(output.file,site,fRun,'J',numJ,'AssignCheck.csv'),row.names=FALSE)
 
 
+=======
+  write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+  
+  
+>>>>>>> Stashed changes
   ## get group names based on number of groups
   if(nGroup==1){
     groupName <- 'All'
