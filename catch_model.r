@@ -452,7 +452,7 @@ repeat{
         all.bdates <- c(all.bdates, new$batchDate)  
   
         i <- i + ng + 1
-      }
+      #}
     #   ---- No brace here:  don't need it for the if break.  
   }
 
