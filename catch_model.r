@@ -1,333 +1,281 @@
-#' @title Estimate a catch regression model.
-#'
-#' @param catch.df A data frame containing all requested trapping data for a
+#' Compute and estimate catch for all days missing in the input data set;  i.e.,
+#' impute a value for catch when missing.
+#' 
+#' @param catch.df A data frame containing all requested trapping data for a 
 #'   particular trapPosition.  See 'Details'.
-#' @return Function F.catch.model serves two main purposes.  The first utilizes
-#'   cubic splines to estimate total catch per trapping position over the date
-#'   range provided.  The second utilizes spline results to impute estimates for
-#'   periods when the trap was not functioning.
-#'
-#' @section:  Cubic splines: Prior to model fitting, trapVisitIDs are identified
-#'   as possible night-time trapping instances via examination of StartTimes and
-#'   EndTimes along with calculated sunrises and sunsets.  As of the 1.5 release,
-#'   all sunrises and sunsets are set to 7:00 AM and 7:00 PM local time.  Given
-#'   daylight and trapping times, all trapVisitIDs with some portion of trapping
-#'   taking place at night are identified, along with the overall proportion of a
-#'   trapping instance that takes place at night.
-#'
-#'   Following computation of night-time variables, a null Poisson model of
-#'   total catch is fit, via a long link, with an indicator variable for
-#'   night-time trapping included if at least 90% of all the trapping instances
-#'   trapped at night, as defined above;  otherwise, only an intercept term is
-#'   included.  These models include log-transformed trap sampling time, in
-#'   hours, as an offset.  All models fit via glm.
-#'
-#'   After the initial intercept-only model, increasingly complex models are
-#'   fit.  More complex models require at least ten caught fish, over any
-#'   combination of trapping instances.  Prior to a cubic spline, each of a
-#'   polynomial linear, quadratic, and cubic is fit to the data.  (Note that a
-#'   cubic polynomial model is a cubic spline with no internal knots.) Each
-#'   incorporates a night variable if at least 90% of the trapping instances
-#'   fished at night.  Models only consider the next complex model if two
-#'   conditions are met.  First ,the difference in the Akaike Information
-#'   Criterion (AIC), when comparing the current model to the previous model,
-#'   must be greater than two, after rounding both models to four decimals.
+#'   
+#' @return A data frame with extra lines in it, when compared to input data
+#'   frame \code{catch.df}, with extra lines due to periods of 'Not fishing.'
+#'   
+#' @details Function \code{F.catch.model} serves two main purposes.  The first 
+#'   utilizes cubic splines to fit Poisson generalized linear models to observed
+#'   catch for each trapping position over the date range provided.  The second 
+#'   utilizes spline results to impute estimates for periods when the trap was 
+#'   not functioning.
+#'   
+#' @section  Cubic splines: First, given a trap, a null Poisson model of total 
+#'   catch, with a log link, is fit via function \code{glm}.  A null model is 
+#'   synonymous with an intercept-only model.  Log-transformed trap sampling 
+#'   time, in hours, serves as an offset.  Quality of fit is measured via use of
+#'   Akaiake Information Criterion (AIC).
+#'   
+#'   After the initial intercept-only model, increasingly complex Poisson
+#'   log-link models are fit via \code{glm}. More complex models require at
+#'   least ten unique \code{trapVisitID} fishing instances.  Following the
+#'   initial intercept-only model, linear, quadratic, and cubic polynomial
+#'   models are sequentially fit to the data. Assuming the data support it,
+#'   cubic splines are fit following the rejection of a cubic polynomial model. 
+#'   Note that a cubic polynomial model is a cubic spline with no internal
+#'   knots.
+#'   
+#'   Models only consider the next complex model if four conditions are met. 
+#'   First, the difference in the Akaike Information Criterion (AIC), when 
+#'   comparing the current model to the previous model, must be greater than 
+#'   two, after rounding both models to four decimals. 
+#'   
 #'   Second, the number of unique trapping instances, divided by 15, rounded
 #'   down, must be greater than or equal to the model's degrees of freedom,
-#'   excluding an intercept.  This means that for a linear model, at least 15
-#'   data points are required.  Similar logic requires 30 for a quadratic.  The
-#'   table below summarizes the relationship between the number of data points (or trapping instances) and maximal
-#'   model possible.
-#'
-#'  \tabular{cc}{
-#'    dof \tab model type                               \tab n trapping instances \tab model-form
-#'    0   \tab intercept-only                           \tab 15
-#'    1   \tab linear                                   \tab 30
-#'    2   \tab quadratic                                \tab 45
-#'    3   \tab cubic                                    \tab 60
-#'    4   \tab cubic spline with one internal knot      \tab 75
-#'    5   \tab cubis spline with two internal knots     \tab 90
+#'   excluding an intercept. This means that for a linear model, which has one
+#'   degree of freedom, excluding an intercept, at least 15 data points are
+#'   required. Similar logic requires 30 unique trapping instances for a 
+#'   quadratic, and so on.  Global variable \code{knotMesh} sets the number of 
+#'   unique trapping instances required for consideration of a more complex 
+#'   model.
+#'   
+#'   Third, resulting parameter estimates must not be on the boundary of the
+#'   attainable values.  Due to the log-linked models utilized here, this means
+#'   that parameter estimates must not be infinite.  (correct?)
+#'   
+#'   Finally, models can at most incorporate up to 15 degrees of freedom.  This
+#'   means all cubic splines with 270 or more unique trapping instances can top
+#'   off with at most 12 piecewise cubic polynomials. (check this again later)
+#'   
+#'   The table below summarizes the relationship between the number of data
+#'   points, i.e., unique trapping instances, and maximal model possible.
+#'   
+#'  \tabular{cccc}{
+#'    dof \tab model type                               \tab n trapping instances \tab model-form # do we care?
+#'    0   \tab intercept-only                           \tab 1                    \tab \beta_0    
+#'    1   \tab linear                                   \tab 15
+#'    2   \tab quadratic                                \tab 30
+#'    3   \tab cubic                                    \tab 45
+#'    4   \tab cubic spline with one internal knot      \tab 60
+#'    5   \tab cubis spline with two internal knots     \tab 75
 #'    ... \tab ...                                      \tab ...
-#'    k   \tab cubic spline with (k - 3) internal knots \tab 15*(k - 1)           \tab \beta_0 + \beta_1 + \beta_2
+#'    k   \tab cubic spline with (k - 3) internal knots \tab 15*(k + 3)           \tab \beta_0 + \beta_1 + \beta_2
 #'  }
+#'    
+#' Models with at least 60 unique trapping instances incorporate a B-spline 
+#' basis matrix via function \code{bs}. This means that piecewise polynomials 
+#' are utilized to fit observed trends, with one piece covering a particular 
+#' subset in the date range covered by trapping.  The points covered by one 
+#' polynomial piece correspond to quantiles in the temporal range. (correct?) 
+#' Each piecewise polynomial is at most a cubic polynomial such that the end 
+#' point of one piece connects with the start point of the next. Additionally, 
+#' both first- and second-order derivatives are equal;  thus, resulting splines,
+#' which may be composed of several individual polynomial pieces, appear smooth 
+#' over their entire sample range.
+#' 
+#' Parameter \code{df}, or the model degrees of freedom in \code{bs}, determines
+#' the number of internal knots utilized.  The value of \code{df} corresponds to
+#' the values in the Table above.  Function \code{bs} makes no consideration of 
+#' model intercept;  thus all \code{glm}-fit Poisson models utilize an 
+#' additional overall intercept.  This serves to center models along the outcome
+#' axis.
+#' 
+#' @section:  Imputation:  The trap-specific imputation procedure utilizes the 
+#' final catch spline result obtained via the process described above. 
+#' Specifically, it sweeps through all temporally sorted rows of the catch 
+#' dataframe for the trap of interest, replacing all instances of 'Not fishing,'
+#' with spline-estimated fish.  All estimates loop over periods of 'Not fishing'
+#' one at a time, predicting catch for a maximum of up to 24 hours.  #' All 'Not
+#' fishing' periods estimate on hours, in tandem with the temporal unit utilized
+#' in Poisson model offsets.
+#' 
+#' One extra line is inserted into \code{catch.df} for each unique 24-hour 'Not
+#' fishing' period larger than global variable \code{max.ok.gap}. Currently, 
+#' \code{max.ok.gap} is set at 2 hours.  Catch is not estimated for individual
+#' 'Not fishing' episodes of duration less than two hours.  In these cases, the
+#' sampleMinutes associated with these small time frames are subsumed by the
+#' valid fishing period of their most immediately preceding valid trapping
+#' instance.
+#' 
+#' For example, for a 56-hour period of 'Not fishing,' predictions occur for 
+#' each unique 24-hour period, with catch estimated proportionally for any 
+#' "leftover" preceding and antecedent times.  Assuming that a 'Not fishing' 
+#' period coincides with the start of a day, three resulting rows would be 
+#' inserted into \code{catch.df} -- two for the first two 24-hour periods, and a
+#' third for the leftover 8-hour period. The leftover 8-hour period would
+#' necessarily impute one-third the number of fish specified by that trap's
+#' catch model for that day.  This number would then be added to the observed
+#' catch for that day, obtained over the remaining valid fishing of 16 hours. 
+#' The sum of the imputed and observed catch comprises the total catch for that
+#' day. (note that via 'exactly at the start of a day,' i leave ambiguous the
+#' fact that this technically is not midnight.)
+#' 
+#' The \code{StartTime} and \code{EndTime} variables for each of the new lines
+#' inserted into \code{catch.df} are defined so that no 'Not fishing' periods 
+#' remain.  For these lines, variable \code{gamEstimated} is set to \code{TRUE}.
+#' Assignment of variable \code{batchDate} is based on \code{EndTime}, as usual.
+#' This methodology applies for all days between the time period requested via 
+#' \code{min.date} and \code{max.date}, for each unique trap in \code{catch.df}.
 #'
-#'    When required, cubic splines utilize function bs to obtain an appropriate
-#'    basis for use in model fitting. The model degrees of freedom determines
-#'    the number of internal knots utilized, via parameter df.  Individual cubic splines include
-#'    no intercept, although all cubic-spline Poisson catch models
-#'    utilizes an overall intercept, so as to center models along the outcome axis.
-#'
-#' @section:  Imputation:
-#'
-#'
-#' @seealso blah blah blah
-#'
-#' @aliases catch.model catchmodel catchModel
-#'
+#' If \code{catch.df} contains no periods of 'Not fishing,' no imputation is
+#' required.
+#' 
+#' @seealso 
 #'
 #' @examples
 #' F.catch.model( catch.df ) # maybe later we'll make this happen.
-#' @export
 F.catch.model <- function( catch.df ){
-#
-#   Compute and estimate of catch for all days that are missing in the input data set.
-#   i.e., "imput" a value for catch when it is missing
-#
-#   input:
-#   obs.catch.df = data frame from F.get.catch.data
-#
-#   Output:
-#   a data frame with extra lines in it.  One extra line for each 24 hour period in the
-#   gaps that were bigger than max.ok.gap. If gap = 56 hours, there will be 3 extra lines.
-#   Two lines for the first 2 24-hr periods (48 hrs total) plus one line for the remaining 6-hr
-#   period.  StartTime and EndTime for each of the new lines are defined so that no gap appears.  Variable
-#   'gamEstimated' is true for these new lines. Batch date is assigned based on EndTime, as usual.
-#   This applies for all days between start.day and end.day.
-
-# catch.df <- df2      # from est_catch_trapN.r
-# catch.df <- df3      # from est_catch.r
-
-#   Sort the data frame properly, by trapPosition and date of visit
-#   This puts the gaps in their correct locations
-catch.df <- catch.df[ order(catch.df$trapPositionID, catch.df$EndTime), ]
-
-
-#   Compute the "night" variables.
-time.zone <- get("time.zone", env=.GlobalEnv )
-sunset  <- as.POSIXct( paste(format(catch.df$StartTime, "%Y-%m-%d"), "19:00:00"), format="%Y-%m-%d %H:%M:%S", tzone=time.zone )
-sunrise <- as.POSIXct( paste(format(catch.df$EndTime, "%Y-%m-%d"), "07:00:00"), format="%Y-%m-%d %H:%M:%S", tzone=time.zone )
-
-catch.df$night <- 0
-catch.df$pct.night <- 0
-
-ind <- (catch.df$StartTime <= sunset) & (sunrise <= catch.df$EndTime)
-catch.df$night[ind] <- 1
-catch.df$pct.night[ind] <- 1
-
-ind <- (catch.df$StartTime <= sunset) & (sunrise > catch.df$EndTime)
-catch.df$night[ind] <- 1
-catch.df$pct.night[ind] <- (as.numeric(catch.df$EndTime[ind]) - as.numeric(sunset[ind])) / (as.numeric(sunrise[ind]) - as.numeric(sunset[ind]))
-
-ind <- (catch.df$sampleStart > sunset) & (sunrise <= catch.df$EndTime)
-catch.df$night[ind] <- 1
-catch.df$pct.night[ind] <- (as.numeric(sunrise[ind]) - as.numeric(catch.df$StartTime[ind])) / (as.numeric(sunrise[ind]) - as.numeric(sunset[ind]))
-
-
-
-
-#   Fit a rate model.
-
-library(splines)
-
-#catch.df <- catch.df[ catch.df$TrapStatus == "Fishing", ]
-
-catch.df$log.sampleLengthHrs <- log(as.numeric( catch.df$SampleMinutes/60 ))
-p.night <- sum(catch.df$night) / nrow(catch.df)
-
-
-modelDF <- catch.df[,c('n.tot','log.sampleLengthHrs','night')]
-
-#   Fit null model.  The gap catches are NA here, so they are dropped from the fit.  Later, they are replaced.
-nightVec <- catch.df[!is.na(catch.df$n.tot),]$night    # jason add 3/16/2016 - doing gaps in fishing leads to small timeframes -- can have no variability in night var -- all 1!  deal with this possibility.
-if( p.night < 0.9 & (length(nightVec) != sum(nightVec)) ){
   
-    # 3/22/2016 -- turn off night for now, until after it can be fixed.
-    #fit <- glm( n.tot ~ offset(log.sampleLengthHrs)  + night, family=poisson, data=catch.df )
+  # catch.df <- df2      # from est_catch_trapN.r
+  # catch.df <- df3      # from est_catch.r
 
-    fit <- glm( n.tot ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
-} else {
-    fit <- glm( n.tot ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
-}
-fit.AIC <- AIC(fit)
+  library(splines)
+ 
+  #   ---- Sort the data appropriately.  
+  catch.df <- catch.df[ order(catch.df$trapPositionID, catch.df$EndTime), ]
 
-#tmp.cc <<- catch.df   # print( tmp.cc[,c(1,3,4,5,6,7,10,18)] )
+  #   ---- Calculate an offset in terms of log hours.
+  catch.df$log.sampleLengthHrs <- log(as.numeric( catch.df$SampleMinutes/60 ))
 
-#   Fit glm model, increasing df, until the model goes bad
-cat(paste("Number of non-zero catches : ", sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)), "\n"))
-cat("Catch model fitting:\n")
-cat(paste("df= ", 0, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
+  #   ---- Fit null model.  The gap catches are NA here, so they
+  #   ---- are dropped from the fit.  Later, they are replaced.
+  fit <- glm( n.tot ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
+  fit.AIC <- AIC(fit)
 
+  #   ---- Fit glm model, increasing df, until the model goes bad.  
+  cat(paste("Number of non-zero catches : ", sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)), "\n"))
+  cat("Catch model fitting:\n")
+  cat(paste("df= ", 0, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
+  
+  #   ===============================================================================================================================
+  #   ---- Estimate a spline of increasing complexity.  Start with 
+  #   ---- linear, quadratic, cubic (spline with no internal knots),
+  #   ---- cubic (spline with one internal knot), and so on.
+  
+  #   ---- Check to see if we have at least 10 good trapping visits.
+  if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
+    
+    #   ---- This is the degrees of freedom in the smoother part, excluding intercept.
+    cur.df <- 1   
+    
+    #   ---- Get the number of good data points we have to work with, for this trap.
+    nGoodData <- length(!is.na(catch.df$n.tot))    
 
-
-if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
-    cur.df <- 1  # this is df in smoother part, excluding intercept.  1=linear, 2=quadratic, 3=bspline w/ 1 internal knot, 4=bspline w/ 2 internal knots, etc.
-    nGoodData <- length(!is.na(catch.df$n.tot))    # get the number of good data points we have to work with, for this trapPosition
-
+    #   ---- Build model complexity sequentially.  
     repeat{
 
-        valid <- (cur.df <= floor(nGoodData / knotMesh))
+      #   ---- Check if for N of data points to support complexity for this repeat.
+      valid <- (cur.df <= floor(nGoodData / knotMesh))
 
-        # jason - 3/15/2016 -- we add a condition that checks to make sure at least 15 non-NA trapping EndTimes are present in the data.
-        # now that we've dealt with gaps in fishing, we can have very short time periods for which we require a spline.  we need to
-        # make sure that we don't inadvertently over-fit the data.  keep in mind this is per trapPositionID.
-        if( cur.df == 1 & (valid == TRUE) ){
-            j <- as.numeric( format(catch.df$EndTime, "%j"))
-            bs.sEnd <- matrix(j,ncol=1)
-        } else if( cur.df == 2 & (valid == TRUE) ){
-            j <- as.numeric( format(catch.df$EndTime, "%j"))
-            bs.sEnd <- cbind(Lin=j, Quad=j*j)
-        } else if( cur.df > 2 & (valid == TRUE) ){
-            bs.sEnd <- bs( catch.df$EndTime, df=cur.df )      # first time through, this is a cubic with no internal knots
-        }
+      #   ---- Ensure at least 15 non-NA trapping EndTimes are present in the data.
+      #   ---- Need this because of gaps in fishing - don't want to overfit the data.  
+      #   ---- Thus, indicator valid must be TRUE.  
+      if( cur.df == 1 & (valid == TRUE) ){
+        j <- as.numeric( format(catch.df$EndTime, "%j"))  # Add linear spline term.   
+        bs.sEnd <- matrix(j,ncol=1)
+      } else if( cur.df == 2 & (valid == TRUE) ){
+        j <- as.numeric( format(catch.df$EndTime, "%j"))  # Add quadratic spline term.  
+        bs.sEnd <- cbind(Lin=j, Quad=j*j)
+      } else if( cur.df > 2 & (valid == TRUE) ){
+        bs.sEnd <- bs( catch.df$EndTime, df=cur.df )      # Add cubic spline term.  
+      }
 
-        if( p.night < 0.9 & (length(nightVec) != sum(nightVec)) ){
-            # 3/22/2016 -- we get rid of night for now, until it can be fixed later.
-            #cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd + night, family=poisson, data=catch.df ),error=function(e) e ) 
-            cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df ),error=function(e) e )
-        } else {
-            cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df ),error=function(e) e )
-        }
+      #   ---- Hold in memory the current fit.  
+      cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df ),error=function(e) e )
 
-        if(class(cur.fit)[1] == 'simpleError'){
-          cur.AIC <- NA
-          cat(paste0("Model fell apart;  tryCatch caught the output.  You may wish to investigate for trap ",catch.df$trapPositionID,".\n"))
-        } else {
-          cur.AIC <- AIC( cur.fit )
-          cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
-        }
+      #   ---- Ensure current fit is statistically interpretable.  
+      if(class(cur.fit)[1] == 'simpleError'){
+        cur.AIC <- NA
+        cat(paste0("Model fell apart;  tryCatch caught the output.  You may wish to investigate for trap ",catch.df$trapPositionID,".\n"))
+      } else {
+        cur.AIC <- AIC( cur.fit )
+        cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
+      }
 
-        if( is.na(cur.AIC) ){
-          break
-        } else if( !cur.fit$converged | cur.fit$boundary | cur.df > 15 | cur.AIC > (fit.AIC - 2) ){
-          break
-        } else {
-            fit <- cur.fit
-            fit.AIC <- cur.AIC
-            bs.sampleEnd <- bs.sEnd
-            cur.df <- cur.df + 1
-        }
+      #   ---- If AIC is NA, we have a problem;  otherwise, compare the 
+      #   ---- new fit with the previous fit.  Do we keep going or stop?
+      if( is.na(cur.AIC) ){
+        break
+      } else if( !cur.fit$converged | cur.fit$boundary | cur.df > 15 | cur.AIC > (fit.AIC - 2) ){
+        break
+      } else {
+        fit <- cur.fit
+        fit.AIC <- cur.AIC
+        bs.sampleEnd <- bs.sEnd
+        cur.df <- cur.df + 1
+      }
 
     }
-}
-# toPlot <- catch.df[,c('EndTime','n.tot','SampleMinutes','log.sampleLengthHrs')]
-# toPlot$catchRate <- toPlot$n.tot/as.numeric(toPlot$SampleMinutes/60)
-#
-#
-# plot( toPlot$EndTime, toPlot$n.tot/as.numeric(toPlot$SampleMinutes/60), xlab="Date", ylab="Catch per hour",main=paste0(trap," - ",run.name) )
-# pred <- predict( fit, newdata=seq(min(catch.df$EndTime),max(catch.df$EndTime),length.out=30), type="response" )#
-# print(cbind(pred, toPlot$n.tot, toPlot$log.sampleLengthHrs, toPlot$EndTime, catch.df$night)[1:20,])
-# lines(toPlot$EndTime, pred, col="red" )
-# #
+  }
+  
+  #   ---- Done fitting model.
+  print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
 
 
+  #   ===============================================================================================================================
+  #   ---- Loop over gaps one at a time, predicting catch for a maximum of 24-hour periods.  
 
+  catch.df$gamEstimated <- FALSE
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#' @section:  Imputation:  The trap-specific imputation procedure utilizes the final catch spline result obtained
-#' via the process described above.  Specifically, it sweeps through all temporally sorted rows of the catch dataframe for the
-#' trap of interest, replacing all instances of "Not fishing," which spline-estimated fish.  All estimates loop
-#' over gaps one at a time, predicting catch for a maximum of up to 24 hours.  All "Not fishing" gaps estimate on
-#' hours, in tandem with the temporal unit utilized in Poisson model offsets.  For example, for a 56-hour gap, predictions
-#' occur for each 24-hour period, with catch estimated proportionally for any "leftover" preceding and antecedent times.  See examples.
-#'
-#' Catch is not estimated for individual "Not fishing" episodes of duration less than two hours.  In these cases, the sampleMinutes
-#' associated with
-#'
-#'
-#'
-
-
-
-
-
-
-
-
-print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
-
-
-
-#   Done fitting model
-
-# ===============================================================================================================================
-
-#   Loop over gaps one at a time, predicting catch for maximum of 24 hour periods.  for 56 hour gap, you will
-#   predict for 2 24-hr periods and 1 6-hr period.
-
-#est.days <- seq(start.day, end.day, by=24*60*60 )
-#est.days <- format( est.days, "%Y-%m-%d" )
-
-# 3/22/2016 -- we turn off the night variable.  so, force night.in as zero.
-night.in <- 0#"night" %in% attr(fit$terms, "term.labels")
-
-catch.df$gamEstimated <- FALSE
-
-sunset <- sunset[1]   # do something different here (pull in actual sunrise/sunset) if we have actual times.  Otherwise, its constant.
-sunrise <- sunrise[1]
-
-degree <- length(coef(fit)) - 1 - night.in  # number of columns in smoother part only.  Excludes intercept and potential night covars
-if( degree <= 2 ){
+  #   ---- Number of columns in smoother part only.  Excludes intercept.
+  degree <- length(coef(fit)) - 1  
+  if( degree <= 2 ){
     nots <- -1
     b.knots <- -1
-} else {
+  } else {
     nots <- attr(bs.sampleEnd,"knots")
     b.knots <- attr(bs.sampleEnd, "Boundary.knots")
-}
+  }
 
-i <- 1
-all.new.dat <- NULL
-all.gaplens <- NULL
-all.bdates <- NULL
-jason.new <- NULL
+  #   ---- Setup for creation of goodies below.  
+  i <- 1
+  all.new.dat <- NULL
+  all.gaplens <- NULL
+  all.bdates <- NULL
+  jason.new <- NULL
 
-#tmp.cc <<- catch.df
-#cat("---------------- in catch_model.r\n")
+  #   ---- Sweet through catch.df, inserting imputation rows where needed;
+  #   ---- i.e., wherever there is an instance of 'Not fishing'.
+  repeat{
 
-repeat{
+    #   ---- Don't do last line - no need to check.  At end, no more gaps by def'n.
+    if( i >= nrow(catch.df) ) break  
 
-    #if( i == 3) break    # debugging.
-
-    if( i >= nrow(catch.df) ) break   # Don't do last line because no need to check.  After end, no more gaps by def'n.
-
-    #print(catch.df[i,])
-
-    if( catch.df$TrapStatus[i] == "Fishing" ){
+      if( catch.df$TrapStatus[i] == "Fishing" ){
         i <- i + 1
-    } else if(catch.df$SampleMinutes[i] <= (60*max.ok.gap)){
-        #   eliminate the small gaps.  Note, i will never be 1 if we are here.  But put the if in just in case.
+      } else if(catch.df$SampleMinutes[i] <= (60*max.ok.gap)){
+        
+        #   ---- Eliminate the small gaps.  I will never be 1 if we are here.  
+        #   ---- But put if just in case.
         if( i > 1 ){
-            catch.df$EndTime[i-1] <- catch.df$EndTime[i]
-            catch.df$batchDate[i-1] <- catch.df$batchDate[i]
-            catch.df <- catch.df[-i,]
+          catch.df$EndTime[i-1] <- catch.df$EndTime[i]
+          catch.df$batchDate[i-1] <- catch.df$batchDate[i]
+          catch.df <- catch.df[-i,]
         }
-    } else {
+      } else {
 
-        #   We have a missing value = a period of time >max.ok.gap with no estimate of fish
+        #   ---- We have a missing value, i.e., a period of time > max.ok.gap 
+        #   ---- with no estimate of fish.
 
-        #   i.gapLens is length of all intervals that we want to predict for.  They all sum to total of gap.
-        i.gapLens <- c(rep(24, floor(catch.df$SampleMinutes[i]/ (24*60))), (catch.df$SampleMinutes[i]/60) %% 24 )   # length of SampleMinutes, in hours
+        #   ---- i.gapLens is length of all intervals for which we want to
+        #   ---- predict. They all sum to total of the 'Not fishing' period.
+        #   ---- Note that we convert to hours, to match the offset.
+        i.gapLens <- c(rep(24, floor(catch.df$SampleMinutes[i]/ (24*60))), (catch.df$SampleMinutes[i]/60) %% 24 ) 
 
-        #   Make sure last interval is > max.ok.gap
+        #   ---- Make sure last interval is > max.ok.gap.  
         ng <- length(i.gapLens)
         if( i.gapLens[ng] <= max.ok.gap ){
-            i.gapLens[ ng - 1 ] <- i.gapLens[ng-1] + i.gapLens[ng]  # add last small gap to previous interval
-            i.gapLens <- i.gapLens[-ng]
+          
+          # ---- Add last small gap to previous interval.  
+          i.gapLens[ ng - 1 ] <- i.gapLens[ng-1] + i.gapLens[ng]  
+          i.gapLens <- i.gapLens[-ng]
         }
         ng <- length(i.gapLens)
-
-
+ 
+        #   ---- Calculate the length of time for which we need an estimate.
         sEnd <- catch.df$StartTime[i] + cumsum(i.gapLens * 60*60)
         class(sEnd) <- class(catch.df$StartTime)
         attr(sEnd, "tzone") <- time.zone
@@ -336,158 +284,113 @@ repeat{
         class(sStart) <- class(sStart)
         attr(sStart, "tzone") <- time.zone
 
-#        print(cbind(1:nrow(catch.df),catch.df)[(i-2):(i+2),c(1,1+c(1,3,4,5,6,7,10,18))])
-#        print( c(i=i, ng=ng))
-#        print( cbind( i.gapLens, sEnd, sStart ))
-#        print(c(degree=degree))
-#        cat("in catch_model.r (hit return)...")
-#        readline()
-
-        #   The smoother
+        #   ---- The smoother.
         if( degree <= 2 ){
-            bs.sEnd <- -1
+          bs.sEnd <- -1
         } else {
-            bs.sEnd <- bs( sEnd, knots=nots, Boundary.knots=b.knots )
-            dimnames(bs.sEnd)[[2]] <- paste("bs.sampleEnd", dimnames(bs.sEnd)[[2]], sep="")
+          bs.sEnd <- bs( sEnd, knots=nots, Boundary.knots=b.knots )
+          dimnames(bs.sEnd)[[2]] <- paste("bs.sampleEnd", dimnames(bs.sEnd)[[2]], sep="")
         }
 
-        #   Night, if it is in the model
-        if( night.in ){
-            sNight <- 0
-            sPct.night <- 0
-
-            ind <- (sStart <= sunset) & (sunrise <= sEnd)
-            sNight[ind] <- 1
-            sPct.night[ind] <- 1
-
-            ind <- (sStart <= sunset) & (sunrise > sEnd)
-            sNight[ind] <- 1
-            sPct.night[ind] <- (as.numeric(sEnd[ind]) - as.numeric(sunset[ind])) / (as.numeric(sunrise[ind]) - as.numeric(sunset[ind]))
-
-            ind <- (sStart > sunset) & (sunrise <= sEnd)
-            sNight[ind] <- 1
-            sPct.night[ind] <- (as.numeric(sunrise[ind]) - as.numeric(sStart[ind])) / (as.numeric(sunrise[ind]) - as.numeric(sunset[ind]))
-
-            if( degree == 0 ){
-                #   Mean model
-                new.dat <- cbind( Int=matrix( 1, length(sEnd), 1 ), night=sNight )
-            } else if(degree == 1){
-                #   Linear model
-                j <- as.numeric( format(sEnd, "%j") )
-                new.dat <- cbind( Int=rep(1, length(sEnd)), Lin=j, night=sNight )
-            } else if(degree == 2){
-                #   Quadratic model
-                j <- as.numeric( format(sEnd, "%j") )
-                new.dat <- cbind( Int=rep(1, length(sEnd)), Lin=j, Quad=j*j, night=sNight )
-            } else {
-                new.dat <- cbind( 1, bs.sEnd, night=sNight )
-            }
-
+        if( degree == 0 ){
+          
+          #   ---- Mean model.
+          new.dat <- matrix( 1, length(sEnd), 1 )
+        } else if(degree == 1){
+          
+          #   ---- Linear model.
+          j <- as.numeric( format(sEnd, "%j") )
+          new.dat <- cbind( rep(1, length(sEnd)), j )
+        } else if(degree == 2){
+          
+          #   ---- Quadratic model.
+          j <- as.numeric( format(sEnd, "%j") )
+          new.dat <- cbind( rep(1, length(sEnd)), j, j*j )
         } else {
-            if( degree == 0 ){
-                #   Mean model
-                new.dat <- matrix( 1, length(sEnd), 1 )
-            } else if(degree == 1){
-                #   Linear model
-                j <- as.numeric( format(sEnd, "%j") )
-                new.dat <- cbind( rep(1, length(sEnd)), j )
-            } else if(degree == 2){
-                #   Quadratic model
-                j <- as.numeric( format(sEnd, "%j") )
-                new.dat <- cbind( rep(1, length(sEnd)), j, j*j )
-            } else {
-                new.dat <- cbind( 1, bs.sEnd )
-            }
+          
+          #   ---- Cubic Spline model.
+          new.dat <- cbind( 1, bs.sEnd )
         }
+      }
 
-        #   ---- Get the catch estimate, based on the model 
-        #   ---- parameters and length of time.
-        pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
-        pred <- exp(pred)
-  
-        #   ---- Put things we need into a blank data frame 
-        #   ---- suitable for inserting into catch.df.
+      #   ---- Get the catch estimate, based on the model 
+      #   ---- parameters and length of time.
+      pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
+      pred <- exp(pred)
+
+      #   ---- Put things we need into a blank data frame 
+      #   ---- suitable for inserting into catch.df.
+      
+      #   ---- Initialize - do it this way to get classes and factor levels.
+      #   ---- See that if we add a lot of 'Not fishing' days, these become NA rows.
+      #   ---- Also, e.g., we don't update TrapStatus, so only the vars we use later 
+      #   ---- are made to be pretty.
+      new <- catch.df[1:ng,]        
+      
+      #   ---- Put imputed with plus counts.
+      new$n.tot <- pred              
+      new$n.Unassd <- 0 
+      
+      #   ---- we want imputed values to go into tot, and not mess with unassigned.  
+      new$n.Orig <- NA
+      
+      #   ---- As we rebuild, make sure previous values don't pollute these variables.
+      new$n.Orig2 <- 0               
+      new$halfConeAssignedCatch <- 0
+      new$halfConeUnassignedCatch <- 0
+      new$assignedCatch <- 0
+      new$unassignedCatch <- 0
+      new$modAssignedCatch <- 0
+      new$modUnassignedCatch <- 0
+      new$SampleMinutes <- i.gapLens * 60
+      new$EndTime <- sEnd
+      new$StartTime <- sStart
+      new$gamEstimated <- TRUE
+      new$siteID <- catch.df$siteID[i]
+      new$trapPositionID <- catch.df$trapPositionID[i]
+      new <- F.assign.batch.date( new )
+
+      #   ---- Pull out imputed numbers for checking daily counts in baseTable.
+      jason.new <- rbind(jason.new,new)
+
+      #   ---- Insert new data frame into catch.df.
+      catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
+
+      #   ---- Save model matrix used to make predictions for use in bootstrapping. 
+      all.new.dat <- rbind( all.new.dat, new.dat )
+      all.gaplens <- c(all.gaplens, i.gapLens)
         
-        #   ---- Initialize - do it this way to get classes and factor levels.
-        #   ---- See that if we add a lot of 'Not fishing' days, these become NA rows.
-        #   ---- Also, e.g., we don't update TrapStatus, so only the vars we use later 
-        #   ---- are made to be pretty.
-        new <- catch.df[1:ng,]        
-        
-        #   ---- Put imputed with plus counts.
-        new$n.tot <- pred              
-        new$n.Unassd <- 0 
-        
-        #   ---- we want imputed values to go into tot, and not mess with unassigned.  
-        new$n.Orig <- NA
-        
-        #   ---- As we rebuild, make sure previous values don't pollute these variables.
-        new$n.Orig2 <- 0               
-        new$halfConeAssignedCatch <- 0
-        new$halfConeUnassignedCatch <- 0
-        new$assignedCatch <- 0
-        new$unassignedCatch <- 0
-        new$modAssignedCatch <- 0
-        new$modUnassignedCatch <- 0
-        new$SampleMinutes <- i.gapLens * 60
-        new$EndTime <- sEnd
-        new$StartTime <- sStart
-        new$gamEstimated <- TRUE
-        new$siteID <- catch.df$siteID[i]
-        new$trapPositionID <- catch.df$trapPositionID[i]
-        new <- F.assign.batch.date( new )
+      #   ---- Save batch dates because it is possible for two 'Not fishing'
+      #   ---- estimates to fall on the same batch date - must collapse later.
+      all.bdates <- c(all.bdates, new$batchDate)  
   
-        #   ---- Pull out imputed numbers for checking daily counts in baseTable.
-        jason.new <- rbind(jason.new,new)
-  
-        #   ---- Insert new data frame into catch.df.
-        catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
-  
-        #   ---- Save model matrix used to make predictions for use in bootstrapping. 
-        all.new.dat <- rbind( all.new.dat, new.dat )
-        all.gaplens <- c(all.gaplens, i.gapLens)
-        
-        #   ---- Save batch dates because it is possible for two 'Not fishing'
-        #   ---- estimates to fall on the same batch date - must collapse later.
-        all.bdates <- c(all.bdates, new$batchDate)  
-  
-        i <- i + ng + 1
-      #}
-    #   ---- No brace here:  don't need it for the if break.  
+      i <- i + ng + 1
+    #   ---- No brace here for break if above.
   }
 
-}
-
-
-
-
-
-
-#   If there are no gaps, all.new.dat, all.gaplens, and all.bdates are NULL. Turn these into NA so that
-#   storing them in a list in function est_catch works.  (assigning NULL to list item collapses the list)
-if( is.null( all.new.dat )){
+  #   ---- If there are no gaps, all.new.dat, all.gaplens, and all.bdates are NULL. 
+  #   ---- Turn these into NA so that storing them in a list in function est_catch 
+  #   ---- works.  (Note that assigning NULL to list item collapses the list.)
+  if( is.null( all.new.dat )){
     all.new.dat <- NA
-}
+  }
 
-if( is.null( all.gaplens )){
+  if( is.null( all.gaplens )){
     all.gaplens <- NA
-}
+  }
 
-if( is.null( all.bdates )){
+  if( is.null( all.bdates )){
     all.bdates <- NA
-} else {
+  } else {
     class(all.bdates) <- class(sEnd)
     attr(all.bdates, "tzone") <- time.zone
-}
+  }
 
-if( is.null( jason.new )){
-  jason.new <- data.frame(batchDate=as.POSIXlt(character()),trapVisitID=character(),trapPositionID=character(),n.tot=integer(),stringsAsFactors=FALSE)
-}
+  if( is.null( jason.new )){
+    jason.new <- data.frame(batchDate=as.POSIXlt(character()),trapVisitID=character(),trapPositionID=character(),n.tot=integer(),stringsAsFactors=FALSE)
+  }
 
-#print(all.bdates)
-#readline()
-
-jason.new <- jason.new[,c('batchDate','trapVisitID','trapPositionID','n.tot')]   # reduce scope to only those variables needed
-list(df2=catch.df, fit=fit, X.for.missings=all.new.dat, gaps=all.gaplens, batchDate.for.missings=all.bdates, true.imp=jason.new)
-
+  #   ---- Reduce scope to only those variables needed.  
+  jason.new <- jason.new[,c('batchDate','trapVisitID','trapPositionID','n.tot')]   
+  list(df2=catch.df, fit=fit, X.for.missings=all.new.dat, gaps=all.gaplens, batchDate.for.missings=all.bdates, true.imp=jason.new)
 }
