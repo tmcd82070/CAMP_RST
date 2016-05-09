@@ -311,60 +311,60 @@ F.catch.model <- function( catch.df ){
           #   ---- Cubic Spline model.
           new.dat <- cbind( 1, bs.sEnd )
         }
-      }
 
-      #   ---- Get the catch estimate, based on the model 
-      #   ---- parameters and length of time.
-      pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
-      pred <- exp(pred)
-
-      #   ---- Put things we need into a blank data frame 
-      #   ---- suitable for inserting into catch.df.
-      
-      #   ---- Initialize - do it this way to get classes and factor levels.
-      #   ---- See that if we add a lot of 'Not fishing' days, these become NA rows.
-      #   ---- Also, e.g., we don't update TrapStatus, so only the vars we use later 
-      #   ---- are made to be pretty.
-      new <- catch.df[1:ng,]        
-      
-      #   ---- Put imputed with plus counts.
-      new$n.tot <- pred              
-      new$n.Unassd <- 0 
-      
-      #   ---- we want imputed values to go into tot, and not mess with unassigned.  
-      new$n.Orig <- NA
-      
-      #   ---- As we rebuild, make sure previous values don't pollute these variables.
-      new$n.Orig2 <- 0               
-      new$halfConeAssignedCatch <- 0
-      new$halfConeUnassignedCatch <- 0
-      new$assignedCatch <- 0
-      new$unassignedCatch <- 0
-      new$modAssignedCatch <- 0
-      new$modUnassignedCatch <- 0
-      new$SampleMinutes <- i.gapLens * 60
-      new$EndTime <- sEnd
-      new$StartTime <- sStart
-      new$gamEstimated <- TRUE
-      new$siteID <- catch.df$siteID[i]
-      new$trapPositionID <- catch.df$trapPositionID[i]
-      new <- F.assign.batch.date( new )
-
-      #   ---- Pull out imputed numbers for checking daily counts in baseTable.
-      jason.new <- rbind(jason.new,new)
-
-      #   ---- Insert new data frame into catch.df.
-      catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
-
-      #   ---- Save model matrix used to make predictions for use in bootstrapping. 
-      all.new.dat <- rbind( all.new.dat, new.dat )
-      all.gaplens <- c(all.gaplens, i.gapLens)
-        
-      #   ---- Save batch dates because it is possible for two 'Not fishing'
-      #   ---- estimates to fall on the same batch date - must collapse later.
-      all.bdates <- c(all.bdates, new$batchDate)  
+        #   ---- Get the catch estimate, based on the model 
+        #   ---- parameters and length of time.
+        pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
+        pred <- exp(pred)
   
-      i <- i + ng + 1
+        #   ---- Put things we need into a blank data frame 
+        #   ---- suitable for inserting into catch.df.
+        
+        #   ---- Initialize - do it this way to get classes and factor levels.
+        #   ---- See that if we add a lot of 'Not fishing' days, these become NA rows.
+        #   ---- Also, e.g., we don't update TrapStatus, so only the vars we use later 
+        #   ---- are made to be pretty.
+        new <- catch.df[1:ng,]        
+        
+        #   ---- Put imputed with plus counts.
+        new$n.tot <- pred              
+        new$n.Unassd <- 0 
+        
+        #   ---- we want imputed values to go into tot, and not mess with unassigned.  
+        new$n.Orig <- NA
+        
+        #   ---- As we rebuild, make sure previous values don't pollute these variables.
+        new$n.Orig2 <- 0               
+        new$halfConeAssignedCatch <- 0
+        new$halfConeUnassignedCatch <- 0
+        new$assignedCatch <- 0
+        new$unassignedCatch <- 0
+        new$modAssignedCatch <- 0
+        new$modUnassignedCatch <- 0
+        new$SampleMinutes <- i.gapLens * 60
+        new$EndTime <- sEnd
+        new$StartTime <- sStart
+        new$gamEstimated <- TRUE
+        new$siteID <- catch.df$siteID[i]
+        new$trapPositionID <- catch.df$trapPositionID[i]
+        new <- F.assign.batch.date( new )
+ 
+        #   ---- Pull out imputed numbers for checking daily counts in baseTable.
+        jason.new <- rbind(jason.new,new)
+  
+        #   ---- Insert new data frame into catch.df.
+        catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
+  
+        #   ---- Save model matrix used to make predictions for use in bootstrapping. 
+        all.new.dat <- rbind( all.new.dat, new.dat )
+        all.gaplens <- c(all.gaplens, i.gapLens)
+          
+        #   ---- Save batch dates because it is possible for two 'Not fishing'
+        #   ---- estimates to fall on the same batch date - must collapse later.
+        all.bdates <- c(all.bdates, new$batchDate)  
+    
+        i <- i + ng + 1
+      } 
     #   ---- No brace here for break if above.
   }
 
