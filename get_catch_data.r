@@ -100,20 +100,6 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     cat('\n')
     cat('\n')
     
-<<<<<<< Updated upstream
-    # jason adds so we can see which of the J reports this run comes from.  
-    if(exists("testing")){
-      if(testing == TRUE){
-        theBegs <- c(beg0,beg1,beg2,beg3,beg4,beg5,beg6)
-        theJ <- max(theBegs)
-        numJ <<- which(c(theBegs) == theJ) - 1
-        if(length(numJ) > 1){
-          numJ <<- numJ[2]  # a tie -- happens during testing.
-        }
-      }
-    }
-    catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  # swap out old catch with the new catch.
-=======
 #     #   ---- Jason adds so we can see which of the J reports this run originates.  
 #     if(exists("testing")){
 #       if(testing == TRUE){
@@ -125,20 +111,14 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     
     #   ---- Swap out the old catch with the new catch.
     catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  
->>>>>>> Stashed changes
     
     # for debugging
     jCatch <<- catch
     #catch <- jCatch
     
-<<<<<<< Updated upstream
-    catch$lifeStage <- catch$bioLS
-    catch$bioLS <- NULL
-=======
     #   ---- Preserve the biologist-assigned lifestages.
     #catch$lifeStage <- catch$bioLS
     #catch$bioLS <- NULL
->>>>>>> Stashed changes
     
     cat('\n')
     cat('\n')

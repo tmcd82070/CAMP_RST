@@ -399,36 +399,6 @@ repeat{
                 new.dat <- cbind( 1, bs.sEnd )
             }
         }
-<<<<<<< Updated upstream
-
-#        cat("---------------- in catch_model.r\n")
-#        print(new.dat)
-#        print(i.gapLens)
-#        print(length(i.gapLens))
-#        print(coef(fit))
-#        print(c(degree=degree))
-#        cat("in catch_model.r (hit return)...")
-#        readline()
-
-        pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
-        pred <- exp(pred)
-
-        #   Put things we need into a blank data frame suitable for inserting into catch.df
-        new <- catch.df[1:ng,]         # initialize - do it this way to get classes and factor levels -- note that if we add a lot of not fishing days, these become NA rows.
-                                       # observe that we don't update TrapStatus for example, so only the vars we use later are made to be pretty.
-        new$n.tot <- pred              # put imputed with plus counts.
-        new$n.Unassd <- 0              # we've already accounted for these?
-        new$n.Orig <- NA               # jason add 4/17/2015 ... we want imputed values to go into tot, and not mess with unassigned numbers
-        new$n.Orig2 <- 0               # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
-        new$halfConeAssignedCatch <- 0     # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
-        new$halfConeUnassignedCatch <- 0   # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
-        new$assignedCatch <- 0             # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
-        new$unassignedCatch <- 0           # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
-        new$modAssignedCatch <- 0          # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
-        new$modUnassignedCatch <- 0        # jason add 1/14/2016 ... as we rebuild our df, make sure previous values don't pollute this variable
-        new$SampleMinutes   <- i.gapLens * 60
-=======
-      
 
         #   ---- Get the catch estimate, based on the model 
         #   ---- parameters and length of time.
@@ -460,51 +430,10 @@ repeat{
         new$modAssignedCatch <- 0
         new$modUnassignedCatch <- 0
         new$SampleMinutes <- i.gapLens * 60
->>>>>>> Stashed changes
         new$EndTime <- sEnd
         new$StartTime <- sStart
         new$gamEstimated <- TRUE
         new$siteID <- catch.df$siteID[i]
-<<<<<<< Updated upstream
-        #new$mean.fl <- NA
-        #new$sd.fl <- NA
-        new$trapPositionID <- catch.df$trapPositionID[i]
-        new <- F.assign.batch.date( new )
-
-       #print(new)                                             # jason turn on
-       #print(c(nrow.catch.df=nrow(catch.df), i=i, ng=ng))     # jason turn on
-
-       # pull out the actual imputed numbers only for checking daily counts in baseTable.
-       jason.new <- rbind(jason.new,new)                                      #
-
-       #   Insert new data frame into catch.df
-       # degenerate case -- trap 42080, rbdd, 9/23/1998, fall, chucking zeros, results in 2 not fishing cases, and 2 fishing cases.
-       # somehow, the code immediately above is throwing in an extra not-fishing.  maybe because the first line is a not
-       # fishing?  not sure why.  this is the problem -- expand rbind here to allow for not fishing when i = 1.
-#        if(i == 1){                                                    # we only have this true if first row of catch.df is Not fishing
-#          catch.df <- rbind( new, catch.df[(i+1):nrow(catch.df),] )    # jason allows this condition if i = 1 is Not fishing, 1/22/2016.
-#        } else {
-        catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
-       # }
-#        print(c(nrow.catch.df=nrow(catch.df)))
-
-        #   Save model matrix used to make predictions for use in bootstrapping
-        all.new.dat <- rbind( all.new.dat, new.dat )
-        all.gaplens <- c(all.gaplens, i.gapLens)
-        all.bdates <- c(all.bdates, new$batchDate)  # we must save batch dates because it is possible for two gap estimates to fall on the same batch date
-
-#        print(cbind(1:nrow(catch.df),catch.df)[(i-2):(i+ng+2),c(1,1+c(1,3,4,5,6,7,10,18))])
-#        cat("in catch_model (bottom of loop): Hit return to continue...")
-
-        i <- i + ng + 1
-
-
-#        print(c(new.i=i))
-#        cat("in catch_model (bottom of loop): Hit return to continue...")
-#        readline()
-
-    }
-=======
         new$trapPositionID <- catch.df$trapPositionID[i]
         new <- F.assign.batch.date( new )
   
@@ -526,9 +455,6 @@ repeat{
       }
     #   ---- No brace here:  don't need it for the if break.  
   }
->>>>>>> Stashed changes
-
-
 
 }
 
