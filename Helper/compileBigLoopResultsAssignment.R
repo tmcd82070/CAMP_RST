@@ -117,6 +117,7 @@ nrow(all)
 all$time <- ifelse(is.na(all$time),'--',all$time)
 all$lifeStage <- as.character(droplevels(all$lifeStage))
 all$lifeStage <- ifelse(is.na(all$lifeStage),'--',all$lifeStage)
+all$times <- all$times * 60    # convert to minutes.
 
 all <- all[order(all$river,all$siteName,all$max.date,all$file,all$run,all$lifeStage,all$time),]
 all$bMag <- all$bOOL <- all$sequence <- NULL
