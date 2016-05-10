@@ -36,6 +36,10 @@ getRiverPassage <- function(thePlatform,theRiver,stemB){
   
   
   
+  
+  
+  
+  
   getTimes <- function(stemB,times){
     
     allTimes <- NULL
@@ -64,7 +68,19 @@ getRiverPassage <- function(thePlatform,theRiver,stemB){
     for(i in 1:length(checks)){
       oneCheck <- read.csv(paste0(stemB,'/',checks[i]))
       oneCheck$testi <- strsplit(checks[i],"--")[[1]][1]
-      oneCheck$file <- left(right(strsplit(checks[i],"-")[[1]][7],17),2)
+      oneCheck$file <- right(left(checks[i],gregexpr(pattern="J",checks[i])[[1]][1] + 1),2)
+      
+#       if( gregexpr(pattern="Fall",checks[i])[[1]][1] > -1 ){
+#         oneCheck$run <- right(left(checks[i],gregexpr(pattern="Fall",checks[i])[[1]][1] + 3),4)
+#       } else if ( gregexpr(pattern="Spring",checks[i])[[1]][1] > -1 ){
+#         oneCheck$run <- right(left(checks[i],gregexpr(pattern="Spring",checks[i])[[1]][1] + 5),6)        
+#       } else if ( gregexpr(pattern="Late fall",checks[i])[[1]][1] > -1 ){
+#         oneCheck$run <- right(left(checks[i],gregexpr(pattern="Late fall",checks[i])[[1]][1] + 8),9)        
+#       } else if ( gregexpr(pattern="Winter",checks[i])[[1]][1] > -1 ){
+#         oneCheck$run <- right(left(checks[i],gregexpr(pattern="Winter",checks[i])[[1]][1] + 5),6)
+#       }
+      
+      
       allChecks <- rbind(allChecks,oneCheck)
     }
     #theTesti <- unique(allChecks$testi)
@@ -92,7 +108,7 @@ mok <- getRiverPassage(thePlatform,'Mokelumne River',paste0('//lar-file-srv/Data
 sta <- getRiverPassage(thePlatform,'Stanislaus River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
 kni <- getRiverPassage(thePlatform,"Knight's Landing",paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
 
-all <- rbind(sac,ame,fea,mok,sta,kni)
+all <- rbind(sac,ame,fea,mok,sta),kni)
 nrow(all)
 all <- all[!is.na(all$bEst),]
 all <- all[all$bEst > 0,] 
@@ -104,6 +120,10 @@ all$lifeStage <- ifelse(is.na(all$lifeStage),'--',all$lifeStage)
 
 all <- all[order(all$river,all$siteName,all$max.date,all$file,all$run,all$lifeStage,all$time),]
 all$bMag <- all$bOOL <- all$sequence <- NULL
+
+all$bEst <- ifelse(all$bEst > 1000000000,-99,all$bEst)
+all$bLCL <- ifelse(all$bLCL > 1000000000,-99,all$bLCL)
+all$bUCL <- ifelse(all$bUCL > 1000000000,-99,all$bUCL)
 
 options(scipen=999)
 all$bEst <- format(round(as.numeric(all$bEst), 0),nsmall=0,big.mark=",")#,scientific=FALSE) 
