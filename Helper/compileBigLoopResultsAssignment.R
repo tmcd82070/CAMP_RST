@@ -92,7 +92,31 @@ getRiverPassage <- function(thePlatform,theRiver,stemB){
   
   
   
-  temp1 <- merge(checksDFB,timesDFB,by=c('testi','file'),all.x=TRUE,all.y=TRUE)
+  
+  
+  
+  #   ---- Process the number of queried records.
+  ls_sinks <- filesB[grep('.txt',filesB)]
+  
+  allData <- NULL
+  for(i in 1:length(ls_sinks)){
+    test <- scan(paste0(stemB,"/",ls_sinks[i]),what="character")
+    test <- test[!is.na(test)]
+    rows <- test[which(test=="nrow(expDat):")+1][c(TRUE,FALSE)]
+    runs <- test[which(test=="nrow(expDat):")-15][c(TRUE,FALSE)]
+    file <- left(right(ls_sinks[i],6),2)
+    by <- "All"
+    
+    runBL <- unlist(strsplit(ls_sinks[1],"--",fixed=TRUE))[c(TRUE,FALSE)]
+    
+    thisData <- data.frame(testi=runBL,file=file,by=by,run=runs,rows=rows)
+    allData <- rbind(allData,thisData)
+  }
+  
+  
+  
+  temp0 <- merge(checksDFB,allData,by=c('testi','file','run'),all.x=TRUE,all.y=TRUE)
+  temp1 <- merge(temp0,timesDFB,by=c('testi','file'),all.x=TRUE,all.y=TRUE)
   temp2 <- merge(bigDFB,temp1,by=c('testi','file','run'),all.x=TRUE)
   
   #write.csv(ame,"C:/Users/jmitchell/Desktop/ame.csv")
