@@ -173,51 +173,24 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     }
   }
 
-  #   ---- STEP 2:  Reassign lifestage, if requested.     
-  if(autoLS){
-    cat('Starting mixture distribution estimation to assign life stage. \n')
-    ##write.csv(catch,paste0(output.file,site,'.csv'),row.names=FALSE)
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    
-#     #   ---- Jason adds so we can see which of the J reports this run originates.  
-#     if(exists("testing")){
-#       if(testing == TRUE){
-#         theBegs <- c(beg0,beg1,beg2,beg3,beg4,beg5,beg6)
-#         theJ <- max(theBegs)
-#         numJ <<- which(c(theBegs) == theJ) - 1
-#       }
-#     }
-    
-    #   ---- Swap out the old catch with the new catch.
-    catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  
-    
-    # for debugging
-    #jCatch <<- catch
-    #catch <- jCatch
-    
-#     #   ---- Preserve the biologist-assigned lifestages.
-#     catch$lifeStage <- catch$bioLS
-#     catch$bioLS <- NULL
-    
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('The mixture distribution estimation to assign life stage is over. \n')
-    cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^> \n')
-    ## for debugging
-    ##return(catch)
-    ##stop('That is good enough')
-  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   #   ---- STEP 3:  Look for gaps in fishing, as defined by global
   #   ----          variable fishingGapMinutes.  If any are found, 
   #   ----          reassign trapPositionIDs.  
-  theLongCatches <- catch[catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
+  theLongCatches <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
   nLongCatches <- nrow(theLongCatches)
   if(nLongCatches > 0){
     
@@ -241,6 +214,88 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     #   ---- while ensuring data frame consistency.
     catch$oldtrapPositionID <- catch$trapPositionID
   }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #   ---- STEP 2:  Reassign lifestage, if requested.     
+  if(autoLS){
+    cat('Starting mixture distribution estimation to assign life stage. \n')
+    ##write.csv(catch,paste0(output.file,site,'.csv'),row.names=FALSE)
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    
+    #   ---- Swap out the old catch with the new catch.
+    catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  
+    
+    # for debugging
+    jCatch <<- catch
+    #catch <- jCatch
+    
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('The mixture distribution estimation to assign life stage is over. \n')
+    cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^> \n')
+    ## for debugging
+    ##return(catch)
+    ##stop('That is good enough')
+  }
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
  
   #   ---- STEP 4:  Get includeCatchID variable.  This is an
   #   ----          historical addition, based on an old request.
