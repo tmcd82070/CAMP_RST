@@ -7,33 +7,32 @@
 F.buildReportCriteriaRelease(site, min.date, max.date)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 }
 \value{
-<describe return value>
+Within R, the total integer count of efficiency trials.  Within
+  Access, table \code{blah} is created, itemizing the releases.
 }
 \description{
-This updates a table in the Access file to contain the trapVisitID's for releases.
-   i.e., the trapVisitID's for a particular site between min.date and max.date.
-   Difference between this and the other buildReportCriteria is this for releases and subsequent recaptures.
+Update a table in the underlying Access database to contain release
+trapVisitIDs and count the number of efficiency trials.
 }
 \details{
-<other comments found in file>
-NA
-NA
+Unique efficiency trials are identified by unique \code{releaseIDs}
+  falling within the specified \code{min.date} and \code{max.date}.
+  
+  Note that the difference between this and the other
+  \code{buildReportCriteria} query sequence is this one's focus on releases
+  and subsequent recaptures.
 }
 \examples{
-<insert examples>
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
 }
 

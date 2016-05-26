@@ -11,21 +11,21 @@
 #' 
 #' 
 #' 
-#' @param dat <describe argument>
-#' @param colKeep <describe argument>
-#' @param colRep <describe argument>
+#' @param dat describe argument
+#' @param colKeep describe argument
+#' @param colRep describe argument
 #' 
-#' @details <other comments found in file>
+#' @details other comments found in file
 #'  colRep = single string of the frequency to repeat the data
 #' 
-#' @return <describe return value>
+#' @return describe return value
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
-#' <insert examples>
+#' #insert examples
 #' 
 ###################################################
 ## Jared Studyvin
@@ -38,7 +38,7 @@ expandUnmarked <- function(dat,colKeep,colRep){
     ## dat = data frame
     ## colKeep = string vector of the columns names of the data to be repeated
     ## colRep = single string of the frequency to repeat the data
-    ## require(plyr)
+    require(plyr)
     repeatRow <- function(data,col.Keep,col.Rep){
         row <- data[,col.Keep]
         rep <- data[,col.Rep]

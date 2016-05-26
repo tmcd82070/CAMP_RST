@@ -7,12 +7,12 @@
 assignLSCompare(Data, SAVE = TRUE)
 }
 \arguments{
-\item{Data}{<describe argument>}
+\item{Data}{describe argument}
 
-\item{SAVE=TRUE}{<describe argument>}
+\item{SAVE=TRUE}{describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
 Jared Studyvin
@@ -20,7 +20,7 @@ Jared Studyvin
  output comparison table and figure between biologist life stage assignment and mixture distribution results
 }
 \details{
-<other comments found in file>
+other comments found in file
  for debugging
 data <- subset(Data,FinalRun=='Fall')
  this run
@@ -49,13 +49,13 @@ legBio
 ddply(Data,~FinalRun,compare,save=FALSE)
 }
 \examples{
-<insert examples>
+#insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

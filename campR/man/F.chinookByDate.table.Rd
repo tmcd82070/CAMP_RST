@@ -2,43 +2,44 @@
 % Please edit documentation in R/chinook_by_date.r
 \name{F.chinookByDate.table}
 \alias{F.chinookByDate.table}
-\title{F.chinookByDate.table}
+\title{F.chinookByDate.table - Retrieve data frame of chinnook catches}
 \usage{
 F.chinookByDate.table(site, min.date, max.date, output.file)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{The name of the file prefix under which output is to be 
+saved.}
 }
 \value{
-<describe return value>
+A \code{csv} containing Chinook salmon catch information.  A data
+  frame containing the same information is also returned, but invisibly.
 }
 \description{
-Summarize chinook by date between two dates
-
-
-
-   ---- Retrieve all chinook records between two dates. 
-        run does not work at this point
+Summarize chinook salmon by date between two dates.
 }
 \details{
-<other comments found in file>
-NA
-   ---- Send messages back to the interface
+As its name implies, function \code{F.chinookByDate.table} retrieves
+  only Chinook salmon records, as specified by setting variable 
+  \code{taxon=161980}.  The function utilizes helper function 
+  \code{F.get.all.catch.data} to handle the sum-chinook-by-trap query series.
+  Note that function \code{F.get.catch.data}, utilized in the estimation of 
+  passage, differs from \code{F.get.all.catch.data}.
 }
 \examples{
-<insert examples>
+
+# requires an mdb.
 
 }
-\author{
-WEST Inc.
-}
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+F.get.catch.data.
 }
 

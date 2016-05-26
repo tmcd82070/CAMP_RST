@@ -19,10 +19,10 @@
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
-#' <insert examples>
+#' #insert examples
 #' 
 F.assign.gaplen <- function(df){
 #

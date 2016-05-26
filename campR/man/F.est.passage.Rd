@@ -2,208 +2,92 @@
 % Please edit documentation in R/est_passage.r
 \name{F.est.passage}
 \alias{F.est.passage}
-\title{F.est.passage}
+\title{F.est.passage - Estimate passage}
 \usage{
 F.est.passage(catch.df, release.df, summarize.by, file.root, ci)
 }
 \arguments{
-\item{catch.df}{<describe argument>}
+\item{catch.df}{A data frame with one row per \code{trapvisitID} for a
+particular \code{FinalRun} and \code{lifeStage}.  That is, \code{catch.df}
+has only one (of what could be many) run-by-life-stage combinations.}
 
-\item{release.df}{<describe argument>}
+\item{release.df}{A data frame resulting from a call to function
+\code{F.get.release.data}.  Contains efficiency data.}
 
-\item{summarize.by}{<describe argument>}
+\item{summarize.by}{A text string indicating the temporal unit over which
+daily estimated catch is to be summarized.  Can be one of \code{day}, 
+\code{week}, \code{month}, \code{year}.}
 
-\item{file.root}{<describe argument>}
+\item{file.root}{A text string indicating a prefix to append to all output.}
 
-\item{ci}{<describe argument>}
+\item{ci}{A logical indicating if 95% bootstrapped confidence intervals
+should be estimated along with passage estimates.}
 }
 \value{
-<describe return value>
+A data frame containing daily passage estimates and associated
+  standard errors.
 }
 \description{
-Compute passage estimates.
-
-   Input:
-   catch.df = data frame with one row per trapvisitID for a particular FinalRun and lifeStage
-       That is, catch.df has only a single run X lifestage combination
-   release.df = data frame resulting from call to F.get.release.data.  Contains info on efficiency.
-   summarize.by = string specifying how to sum passage estimates.  valid values
-       are "day", "week", "month", "year".
-   file.root = root of file name for graphics files
-
-
- catch.df <- catch.df.ls
- release.df <- release.df
- summarize.by <- by
- file.root <- out.fn.root
- ci <- ci
-
-   Output,
-   A data frame containing date, passage estimate, and SE of passage estimate.
+Compute passage estimates, given catch and efficiency trial data.
 }
 \details{
-<other comments found in file>
- update ----- 3/14/2016 ----- github issue # 73 -----
- error in estimation of passage -- need to collapse over lifeStage.  this would ideally be done in the very
- beginning, but Unassigned counts are subsumed in run + lifeStage combinations in summarize_fish_visit.
- so do the collapse over lifeStage here.  need to do this before we do all the merging stuff immediately
- below this section -- otherwise, the merges all break down.
- helper function to collapse fish counts.
-var <- 'halfConeUnassignedCatch'
-v10 <- collapseEm('n.Orig2')
- amending those data to fix the collapsing over lifestage issue here.
- jason add: this data frame has the raw unmarked counts of catch.  note that rows with missing data for certain days, i.e., for which imputation
- occurs also appear as line items here.  so, to get catch, for different trapPositionID/subSiteID, summarise and add togeter (b/c some
- days have more than one record).  brings back more dates than ultimately wanted; let merge below (after grand.df) take care of which
- to keep.
- jason 4/15/2015, do the same thing as above, but with n.tot.  sloppy to do this twice like this, but i know the above works.
-   ------------------------------------------------------------------
-   Estimate capture for every day of season.  Return value is
-   data frame with columns $batchDate and $catch.
-   By default, this produces one graph in a pdf.  Turn this off with plot=F in call.
-       catch.and.fits has components $catch, $fits, $X.miss, $gaps, $bDates.miss, and $trapsOperating
- the catch dataframe in this list has the imputed values already overwriting the original numbers
-catch.fits <- catch.and.fits$fits  # fits are needed for variance computation
-print(catch[1:20,])
-   ------------------------------------------------------------------
-   Estimate trap efficiency for every batchDate of season.  Return value is
-   data frame with columns $batchDate and $eff.
-   If plot=T, this produces a graph in a pdf.
- # ------ old as of 12/11/2015 -----------------------------
- f.banner(" Efficiency estimation ")
- bd <- sort( unique(catch$batchDate) )
- # --------------------------------------------------------
- ----- jason adds 12/11/2015 so that release.df has info on adjusted beg and end fishing days, for each trap
- getting the bd to work here was tricky, due to time zones, etc.
- jason 3/14/2016 - make sure sequence of dates bd encompasses everything possible.
- ----- jason ends this new section -----------------------------------------------------------------
-   Something is wrong with efficiency data. Make an empty efficiency data frame
-   could do this n <- data.base( catch, efficiency=efficiency$efficiency, gam.estimated.eff=efficiency$gam.estimated )
-   to produce a data frame of values that go into estimator, one line per batchDate
-   ------------------------------------------------------------------
-   Now, estimate passage
-   First merge catch and efficiency data frames
-   Add a trapFunctioning column so can tell when traps start and stop.
-print(catch[1:10,])
-print(catch.and.fits$trapsOperating[1:10,])
-
-catch <- merge( catch, catch.and.fits$trapsOperating, by=c("trapPositionID","batchDate") )
-
-tmp.catch <<- catch
- 3/11/2016 - to ensure that trapPositionIDs with decimals find their efficiency trial trap match,
- we need to make sure we have the old IDs -- otherwise, these won't ever be found.
-   The Grand Merge.  Merge catch info with efficiency info.
- 3/11/2016 - now, get rid of helper variable oldTrapPositionID;  it has served its purpose
-   For each trap, drop the dates that are outside it's start and stop date.  This
-   The season for each trap is identified as non missing catch.  I.e., the grand merge puts
-   in every date because efficiency data frame has all dates.
-doit <- merge(grand.df.rawCatch.Imputed, catch.df3, by=c('trapPositionID','batchDate'),all.x=TRUE)   # bring in halfCone catch
- somewhere, there are comments that state that catches of NA mean zero.  so, replace NA in each of
- rawCatch and ImputedCatch with zero.
- check and make sure that assignedCatch + unassignedCatch + imputedCatch = totalCatch
- check and make sure that assignedCatch + unassignedCatch = inflatedCatch
- check and make sure that inflatedCatch + imputedCatch = totalCatch
-   The passage estimator
-grand.df$passage <- round(grand.df$passage,1)   # round final passage estimate here so different summaries sum to the same number.
- jason.catch <<- catch
- jason.efficiency <<- efficiency
- db <- get( "db.file", env=.GlobalEnv )
- ch <- odbcConnectAccess(db)
-
- includecatchID <- sqlFetch(ch, "TempSamplingSummary")             # jason add to get variable includeCatchID
-
- close(ch)
-
- #  jason add all this get includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST)
- time.zone <- get( "time.zone", env=.GlobalEnv )
- # includecatchID$StartTime <- includecatchID$timeSampleStarted
- includecatchID$EndTime <- includecatchID$timeSampleEnded
- includecatchID$ProjID <- includecatchID$projectDescriptionID
- includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL
- # attr(includecatchID$StartTime, "tzone") <- time.zone
- attr(includecatchID$EndTime, "tzone") <- time.zone
- includecatchID <- includecatchID[,c('trapPositionID','EndTime','includeCatchID')]
- includecatchID$batchDay <- as.character(as.Date(includecatchID$EndTime))
- includecatchID$EndTime <- NULL
- jason - 1/14/2015.  the inclusion of includeCatchID ends up creating extra rows of data, when there is a 1 and a 2 on the same day.
- need to collapse this down...or just get rid of it for the purposes of bootstrapping.
- includecatchID2 <- includecatchID
- includecatchID2$includeCatchID2 <- ifelse(is.na(includecatchID2$includeCatchID),0,includecatchID2$includeCatchID)
- ugh <- includecatchID[,c('trapPositionID','batchDay','includeCatchID')]
- ugh$text <- as.character(includecatchID$includeCatchID)
- heyyy <- reshape(ugh,timevar="text",idvar=c("trapPositionID","batchDay"),direction="wide")
- heyyy[is.na(heyyy)] <- ''
- heyyy$includeCatchID <- paste0(heyyy$includeCatchID.0,heyyy$includeCatchID.1,heyyy$includeCatchID.2)  # keep as char for now, so if it can happen, 01 and 10 and so on don't become 1 and 1
- heyyy[heyyy=='0'] <- "NA"                                                                             # if it can happen, want things like "NA1" or "1NA"
- heyyy <- heyyy[,!(names(heyyy) %in% c('includeCatchID.0','includeCatchID.1','includeCatchID.2'))]
-
- grand.df <- merge(grand.df[!(duplicated(paste0(grand.df$batchDate,grand.df$trapPositionID))),!(names(grand.df) %in% 'includeCatchID')],heyyy,by=c('trapPositionID','batchDay'),all.x=T)
-
- rm(ugh,heyyy)
-   Save grand.df to .GlobalEnv (for debuggin) and write it out to a csv file
- catch.df <<- catch
- grand.df <<- grand.df
- Merge in subsiteNames
- ssiteNames <- attr(catch, "subsites")    # jason turn off
-tmp.df$includeCatchID <- ifelse(is.na(tmp.df$includeCatchID),NA,ifelse(tmp.df$includeCatchID == 1,'Yes',ifelse(tmp.df$includeCatchID == 12,'Yes+No','No')))
- ====== Passage estimates are done by day.  Compute variance and summarize ====================================================================================================
-   Because the summarization (to weeks, years, etc.) needs to go on in the bootstrapping routine,
-   it is easier to do it all there.
-   Even if bootstraps are not called for, F.bootstrap averages over traps (if multiple present) and
-   summarizes by 'summarize.by'.
-   Debugging (turn off bootstrapping)
-ci = F
-   Do I need the following?
-if( summarize.by == "day" ){
-    #   Add in some extra columns that don't apply otherwise.
-    n$catch <- c(tapply( grand.df$catch, index, sum, na.rm=T ))
-    n$pct.imputed.eff <- c(tapply(as.numeric(grand.df$imputed.eff), index, mean, na.rm=T ))
-    n$efficiency <- c(tapply(grand.df$efficiency, index, mean, na.rm=T ))
+Estimation of passage is comprised of two main steps.  The first 
+  fetches and formats all the necessary data.  The second performs 
+  statistical analysis on those processed data.  Function 
+  \code{F.est.passage} is the workhorse function for all statistical 
+  analysis.  As such, it calls functions responsible for catch modeling
+  (\code{F.est.catch}), efficiency modeling (\code{F.est.efficiency}), and
+  bootstrapping (\code{F.bootstrap.passage}).
+  
+  Function calls resulting in non-zero catch, but zero efficiency, due to no
+  valid efficiency trials, result in warnings of zero efficiency.  The 
+  function will continue, but all passage estimates will be \code{NA}.
+  
+  Function \code{F.est.passage} brings together catch and efficiency data. 
+  Called the 'grand merge,' resulting data frame \code{grand.df} forms the 
+  basis of all passage estimation.  Merging takes places on unique
+  combinations of \code{trapPositionID} and \code{batchDate}.  Trap matches
+  respect decimal suffixes appended due to gaps in fishing.
+  
+  In processing prior to the creation of the \code{grand.df}, the dates 
+  outside the first and last date are dropped from each trap. In reality 
+  however, the season for each trap is identified as non missing catch.  In 
+  other words, the grand merge inserts every date for all traps because the 
+  underlying efficiency data frame has all dates.
+  
+  Function \code{F.bootstrap.passage} summarizes the daily passage estimates 
+  housed in \code{grand.df} to the temporal units specified via 
+  \code{summarize.by}, and then compiles all statistics for eventual
+  reporting.  Statistics include weighted mean forklength, standard deviation
+  of forklength, and fish n.
 }
-   ---- Summarize auxillary information about catch
-   ---- jason  - 4/15/2015.  note that these stats use vars of the form 'x.Orig'. use the other set, based on
-        .tot for metrics pertaining to the inflated catch.
- 3/14/2016 -- grab the correct catch.df for use in summarizing.
- jason: for some reason, for testi = 7, bootstrap passage brings back one year, but summarize index brings back
- another, when calculating per year.  this messes up the join below. force the two to be the
- same in this one case.
- 3/14/2016 -- grab the correct catch.df for use in summarizing.
-   Mean Forklength
-   SD of Forklength
-   n
-   Mean Forklength
-   SD of Forklength
-   n
-   Mean and SD computations
- 3/14/2016 -- grab the correct catch.df for use in summarizing.
-   Amount of time sampled
- if(summarize.by == "day"){
-   catch.df.reduced <- aggregate(catch.df,by=list(ID=catch.df$batchDate),head,1)  # 6/5/2015 - jason reduces df to select first of each and changes to batchdate...
-   catch.df.Fishing <- catch.df
-   catch.df.Fishing$SampleMinutes <- ifelse(catch.df.Fishing$TrapStatus == 'Not fishing',0,catch.df.Fishing$SampleMinutes)
-   catch.df.Fishing <- unique(catch.df.Fishing[,c('SampleMinutes','batchDate','trapPositionID')])
-   num <-  aggregate(catch.df.Fishing$SampleMinutes,by=list(ID=catch.df.Fishing$batchDate),sum)[,2]
- } else {
-   catch.df.reduced <- aggregate(catch.df,by=list(ID=catch.df$trapVisitID),head,1)  # 4/13/2015 - jason reduces df to select first of each
-   num <- as.numeric( catch.df.reduced$SampleMinutes )                                   # 4/13/2015 - jason pulls from reduced df
- }
-den <- rep( 24, length(batchDate.filled) )
-den <- tapply( den, index.aux2, sum, na.rm=T )  # this is total hours in 'index' period
-
-   Note: I will leave the commented out code that computes amount of time in each index period.  The reason
-   I commented it out is that 'den' may have more rows than num.  i.e., catch.df$batchDate may have fewer rows than batchDate.filled.
-   This makes 'den' difficult to merge back in to 'num', but it could be done.
-   ---- Merge 'n' and 'aux' information together
-   Put the final data frame together
+\section{Fish Accounting}{
+  
+Passage estimation results in the partitioning of 
+  fish into different groups. For example, a fish could be assigned/not 
+  assigned, measured/not measured, half-cone/full-cone, plus-count, imputed, 
+  or inflated (define these?). Function \code{F.est.passage} organizes all of
+  these different types of fish following their initial partitioning in
+  function \code{F.get.catch.data}. Fish accounting on a daily basis ensures 
+  that the counts of these different types of fish collapse back to their 
+  original totals following analytic processing.  Said another way, fish 
+  accounting ensures that no fish are mysteriously gained or lost during the 
+  passage estimation process.
+  
+  Three types of daily checks are performed for each individual trap.
+  
+  Do we need to define these? 
+  
+  \enumerate{
+    \item{eqn{totalCatch =  assignedCatch + unassignedCatch + imputedCatch}}
+    \item{eqn{inflatedCatch =  assignedCatch + unassignedCatch}}
+    \item{eqn{totalCatch =  inflatedCatch + imputedCatch}}
+  }
 }
 \examples{
-<insert examples>
-
-}
-\author{
-WEST Inc.
+# query mdb?
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.get.release.data}, \code{F.get.catch.data}, \code{F.est.passage}
 }
 

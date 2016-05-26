@@ -18,17 +18,13 @@
 #'   plot.file=file.root
 #' 
 #' 
-#' @param  catch.df <describe argument>
-#' @param  plot=TRUE <describe argument>
-#' @param  plot.file="raw_catch.pdf"  <describe argument>
+#' @param  catch.df describe argument
+#' @param  plot=TRUE describe argument
+#' @param  plot.file="raw_catch.pdf"  describe argument
 #' 
-#' @details <other comments found in file>
+#' @details other comments found in file
 #'         Times in run season must be same as time in batchDate each day. 
 #'         batchDate must occur at same time every day.  Can be missing days, but always at same time when present.
-#' start.season <- min(catch.df$batchDate)
-#' end.season   <- max(catch.df$batchDate)
-#'    ---- Fill in the gaps for individual traps
-#'  catch.dff <<- catch.df   # save a copy for debugging
 #'    Impute a value for the gaps
 #'    When df2 comes back from F.catch.model, it has extra lines in it.  One extra line for each 24 hour period in the 
 #'    gaps that were bigger than max.ok.gap. If gap = 3 days, there will be 3 extra lines.
@@ -43,14 +39,14 @@
 #'    ---- Before we un-matrix-ized est.catch, we saved a copy so we could compute number of traps operating each day because it is easier.
 #'         But, gaps are filled.  Take back out the gaps when counting.
 #' 
-#' @return <describe return value>
+#' @return describe return value
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
-#' <insert examples>
+#' # insert examples
 #' 
 F.est.catch.trapN <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 #

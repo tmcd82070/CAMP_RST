@@ -2,76 +2,67 @@
 % Please edit documentation in R/plot_passage.r
 \name{F.plot.passage}
 \alias{F.plot.passage}
-\title{F.plot.passage}
+\title{F.plot.passage - Plot passage through time}
 \usage{
 F.plot.passage(df, out.file = "passage.png")
 }
 \arguments{
-\item{df}{<describe argument>}
+\item{df}{A data frame containing passage estimates calculated via function 
+\code{F.est.passage} per one of day, week, month, or year.}
 
-\item{out.file="passage.png"}{<describe argument>}
+\item{out.file}{The name of the file prefix under which output is to be
+saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-<describe return value>
+Output includes a \code{png} graphical display of estimated 
+  efficiencies, per trap, by day, as well as a \code{csv} of the data points 
+  utilized in making the graph.  The \code{csv} includes both the estimated 
+  values from the efficiency model, as well as the observed counts of fish 
+  deriving from efficiency trials.
+  
+  The function also prints the input dataframe \code{df} to the Console or to 
+  a logfile, depending on if the function is called directly or via an 
+  automated Platform call, respectively.
 }
 \description{
-Plot a time series of passage estimates.  This can be called from
-   Sweave files to put a figure in a report.
-
-   This file produces a bar graph of the passage estimates in df. 
-
-   input:
-   df = passage estimate data frame from F.est.passage.  This is passage summarized by "day", "week", "month" or "year".
-       It is assumed that the percentage of the estimate that was imputed is available in df$pct.imputed.catch. 
-
-
-   df<-pass
-     out.file='passage.png'
+Plot a bar graph of the passage estimates in temporal units specified by the
+user.
 }
 \details{
-<other comments found in file>
-   Construct matrix of bar heights
-   Compute extent of y axis
-   GRaph using barplot
-   add a smoother line here. 
-lines( supsmu( mp, hgts), lwd=2, col="darkblue" )  # Doug did not like this
-   Add x axis labels
-   Just label 1st of every month
-   Label every day
-        mons <-  format(df$date, "%b") 
-        yrs <- format(df$date, "%Y")
-        dt1 <- paste( "01", mons , sep="" )
-        mons <-  as.numeric(format(df$date, "%m")) 
-        dt2 <- as.POSIXct( strptime( paste("1",mons+1,yrs), "%d %m %Y" )) 
-        dt2 <- dt2 - 24*60*60
-        dt2 <- format(dt2, "%d%b")
-        
-        dt1[1] <- format( min(df$date), "%d%b" )
-        dt2[length(df$date)] <- format( max(df$date), "%d%b" )
- "weekly"  (yearly does not get plotted)   
- jason -- add.  need a lookup table that maps days to our defined julian weeks here.  
- jason add. -- copy from passage.r
- can't figure out how to join on posix dates.  so cheating. 
-         df <- subset(df, select = -c(date.alone,uniqueDate,julianWeek,julianWeekLabel) )   # jason - don't think we need this here.
-       old
-         dt1 <- df$date
-         dt2 <- c(df$date[-1] - 24*60*60, max(df$date))
-         dt1 <- format(dt1, "%d%b")
-         dt2 <- format(dt2, "%d%b")
-         dt <- paste(dt1, dt2, sep="-")
-         my.cex <- .75
-   Add y axis labels
-   Add total passage
-   Add title
+It is assumed that data frame \code{df} contains at the least 
+  variables \code{<temporal time frame>}, \code{passage}, \code{date}, and 
+  \code{pct.imputed.catch}. Variable \code{<temporal time frame>} is either 
+  one of "\code{year}," "\code{month}," "\code{week}," or "\code{day}." Weeks
+  are reported in a modified Julian fashion;  see Examples.  Passage 
+  estimates for each reported time period are rounded to the nearest whole 
+  fish.  Variable \code{date} is a POSIX date, with data formatted as 
+  \code{\%Y-\%m-\%d}, i.e., the ISO 8601 date format.  Variable 
+  \code{df$pct.imputed.catch} contains the proportion of the estimate that 
+  was imputed, and so takes on values between zero and one, inclusive.
+  
+  Other variables included as part of dataframe \code{df} are not utilized 
+  \emph{per se} in the function, but are passed through.
 }
 \examples{
-<insert examples>
+#Create a data frame.
+df <- data.frame(week=c("2013-04","2013-05","2013-06","2013-07","2013-08","2013-09","2013-10" ),
+                 passage=c(170440,451627,516025,712524,1808704,1009422,330961),
+                 date=c(as.POSIXct(strftime(seq(from=c(ISOdate(2013,1,24)),by="7 days",length.out=7),format="\%F"),tz="America/Los_Angeles")),
+                 pct.imputed.catch=c(0,0,0.07142857,0.03571429,0,0.09523810,0.17857143),
+                 lower.95=c(145533.4,338947.2,338707.6,610530.4,1617157.8,908780.0,284323.1),
+                 upper.95=c(211384.9,505920.6,617590.4,772284.6,2108123.6,1183509.0,366553.2),
+                 nForkLenMM=c(1267,1800,1298,1900,1800,1891,1300),
+                 meanForkLenMM=c(36.30466,36.52500,36.56086,36.56105,36.58111,36.42041,36.37154),
+                 sdForkLenMM=c(1.183525,1.121683,1.098411,1.195978,1.233118,1.309681,1.454088),
+                 sampleLengthHrs=c(235.2500,336.7833,313.7000,453.5000,496.3000,450.8167,288.8833),
+                 sampleLengthDays=c(9.802083,14.032639,13.070833,18.895833,20.679167,18.784028,12.036806))
+attr(df,"run.name") <- "Fall"
+attr(df,"lifestage.name") <- "All lifestages"
+attr(df,"summarized.by") <- "week"
+attr(df,"site.name") <- as.factor(c("A River in the Central Valley"))
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+# Plot results to plot window.
+F.plot.passage( df, out.file=NA )
+
 }
 

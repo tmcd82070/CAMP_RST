@@ -2,62 +2,76 @@
 % Please edit documentation in R/est_efficiency.r
 \name{F.est.efficiency}
 \alias{F.est.efficiency}
-\title{F.est.efficiency}
+\title{Estimate trap efficiency for every sample period, per trap.}
 \usage{
-F.est.efficiency(release.df, batchDate, method = 1, df.spline = 4,
+F.est.efficiency(release.df, batchDate, method = 3, df.spline = 3,
   plot = TRUE, plot.file = NA)
 }
 \arguments{
-\item{release.df}{<describe argument>}
+\item{release.df}{A data frame produced by \code{F.get.release.data}.  Contains
+information on releases and recaptures.  This data frame has one line per 
+release trial per trap, identified via variable \code{TrapPositionID}.}
 
-\item{batchDate}{<describe argument>}
+\item{batchDate}{A POSIX-formatted vector of dates.}
 
-\item{method=1}{<describe argument>}
+\item{method}{By default always equal to 3.  WHAT DOES IT DOOOOO  it was a default of 1.}
 
-\item{df.spline=4}{<describe argument>}
+\item{df.spline}{By default always equal to 3.  WHAT DOES IT DOOOOO  it was a default of 4..}
 
-\item{plot=TRUE}{<describe argument>}
+\item{plot}{A logical indicating if efficiencies are to be plotted over time, per 
+trap.}
 
-\item{plot.file=NA}{<describe argument>}
+\item{plot.file}{The name to which a graph of efficiency is to be output, if 
+\code{plot=TRUE}.}
 }
 \value{
-<describe return value>
-}
-\description{
-Estimate trap efficiency for every sample period. 
-
-   Input:
-   release.df = data frame produced by F.get.release.data().  Contains
-       information on releases, and recaptures. This data frame has one line per release trial 
-       per trap (TrapPositionID).
-
-   Note: Run season is a vector length 2 of dates for beginning and 
-   ending of run, stored as an attribut of the data frame.
-
-   Output:
-   A data frame containing interval and capture efficiency and
-   $gam.estimated.  $gam.estimated is 'Yes' if efficiency for that interval was estimated
-   by the GAM model, rather than being empirical.
-
-    batchDate <- bd
-      method <- 3
-      df.spline <- 3
-      plot.file <- file.root
-
-
-   ---- Check that we actually caught released fish.  If not, 0 efficiency, cannot do estimate.
+A data frame containing interval and capture efficiency and 
+  \code{$gam.estimated}.  \code{$gam.estimated} is \code{Yes} if efficiency
+  for that interval was estimated by the GAM model, rather than being
+  empirical.
 }
 \details{
-<other comments found in file>
+Run season is a vector length 2 of dates for beginning and ending of
+  run, stored as an attribute of the \code{release.df} data frame.
+  
+  Function \code{F.est.efficiency} first checks to ensure that at least one 
+  fish, out of what could be many efficiency trials, was caught.  The lack of
+  any caught fish prevents any estimation of total passage, given the role 
+  that efficiency plays as a denominator quantity.
+  
+  Generally, fish released as part of an efficiency trial arrive in traps 
+  over the course of several days.  Function \code{F.est.efficiency} 
+  condenses what may be a large temporal spread by calculating the mean 
+  recapture time of all caught fish.  In the case that a release trial 
+  resulted in no caught fish, the recorded \code{releaseTime}, plus the mean 
+  of the recorded \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} 
+  ensures the subsequent assigning of a \code{batchDate}.
+  
+  Function \code{F.assign.batch.date} collapses mean recapture time, which is
+  mesured to the nearest minute, to \code{batchDate}, a simple calendar date.
+  These dates are then collapsed per trap to create integer counts of 
+  \code{nReleased} and \code{nCaught}. From these, the efficiency is then 
+  calculated as \eqn{(\code{nCaught} + 1) / (\code{nReleased} + 1)}.  (are 
+  the +1s here for statistical reasons, or to guard against zeros?  did we 
+  not check for zeros?)  Note that variables \code{HrsToFirstVisitAfter} and 
+  \code{HrsToLastVisitAfter} are used as helper variables to derive a batch 
+  date when the \code{meanEndTime} variable is \code{NA}.
+  
+  Fishing instances during which traps utilized half-cones are recorded via 
+  variable \code{HalfCone}.  During these instances, the number of captured 
+  fish, variable \code{Recaps}, has been multiplied by 2.  The expansion by
+  two happens on the raw catch, and not the mean recapture.  In this way, the
+  number recorded in variable \code{Recaps} may not be twice the number 
+  recorded in variable \code{oldRecaps}.
 }
 \examples{
-<insert examples>
 
-}
-\author{
-WEST Inc.
+# Maybe we call in a dataframe here? 
+
+
+Recaps
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.assign.batch.date} \code{}
 }
 

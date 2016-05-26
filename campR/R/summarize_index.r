@@ -1,110 +1,71 @@
-#' @export F.summarize.index
+#' @export
 #' 
-#' @title F.summarize.index
-#' 
-#' @description
-#' 
-#'    return a list suitable for calling tapply which summarizes a vector by 'summarize.by'.
-#' 
-#'    dt = a POSIXct date vector
-#'    summarize.by = a string equal to "week", "month", "year", or "day"
-#' 
-#'  dt <- catch.df$batchDate
-#' 
-#' 
-#' 
-#' @param  dt <describe argument>
-#' @param  summarize.by  <describe argument>
-#' 
-#' @details <other comments found in file>
-#' 
-#' @return <describe return value>
-#' 
-#' @author WEST Inc.
-#' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
-#' 
+#' @title Summarize a POSIX-formatted vector of dates to one of either day,
+#'   week, month, or year.
+#'   
+#' @param dt A POSIX-formatted date.
+#' @param summarize.by A string time unit into which summary occurs, i.e., one 
+#'   of "\code{day}," "\code{week}," "\code{month}," "\code{year}."
+#'   
+#' @return A single-entry list containing a vector of POSIX dates, formatted via
+#'   the units specified by \code{summarize.by}.
+#'   
+#' @details The vector fed to function \code{F.summarize.passage} must have a 
+#'   day-fished POSIX column, formatted via the ISO 8601 date format
+#'   (\code{\%F}).
+#'   
+#'   Function \code{F.summarize.index} formats each of day, week, month, and 
+#'   year separately.  When \code{summarize.by="day"}, function 
+#'   \code{F.summarize.index} simply places the provided POSIX vector \code{dt} 
+#'   into a list.  When \code{summarize.by="week"}, table \code{the.dates}, 
+#'   containing Julian weeks and stored in the Global environment, is used to 
+#'   map provided dates to the specialized Julian Week.  When 
+#'   \code{summarize.by="month"}, the provided dates are formatted via 
+#'   \code{"\%Y-\%m"}.  Finally, when \code{summarize.by="year"}, provided dates 
+#'   are set to the mean year spanning the range of dates provided.  This is 
+#'   necessary because dates could span up to 365 days, which normally includes 
+#'   two distinct years.???
+#'   
 #' @examples
-#' <insert examples>
+#' # Create a list containing a vector of POSIX dates.
+#' beg <- strptime("2013-12-24",format="%F",tz="America/Los_Angeles")
+#' batchDate <- rep(seq(beg,by=60*60*24,length.out=100),2)
 #' 
+#' # Summarize indices by different time frames.
+#' list.day <- F.summarize.index( batchDate, "day" )
+#' 
+#' # Dec. 31st becomes the 53rd week, by design.
+#' list.week <- F.summarize.index( batchDate, "week" )
+#' list.month <- F.summarize.index( batchDate, "month" )
+#' 
+#' # All indices 2014, even though some dates 2013.
+#' list.year <- F.summarize.index( batchDate, "year" )
 F.summarize.index <- function( dt, summarize.by ){
-#
-#   return a list suitable for calling tapply which summarizes a vector by 'summarize.by'.
-#
-#   dt = a POSIXct date vector
-#   summarize.by = a string equal to "week", "month", "year", or "day"
-#
-# dt <- catch.df$batchDate
 
+  # dt <- catch.df.reduced$batchDate
+  # summarize.by <- "week"
 
-f.week <- function( x ){
-#     #   A utility to compute julian weeks 
-#     #   x = vector of POSIXct's
-# 
-#     yr <- format( x, "%Y" )
-# 
-# #     jday <- as.numeric(format( x, "%j" ))   # for non-leap years, the count doesnt skip a day on 2/29.  we need it to do so for consistency over years.
-#     
-#     # ------------------------------------------------
-#     myYear = as.POSIXlt(x)$year + 1900
-# 
-#     leap <- rep(NA,length(myYear))
-#     for(i in 1:length(myYear)){
-#       if(myYear[i] %% 4 != 0){                         # wikipedia article on leap year.
-#         leap[i] <- 0
-#       } else if (myYear[i] %% 100 != 0){
-#         leap[i] <- 1
-#       } else if (myYear[i] %% 400 != 0){
-#         leap[i] <- 0
-#       } else {
-#         leap[i] <- 1
-#       }
-#     }
-# 
-#     tmp.jday <- rep(NA,length(myYear))
-#     for(i in 1:length(myYear)){
-#       if(leap[i] == 1){  # leap year -- feb 29th included.
-#         tmp.jday[i] <- as.numeric(format(x[i], "%j"))
-#       } else {           # not a leap year -- feb 29th not included. adjust.
-#         if(as.numeric(format(x[i], "%j")) >= 60 ){            # 60 = feb 29th on leap years. 61 = mar 1st on leap years.
-#           tmp.jday[i] <- as.numeric(format(x[i], "%j")) + 1     # this pushes march 1st for non-leap to day 61 instead of day 60.                 
-#         } else {
-#           tmp.jday[i] <- as.numeric(format(x[i], "%j"))
-#         }
-#       }
-#     }
-#     # ------------------------------------------------
-# 
-#     wk <- trunc((tmp.jday - 1) / 7) + 1
-#     wk <- formatC(wk, width=2, flag="0")  # to make sure sort order is correct
-#     
-#     wk <- paste(yr, "-", wk, sep="")
-#     wk
+  #   ---- A helper function to deal with Julian weeks. 
+  f.week <- function( x ){
+    jDates <- the.dates
+    jDates$week <- paste0(jDates$year,'-',formatC(jDates$julianWeek, width=2, flag="0"))
+    jDates <- unique(jDates)
+    jDates$uniqueDate <- as.Date(jDates$uniqueDate)
   
-  # possibly obsolete.
-#   db <- get( "db.file", env=.GlobalEnv )                                  #   Open ODBC channel
-#   ch <- odbcConnectAccess(db)
-#   the.dates <- sqlFetch( ch, "Dates" )                                    #   get the table that has the julian week labels.
-#   the.dates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
-#   close(ch)
-  the.dates$week <- paste0(the.dates$year,'-',formatC(the.dates$julianWeek, width=2, flag="0"))
-  the.dates <- unique(the.dates)
-  the.dates$uniqueDate <- as.Date(the.dates$uniqueDate)
-  
-  dtDF <- data.frame(uniqueDate=as.Date(dt))
-  dtDF$R_ID <- seq(1,nrow(dtDF),1)
-  test <- merge(dtDF,the.dates,by=c('uniqueDate'),all.x=TRUE)
-  test <- test[order(test$R_ID),]
-  ans <- test$week
-  ans
-}
+    dtDF <- data.frame(uniqueDate=as.Date(dt))
+    dtDF$R_ID <- seq(1,nrow(dtDF),1)
+    test <- merge(dtDF,jDates,by=c('uniqueDate'),all.x=TRUE)
+    test <- test[order(test$R_ID),]
+    ans <- test$week
+    ans
+  }
 
-#   ---- Construct index
-if( summarize.by == "week" ){
+  #   ---- Construct index
+  if( summarize.by == "week" ){
     index <- list(s.by=f.week( dt ) )
-} else if( summarize.by == "month" ){
+  } else if( summarize.by == "month" ){
     index <- list(s.by= format( dt, "%Y-%m" ))
-} else if( summarize.by == "year" ){
+  } else if( summarize.by == "year" ){
     #   Because we checked, and min.date and max.date are less than 365 days appart, for annual numbers
     #   we just sum everything.  This is necessary because most winter runs occur in two calender years.
     year.of.mean.date <- mean( dt, na.rm=T )
@@ -113,11 +74,9 @@ if( summarize.by == "week" ){
     year.of.mean.date <- as.POSIXct( year.of.mean.date-tz.offset, origin="1970-01-01", tz=tzn )  # I think this only works west of GMT (North America).
     year.of.mean.date <- format(year.of.mean.date, "%Y")
     index <- list(s.by= rep( year.of.mean.date, length(dt) ))
-} else { # summarize by day.  
+  } else { # summarize by day.  
     index <- list(s.by= format( dt, "%Y-%m-%d" ))
-}
+  }
 
-
-index
-
+  index
 }

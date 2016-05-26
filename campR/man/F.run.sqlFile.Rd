@@ -5,49 +5,149 @@
 \alias{F.run.sqlFile}
 \title{Opens, formats, and runs all SQL queries from a text file.}
 \usage{
-F.run.sqlFile(ch, sqlFile, echo = TRUE, check.drops = FALSE, sql.code.dir,
-  ...)
+F.run.sqlFile(ch, sqlFile, echo = TRUE, check.drops = FALSE, ...)
 }
 \arguments{
-\item{ch}{Output originating from a call to RODBC function odbcConnectAccess,
+\item{ch}{A conneciton handle originating from a call to RODBC function odbcConnectAccess,
 which essentially opens a connection between R and Access, or more 
 generally, an ODBC database.}
 
-\item{sqlFile}{A text file containing one or more SQL-formatted query strings.}
+\item{sqlFile}{A text file containing one or more SQL-formatted query 
+strings.}
 
-\item{sql.code.dir}{Directory storing all SQL code for the CAMP RST platform.}
-
-\item{...}{Additional parameters needed for evaluation of the underlying SQL queries contained in sqlFile.  See 'Details.'}
+\item{...}{Additional parameters needed for evaluation of the underlying SQL 
+queries contained in sqlFile.  See 'Details.'}
 }
 \value{
-FALSE, assuming successful completion of a SQL query.  Otherwise, an 
-  error message to either the Console window, if running directly via R, or 
-  to the run_R.out file, if running via the Platform.
+By itself, function \code{F.run.sqlFile} returns nothing with respect to R. 
+  It may, however, based on the queries contained in the \code{sqlFile}, delete and 
+  re-create several different tables in the accompanying CAMP database. 
+  Function \code{sqlFetch} from package \code{RODBC} is then usually paired with this 
+  function to bring in the query-derived Access tables as an R data frame.
 }
 \details{
-Function F.sql_error_check is used immediately after the
-use of RODBC function sqlQuery, which queries an Access database via a text
-string formatted as a SQL query. Function sqlQuery, if successful, results in
-a dataframe, possibly with zero rows. Otherwise, a character vector with
-error messsages is returned. Function F.sql.error.check examines if an error
-message is returned, and if found, stops execution and prints an error
-message to the R_run.out text file or the R Console.
+Function \code{F.run.sqlFile} is often paired with the 
+\code{RODBC} function \code{sqlQuery}, which reads and returns tables housed in an Access database.
+}
+\section{Modifying Access-developed SQL queries for use by R-package \code{RODBC}}{
+
+Report generation via the Platform requires communication between the
+underlying R code and the Access databases housing the data. The 32-bit
+R-package \code{RODBC} performs the link between these two systems, allowing for
+SQL-type queries to be sent from R to Access. The resulting queries, once
+completed and housed in the Access database, can then be read into R.
+
+Examples of original Access SQL queries that have been processed for use in R
+can be found in the Code section of this repository. All have a prefix of
+\code{Qry}, a suffix of \code{.sql}, and have text-file icons. Use these as a guide when
+updating any new batch of SQL code.
+
+In this project, Connie Shannon, a CAMP RST contractor, writes all Access
+queries for use in the R code. However, her queries are not generally
+readable by R (and \code{RODBC}) for direct use in R scripts. Modifications must
+first be made to text files containing her queries. This list attempts to
+enumerate the necessary changes.
+
+\enumerate{
+  \item {Comments. Most SQL scripts developed by Connie contain helpful comments. While
+helpful, \code{RODBC} must be made to recognize that these are in fact comments, and
+not developed SQL strings. Use a double hyphen (\code{--}) to demonstrate to \code{RODBC} a
+comment for which processing is unnecessary. For example,
+
+\code{-- This is a comment and won't be read} would communicate to RODBC that this
+particular line should be skipped, whereas
+
+\code{SELECT * FROM THIS.TABLE.HERE} forces RODBC to act. Note that double hyphens
+need only be entered on the left. Additionally, the space following the
+double hyphen is unnecessary. However, it makes comments more readable.}
+
+  \item {Variables. Many SQL queries developed for the Platform require subsetting the
+data to chinook salmon via SQL \code{WHERE} clauses. However, in most cases, if not
+all, the R code has been developed to allow for selection of any piscine
+species. This means that the \code{WHERE} clause is a variable set by the user. It
+also means that this variable quantity must be passed from R to Access.
+Within the database, chinook salmon have the character identifier \code{'161980'}.
+
+In Connie's queries, \code{WHERE} statements for chinook salmon are identified via
+this identifier. However, because the R code has been developed to allow this
+value to vary, Connie's SQL code must be adapted to take variable values in
+RODBC. To do this, change all instances of \code{'161980'} to \code{'R.TAXON'}. The
+appellation \code{R.TAXON} reflects the R-code name for the species variable, and is
+how a variable quantity is communicated to Access.
+
+So, specifically, in any developed SQL, change all instances of
+
+\code{CatchRaw.taxonID = '161980'} to
+
+\code{CatchRaw.taxonID = 'R.TAXON'}.}
+
+  \item{\code{INTO SQL} Statements. Queries for use in the
+Platform are developed for multiple use. This means that once a query for one
+set of criteria is created, the code must be able to recreate a new query,
+based on separate criteria, without error. Practically, this means that
+different queries must be able to overwrite resultant tables in Access
+databases flawlessly. The way that Access and \code{RODBC} does this varies; this
+necessitates more complex changes to SQL code developed by Connie.
+
+Within Access, the use of the SQL keyword \code{INTO} forces a table that currently
+exists to be dropped, while also recreating whatever table data are to be
+place into. For example, suppose within Access a query generates a final
+table named \code{Table_fish}. Now, however, a new query is generated, also within
+Access, creating a new \code{Table_fish}. The new \code{Table_fish} overwrites the old
+\code{Table_fish}; Access does this via SQL code resembling
+
+\code{SELECT * INTO Table_fish FROM Table_helper;}
+
+ where the special keyword \code{INTO}
+deletes out the old \code{Table_fish} and replaces it with the new version. Syntax
+of this nature must be modified for use in \code{RODBC} R code -- the \code{INTO} statement
+does not work in quite this way. While \code{RODBC} will create the named table, it
+won't first delete out its previous version. This must be done explicitly.
+
+To work around this, use a \code{DROP TABLE} statement. Then, the use of the \code{INTO}
+statement will work within R. Explicitly, modifying the code block above,
+write
+
+\code{DROP TABLE Table_fish;}
+\code{SELECT * INTO Table_fish FROM Table_helper;} as two
+separate SQL queries, where the semi-colon \code{;} demonstrates the end of a SQL
+query.
+
+One final to-do is required. Once a SQL query has been modified to include a
+\code{DROP TABLE} statement, an initial table must then be produced in all Access
+databases in which the query is to be run. Practically, the first time this
+particular query is run, SQL cannot drop the table \code{Table_fish} because it will
+not exist yet, not having been created yet. To work around this, from within
+Access, copy and paste any one of the existing tables, and rename it to the
+name of the final table, which in this case, is \code{Table_fish}. Note that some
+queries create multiple interim tables. These may also need to be modified
+via \code{DROP TABLE} statements. On completion, the modified SQL will be fooled
+into having a table to delete, and will work as intended.}
+
+  \item{\code{INSERT INTO} [Not sure] add records to an empty table? not sure i remember
+this exactly.}
+
+  \item{Dates [Not sure] Maybe these have to have preceding and antecedent \code{#}-signs
+added to them, along with specific values replaced by variable names.}
+}
+}
+
+\section{Running SQL Queries via R-package \code{RODBC}}{
+
+
+The R code utilized in the Platform utilizes a certain sequence of steps in
+order to query against an Access database from within R. First, the \code{RODBC}
+package must be loaded. Additionally, R must be made aware of the location of
+the Access database of interest. Here, the database specific for the American
+river is used. Additionally, the Platform version tied to 11/30/2015 is
+identified for development.
+(more stuff to copy from github?  blah blah blah)
 }
 \examples{
-db.file <- "C:/path/CAMP.mdb"                    # the location of CAMP.mdb
-db <- get( "db.file", env=.GlobalEnv )           # assign the mdb string to an object
-ch <- odbcConnectAccess(db)                      # open a connection between R and Access
-
-# a good query
-ans <- sqlQuery( ch, "SELECT * FROM luRun" )     # select all rows via a SQL query
-F.sql.error.check(ans)                           # check for query result validity
-
-#' # a bad query
-ans <- sqlQuery( ch, "SELECT * FROM fakeTable" ) # select all rows via a SQL query
-F.sql.error.check(ans)                           # check for query result validity
+# what to do?
 
 }
 \seealso{
-sqlQuery
+sqlFetch
 }
 

@@ -2,37 +2,34 @@
 % Please edit documentation in R/build_Report_Criteria.r
 \name{F.buildReportCriteria}
 \alias{F.buildReportCriteria}
-\title{F.buildReportCriteria}
+\title{Update a table in the Access CAMP database to contain a particular 
+  site's trapVisitIDs between calendar dates specified by the user.}
 \usage{
 F.buildReportCriteria(site, min.date, max.date)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The \code{siteID} for which data are requested.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for which data are requested.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for which data are requested.}
 }
 \value{
-<describe return value>
-}
-\description{
-This updates a table in the Access file to contain the trapVisitID's we want. 
-   i.e., the trapVisitID's for a particular site between min.date and max.date
+Within R, function \code{build_Report_Criteria} returns a data frame 
+  containing one row and row column of the total number of visits at a site 
+  between the specified \code{min.date} and \code{max.date}.  Additionally, 
+  it sets up a series of tables, via query sequence 
+  \code{QryBuildReportCriteria.sql} within the Access CAMP database.
 }
 \details{
-<other comments found in file>
-NA
- testing
+Generally, function \code{build_Report_Criteria} is the
+workhorse function associated with many query sequences, and sets up data
+within the Access CAMP database for further processing.
 }
 \examples{
-<insert examples>
 
 }
-\author{
-WEST Inc.
-}
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{sqlQuery}, \code{F.run.sqlFile}, \code{F.sql.error.check}
 }
 

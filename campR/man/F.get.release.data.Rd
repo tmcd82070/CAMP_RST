@@ -2,101 +2,87 @@
 % Please edit documentation in R/get_release_data.r
 \name{F.get.release.data}
 \alias{F.get.release.data}
-\title{F.get.release.data}
+\title{F.get.release.data - Retrieve data frame containing release trials.}
 \usage{
 F.get.release.data(site, taxon, min.date, max.date)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as
+\code{min.date}.}
 }
 \value{
-<describe return value>
+A data frame summarizing efficiency trials for the site of interest
+  for all traps between the dates indicated.  Data include \code{Recaps}
+  numerators and \code{nReleased} denominators.
 }
 \description{
-Fetch the release data from an Access data base. Do some initial
-   computations, like dates.
-
-   input:
-   site = site ID of place we want to do estimates for.
-   run = run ID of fish we want to do estimates for.  This is only used to find trap visits which
-       might have caught released fish.  I.e., it is only used in a call to F.get.indiv.visit.data below.
-   min.date = minimum date for data to include. This is a text string in the format %Y-%m-%d, or YYYY-MM-DD
-   max.date = maximum date for data to include.  Same format as min.date
-
-
-   There is some differences of opinion on whether taxon should be included here.  Mike convinced me that we did not need to. But,
-   Connie's SQL, which we converted to uses taxon.  I will go with Connie's SQL and use taxon.
-
-
-   *****
-   Run report criteria for trap visits. Builds TempReportCriteria_Trapvisit.
+Fetch data on catchability trials from the Access database. 
+Do some initial computations,
+like dates.
 }
 \details{
-<other comments found in file>
-   *****
-   Open ODBC channel
-   *****
-   This SQL file develops the TempSamplingSummary table
-   *****
-   This SQL file develops the hours fished and TempSamplingSummary table
-   *****
-   Now, fetch the result
- jason.release.visit0 <<- release.visit
- jason.release.visit <<- release.visit
-   Assign time zones to date-time columns
- attr(release.visit$PlusTestDays, "tzone")<-time.zone     # jason: no longer in connie's query, 6/17/2015
-   In release.visit, there is one record for every trap visit within releaseTime (e.g., 7 days)
-   after each release, even if the trap visit did not catch any marked fish.  i.e., the 0's are in here
-   because all combinations of (releaseID, trapPositionID, trapVisitID) upon which marked fish could have
-    been cause are here.
+In the original query results, there is one record for every trap 
+  visit within a \code{releaseTime}, say 7 days, even if the trap visit did 
+  not catch any marked fish.  In other words, zeros are recorded because all 
+  combinations of \code{releaseID}, \code{trapPositionID}, and 
+  \code{trapVisitID} upon which marked fish could have been caused are here. 
+  Jason: Is this still true?
+  
+  Given a specific release, the resulting data frame tells how many fish from
+  the release were captured on subsequent trap visits, for each trap.  These 
+  result from collapsing all trap visits and computing the total number of 
+  each release's captured fish.
+  
+  Generally, at any one time, more than one release can "go," and so a single
+  trap visit may catch fish from multiple releases.
+  
+  Release records need to have both variables \code{IncludeTest} and 
+  \code{IncludeCatch} flagged as \code{Yes} for inclusion in efficiency 
+  estimation. Recaptures that took place during half-cone operations are 
+  multiplied by the value of the halfConeMulti global variable, which is set 
+  at 2. Half cone operations are identified by variable \code{HalfCone} 
+  having a value of \code{Yes}.
+  
+  Total recaptures are summarized over unique combinations of trap visits and
+  positions, via variables \code{releaseID} and \code{trapPositionID}.
+  
+  Variables \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} are
+  used in function \code{F.est.efficiency} as helper variables to derive a
+  batch date when the \code{meanEndTime} variable is \codde{NA}.
+}
+\section{Mean Recapture Time}{
+ 
+The mean recapture time is estimated for each
+  unique grouping of \code{releaseID} and \code{trapPositionID}.  In the case
+  of no recaptures, the mean recapture time is recorded as \code{NA}.  In all
+  other cases, the mean recapture time is calculated as the weighted mean of 
+  recapture times, weighting on the number of caught fish.  For example,
+  suppose fishing takes place at a particular trap over 7 consecutive days. 
+  If the bulk of fish were caught on day 7, then the mean recapture time 
+  would be near that 7th day of fishing.  This is in contrast to a "straight"
+  mean recapture time, which would estimate a mean recapture time
+  3.5 days after the start of fishing.
+}
 
-   At times, more than one release was "going", and a single trap visit
-   could have caught fish from multiple releases.
-
- For a specific release, release.visit tells
-   how many fish from the release were captured on subsequent trap visits to each trap.  In future,
-   we may want to do something fancy like a removal estimator or other analysis
-   that requires recapture information through time (over multiple visits). If so, You will want to use
-   this data frame (release.visit).
-
-   However, for now, we will collapse the trap visits and compute total number of each release's fish captured ever.
- tmp <<- release.visit
-   *****
-   Drop any rows that are flagged as "Do not include"
-   Adjust by 'times 2' for halfCone adjustment -- 3/16/2016.  BUT -- use the halfConeMulti global var, and not just "*2".
-   Sum over trapVisits at a trapPosition
-   Number caught
-   Compute time to first and last visit after release, even if they did not catch any marked fish
-   Mean fork length of released fish that were captured
- This case should not happen
-one.row$meanForkLength <- NA
-one.row$meanForkLength <- sum(tmp$n * tmp$forkLengthMM, na.rm=T) / one.row$n
-   Mean time released fish were caught
-   Mean time at large, in hours
- ans.check <<- ans
-   Store values of some header info as attribute for convienance.
-attr(ans, "species.name") <- sp.commonName
-attr(ans, "site.stream" ) <- site.stream
-attr(ans, "site.name") <- site.name
-attr(ans, "site.abbr") <- site.abbr
-attr(ans, "runID") <- run
-attr(ans, "run.name") <- run.name
-attr(ans, "run.season") <- run.season
+\section{What?}{
+ 
+There are some variables calculated in here that I think are
+  obsolete, i.e., HrsToFirstVisitAfter, HrsToLastVisitAfter,
+  meanTimeAtLargeHrs.  I have commented out these lines/sections, with the
+  expectation that they can be deleted.
 }
 \examples{
-<insert examples>
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+# Need to be able to query, no?  What to do about that?
+
 }
 

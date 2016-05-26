@@ -7,14 +7,14 @@
 expandUnmarked(dat, colKeep, colRep)
 }
 \arguments{
-\item{dat}{<describe argument>}
+\item{dat}{describe argument}
 
-\item{colKeep}{<describe argument>}
+\item{colKeep}{describe argument}
 
-\item{colRep}{<describe argument>}
+\item{colRep}{describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
 Jared Studyvin
@@ -22,17 +22,17 @@ Jared Studyvin
  replicate the rows of a dataframe based on one of the columns
 }
 \details{
-<other comments found in file>
+other comments found in file
  colRep = single string of the frequency to repeat the data
 }
 \examples{
-<insert examples>
+#insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

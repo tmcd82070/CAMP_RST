@@ -8,23 +8,23 @@ F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, output.file,
   ci = TRUE)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{describe argument}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{describe argument}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{describe argument}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{describe argument}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{describe argument}
 
-\item{ci=TRUE}{<describe argument>}
+\item{ci=TRUE}{describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
-ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
+ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
    A table of passage estimates, with lifestages down the rows, and runs across the columns.
 
    Input:
@@ -36,20 +36,17 @@ ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
  2 life stage groups are fit and the program will decide if weight will be used or not
 }
 \details{
-<other comments found in file>
-NA
-NA
-NA
+other comments found in file
  2 life stage groups are fit and the program will decide if weight will be used or not
 }
 \examples{
-<insert examples>
+#insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

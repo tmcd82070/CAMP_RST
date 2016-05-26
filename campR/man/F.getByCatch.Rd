@@ -7,39 +7,28 @@
 F.getByCatch(site, min.date, max.date)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 }
 \value{
-<describe return value>
+A \code{csv} with all non-Chinook records between the two dates
+  specified at the specified site.
 }
 \description{
 Retreive all non-Chinook data between two dates at site.
-
-
-   ---NOTE: build_report_Criteria must be run before here.
-
-
-   *******
-   Open ODBC channel
-}
-\details{
-<other comments found in file>
-NA
-NA
-   Execute the final SQL statement
 }
 \examples{
-<insert examples>
+
+# requires mdb.
 
 }
-\author{
-WEST Inc.
-}
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+
 }
 

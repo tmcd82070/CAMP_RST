@@ -2,128 +2,160 @@
 % Please edit documentation in R/get_catch_data.r
 \name{F.get.catch.data}
 \alias{F.get.catch.data}
-\title{F.get.catch.data}
+\title{F.get.catch.data - Retrieve data frame with catch information}
 \usage{
 F.get.catch.data(site, taxon, min.date, max.date, autoLS = FALSE,
   nLS = NULL, weightUse = NULL)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{autoLS=FALSE}{<describe argument>}
+\item{autoLS}{A logical indicating whether or not lifestage assignment should
+be decided by the computer via a mixture distribution/clustering analysis.}
 
-\item{nLS=NULL}{<describe argument>}
+\item{nLS}{A numeric communicating the number of new lifestages to assign. 
+Values can be \code{2} or \code{3}.}
 
-\item{weightUse=NULL}{<describe argument>}
+\item{weightUse}{A logical indicating if weight data are to be incorporated 
+  in the assigning of lifestage.  \code{useWeight = NULL}, ignored if
+  \code{autoLS} is \code{FALSE}, \code{NULL} leads to the program deciding if
+weight should be used, \code{FALSE} lead to the program not using weight to 
+assign lifestage}
 }
 \value{
-<describe return value>
+A data frame summarizing catch for the site of interest for all traps
+  between the dates indicated.  Data include biologist- or computer-assigned 
+  \code{lifeStage}, \code{FinalRun}, and \code{forkLength}.
 }
 \description{
-Fetch the catch data for a SINGLE TAXON from an Access data base. Do some initial
-   computations, like dates.
-
-   input:
-   db = full path and name of the Access data base to retrieve data from
-   tables = vector with named components containing names
-           of the table in db to pull values from
-   site = site ID of place we want to do estimates for.
-   taxon = the taxon number(s) (from luTaxon) to retrieve.  If a scalar, only
-       one taxon is retrieved.  If vector of taxon id's, the sum of all
-       taxons is retrieved.
-   run = the single run ID of the fish we want.  If run = NA, all records for the fish
-       will be pulled.
-   min.date = minimum date for data to include. This is a text string in the format %Y-%m-%d, or YYYY-MM-DD
-   max.date = maximum date for data to include.  Same format as min.date
-   autoLS = FALSE, nothing new is done. autoLS =TRUE the life stage is assigned using a mixture distribution/clustering analysis
-   nLS = NULL, ignored if autoLS is false, specify the number of groups to be fit
-   useWeight = NULL, ignored if autoLS is false, NULL = program decides if to use weight, FALSE = weight is not used for assigning lifestage
-
-   To be included in the catch data, a record has to be from the site,
-   of the correct taxon, of the correct run, and between min and max dates.
+Fetch catch data from an Access database. Do some initial computations, like
+dates.
 }
 \details{
-<other comments found in file>
-   Open ODBC channel
-   *****
-   This SQL file develops the hours fished and TempSamplingSummary table
-   *****
-   This SQL generates times when the traps were not fishing
-   *****
-   This SQL generates unmarked fish by run and life stage
-   *****
-   Now, fetch the result
- add 3/8/2016 -- look for long gaps.
- SQL code to find the gaps, and modify trapPositionIDs accordingly.
- get the updated results
- no long gaps to worry about.  so just keep going with the version of catch that we already
- pulled in from the mdb.
-   ******************************************************************
-   Assign time zone (probably does not matter)
-  jason add all this get includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST)
- includecatchID$StartTime <- includecatchID$timeSampleStarted
- attr(includecatchID$StartTime, "tzone") <- time.zone
- sampleGearID ProjID trapPositionID trapVisitID
-   ********************************************************************
-   At this point, catch has all visits in it, even if no fish were caught.
-   It also has non-fishing intervals.  This is how you identify these intervals:
-       1. zero catch = catch$Unmarked == 0  ($FinalRun and $LifeStage are both "Unassigned" for these lines)
-       2. not fishing = catch$TrapStatus == "Not fishing"  (equivalently, $trapVisitID is missing for these lines.  Only time its missing.)
+Function \code{F.get.catch.data} fetches all appropriate catch data 
+  from an Access database, and then processes it for further use.  The 
+  processing includes several steps. Currently, although variable 
+  \code{includeCatchID} is separately queried, it is not used in processing 
+  after the initial catch query.
+  
+  Each record contained in the resulting data frame itemizes fork length,
+  lifestage, and final run, via variables \code{forkLength},
+  \code{lifeStage}, and \code{FinalRun}, respectively, for each unique combination of 
+  \code{trapVisitID} and \code{trapPositionID}.
+  
+  Counts of captured fish are recorded via variable \code{Unmarked}, with
+  zero catch containing a \code{0}.  Zero records additionally have variables
+  \code{lifeStage} and \code{FinalRun} equal to \code{Unassigned}.
+}
+\section{Lifestage}{
+ 
+Users have the options of reassigning lifestage away from 
+  the assignments provided by field biologists at the time of capture.
+  Options for reassignment number several, and are detailed (here?).
+}
 
-   Pull apart the visits from the catch, because plus count expansion only applys to positive catches.
-   Recall, catch currently has multiple lines per trapVisit delineating fish with different fork lengths.
-   ********************************************************************
-   Subset the catches to just positives.  Toss the 0 catches and non-fishing visits.
+\section{Gaps in Fishing}{
+  
+Sometimes, during the normal course of fishing, a 
+  trap, or \code{trapPositionID}, stops fishing for an extended period of 
+  time in the middle of the time frame specified by \code{min.date} and 
+  \code{max.date}.  During this so-called "gap in fishing," subsequent catch 
+  fitting methodologies have no data via which to estimate catch fit. Thus, 
+  unexpected behavior may occur, especially if catch was trending 
+  upwards/downwards immediately before/after a gap in fishing.  To prevent 
+  statistical methodologies from estimating catch during these periods, catch
+  imputation procedures are "turned off" by reassigning the 
+  \code{trapPositionID} of the offending trap after the gap to a different 
+  \code{trapPositionID}.  In this way, catch is independently estimated for 
+  each disconnected trapping period, with no estimation occurring during the 
+  gap.  Gaps must be greater than or equal to the value set by global 
+  variable \code{fishingGapMinutes} for reassignment to occur, which is 
+  currently set at 7 days (or 10,080 minutes).
+  
+  Any one trap, given a \code{min.date} and \code{max.date}, may have more
+  than one gap in fishing.  Generally, the number of resulting reassigned 
+  \code{trapPositionID}s equals one more than the number of gaps. Reassigned 
+  traps can be identified by a decimal appendage after the original 
+  \code{trapPositionID}, although the first trapping instance, i.e., before
+  the first (and possibly only) gap in fishing, retains its original
+  non-decimal \code{trapPositionID}.
+}
 
- Jared's Addition
- this is where the life stage assignment will happen from a function call
-write.csv(catch,paste0(output.file,site,'.csv'),row.names=FALSE)
- for debugging
-return(catch)
-stop('That is good enough')
+\section{Half-cone Adjustment}{
+  
+On some rivers, the use of half-cone 
+  adjustments is commonplace.  Practically, the use of a half-cone involves 
+  covering half of a trap opening, so as to reduce the amount of water that 
+  flows into it.  This also necessarily reduces the amount of captured fish 
+  as well. In order to accurately estimate temporal catch trends, statistical
+  methodologies need to account for this expected reduction.  However, a 
+  season could include trapping instances involving both full-cone and 
+  half-cone operations.  To account for this possibility, trapping instances 
+  utilizing half-cones via variable \code{halfConeID} have their catch 
+  multiplied by the value of the global variable \code{halfConeMulti}, which 
+  is currently set at 2.
+}
 
- get summary counts of catch run vs. lifetstage for internal checking.
- jason adds the if here 1/12/2016, since for some reports, we could have 0 valid catch, but non-zero invalid catch.
- aggregate doesn't work on zero rows, thus requiring the if-clause.
-   ********************************************************************
- expand half-cone operations to full-cone.  this needs to happen prior to plus-counting.
-   Expand the Plus counts
- deal with awkwardness of doing the plus-count routine two times with slightly different data (due to plus-counting)
-                                    ,after 'times2' - before 'times2'
-                                    , should be zero
-   look <- test[,c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','Unassd','trapPositionID','SampleDate','TrapStatus','TrapPosition','halfConeID','Unmarked','preUnmarked','halfConeAssignedCatch','halfConeUnassignedCatch','assignedCatch','unassignedCatch')]
-   look[as.Date(look$SampleDate) == '2014-02-28' & look$TrapPosition == 'Gate 8',]
- data query where all are full catch -- just set the fancy variables to zero.
-   Reassign factor levels because they may have changed.  I.e., we may have eliminated "Unassigned"
-catch$lifeStage <- as.character( catch$Unassd ) jason - possibly delete
-   ********************************************************************
-   Assign batch dates -- jason adds the ifs 1/16/2016 to allow zero row visits and catch dfs to pass through
-   Assign attributes
-attr(catch, "site.abbr") <- catch$siteAbbreviation[1]
-attr(catch, "runID") <- run
-attr(catch, "run.name") <- run.name
-attr(catch, "run.season") <- run.season
-attr(catch, "site.stream") <- site.stream
-attr(catch, "taxonID" ) <- taxon.string
-attr(catch, "species.name") <- sp.commonName
+\section{Half-cone Operations \& Plus Counts}{
+  
+Generally, during a trapping
+  instance, a small sample is selected from what may be many thousands of
+  fish.  The resulting sampling distribution, in terms of lifestage and run,
+  is then applied to the remaining fish not randomly sampled.  The resulting
+  assigned proportions of unsampled fish form "plus counts."  Functions 
+  \code{expand.plus.counts}, \code{assign.1dim}, and \code{assign.2dim} 
+  detail the plus-count algorithm.  Plus-counting requires special 
+  consideration in light of half-cone adjustments.
+  
+  Generally, the estimation of plus counts requires a sample.  Thus, prior to
+  its implementation, any half-cone adjustments must already be applied. 
+  However, the plus-count algorithm often considers the sampling distribution
+  of fish from trapping instances temporally neighboring that of the trapping
+  instance of interest.  Inevitably, a before and/or after trapping instance 
+  may have been a full-cone operation, in contrast to the half-cone operation
+  of the trapping instance of focus, or vice versa.  Thus, resulting 
+  sampling distributions can become skewed, i.e., the amount by which a
+  half-cone trapping instance must have its fish counts expanded is not
+  necessarily an exact multiple of 2.
+  
+  To combat this phenonmenon, trapping instances with half-cone operations
+  are not simply multiplied by the value of the global variable 
+  \code{halfConeMulti}.  Instead, the plus-count routine is applied twice,
+  both with and without the \code{halfConeMulti} adjustment applied.  Then,
+  for each trapping instance, the difference in the count of fish is then
+  recorded as the "half-cone adjustment" for that particular lifestage, final
+  run, and forklength combination.  In this way, half-cone adjustments are obtained,
+  while taking into consideration the possibility that in some instances,
+  simple application of the \code{halfConeMulti} variables is not advised.
+}
 
-f.banner("F.get.catch.data - Complete")
-   Return two data frames. One containing positive catches.  The other containing visit and fishing information.
+\section{Not Fishing}{
+  
+Similar to "gaps in fishing" are periods of "Not 
+  fishing."  An instance of Not fishing is a period during which a trap does 
+  not operate for more than 30 minutes, but less than 7 days.  Instances of 
+  Not fishing are included as records within the data frame returned by 
+  function \code{F.get.catch.data}, and can be identified by variable
+  \code{TrapStatus}, which is set equal to \code{Not fishing}.  Equivalently,
+  variable \code{trapVisitID} is missing.  (does connie add in sampling less than 30 minutes to a trapping period of good fishing?)
 }
 \examples{
-<insert examples>
+ 
 
-}
-\author{
-WEST Inc.
+# we would need to query.  what do we want to do?
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{getCatchDataWeight.R}, \code{expand.plus.counts}, \code{assign.1dim}, and \code{assign.2dim} these also: \code{assignLifeStage.R},
+  \code{assignLSCompare.R}?
 }
 

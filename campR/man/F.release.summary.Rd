@@ -2,59 +2,46 @@
 % Please edit documentation in R/release_summary.r
 \name{F.release.summary}
 \alias{F.release.summary}
-\title{F.release.summary}
+\title{F.release.summary - Summarize releases}
 \usage{
 F.release.summary(site, taxon, run, min.date, max.date, output.file)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{run}{<describe argument>}
+\item{run}{The biologist-assigned seasonal run.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{The name of the file prefix under which output is to be 
+saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-<describe return value>
+A \code{csv} file summarizing efficiency trials for the specified
+  criteria.  A data frame containing the same information is also returned,
+  but invisibly.
 }
 \description{
-This is the outer wrapper function to summarize releases at a particular site, for a particular run, for a particular taxon for a particular year.
-
-   Inputs:
-   site = site number
-   taxon = taxon number
-   run = run number
-   year = year number
-   output.file = name of .CSV file to put passage estimates into.  Full path is allowed.
-
-table.names <- data(table.names)  # Names of table in data base is stored in the campass package.  Eventually do this, then delete 'get' statement
-table.names <- get( "table.names", env=.GlobalEnv )
-db.name <- get( "db.file", env=.GlobalEnv ) 
-
-
-   ---- Fetch efficiency data
+Summarize efficiency (catchability) trials, or releases, for a site, run, and taxon between
+specified dates.
 }
 \details{
-<other comments found in file>
- get a couple of variables from quickie lookups
-   ---- Or, could write summary to CSV file
-     rs <- attr(release.df,"run.season")
-     rs <- paste( format(rs[1], "%d-%b-%Y"), "to", format(rs[2], "%d-%b-%Y"))
-   ---- Send messages back to the interface
-}
-\examples{
-<insert examples>
 
 }
-\author{
-WEST Inc.
+\examples{
+
+# requires an mdb.
+    
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+
 }
 

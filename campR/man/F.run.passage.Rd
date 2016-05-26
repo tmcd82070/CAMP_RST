@@ -7,46 +7,80 @@
 F.run.passage(site, taxon, min.date, max.date, by, output.file, ci = TRUE)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{by}{<describe argument>}
+\item{by}{A text string indicating the temporal unit over which daily
+estimated catch is to be summarized.  Can be one of \code{day},
+\code{week}, \code{month}, \code{year}.}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{A text string indicating a prefix to append to all output.}
 
-\item{ci=TRUE}{<describe argument>}
+\item{ci}{A logical indicating if 95% bootstrapped confidence intervals
+should be estimated along with passage estimates.}
 }
 \value{
-<describe return value>
+A \code{csv} table of passage estimates over the specified date 
+  range, with lifestages down the rows, and runs across the columns.  A 
+  \code{png} displaying proportion-of-catch bar charts of run and life stage.
+  For each run and life stage combination found within the specified data 
+  range, an additional series of output.  A \code{csv} of daily passage 
+  estimates for all traps operating at least one day, and catching at least 
+  one fish, for all days within the specified date range. A \code{png} of 
+  catch versus time, for all inclusive traps.    A \code{png} of daily 
+  efficiency estimates, and accompanying \code{csv} for all traps operating 
+  at least one day, and catching at least one fish, for all days within the 
+  specified time period.
 }
 \description{
-ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
-   A table of passage estimates, with lifestages down the rows, and runs across the columns.
-
-   Input:
-   site = site ID of the place we want, trap locaton
-   taxon = taxon number (from luTaxon) to retrieve
-
-
-   ********
-   Check that times are less than 1 year apart
+Estimate production by life stage and run for all days within a date range.
 }
 \details{
-<other comments found in file>
+Function \code{F.run.passage} is the main workhorse function for estimating
+  passage with respect to each of run and life stage.  As such, it calls
+  several separate functions, some of which contain queries designed to run 
+  against an Access database.
+  
+  Generally, queries against a database comprise two main efforts.  The first
+  involves a query for efficiency trial data, generally called "release" 
+  data, and conducted via function \code{F.get.release.data}, while the 
+  second queries for catch data via function \code{F.get.catch.data}.
+  
+  Once catch data are obtained, fish are partitioned as to whether or not 
+  they were assigned and caught during a half-cone operation.  Function 
+  \code{F.est.passage} wraps the functions that conduct the actual passage 
+  estimation, which involves statistical fits of each of catch and efficiency
+  over time.
+  
+  All calls to function \code{F.run.passage} result in daily passage
+  estimates, and courser temporal estimates, based on the value specified via
+  \code{by}.  Regardless of the temporal partitioning, estimates are always
+  additionally summarized by year.  Functions runs with \code{by} specified
+  as \code{year} output only one set of annual estimates.
+  
+  The difference between the specified \code{max.date} and
+  \code{min.date} must be less than or equal to 366 days, as calculated via
+  function \code{difftime}.
+  
+  Selection of \code{week} for input variable \code{by} results in weeks
+  displayed as customized Julian weeks, where weeks number 1-53.  The
+  specific mapping of days to weeks can be found within the \code{Dates}
+  table of any associated Access database.
 }
 \examples{
-<insert examples>
-
-}
-\author{
-WEST Inc.
+ 
+# query mdb?
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.get.release.data}, \code{F.get.catch.data}, \code{F.est.passage}
 }
 

@@ -7,68 +7,49 @@
 F.summarize.fish.visit(catch, variable)
 }
 \arguments{
-\item{catch}{<describe argument>}
+\item{catch}{A data frame containing one line per fish or fish group with 
+identical lengths.  This data frame results from \code{F.get.catch.data}.}
 
-\item{variable}{<describe argument>}
+\item{The}{type of fish for which summary is required.}
 }
 \value{
-<describe return value>
+A data frame with one line per visit, with catch summarized. Summary
+  statistics include N, mean, and standard deviation.
 }
 \description{
 Summarize fish count and fork lengths over visits.
-
-   catch = data frame containing one line per fish or fish group with identical lengths.
-       If they did not catch any member of a particular taxon, catch will have 0 rows.  This 
-       data frame will usually be the output of F.get.indiv.fish.data()
-
-   variable = summarize over all data (so inflated counts), or assigned counts (measured fish only).
-
-   Output = a data frame with one line per visit, with catch summarized.
 }
 \details{
-<other comments found in file>
-   variable <- 'unassigned'
-   variable <- 'halfcone'
- jason add - first pass assumed that unassigned fork length is NA.  but...not NA for one day in run i'm investigating.  force this.
-   These are variables that are constant within a trapVisit, run, and lifestage
-   indexes = all unique combinations of visit, run, and life stage
-   indexes = NA for all gaps in the trapping sequence
-   These are variables that are constant within a trapVisit, run, and lifestage
-   indexes = all unique combinations of visit, run, and life stage
-   indexes = NA for all gaps in the trapping sequence
-   These are variables that are constant within a trapVisit, run, and lifestage
-   indexes = all unique combinations of visit, run, and life stage
-   indexes = NA for all gaps in the trapping sequence
-   These are variables that are constant within a trapVisit, run, and lifestage
-   indexes = all unique combinations of visit, run, and life stage
-   indexes = NA for all gaps in the trapping sequence
-   Because of the gap lines, there are NA's in indexes (because there are NA's in trapVisitID). 
-   Fix these.  To assure indexes is same length as catch, we cannot simply remove NA's here. 
-   Solution: set them to -1, then remove -1 from u.ind.  This way the loop below 
-   just skips them.
-   Initialize place to store summarized catches. 
-u.ind <- sort(unique(indexes))  # NA's in indexes are lost here, in the sort
-catch.fl <- as.data.frame( matrix( NA, length(u.ind), length(const.vars) + 3 ))
-names( catch.fl ) <- c(const.vars, "n.tot", "mean.fl", "sd.fl")
-   Count number of fish, compute mean fork length, etc per visitID in catch.  
-   Copy over constant variables
-   Take weighted averages of fork lengths using 'n' as weights
-   Add back in the lines with missing indexes.  These correspond to gaps in trapping
-    tmp <- catch[ indexes < 0, const.vars ]
-    tmp <- cbind( tmp, matrix( NA, sum(indexes < 0), 3))
-    names( tmp ) <- c(const.vars, "n.tot", "mean.fl", "sd.fl")
-    catch.fl <- rbind( catch.fl,  tmp )
-   Sort the result by trap positing and trap visit
- no measured fish, but both finalrun and lifestage assigned.
+Results from the catch-query sequence summarize the number of fish 
+  per \code{trapVisitID}, \code{lifeStage}, \code{FinalRun}, and 
+  \code{forkLength};  these need to be summarized, depending on the type of 
+  fish.
+  
+  Assigned fish are summarized via an index comprised of variables 
+  \code{trapVisitID}, \code{FinalRun}, and \code{Unassd}.  Note that here, 
+  assigned fish are assumed to have only their run assigned, and not 
+  necessarily their life stage.  Assigned fish are separate from unassigned
+  fish, meaning they were randomly selected, and thus form the basis of
+  sampling proportions of run and life stage utilized via the plus-count
+  algorithm.
+  
+  Unassigned fish are summarized via an index comprised of variables 
+  \code{trapVisitID}, \code{FinalRun}, \code{lifeStage}, and \code{Unassd}.
+  
+  Inflated fish (all captured fish, including plus-counts) are summarized via
+  an index comprised of \code{trapVisitID}, \code{FinalRun}, and 
+  \code{lifeStage}.  Because inflated fish include plus-counted fish that 
+  have been re-assigned to sampled-based counts of run and life stage, 
+  indexing by variable \code{Unassd} is unnecessary.
+  
+  All other fish types for which summaries are required, namely those
+  involved with the adjustment for half-cone operations, have an index of 
+  \code{trapVisitID}, \code{FinalRun}, and \code{lifeStage}.
+  
+  Weighted fork lengths are recorded to the nearest millimeter.  Each is
+  calculated over unique indices and weighted on the number of fish.
 }
 \examples{
-<insert examples>
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
 }
 

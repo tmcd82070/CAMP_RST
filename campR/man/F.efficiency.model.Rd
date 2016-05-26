@@ -2,89 +2,112 @@
 % Please edit documentation in R/eff_model.r
 \name{F.efficiency.model}
 \alias{F.efficiency.model}
-\title{F.efficiency.model}
+\title{F.efficiency.model - Compute efficiencies}
 \usage{
 F.efficiency.model(obs.eff.df, plot = T, method = 1, max.df.spline = 4,
   plot.file = NA)
 }
 \arguments{
-\item{obs.eff.df}{<describe argument>}
+\item{obs.eff.df}{A data frame with at least variables \code{batchDate} and
+\code{efficiency}, where \code{efficiency} is \code{NA} for all days
+requiring an estimate.}
 
-\item{plot=T}{<describe argument>}
+\item{plot}{A logical indicating if resulting efficiency should be plotted.}
 
-\item{method=1}{<describe argument>}
+\item{method}{A scalar specifying the type of extrapolation to do. 
+\code{method = 1} takes average of entire season. \code{method = 2} uses
+earliest observed efficiency between in intervals between efficiency trials
+(so called constant model). (jason=what?)  \code{method = 3} is a b-spline
+model with up to \code{max.df.spline} degrees of freedom.}
 
-\item{max.df.spline=4}{<describe argument>}
+\item{max.df.spline}{The maximum degrees of freedom allowed for splines.}
 
-\item{plot.file=NA}{<describe argument>}
+\item{plot.file}{The name of the file prefix under which output is to be 
+saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-<describe return value>
+A data frame with all observed and imputed \code{efficiency} values,
+  where variable \code{gam.estimated} identifies imputed values.
 }
 \description{
-Compute and estimate efficiency for all traps and days that are missing in the input data set.
-   i.e., "impute" a value for efficiency when it is missing
-
-   input:
-   obs.eff.df = data frame with at least columns $batchDate, and $efficiency.
-       $efficiency is NA for all days that we need an estimate.  
-   method = scalar specifying type of extrapolation to do.  Method = 1 takes average of entire season. 
-       Method = 2 uses earliest observed efficiency between in intervals between efficiency trials (so called
-       constant model).  Method = 3 is a b-spline model with up to 'max.df.spline' degrees of freedom.
-   max.df.spling = maximum degrees of freedom for splines
-
-   Output:
-   A data frame with all observed $efficiency values, plus a the column $gam.estimated 
-   which is 1 = "Yes" for those that came from the model. 
-
-
- obs.eff.df=eff
- plot=T
- method=1
- max.df.spline=4
- plot.file=NA
-   It is possible to implement a GAM here using covariates like flow, time of day
-   check was done, etc. and a smooting component.  For now, I will only implement a
-   simple step function
-   obs.eff.df <- eff 
-   plot <- plot
-   method <- method
-   max.df.spline <- df.spline
+Compute and estimate efficiency for all traps and days that are missing in 
+the input data set;  i.e., "impute" a value for efficiency when it is
+missing.
 }
 \details{
-<other comments found in file>
-readline()
-   Season mean model
-   If want to use ROM for missing efficiencies only, uncomment the next line
-df$efficiency[!ind] <- obs.mean
-   If, however, you want to use ROM for all days, missing or not, uncomment the next line
-   WARNING: method 2 is not fully programmed to be compatible with bootstrapping.  Don't use unless you program the bootstrapping to accept it.
-   Fit glm model, increasing df, until something goes wrong
-   Check that there are adequate trials at this trap
-   No efficiency trials at this trap
-   Go with the mean model
-   If you want to use observed efficiency on days when efficiency trials were turn, uncomment the following 
-   three lines.  
-miss.eff.inside <- ind.inside & !ind  # missing efficiencies inside first and last trials, sized same as df
-miss.eff <- miss.eff.inside[ind.inside]      # missing efficiencies inside first and last trials, sized same as pred
-df$efficiency[miss.eff.inside] <- pred[miss.eff]
-   If, however, you want to use the modeled efficiency for all days, even when a trial was done, use these 
-   lines.  
-print( c(sum(miss.eff.inside), sum(miss.eff)) )
-print( c(length(miss.eff.inside), length(miss.eff)) )
-   use the mean of spline estimate for all dates outside efficiency trial season
-   Uncomment the following line if using imputed value for all days.  Otherwise, comment it out, and imputed.eff will tell which are observed.
-   With the following uncommented, you can find efficiency trials in grand.df with !is.na(grand.df$nReleased)
-   Make a plot if called for
-}
-\examples{
-<insert examples>
 
 }
-\author{
-WEST Inc.
+\section{Efficiency Methodologies}{
+  
+Selection of \code{method} allows for
+  efficiency estimation to vary, based on need.  
+  
+  \itemize{ 
+  \item{\code{method=1} : A "Seasonal-mean model".  This means that
+  a ratio-of-means bias-corrected global efficiency is calculated, for each 
+  trap, where the efficiency is estimated via \eqn{\code{nCaught} + 
+  1/\code{nReleased} + 1}.  Values for \code{nCaught} and \code{nReleased} 
+  originate via function \code{F.get.releases} and the querying of an 
+  underlying Access database.  The resulting ratio-of-means efficiency is 
+  then applied to all trapping days, regardless if data were missing or not.}
+  
+  \item{\code{method=2} : A "Constant model."  This means that this model
+  utilizes a step function to estimate efficiency, where here, steps may
+  increase or decrease over time.  Each interval of time for which efficiecy
+  needs to be estimated utilizes the earliest observed efficiency between
+  efficiency trials.  Note that this method has not been fully programmed to
+  be compatible with boostrapping in function \code{bootstrap_passage}.  This
+  option should not be used until \code{bootstrap_passage} can handle its
+  results.}
+  
+  \item{\code{method=3} : A "B-spline model."  This efficiency estimation 
+  methodology chops up the date range into small temporal bits.  For each,
+  possibly different degree polynomials are fit, with each individual
+  polynomial fitting the data locally.  Each individual polynomial is then
+  fit together into one final curve, with several conditions ensuring its
+  smoothness. One condition includes matching the polynomial estimate at the
+  end of one time point with the connecting starting time point of the next
+  polynomial.  Others include ensuring that the first derivatives (local
+  slopes) and second derivatives (local convexity) at these connecting time
+  points are equal.  
+  
+  Estimation requires at least one trapping instance to occur within the
+  earliest and latest date with an efficiency trial.  All three can occur on
+  the same one day.  Generalized additive models, or GAMs, first fit the observed
+  efficiency-trial data as \eqn{\code{nCaught} / \code{nReleased}} outcome
+  proportions (no +1 here?) against a null model with a binomial link.  This
+  leads to a constant, or intercept-only, model, where the intercept is the weighted
+  avearge of caught fish over all efficiency trials.  The use of an intercept-only
+  model means this is a degenerative intercept-only logistic model.  
+  
+  Assuming at least ten efficiency trials (this is a lot--and some may have 
+  more fish released than others? and would we want to use bias-corrected?), 
+  higher-order polynomial models were considered.  Akaike Information 
+  Criterion (AIC), rounded to four decimal places, determined winning models.
+  Models with lower AICs trumped all others, with the winning model having to
+  be at least two AIC points less than its nearest competitor.
+  
+  In generalized additive models, consideration of higher-order polynomials
+  often starts with cubic polynomials determined in a piecewise fashion,
+  determined at the time values at which observed efficiencies were recorded.
+  Currently, however, no polynomials of degree greater than three are
+  considered in efficiency models;  thus, models could either be 
+  intercept-only, or cubic.
+  
+  The \eqn{\beta}s from the final selected GAM are saved for use in
+  bootstrapping via function \code{F.boostrap.passage}.  They are also 
+  utilized to form predictions over the entire efficiency trial season, for
+  each trap.  Model efficiency values are used for all days, i.e., in lieu of
+  observed data.  All dates outside the efficiency trial season use an
+  estimated mean spline calculated over all dates.}
+  
+  \item{\code{method=4} : An "Enhanced Efficiency Model"  This means this is a
+  fancy schmancy model!}
+  
+  }
 }
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\examples{
+
+# All three model types?  What do we want to show? 
 }
 

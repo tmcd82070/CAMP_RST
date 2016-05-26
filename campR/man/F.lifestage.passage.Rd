@@ -7,109 +7,68 @@
 F.lifestage.passage(site, taxon, min.date, max.date, output.file, ci = TRUE)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{The name of the file prefix under which output is to be 
+saved.  Set to NA to plot to the Plot window.}
 
-\item{ci=TRUE}{<describe argument>}
+\item{ci}{A logical indicating if 95% bootstrapped confidence intervals 
+should be estimated along with passage estimates.}
 }
 \value{
-<describe return value>
+A table of passage estimates, with lifestages down the rows, and runs
+  across the columns.
+  
+  A bar chart displaying relative proportions over both run and life stage.
+  
+  For each unique combination of run and life stage containing at least one
+  fish, a graph \code{png} of catch over time, a \code{csv} of daily catch
+  and passage.
+  
+  A graphical display of efficiency over time, for each trap, along with an
+  accompanying \code{csv} tabular datasheet.
 }
 \description{
-ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
-   A table of passage estimates, with lifestages down the rows, and runs across the columns.
-
-   Input:
-   site = site ID of the place we want, trap locaton
-   taxon = taxon number (from luTaxon) to retrieve
-
-
-   ********
-   Check that times are less than 1 year apart
+Estimate annual passage / production estimates between specified.
 }
 \details{
-<other comments found in file>
-   ---- Start a progress bar
-   ---- Fetch efficiency data
-   ---- Fetch the catch and visit data
-   Debugging
-    tmp.catch0 <<- catch.df
-    tmp.visit0 <<- visit.df
-    print( table(catch.df$TrapStatus))
-   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables
-catch.df <- F.summarize.fish.visit( catch.df )       jason turns off 4/15/2015
-                   - the only reason we do this again is to get a different n.tot.
-   Debugging
-    tmp.catch <<- catch.df
-    print( table(catch.df$TrapStatus))
-    cat("in lifestage_passage.r (hit return) ")
-    readline()
-   ---- Compute the unique runs we need to do
-   ---- Compute the unique life stages we need to do
- only added to lifestage passage code.
-   ---- Print the number of non-fishing periods
-   ---- Extract the unique trap visits.  This will be used in merge to get 0's later
-    ind <- !duplicated( catch.df$trapVisitID ) & !is.na(catch.df$trapVisitID)
-    visit.df <- catch.df[ind, ]
-    visit.df <- visit.df[, !(names(visit.df) %in% c("FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl"))]
-   ********
-   Loop over runs
- jason puts together the catches based on total, unassigned, assigned.
- jason brings halfcone counts along for the ride 1/14/2016 -- only for run_passage, and not run lifestage?
-theSumsBefore <<- accounting(catch.df,"byRun")
-   ---- Loop over lifestages
-   ---- Subset to just one life stage and run
-   ---- If we caught this run and lifestage, compute passage estimate.
-   ---- Merge in the visits to get zeros
-   ---- Update the constant variables.  Missing n.tot when trap was fishing should be 0.
-   ---- Add back in the missing trapVisitID rows.  These identify the gaps in fishing
-catch.df.ls <- rbind( catch.df.ls, catch.df[ is.na(catch.df$trapVisitID), ] )
-   ---- Update progress bar
-   Debugging
-                tmp.c <<- catch.df.ls
-                tmp.r <<- release.df
-   Debugging
-                print(dim(visit.df))
-                print(dim(catch.df.ls))
-                print( table( tmp.c$FinalRun, useNA="always" ))
-                print( table( tmp.c$lifeStage, useNA="always" ))
-                print( table( tmp.c$trapVisitID, useNA="always" ))
-                cat("in lifestage_passage (hit return) ")
-                readline()
- jason add 2/25/2016 -- deal with traps with all zero fish.
- see if we have non-zero fish for a trap, given the lifestage and run.
-   ---- Compute passage
-   ---- Update progress bar
-print(pass)
-   ---- Save
-    ans <<- ans
-    ans <- get("ans")
-   ---- compute percentages of each life stage
-   ---- Write out the table
-   We have more than one run
-   ---- Append totals to bottom
- Produce pie or bar charts
- 2/29/2016 -- F.plot.lifestages needs the LifeStage in the rowname.  i have a case where this doesn't happen, where we only
- have Parr (so one LifeStage).  I do not know why this hasn't popped up before...
-fl <- F.plot.runs( df, output.file, plot.pies=F )
-out.fn.roots <- c(out.fn.roots, fl)
-   ---- Write out message
-}
-\examples{
-<insert examples>
-
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+The date range difference specified via \code{max.date} and
+  \code{min.date} must be less than or equal to 366 days.  Note that this
+  cutoff allows for leap-year annual estimates.
+  
+  Passage requires the division of a non-zero catch by a non-zero efficiency.
+  A non-zero catch numerator ensures that passage estimates are greater than
+  zero, while a non-zero efficiency denominator ensures that passage 
+  estimates are less than infinity.  The program exits if either of these 
+  conditions are violated.
+  
+  Assuming validity, catch data are summarized via unique combinations of 
+  \code{trapVisitID}, \code{FinalRun}, and \code{lifeStage}.  After 
+  summarizing, all catch data are collapsed so as to have one line per 
+  combination of these variables.  The use of a plus-count algorithm divvies
+  up non-randomly selected fish into appropriate \code{FinalRun} and 
+  \code{lifeStage} categories.  In this way, all fish are ultimately utilized
+  in all pasasge estimates by life stage and run.
+  
+  Observed fish are also corrected for half-cone operations, in which the
+  intake of fish is reduced to half of a cone's aperture being covered, so as
+  to reduce flow, and thus captured fish.  Generally, all fish captured 
+  during half-cone operations are multiplied by the value of the global 
+  \code{halfConeMulti} variable, which serves as a multiplier to correct for 
+  fish missed.  Variable \code{halfConeMulti} is set to 2.
+  
+  The unique combinations of run and life stage in the catch data dictate the
+  reports generated. Thus, reports spanning different time periods and sites
+  may report different run and life stage passage combinations.
 }
 

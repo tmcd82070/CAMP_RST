@@ -7,37 +7,33 @@
 chuck.zeros(b, e, beg.buff, end.buff, df)
 }
 \arguments{
-\item{b}{<describe argument>}
+\item{b}{describe argument}
 
-\item{e}{<describe argument>}
+\item{e}{describe argument}
 
-\item{beg.buff}{<describe argument>}
+\item{beg.buff}{describe argument}
 
-\item{end.buff}{<describe argument>}
+\item{end.buff}{describe argument}
 
-\item{df}{<describe argument>}
+\item{df}{describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
-beg.buff <- 0
- end.buff <- 0
- df <- df2
+
 }
 \details{
-<other comments found in file>
-NA
- df <- df2
+other comments found in file
 }
 \examples{
-<insert examples>
+#insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

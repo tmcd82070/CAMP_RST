@@ -1,4 +1,4 @@
-#' @export F.annual.passage
+#' @export 
 #' 
 #' @title F.annual.passage
 #' 
@@ -17,50 +17,24 @@
 #' 
 #'    ---- Pull the min and max dates from the data base
 #' 
-#' @param  site <describe argument>
-#' @param  taxon <describe argument>
-#' @param  run <describe argument>
-#' @param  min.date <describe argument>
-#' @param  max.date <describe argument>
-#' @param  output.file <describe argument>
-#' @param  ci=TRUE  <describe argument>
+#' @param  site describe argument
+#' @param  taxon describe argument
+#' @param  run describe argument
+#' @param  min.date describe argument
+#' @param  max.date describe argument
+#' @param  output.file describe argument
+#' @param  ci=TRUE  describe argument
 #' 
-#' @details <other comments found in file>
-#'    Open ODBC channel
-#'    Pull all visits where fish were processed in order to determine min and max dates
-#'    USE THIS CODE TO COMPUTE ESTIMATES FOR EVERY YEAR IN THE DATA BASE
-#' sql.visit <- paste( "SELECT visitTime",  
-#'     " FROM (", s.tab, " INNER JOIN ", ss.tab, " ON ", s.tab, ".siteID", " = ", ss.tab, ".siteID", ")", 
-#'     " INNER JOIN ", tv.tab, " ON ", ss.tab, ".subsiteID", "=", tv.tab, ".trapPositionID", 
-#'     " WHERE (((", s.tab, ".siteID)=", site, ") ",
-#'     "AND ((", tv.tab, ".visitTypeID)=2 Or (", tv.tab, ".visitTypeID)=4) ",
-#'     "AND ((", tv.tab, ".includeCatchID)=1 Or (", tv.tab, ".includeCatchID)>250)); ",
-#'     sep="")
+#' @details 
 #' 
-#' visit <- sqlQuery(ch, sql.visit)
-#' F.sql.error.check(visit)
-#' 
-#' strt.date <- min( visit$visitTime )
-#' end.date <- max( visit$visitTime )
-#'    ---- Call F.passage, once for each year, to estimate passage.  This is done so that catch and efficiency models 
-#'         are estimated within year only.
-#' secs.in.year <- round(60*60*24*365.25)
-#' yr.cuts <- seq( strt.date, end.date+secs.in.year, by=secs.in.year )
-#' class(yr.cuts) <- class(strt.date)
-#'        Loop over years
-#'    ---- Plot results
-#'    ---- Open PNG device
-#'    ---- Write annual passage table to a file, if called for
-#'    ---- Send messages back to the interface
-#' 
-#' @return <describe return value>
+#' @return 
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{}}, \code{\link{}}
 #' 
 #' @examples
-#' <insert examples>
+#' 
 #' 
 F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file, ci=TRUE ){
 #

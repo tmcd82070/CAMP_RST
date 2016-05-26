@@ -7,34 +7,91 @@
 F.assign.1dim(catch, present.var, absent.var)
 }
 \arguments{
-\item{catch}{<describe argument>}
+\item{catch}{A data frame containing records of fish itemized by combinations
+of variables \code{FinalRun}, \code{lifeStage}, and \code{forkLength}. 
+Variable \code{Unmarked} contains the number of fish represented in each 
+record.}
 
-\item{present.var}{<describe argument>}
+\item{present.var}{The variable in data frame \code{catch} for which data are
+recorded.  This should be one of \code{FinalRun} or \code{lifeStage}.}
 
-\item{absent.var}{<describe argument>}
+\item{absent.var}{The variable in the data frame \code{catch} for which data 
+are not recorded.  This should be either of \code{FinalRun} or 
+\code{lifeStage} not utilized in \code{present.var}.}
 }
 \value{
-<describe return value>
+A data frame \code{catch} with any \code{"Unassigned"} counts of fish
+  present in the \code{absent.var} variable proportionally allocated to the 
+  levels present in the \code{present.var} variable.  See 'Details.'
 }
 \description{
-Values in one dimension of the basic run X lifstage table is present, the other is missing.
-
-   Assign the missing one based on frequency dist of the other.
-
-
-   We make sure to TOSS RANDOMSELECTION == "NO"
+Assign the missing counts of either \code{FinalRun} or \code{lifeStage},
+based on frequency dist of the other.
 }
 \details{
-
+Values in one dimension of the basic \code{FinalRun} X 
+  \code{lifeStage} table is present, but the other is missing.
+  
+  Except in rare cases, only fish for which variable \code{RandomSelection = 
+  "Yes"} contribute to sampling proportions.  Thus, fish for which either or 
+  both of \code{FinalRun} and \code{lifeStage} are recorded, but for which 
+  \code{RandomSelection = "No"}, are excluded.
+  
+  Function \code{F.assign.1dim} loops individually over each level found in 
+  the \code{present.var} variable. Within each level, trap occasions, as 
+  determined by variable \code{trapVisitID}, are examined one-by-one in order
+  to estimate relative frequencies of levels in the \code{absent.var} 
+  variable, following the exclusion of those recorded as \code{"Unassigned"}.
+  In this way, an estimate of the relative frequencies of the 
+  \code{absent.var}, given the level of the \code{present.var} and the 
+  provided \code{trapVisitID}, is obtained.
+  
+  Estimation of the underlying frequency distribution in a \code{trapVisitID}
+  may take place by up to six sequential strategies.  The application of a 
+  higher strategy only takes place on failure of the one immediately 
+  preceding it.  The six strategies follow.  In most cases, the first 
+  applies, and so the others are not considered.  In each, the overall 
+  relative frequency of the \code{absent.var} is obtained via examination 
+  of...
+  
+  \enumerate{ \item ...the levels of \code{absent.var} with the same
+  \code{trapVisitID} and level of \code{present.var}, where
+  \code{RandomSelection = 'yes'}. \item ...the levels of \code{absent.var}
+  with the same \code{trapVisitID} and level of \code{present.var}. \item
+  ...the levels of \code{absent.var} with the same \code{SampleDate} and
+  level of \code{present.var}, where \code{RandomSelection = 'yes'}. \item
+  ...the levels of \code{absent.var} with the same \code{SampleDate} and
+  level of \code{present.var}. \item ...the levels of \code{absent.var} with
+  the same \code{SampleDate}, plus or minus one day, and level of
+  \code{present.var}, where \code{RandomSelection = 'yes'}. \item ...the
+  levels of \code{absent.var} with the same \code{SampleDate}, plus or minus
+  one day, and level of \code{present.var}. }
+  
+  Relaxation of the randomly selected condition via the lack of consideration
+  of variable \code{RandomSelection} in strategies 2, 4, and 6 takes place 
+  only within a \code{trapVisitID} for which the preceding strategy contained
+  no \code{RandomSelection = 'yes'} records.  The relaxation allows for the 
+  possibility that with a small number of caught fish, all are measured.  In 
+  this case, the entire catch forms the sample and sometimes, variable 
+  \code{RandomSelection} is set to \code{"no"}.
+  
+  When one of strategies 3, 4, 5, 6 is used, the resulting relative frequency
+  of counts found in other \code{trapVisitID}s or neighboring days may not
+  evenly divide the \code{"Unassigned"} count of fish recorded in the 
+  \code{absent.var} variable. In this case, the plus counts are obtained by 
+  multiplying the number of \code{"Unassigned"} fish by the proportion of 
+  fish in each level returned by application of the suitable strategy. When 
+  this occurs, round-off error may occur and accumulate over the various 
+  levels for which plus-counts are obtained.  The difference between the 
+  original \code{"Unassigned"} count of fish and the sum of the rounded plus 
+  counts thus may not equal zero.  Any non-zero "magic fish" are randomly 
+  allocated to the levels for which rounding occurred via the \code{multinom}
+  function.  In this way, the data dictate to which levels any magic fish are
+  allocated.  Magic fish may be positive or negative quantities, with each 
+  being allocated in the appropriate way to ensure that the sum of the final 
+  plus-count levels equals the original \code{"Unassigned"} count of fish.
 }
 \examples{
-<insert examples>
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
 }
 

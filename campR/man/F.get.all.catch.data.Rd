@@ -2,72 +2,33 @@
 % Please edit documentation in R/get_all_catch_data.r
 \name{F.get.all.catch.data}
 \alias{F.get.all.catch.data}
-\title{F.get.all.catch.data}
+\title{F.get.all.catch.data - Retrieve data frame containing catch data.}
 \usage{
 F.get.all.catch.data(site, taxon, min.date, max.date)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 }
 \value{
-<describe return value>
+A data frame entitled \code{visit}.  To be included, a record has to
+  be from the correct \code{site} and \code{taxon}, and be between the values
+  specified by \code{min.date} and \code{max.date}.
 }
 \description{
-Fetch the catch data for a SINGLE TAXON from an Access data base. 
-   This function retrieves all catch data for 
-
-   input:
-   db = full path and name of the Access data base to retrieve data from
-   tables = vector with named components containing names
-           of the table in db to pull values from
-   site = site ID of place we want to do estimates for.
-   taxon = the taxon number (from luTaxon) to retrieve.  
-   min.date = minimum date for data to include. This is a text string in the format %Y-%m-%d, or YYYY-MM-DD
-   max.date = maximum date for data to include.  Same format as min.date
-
-   To be included in the catch data, a record has to be from the site,
-   of the correct taxon, of the correct run, and between min and max dates.
-
-
-
-
-   *****
-}
-\details{
-<other comments found in file>
-   This SQL file develops the hours fished and TempSamplingSummary table
-   *****
-   This SQL generates the sum chinook by trap series of queries
-   *****
-   Now, fetch the result
-   ******
-   Fetch run name
-run.name <- sqlQuery( ch, paste("SELECT run AS runName FROM luRun WHERE runID=", run ))
-F.sql.error.check(run.name)
-   Assign attributes
-attr(visit, "runID") <- run
-attr(visit, "run.name") <- run.name
-attr(visit, "run.season") <- run.season
-attr(visit, "site.stream") <- site.stream
-attr(visit, "taxonID" ) <- taxon.string
-attr(visit, "species.name") <- sp.commonName
-
-f.banner("F.get.catch.data - Complete")
+Fetch catch data for a single taxon from an Access data base.
 }
 \examples{
-<insert examples>
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+# requires an mdb.
 }
 

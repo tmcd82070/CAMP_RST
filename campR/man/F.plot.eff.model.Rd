@@ -4,56 +4,45 @@
 \alias{F.plot.eff.model}
 \title{F.plot.eff.model}
 \usage{
-F.plot.eff.model(fit, df, file)
+F.plot.eff.model(df, file)
 }
 \arguments{
-\item{fit}{<describe argument>}
+\item{df}{A data frame input to function \code{F.efficiency.model} that 
+includes variables \code{TrapPositionID}, \code{batchDate},
+\code{nReleased}, \code{nCaught}, \code{efficiency}, \code{imputed.eff},
+and \code{trapPositionID}.  Variable \code{TrapPositionID} and 
+\code{trapPositionID} appear to be the same, although both are called in 
+subsequent points in the code.}
 
-\item{df}{<describe argument>}
-
-\item{file}{<describe argument>}
+\item{file}{The name of the file prefix under which output is to be saved. 
+Set to \code{NA} to plot to the Plot window.}
 }
 \value{
-<describe return value>
+Output includes a \code{png} graphical display of estimated 
+  efficiencies, per trap, by day, as well as a \code{csv} of the data points 
+  utilized in making the graph.  The \code{csv} includes both the estimated 
+  values from the efficiency model, as well as the observed counts of fish 
+  deriving from efficiency trials.
 }
 \description{
-Plot trap efficiencies
-   values.
-
-   input:
-   fit = for now, a data frame containing date and efficiency values.
-   df = data frame input to F.eff.model
-   file = file to write plot to
-
-   Output:
-   A time series plot of catch by date.
-
-   df <- ans
-   file <- plot.file
-}
-\details{
-<other comments found in file>
-if(length(dev.list()) > 1) windows()
- get subsite Names
- bring in subsite info on the data
- write out estimates.
-   Draw points and lines
-   indicators for season and such
- The following plots period between trial
- The following plots all time
-   Draw lines
-   Draw points
-   Draw legend
-   Add title
+Plot trap efficiency values over days per trap.
 }
 \examples{
-<insert examples>
+# Create a data frame.
+df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
+                 batchDate=as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="\%F"),tz="America/Los_Angeles"),
+                 nReleased=c(rep(NA,40),1050,rep(NA,15),844,rep(NA,23),rep(NA,40),1050,rep(NA,15),844,rep(NA,23)),
+                 nCaught=c(rep(NA,40),52,rep(NA,15),10,rep(NA,23),rep(NA,40),71,rep(NA,15),15,rep(NA,23)),
+                 efficiency=c(rep(0.03273495,80),rep(0.04540655,80)),
+                 imputed.eff=c(rep("Yes",160)))
+subsites <- data.frame(subSiteName=c('Left Bank','Right Bank'),subSiteID=c(12345,98765))
+subsites$subSiteName <- as.character(droplevels(subsites$subSiteName))
+attr(df,"subsites") <- subsites
+attr(df,"site.name") <- as.factor(c("A River in the Central Valley"))
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+# Plot results to plot window.
+F.plot.eff.model( df, file=NA )
+
+
 }
 

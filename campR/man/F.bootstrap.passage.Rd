@@ -2,62 +2,157 @@
 % Please edit documentation in R/bootstrap_passage.r
 \name{F.bootstrap.passage}
 \alias{F.bootstrap.passage}
-\title{F.bootstrap.passage}
+\title{F.bootstrap.passage - Compute bootstrap confidence intervals for passage}
 \usage{
 F.bootstrap.passage(grand.df, catch.fits, catch.Xmiss, catch.gapLens,
   catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R,
   ci = T)
 }
 \arguments{
-\item{grand.df}{<describe argument>}
+\item{grand.df}{A data frame containing both daily estimated passage and
+efficiency, for each trap.}
 
-\item{catch.fits}{<describe argument>}
+\item{catch.fits}{A list of Poisson fitted objects, possibly with basis 
+spline covariates, used to imput missing catches, for each trap.}
 
-\item{catch.Xmiss}{<describe argument>}
+\item{catch.Xmiss}{A list containing a spline basis matrix of imputed days 
+where catch is missing for each trap.}
 
-\item{catch.gapLens}{<describe argument>}
+\item{catch.gapLens}{A list containing a numeric vector of hours of 'Not 
+fishing' for 'Not fishing' days, necessarily with all entries less than 24,
+for each trap.}
 
-\item{catch.bDates.miss}{<describe argument>}
+\item{catch.bDates.miss}{A list containing a POSIX vector of 'Not fishing' 
+\code{batchDate}s for missing catches, for each trap.  Necessary because 
+one \code{batchDate} may have two (or more) gaps.}
 
-\item{eff.fits}{<describe argument>}
+\item{eff.fits}{A list of binomial logistic regression fitted objects used to
+compute efficiency.  One per trap.}
 
-\item{eff.X}{<describe argument>}
+\item{eff.X}{NEED TO CHECK. A list containing a numeric vector of days 
+lacking an efficiency trial, and for which efficiency must be estimated, 
+for each trap.}
 
-\item{eff.ind.inside}{<describe argument>}
+\item{eff.ind.inside}{NEED TO CHECK. A list containing the first and last day
+of a sequence of efficiency trials, for each trap.}
 
-\item{eff.X.dates}{<describe argument>}
+\item{eff.X.dates}{NEED TO CHECK. A list xxxx, for each trap.}
 
-\item{sum.by}{<describe argument>}
+\item{sum.by}{A text string indicating the temporal unit over which daily 
+estimated catch is to be summarized.  Can be one of \code{day}, 
+\code{week}, \code{month}, \code{year}.}
 
-\item{R}{<describe argument>}
+\item{R}{An integer specifying the number of Monte Carlo iterations to do.}
 
-\item{ci=T}{<describe argument>}
+\item{ci}{A logical indicating if 95% bootstrapped confidence intervals 
+should be estimated along with passage estimates.}
 }
 \value{
-<describe return value>
+A data frame containing 95% bias-adjusted confidence intervals for 
+  all unique temporal units summarized via specification of \code{sum.by}.
 }
 \description{
 Bootstrap or Monte Carlo simulate data sufficient to compute confidence intervals
-   for passage.
-
-   catch.fits = list of Poisson fitted objects used to imput missing catches.  One per trap.  i.e., list
-       has length equal to number of traps at this site.
-   catch.Xmiss = X matrix for days where catch is missing.  This is constructed in F.catch.model, and passed into here.
-   catch.bDates.miss = batchDates for missing catches.  Needed because it is possible for 2 gaps to be on same batch date.
-   eff.fits = list of Binomial logistic regression fitted objects used to compute efficiency.  One per trap.
-   R = number of Monte Carlo iterations to do.
+ for passage.
 }
 \details{
-<other comments found in file>
+In order to bootstrap the estimated passage for a particular trap, 
+  random realizations of passage must be generated.  Variability in passage 
+  can originate from two sources:  imputed catch and imputed efficiency. 
+  Imputed catch originates from periods of 'Not fishing' in excess of two 
+  hours, while imputed efficiency results from days between the first and 
+  last day of a recorded efficiency trial.  Any one day may lead to several 
+  instances of imputed catch, but at most, only one instance of imputed 
+  efficiency.  Since days of operation varies over different traps, the 
+  imputation periods vary as well.
+  
+  Bootstrapping of each of catch and efficiency is organized via matrices of 
+  dimension \eqn{\code{nrow(grand.df)} \times R}, where rows hold unique 
+  trapping instances, and the columns the bootstrapping replicates. Because 
+  efficiency is only estimated on a per-day basis, but multiple trapping 
+  instances can take place on any one day, catch data are summarized per day 
+  following initial bootstrap sampling, with corresponding multiple intra-day
+  replicates summed.  Imputed values within each of the resulting daily catch
+  and efficiency matrices thus contribute to underlying stochastic 
+  variability.
+  
+  For each trap following sampling completion, the catch matrix is divided by
+  the efficiency matrix, where the \eqn{(i,j)}th entry of the resulting 
+  passage sampling matrix corresponds to the \eqn{j}th passage replicate of 
+  the \eqn{i}th day.  These daily passage estimates, over each replicate, are
+  then summarized via function \code{summarize.passage} over the temporal 
+  unit specified via \code{sum.by}.  In this way, \code{R} samples for each 
+  unique temporal time unit within the date range of \code{grand.df} are 
+  obtained.
+  
+  Given the \code{R} replicates for each unique time period, 95\% 
+  bias-corrected confidence intervals are obtained.  These confidence
+  intervals correct for non-symmetric passage replicates.
+}
+\section{Variance Matrices}{
+ 
+Catch models are fit via a Poisson generalized 
+linear model.  Often, these models are overdispersed, with a large Pearson 
+  overdispersion parameter, relative to one.  Catch, however, often has a 
+  much higher-than-expected variance, due to seasonal fish pulses.  To 
+  account for outliers in this case, the largest and smallest 20% of Pearson 
+  residuals are removed, and the dispersion statistic recalculated.    If 
+  instead, the dispersion statistic is less than one, it is set to one.
+  
+  The modified overdispersion statistic is then multiplied by the 
+  variance-covariance matrix of the original model-fit;  in this way, 
+  standard errors are recalculated via a modified quasililelihood approach.
+  
+  Efficiency models are fit via a binomial generalized linear model.  As a 
+  discrete model, these also can be overdispersed.  However, the efficiency 
+  trial data are generally sparse.  As a result, instead of removing the top 
+  proportion of residuals greater than some percentile magnitude, those 
+  greater than an absolute cut-off are removed instead.  Here, any Pearson 
+  residual with an absolute value greater than 8 are removed.  Following the 
+  removal of all extreme residuals, the resulting overdispersion is then 
+  calculated, and then applied to the variance-covariance of the original 
+  binomial fit.  The resulting dispersion statistic is set to one in case it 
+  calculates as less than one.  Traps with one efficiency trial also have 
+  overdispersions set to one.  Similar to the variance adjustment applied to 
+  catch, this is a modified quasilikelihood approach.
+}
+
+\section{Random Realizations}{
+ 
+Catch fit models are utilized to generate random
+  realizations of catch for each individual trap.  To do this, the 
+  \code{rmvnorm} function randomly samples from a multivariate normal 
+  distribution, with column dimension equal to the number of \eqn{\beta} 
+  coefficients utilized in that trap's catch model.  The \code{rmvnorm} uses 
+  the vector of model coefficients for the mean and the the modified 
+  quasilikelihood variance-covariance matrix for the variance. To emphasize 
+  calculation speed, the Cholesky matrix decomposition is used to calculate 
+  the variance matrix root.  Due to Poisson catch models utilizing a log 
+  link, betas and variances are on the log scale.
+  
+  Each of the \code{R} multivariate-normal samples is then utilized to create
+  a new prediction for missing catches, with each modified (word choice?) by 
+  the log of the trap down-time, i.e., trap down-time is an offset. (i'm 
+  specifically avoiding the word 'gap,' since that has a different definition
+  now.)  Resulting predictions for imputed catch are then exponentiated, and 
+  then combined with the observed catch to create a full day-based temporal 
+  fishing record for each trap.  (In the case that no imputation was required
+  for catch, I don't think that the numbers vary.  How is this correct, i.e.,
+  how do we capture variability in catch?)
+  
+  (Also, the dimension utilized in the \code{rmvnorm} function assumes a 
+  certain dimensionality of the underlying model, e.g., say a fourth-degree
+  model was used for days between date A and date B, and maybe a third-degree
+  model was used between date B and date C.  Couldn't it be the case that a
+  random realization of catch would result in a fifth-degree model bewteen
+  date A and date B, say, and a quadratic between date B and date C?  Are we 
+  missing some of the variability in catch by assuming that the dimension of 
+  the beta vector from the catch model is non-varying?)
 }
 \examples{
-<insert examples>
 
 }
-\author{
-WEST Inc.
-}
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.est.catch}, \code{F.est.eff}, \code{summarize.passage}
 }
 

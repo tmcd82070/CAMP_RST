@@ -3,28 +3,23 @@
 #' @title chuck.zeros
 #' 
 #' @description
-#'  beg.buff <- 0
-#'  end.buff <- 0
-#'  df <- df2
 #' 
-#' @param b <describe argument>
-#' @param e <describe argument>
-#' @param beg.buff <describe argument>
-#' @param end.buff <describe argument>
-#' @param df <describe argument>
+#' @param b describe argument
+#' @param e describe argument
+#' @param beg.buff describe argument
+#' @param end.buff describe argument
+#' @param df describe argument
 #' 
-#' @details <other comments found in file>
-#' NA
-#'  df <- df2
+#' @details other comments found in file
 #' 
-#' @return <describe return value>
+#' @return describe return value
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
-#' <insert examples>
+#' #insert examples
 #' 
 chuck.zeros <- function(b,e,beg.buff,end.buff,df){  
   

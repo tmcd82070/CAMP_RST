@@ -7,60 +7,66 @@
 F.plot.catch.model(df, file = NA)
 }
 \arguments{
-\item{df}{<describe argument>}
+\item{df}{A data frame input to function \code{F.plot.catch.model} that 
+includes variables \code{trapPositionID}, \code{TrapPosition},
+\code{batchDate}, \code{imputed.catch}, \code{modAssignedCatch}, and 
+\code{imputedCatch}.  See Details.}
 
-\item{file=NA}{<describe argument>}
+\item{file}{The name of the file prefix under which output is to be saved. 
+Set to \code{NA} to plot to the Plot window.}
 }
 \value{
-<describe return value>
+A \code{png} graphical display of Daily Raw (un-inflated) catch, per
+  trap, by day.
 }
 \description{
-Plot the catch GAM model, showing observed and imputed
-   values.
-
-   input:
-   df = data frame input to F.catch.model.  GAM fit an attribute of the df. 
-   file = If file is not NA, save the graph to this file name.
-
-   Output:
-   A time series plot of catch by date.
-
-
-
- df <- masterCatch
-  file <- plot.file
+Plot smoothed, possibly imputed, catch data over days per trap.
 }
 \details{
-<other comments found in file>
-   If file=NA, a pdf graphing device is assumed to be open already.
-   Shut down all graphics devices
-   ---- Open PNG device
- impute the imputed number of fish into unassd catch days.  awkward, b/c imputed catch
- based on plus-counted fish, but unassd based on measured fish (non-plus-counted).
-df$unassdcatch <- ifelse(df$imputed.catch > 0,df$catch,df$unassdcatch)
- jason add 4/20/2015 -- plotting only measured values means that many days in df have NA.
- we need to pull those out before we plot--sometimes, a trap could have caught many fish,
- none of which were measured.  so, these traps end up not having anything to plot, even
- though the code thinks data for that plot is there.  this causes errors.
-df <- df[ df$imputed.catch != 0 | !is.na(df$unassdcatch) ,]
- jason turn on -- have to be creative -- imputed and unassd catch generally on
- different scales, since imputed based on plus-counts, but unassigned on raw catches.
-   This adds the smoothed interpolation model to the plot.  
-     ind <- df$trapPositionID == traps[i]          # jason turns off
-     lines( supsmu(df$batchDate[ind], df$catch[ind]), lwd=2, lty=1, col=my.colors[i] )
- jason 4/20/3015 -- use new var indOld?
-catch.df.sites <- unique(df[,c('trapPositionID','TrapPosition')])       # jason add   # delete later?  added by github merge process.
- subsite.name <- attr(df, "subsites")
-   Add title
+The input data frame usually has other catch variables, although 
+  these currently serve no purpose.  Variable \code{trapPositionID} contains 
+  the numeric code of a trap, while variable \code{TrapPosition} contains in 
+  text description.  Variable \code{imputed.catch} holds the proportion of 
+  time, for that day, for which imputed occurred;  as such, it's values are 
+  between zero and one, inclusive.  Variable \code{imputedCatch} contains the
+  total number of imputed fish for the day recorded via \code{batchDate}. 
+  Variable \code{modAssignedCatch} contains the total number of caught fish 
+  for that \code{batchDate} and incoporates any extra fish arising from 
+  half-cone operations.  The value of \code{inputedCatch} is necessarily 
+  equal to or less than the value of \code{modAssignedCatch}.
+  
+  The imputation curve displayed in the graph is obtained via function 
+  \code{supersmu}, and serves as a reasonable approximation to the actual 
+  spline used in the imputation procedure contained in function
+  \code{F.catch.model}.
+  
+  Jason note 4/26/2016 -- I changed this to graph half-cone adjusted catch. 
+  This may not be what Doug wants.
 }
 \examples{
-<insert examples>
+Create a data frame.
+batchDates <- as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="\%F"),tz="America/Los_Angeles")
+df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
+                 TrapPosition=c(rep('Left Bank',80),rep('Right Bank',80)),
+                 batchDate=batchDates,
+                 imputed.catch=rep(0,160),
+                 modAssignedCatch=20*rnorm(length(batchDates))+624.26*exp(-(as.numeric(batchDates)/86400 - 16120)^2/260),
+                 imputedCatch=rep(0,160))
 
-}
-\author{
-WEST Inc.
+df$modAssignedCatch <- ifelse(df$trapPositionID == 98765,15*rnorm(nrow(df))+0.50*df$modAssignedCatch,df$modAssignedCatch)
+df$modAssignedCatch[df$modAssignedCatch < 0] <- 0
+df$imputedCatch[120:124] <- df$modAssignedCatch[120:124]
+df$imputed.catch[120:124] <- rep(1,5)
+
+attr(df,"site.name") <- as.factor(c("A River in the Central Valley"))
+attr(df,"species.name") <- "Chinook Salmon"
+attr(df,"run.name") <- "Fall"
+attr(df,"life.stage") <- "Fry"
+
+# Plot results to plot window.
+F.plot.catch.model( df, file=NA )
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.catch.model}
 }
 

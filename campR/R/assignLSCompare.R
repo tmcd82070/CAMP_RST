@@ -12,10 +12,10 @@
 #' 
 #' 
 #' 
-#' @param Data <describe argument>
-#' @param SAVE=TRUE <describe argument>
+#' @param Data describe argument
+#' @param SAVE=TRUE describe argument
 #' 
-#' @details <other comments found in file>
+#' @details other comments found in file
 #'  for debugging
 #' data <- subset(Data,FinalRun=='Fall')
 #'  this run
@@ -43,14 +43,14 @@
 #'  for debugging
 #' ddply(Data,~FinalRun,compare,save=FALSE)
 #' 
-#' @return <describe return value>
+#' @return describe return value
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
-#' <insert examples>
+#' #insert examples
 #' 
 ###################################################
 ## Jared Studyvin

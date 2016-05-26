@@ -7,14 +7,14 @@
 F.est.catch.trapN(catch.df, plot = TRUE, plot.file = "raw_catch.pdf")
 }
 \arguments{
-\item{catch.df}{<describe argument>}
+\item{catch.df}{describe argument}
 
-\item{plot=TRUE}{<describe argument>}
+\item{plot=TRUE}{describe argument}
 
-\item{plot.file="raw_catch.pdf"}{<describe argument>}
+\item{plot.file="raw_catch.pdf"}{describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
 Estimate capture for every day of the season.
@@ -31,13 +31,9 @@ Estimate capture for every day of the season.
   plot.file=file.root
 }
 \details{
-<other comments found in file>
+other comments found in file
         Times in run season must be same as time in batchDate each day. 
         batchDate must occur at same time every day.  Can be missing days, but always at same time when present.
-start.season <- min(catch.df$batchDate)
-end.season   <- max(catch.df$batchDate)
-   ---- Fill in the gaps for individual traps
- catch.dff <<- catch.df   # save a copy for debugging
    Impute a value for the gaps
    When df2 comes back from F.catch.model, it has extra lines in it.  One extra line for each 24 hour period in the 
    gaps that were bigger than max.ok.gap. If gap = 3 days, there will be 3 extra lines.
@@ -53,13 +49,13 @@ end.season   <- max(catch.df$batchDate)
         But, gaps are filled.  Take back out the gaps when counting.
 }
 \examples{
-<insert examples>
+# insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

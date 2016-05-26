@@ -7,14 +7,14 @@
 assignLifeStage(DATA, groupN = NULL, USEWeight = NULL)
 }
 \arguments{
-\item{DATA}{<describe argument>}
+\item{DATA}{describe argument}
 
-\item{groupN=NULL}{<describe argument>}
+\item{groupN=NULL}{describe argument}
 
-\item{USEWeight=NULL}{<describe argument>}
+\item{USEWeight=NULL}{describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
 Jared Studyvin
@@ -26,16 +26,16 @@ Jared Studyvin
  The purpose is to replace the life stage column with an updated assignment based on a clustering routine
 }
 \details{
-<other comments found in file>
+other comments found in file
  create id column to keep track of expanding and collapsing the data
  get unique final runs
- noRun <- grep('unassig',finalRun,ignore.case=TRUE)
+ noRun - grep('unassig',finalRun,ignore.case=TRUE)
  if(length(noRun)>0){
-     finalRun <- finalRun[-noRun]
+     finalRun - finalRun[-noRun]
  }
  save biologist life stage assignment
  for debugging
-runDat <- subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
+runDat - subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
  create list for saving mean vectors and variance covariance matrices from each mixture distribution
 
  save data before assignment
@@ -132,13 +132,13 @@ print(X[,y])
 ddply(collapseDat[haveFLnoW,],~group,summarize,FL=mean(forkLength,na.rm=TRUE))
 }
 \examples{
-<insert examples>
+# insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

@@ -2,39 +2,53 @@
 % Please edit documentation in R/summarize_passage.r
 \name{F.summarize.passage}
 \alias{F.summarize.passage}
-\title{F.summarize.passage}
+\title{Average passage over all traps at a site, then sum by summarize.by.}
 \usage{
 F.summarize.passage(df, summarize.by)
 }
 \arguments{
-\item{df}{<describe argument>}
+\item{df}{The data frame containing days which are to be summarized via the 
+temporal unit specified by \code{summarize.by}.}
 
-\item{summarize.by}{<describe argument>}
+\item{summarize.by}{A string time unit into which summary occurs, i.e., one 
+of "\code{day}," "\code{week}," "\code{month}," "\code{year}."}
 }
 \value{
-<describe return value>
-}
-\description{
-Average passage over all traps at a site, then sum by summarize.by
-
-   df must have the following columns: $batchDate, $imputed.catch
-   df <- grand.df
-   summarize.by <- sum.by
+A data frame containing summarized passage, per the time unit 
+  specified via \code{summarize.by}.
 }
 \details{
-<other comments found in file>
-   ---- First, average over traps
-   ---- Now, summarize passage by time period.  
-   Put catch and aux information into data frame
+The dataframe fed to function \code{F.summarize.passage} must have a
+  day-fished POSIX column \code{batchDate}, formatted via the ISO 8601 date
+  format (\code{\%F}), and a column \code{imputed.catch}, containing the
+  percentage of the total count of the Total Estimated Catch obtained via
+  imputation.  Additionally, the dataframe must contain estimated passage.
+  
+  Function \code{F.summarize.passage} first averages the passage on a per-day
+  basis over all traps running on that day.  It then summarizes via the 
+  temporal units specified by \code{summarize.by}. See Examples.
+  
+  By default, passage estimation involving lifestage always takes place over 
+  a year.
+  
+  The Total Estimated Catch is the sum of Assigned, Unassigned, Half-Cone 
+  Adjusted, and Imputed Fish.  It is also the numerator utilized in the 
+  estimation of passage, where the denominator is the estimated efficiency.
 }
 \examples{
-<insert examples>
+#Create a data set of trapping.
+beg <- strptime("2014-01-24",format="\%F")
+df <- data.frame(trapVisitID=c(seq(1234,length.out=10)),
+                 trapPositionID=c(rep(12345,10),rep(98765,10)),
+                 batchDate=rep(seq(beg,by=60*60*24,length.out=10),2),
+                 imputed.catch=c(0,0,0,0.1,0,0,1.0,1.0,0,0,0,0,0,0.1,0,0,0,0,0,1),
+                 passage=c(11,11,14,16,12,10,23,18,17,18,3,5,2,7,5,4,1,3,1,1))
+df <- df[order(df$batchDate,df$trapPositionID),]
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+# Summarize by different time frames.
+df.day <- F.summarize.index( df, "day" )
+df.week <- F.summarize.passage( df, "week" )
+df.month <- F.summarize.passage( df, "month" )
+df.year <- F.summarize.passage( df, "year" )
 }
 

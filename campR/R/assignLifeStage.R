@@ -15,20 +15,20 @@
 #' 
 #' 
 #' 
-#' @param DATA <describe argument>
-#' @param groupN=NULL <describe argument>
-#' @param USEWeight=NULL <describe argument>
+#' @param DATA describe argument
+#' @param groupN=NULL describe argument
+#' @param USEWeight=NULL describe argument
 #' 
-#' @details <other comments found in file>
+#' @details other comments found in file
 #'  create id column to keep track of expanding and collapsing the data
 #'  get unique final runs
-#'  noRun <- grep('unassig',finalRun,ignore.case=TRUE)
+#'  noRun - grep('unassig',finalRun,ignore.case=TRUE)
 #'  if(length(noRun)>0){
-#'      finalRun <- finalRun[-noRun]
+#'      finalRun - finalRun[-noRun]
 #'  }
 #'  save biologist life stage assignment
 #'  for debugging
-#' runDat <- subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
+#' runDat - subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
 #'  create list for saving mean vectors and variance covariance matrices from each mixture distribution
 #' 
 #'  save data before assignment
@@ -124,14 +124,14 @@
 #'  this matches up the group number to the group name
 #' ddply(collapseDat[haveFLnoW,],~group,summarize,FL=mean(forkLength,na.rm=TRUE))
 #' 
-#' @return <describe return value>
+#' @return describe return value
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
-#' <insert examples>
+#' # insert examples
 #' 
 ###############################################
 ## Jared Studyvin
@@ -157,8 +157,8 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL){
 
 
     ## required packages
-    #needPack <- c('Rcpp','plyr','mclust','car')
-    #getPackages(needPack) # loads and installs if needed
+    needPack <- c('Rcpp','plyr','mclust','car')
+    getPackages(needPack) # loads and installs if needed
 
     ## create id column to keep track of expanding and collapsing the data
     DATA$id <- 1:nrow(DATA)

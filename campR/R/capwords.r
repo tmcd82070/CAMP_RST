@@ -3,22 +3,22 @@
 #' @title capwords
 #' 
 #' @description
-#' <add description>
+#' add description
 #' 
-#' @param s <describe argument>
-#' @param  strict = FALSE <describe argument>
+#' @param s describe argument
+#' @param  strict = FALSE describe argument
 #' 
-#' @details <other comments found in file>
-#' <add details>
+#' @details other comments found in file
+#' add details
 #' 
-#' @return <describe return value>
+#' @return describe return value
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
-#' <insert examples>
+#' # insert examples
 #' 
 capwords <- function(s, strict = FALSE) {
     cap <- function(s) paste(toupper(substring(s,1,1)),

@@ -7,16 +7,16 @@
 F.byCatch.table(site, min.date, max.date, output.file)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{describe argument}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{describe argument}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{describe argument}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
 List all non-chinook catches,
@@ -31,20 +31,20 @@ List all non-chinook catches,
    Build table in Access file containing trap visits we want
 }
 \details{
-<other comments found in file>
+other comments found in file
    ---- Write out the data set
    ---- Produce a pie chart and write out the data for it
    ---- Open PNG device
    ---- Send messages back to the interface
 }
 \examples{
-<insert examples>
+#insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

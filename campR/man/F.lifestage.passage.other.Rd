@@ -8,20 +8,20 @@ F.lifestage.passage.other(site, taxon, min.date, max.date, output.file,
   ci = TRUE)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{describe argument}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{describe argument}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{describe argument}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{describe argument}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{describe argument}
 
-\item{ci=TRUE}{<describe argument>}
+\item{ci=TRUE}{describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
 ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
@@ -32,16 +32,16 @@ ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
    taxon = taxon number (from luTaxon) to retrieve
 }
 \details{
-<other comments found in file>
+other comments found in file
 }
 \examples{
-<insert examples>
+insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

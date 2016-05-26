@@ -1,66 +1,53 @@
-#' @export F.getByCatch
+#' @export
 #' 
-#' @title F.getByCatch
+#' @title F.getByCatch 
 #' 
-#' @description
+#' @description 
+#' Retreive all non-Chinook data between two dates at site.
 #' 
-#'    Retreive all non-Chinook data between two dates at site.
-#' 
-#' 
-#'    ---NOTE: build_report_Criteria must be run before here.
-#' 
-#' 
-#'    *******
-#'    Open ODBC channel
-#' 
-#' @param  site <describe argument>
-#' @param  min.date <describe argument>
-#' @param  max.date  <describe argument>
-#' 
-#' @details <other comments found in file>
-#' NA
-#' NA
-#'    Execute the final SQL statement
-#' 
-#' @return <describe return value>
-#' 
-#' @author WEST Inc.
-#' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @param site The identification number of the site for which estimates are 
+#'   required.
+#' @param min.date The start date for data to include. This is a text string in 
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#' @param max.date The end date for data to include.  Same format as 
+#'   \code{min.date}.
+#'   
+#' @return A \code{csv} with all non-Chinook records between the two dates
+#'   specified at the specified site.
+#'   
+#' @seealso
 #' 
 #' @examples
-#' <insert examples>
+#' 
+#' # requires mdb.
 #' 
 F.getByCatch <- function( site, min.date, max.date ){
-#
-#   Retreive all non-Chinook data between two dates at site.
-#
 
-#   ---NOTE: build_report_Criteria must be run before here.
+  # site <- 7000
+  # min.date <- "2010-01-01"
+  # max.date <- "2010-05-30"
+  
+  #   ---- Open ODBC channel.
+  db <- get( "db.file", env=.GlobalEnv )
+  ch <- odbcConnectAccess(db)
 
+  cat("SQL to retrieve BY-CATCH records between ")
+  cat(paste(min.date, "and", max.date, "\n"))
 
-#   *******
-#   Open ODBC channel
-db <- get( "db.file", env=.GlobalEnv )
-ch <- odbcConnectAccess(db)
+  #   ---- Execute the final SQL statement.
+  catch <- F.run.sqlFile( ch, "QryByCatch.sql" )
+  odbcClose(ch)
+  
+  cat(paste(nrow(catch), "records retrieved.\n\n"))
 
+  if(nrow(catch) >= 10) {
+    cat("First 10 records...\n")
+    print(catch[1:10,])
+  } else {
+    cat("All records...\n")
+    print(catch)
+  }
 
-# ========================================================
-
-cat("SQL to retrieve BY-CATCH records between ")
-cat(paste(min.date, "and", max.date, "\n"))
-
-
-#   Execute the final SQL statement
-catch <- F.run.sqlFile( ch, "QryByCatch.sql" )
-
-
-cat(paste(nrow(catch), "records retrieved.\n\n"))
-
-if(nrow(catch) >= 10) {cat("First 10 records...\n"); print(catch[1:10,])} else {cat("All records...\n"); print(catch)}
-
-odbcClose(ch)
-
-catch
+  catch
 
 }

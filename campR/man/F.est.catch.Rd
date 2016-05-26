@@ -2,45 +2,102 @@
 % Please edit documentation in R/est_catch.r
 \name{F.est.catch}
 \alias{F.est.catch}
-\title{F.est.catch}
+\title{Estimate catch for every day of the season, per trap.}
 \usage{
 F.est.catch(catch.df, plot = TRUE, plot.file = "raw_catch.pdf")
 }
 \arguments{
-\item{catch.df}{<describe argument>}
+\item{catch.df}{A data frame resulting from a call to
+\code{F.get.catch.data}.  Run season is an attribute of this data frame.}
 
-\item{plot=TRUE}{<describe argument>}
+\item{plot}{A logical indicating if catch is to be plotted over time, per
+trap.}
 
-\item{plot.file="raw_catch.pdf"}{<describe argument>}
+\item{plot.file}{The name to which a graph of catch is to be output, if 
+\code{plot=TRUE}.}
 }
 \value{
-<describe return value>
-}
-\description{
-Estimate capture for every day of the season.
-   This assumes that only species and life stages we want are
-   in catch.df.  I.e., that appropriate filtering has already been done.
-
-   Input:
-   catch.df = data frame resulting from call to F.get.catch.data.  Run season is
-       an attribute of this data frame
-
-   Output:
-   A data frame containing $batchDay and $catch
-
-  plot.file=file.root
+A list \code{ans} containing catch model information for each trap 
+  listed in \code{catch.df}.  See Details.
 }
 \details{
-<other comments found in file>
+Function \code{F.est.catch} assumes that only species and life 
+  stages of interest are included in data frame \code{catch.df}. Catch 
+  estimation occurs on a per-trap basis, where traps could be modified 
+  \code{trapPositionID}s with a decimal appendage, due to gaps in fishing 
+  identified via function \code{F.get.catch.data}.
+  
+  Daily catch sequences are examined for strings of preceding 
+  and antecedent zeros (and \code{NA}s, resulting from periods not fished).  These zero strings 
+  are not included as part of the estimation procedure performed by 
+  function \code{F.catch.model}.  Only zeros and \code{NA}s before the first,
+  and after the last, caught fish are excluded from modeling procedures.  All
+  inclusive zeros, indicating a trapping instance during which no fish were 
+  caught, and inclusive \code{NA}s, indicating a period of no fishing, are retained. 
+  These zeros and \code{NA}s are utilized, for reporting in embedded and subsequent 
+  functions, where they contribute to plots, and hours fished.
+  
+  Function \code{F.est.catch} calls function \code{F.catch.model}, in which 
+  catch sequences are fit and periods of 'Not fishing' receive imputed 
+  values. When the original trap-specific data frame returns from 
+  \code{F.catch.model}, it has extra lines in it, with one extra line for 
+  each 24-hour not-fishing period bigger than \code{max.ok.gap}, where 
+  \code{max.gap.ok} is specified as 2 hours.  For example, if a period of 
+  'Not fishing' is 3 days, there are 3 extra records, where variables 
+  \code{sampleStart} and \code{sampleEnd} for each of the new records are 
+  redefined so that no 'Not fishing' period remains.  For these imputed 
+  periods, variable \code{gamEstimated} is \code{TRUE}. Variable 
+  \code{sampleEnd} assigns the value of variable \code{batchDate}, as usual. 
+  On return, there is either an observed catch value alone, an imputed catch value 
+  alone, or a combination of the two, for each day from the start of the 
+  season to its end.  Days with both observed and imputed catch values result
+  from days containing both fishing and non-fishing periods.
+  
+  Spline plots can be obtained via uncommenting, but are commented out as of 
+  the current version.  (Need to test this is actually true.)
+  
+  The total number of operating traps per day is obtained via internal 
+  function \code{F.est.catch.trapN}, which is essentially a rehash of 
+  \code{F.est.catch}.  Function \code{F.est.catch.trapN} fits all splines all
+  over again while utilizing all zero records.  It is called for its side 
+  effect of counting the total number of operating traps per day, which 
+  includes the preceding and antecedent zero days deleted via function 
+  \code{F.est.catch} in the course of processing.
+  
+  The output of this function comprises a list containing eight interior 
+  objects, which may be a data frame, or an interior list containing a number
+  of interior objects equal to the number of unique traps in
+  data.frame\code{catch.df}.  The eight internal objects include,
+  
+  \describe{ \item{\code{catch}}{a data frame of estimated catch, including 
+  imputed values, per day;} \item{\code{fits}}{a list of Poisson fitted
+  objects, possibly with basis spline covariates, used to imput missing
+  catches, for each trap;} \item{\code{X.miss}}{a list containing a spline
+  basis matrix of imputed days for each trap;} \item{\code{gaps}}{a list
+  containing a numeric vector of hours of 'Not fishing' for 'Not fishing'
+  days, necessarily with all entries less than 24,
+  for each trap;} \item{\code{b.Dates.miss}}{a list containing a POSIX vector
+  of 'Not fishing' days, for each trap;} \item{\code{trapsOperating}}{a data
+  frame housing the number of traps operating per day;} 
+  \item{\code{true.imp}}{a data frame containing information of imputed
+  values; and} \item{\code{allDates}}{a data frame summarizing the days on
+  which fishing begins and ends, taking into account preceding and antecedent
+  zeros and \code{NA}s.} }
+  
+  Note that data frame \code{trapsOperating} originates via function
+  \code{F.est.catch.trapN} described above.
 }
 \examples{
-<insert examples>
 
-}
-\author{
-WEST Inc.
+# Maybe we call in a dataframe here?  
+
+attr(df, "site.name") <- as.factor(c("A River in the Central Valley"))
+attr(df, "subsites") <- data.frame(subSiteID = 12345, subSiteName="Left Bank")
+attr(df, "run.name") <- "Fall"
+attr(df, "life.stage" ) <- "All"
+attr(df, "species.name") <- "Chinook Salmon"
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.get.catch.data} \code{F.est.catch.trapN}
 }
 

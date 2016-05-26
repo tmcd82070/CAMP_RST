@@ -2,37 +2,51 @@
 % Please edit documentation in R/summarize_index.r
 \name{F.summarize.index}
 \alias{F.summarize.index}
-\title{F.summarize.index}
+\title{Summarize a POSIX-formatted vector of dates to one of either day,
+  week, month, or year.}
 \usage{
 F.summarize.index(dt, summarize.by)
 }
 \arguments{
-\item{dt}{<describe argument>}
+\item{dt}{A POSIX-formatted date.}
 
-\item{summarize.by}{<describe argument>}
+\item{summarize.by}{A string time unit into which summary occurs, i.e., one 
+of "\code{day}," "\code{week}," "\code{month}," "\code{year}."}
 }
 \value{
-<describe return value>
-}
-\description{
-return a list suitable for calling tapply which summarizes a vector by 'summarize.by'.
-
-   dt = a POSIXct date vector
-   summarize.by = a string equal to "week", "month", "year", or "day"
-
- dt <- catch.df$batchDate
+A single-entry list containing a vector of POSIX dates, formatted via
+  the units specified by \code{summarize.by}.
 }
 \details{
-<other comments found in file>
+The vector fed to function \code{F.summarize.passage} must have a 
+  day-fished POSIX column, formatted via the ISO 8601 date format
+  (\code{\%F}).
+  
+  Function \code{F.summarize.index} formats each of day, week, month, and 
+  year separately.  When \code{summarize.by="day"}, function 
+  \code{F.summarize.index} simply places the provided POSIX vector \code{dt} 
+  into a list.  When \code{summarize.by="week"}, table \code{the.dates}, 
+  containing Julian weeks and stored in the Global environment, is used to 
+  map provided dates to the specialized Julian Week.  When 
+  \code{summarize.by="month"}, the provided dates are formatted via 
+  \code{"\%Y-\%m"}.  Finally, when \code{summarize.by="year"}, provided dates 
+  are set to the mean year spanning the range of dates provided.  This is 
+  necessary because dates could span up to 365 days, which normally includes 
+  two distinct years.???
 }
 \examples{
-<insert examples>
+# Create a list containing a vector of POSIX dates.
+beg <- strptime("2013-12-24",format="\%F",tz="America/Los_Angeles")
+batchDate <- rep(seq(beg,by=60*60*24,length.out=100),2)
 
-}
-\author{
-WEST Inc.
-}
-\seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+# Summarize indices by different time frames.
+list.day <- F.summarize.index( batchDate, "day" )
+
+# Dec. 31st becomes the 53rd week, by design.
+list.week <- F.summarize.index( batchDate, "week" )
+list.month <- F.summarize.index( batchDate, "month" )
+
+# All indices 2014, even though some dates 2013.
+list.year <- F.summarize.index( batchDate, "year" )
 }
 

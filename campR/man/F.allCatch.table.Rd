@@ -2,47 +2,34 @@
 % Please edit documentation in R/all_catch_table.r
 \name{F.allCatch.table}
 \alias{F.allCatch.table}
-\title{F.allCatch.table}
+\title{List all catches, regardless of species.}
 \usage{
 F.allCatch.table(site, min.date, max.date, output.file)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are
+required.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{The name of the file prefix under which output is to be 
+saved.}
 }
 \value{
-<describe return value>
-}
-\description{
-List all catches, regardless of species, etc. 
-
-   Input:
-   site = site ID of the place we want, trap locaton 
-
-   Output:
-   The take table is output to a CSV file
-
-
-   Build table in Access file containing trap visits we want
-}
-\details{
-<other comments found in file>
-   ---- Write out the data set
-   ---- Send messages back to the interface
+A \code{csv} containing catch information for all species.  A data
+  frame containing the same information is also returned, but invisibly.
 }
 \examples{
-<insert examples>
+ 
+
+#requires an mdb.
 
 }
-\author{
-WEST Inc.
-}
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.chinookByDate.table}
 }
 

@@ -1,50 +1,82 @@
-#' @export F.run.passage
+#' @export
 #' 
-#' @title F.run.passage
+#' @title F.run.passage 
 #' 
-#' @description
+#' @description 
+#' Estimate production by life stage and run for all days within a date range.  
 #' 
-#'    ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
-#'    A table of passage estimates, with lifestages down the rows, and runs across the columns.
+#' @param site The identification number of the site for which estimates are 
+#'   required.
+#' @param taxon The species identifier indicating the type of fish of interest. 
+#'   This is always \code{161980}; i.e., Chinook Salmon.
+#' @param min.date The start date for data to include. This is a text string in 
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.  
+#' @param max.date The end date for data to include.  Same format as 
+#'   \code{min.date}.
+#' @param by A text string indicating the temporal unit over which daily
+#'   estimated catch is to be summarized.  Can be one of \code{day},
+#'   \code{week}, \code{month}, \code{year}.
+#' @param output.file A text string indicating a prefix to append to all output.
+#' @param ci A logical indicating if 95% bootstrapped confidence intervals
+#'   should be estimated along with passage estimates.
+#'   
+#' @return A \code{csv} table of passage estimates over the specified date 
+#'   range, with lifestages down the rows, and runs across the columns.  A 
+#'   \code{png} displaying proportion-of-catch bar charts of run and life stage.
+#'   For each run and life stage combination found within the specified data 
+#'   range, an additional series of output.  A \code{csv} of daily passage 
+#'   estimates for all traps operating at least one day, and catching at least 
+#'   one fish, for all days within the specified date range. A \code{png} of 
+#'   catch versus time, for all inclusive traps.    A \code{png} of daily 
+#'   efficiency estimates, and accompanying \code{csv} for all traps operating 
+#'   at least one day, and catching at least one fish, for all days within the 
+#'   specified time period.
 #' 
-#'    Input:
-#'    site = site ID of the place we want, trap locaton
-#'    taxon = taxon number (from luTaxon) to retrieve
+#' @details Function \code{F.run.passage} is the main workhorse function for estimating
+#'   passage with respect to each of run and life stage.  As such, it calls
+#'   several separate functions, some of which contain queries designed to run 
+#'   against an Access database.
+#'   
+#'   Generally, queries against a database comprise two main efforts.  The first
+#'   involves a query for efficiency trial data, generally called "release" 
+#'   data, and conducted via function \code{F.get.release.data}, while the 
+#'   second queries for catch data via function \code{F.get.catch.data}.
+#'   
+#'   Once catch data are obtained, fish are partitioned as to whether or not 
+#'   they were assigned and caught during a half-cone operation.  Function 
+#'   \code{F.est.passage} wraps the functions that conduct the actual passage 
+#'   estimation, which involves statistical fits of each of catch and efficiency
+#'   over time.
+#'   
+#'   All calls to function \code{F.run.passage} result in daily passage
+#'   estimates, and courser temporal estimates, based on the value specified via
+#'   \code{by}.  Regardless of the temporal partitioning, estimates are always
+#'   additionally summarized by year.  Functions runs with \code{by} specified
+#'   as \code{year} output only one set of annual estimates.
+#'   
+#'   The difference between the specified \code{max.date} and
+#'   \code{min.date} must be less than or equal to 366 days, as calculated via
+#'   function \code{difftime}.
+#'   
+#'   Selection of \code{week} for input variable \code{by} results in weeks
+#'   displayed as customized Julian weeks, where weeks number 1-53.  The
+#'   specific mapping of days to weeks can be found within the \code{Dates}
+#'   table of any associated Access database.
 #' 
+#' @seealso \code{F.get.release.data}, \code{F.get.catch.data}, \code{F.est.passage}
 #' 
-#'    ********
-#'    Check that times are less than 1 year apart
-#' 
-#' @param  site <describe argument>
-#' @param  taxon <describe argument>
-#' @param  min.date <describe argument>
-#' @param  max.date <describe argument>
-#' @param  by <describe argument>
-#' @param  output.file <describe argument>
-#' @param  ci=TRUE  <describe argument>
-#' 
-#' @details <other comments found in file>
-#' 
-#' @return <describe return value>
-#' 
-#' @author WEST Inc.
-#' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
-#' 
-#' @examples
-#' <insert examples>
-#' 
+#' @examples  
+#' # query mdb?
 F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE ){
-  #
-  #   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
-  #   A table of passage estimates, with lifestages down the rows, and runs across the columns.
-  #
-  #   Input:
-  #   site = site ID of the place we want, trap locaton
-  #   taxon = taxon number (from luTaxon) to retrieve
-  #
+  
+  # site <- 12345
+  # taxon <- 161980
+  # min.date <- "2005-01-01
+  # max.date <- "2005-06-30
+  # by <- "week"
+  # output.file <- NA
+  # ci <- TRUE
 
-  #   ********
   #   Check that times are less than 1 year apart
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
   end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )
@@ -76,19 +108,11 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   catch.dfX <- catch.df      # save for a small step below.  several dfs get named catch.df, so need to call this something else.
   catch.dfX <<- catch.df
 
-  #   Debugging
-  #    tmp.catch0 <<- catch.df
-  #    tmp.visit0 <<- visit.df
-  #    print( table(catch.df$TrapStatus))
-
   if( nrow(catch.df) == 0 ){
     stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
   }
 
   #   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables
-
-  #catch.df <- F.summarize.fish.visit( catch.df )       jason turns off 4/15/2015
-
   catch.df0 <- F.summarize.fish.visit( catch.df, 'unassigned' )   # jason - 5/20/2015 - we summarize over lifeStage, wrt to unassigned.   10/2/2015 - i think by 'unassigned,' i really mean 'unmeasured'???
   catch.df1 <- F.summarize.fish.visit( catch.df, 'inflated' )     # jason - 4/14/2015 - we summarize over lifeStage, w/o regard to unassigned.  this is what has always been done.
   catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned' )     # jason - 4/14/2015 - we summarize over assigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
@@ -100,47 +124,19 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   catch.df7 <- F.summarize.fish.visit( catch.df, 'modAssignedCatch' )          # jason - 1/14/2016
   catch.df8 <- F.summarize.fish.visit( catch.df, 'modUnassignedCatch' )        # jason - 1/14/2016
 
-
-
-
-
-
-  #catch.df3 <- F.summarize.fish.visit( catch.df, 'halfcone' )     # jason - 1/14/2016 - we summarize over halfCone.  need to get these down to unique finalrun + lifestage + batchDate + trap
-  #                   - the only reason we do this again is to get a different n.tot.
-
-
-  #   Debugging
-  #    tmp.catch <<- catch.df
-  #    print( table(catch.df$TrapStatus))
-  #    cat("in lifestage_passage.r (hit return) ")
-  #    readline()
-
   #   ---- Compute the unique runs we need to do
   runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    # get all instances over the two df.  jason change 4/17/2015 5/21/2015: don't think we need to worry about catch.df0.
   runs <- runs[ !is.na(runs) ]
   cat("\nRuns found between", min.date, "and", max.date, ":\n")
   print(runs)
 
-
-  #   ---- Compute the unique life stages we need to do
-#   lstages <- unique(c(catch.df1$lifeStage,catch.df2$lifeStage))   # get all instances over the two df.  jason change 4/17/2015 5/21/2015: don't think we need to worry about catch.df0.
-#   lstages <- lstages[ !is.na(lstages) ]   #   Don't need this,  I am pretty sure lifeStage is never missing here.
-#   cat("\nLife stages found between", min.date, "and", max.date, ":\n")
-#   print(lstages)
-
   #   ---- Print the number of non-fishing periods
   cat( paste("\nNumber of non-fishing intervals at all traps:", sum(visit.df$TrapStatus == "Not fishing"), "\n\n"))
-
-  #   ---- Extract the unique trap visits.  This will be used in merge to get 0's later
-  #    ind <- !duplicated( catch.df$trapVisitID ) & !is.na(catch.df$trapVisitID)
-  #    visit.df <- catch.df[ind, ]
-  #    visit.df <- visit.df[, !(names(visit.df) %in% c("FinalRun", "lifeStage", "n.tot", "mean.fl", "sd.fl"))]
 
   #   ********
   #   Loop over runs
   ans <- lci <- uci <- matrix(0, 1, length(runs))#matrix(0, length(lstages), length(runs))
   dimnames(ans)<-list('All',runs)#list(lstages, runs)
-
 
   out.fn.roots <- NULL
   for( j in 1:length(runs) ){
@@ -166,11 +162,6 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     }
     catch.df <- merge(catch.dfA,unassd,by=c('trapVisitID','lifeStage'),all.x=TRUE)
 
-
-
-
-
-
     # jason brings halfcone counts along for the ride 1/14/2016 -- only for run_passage, and not run lifestage?
     names(catch.df3)[names(catch.df3) == 'n.tot'] <- 'halfConeAssignedCatch'
     names(catch.df4)[names(catch.df4) == 'n.tot'] <- 'halfConeUnassignedCatch'
@@ -189,13 +180,6 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     #theSumsBefore <<- accounting(catch.df,"byRun")
 
     catch.df <- catch.df[order(catch.df$trapPositionID,catch.df$batchDate),]
-
-
-
-
-
-
-
 
     cat(paste(rep("*",80), collapse=""))
     tmp.mess <- paste("Processing ", run.name)
@@ -233,25 +217,9 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       catch.df.ls$modAssignedCatch[ is.na(catch.df.ls$modAssignedCatch) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0
       catch.df.ls$modUnassignedCatch[ is.na(catch.df.ls$modUnassignedCatch) & (catch.df.ls$TrapStatus == "Fishing") ] <- 0
 
-      #   ---- Add back in the missing trapVisitID rows.  These identify the gaps in fishing
-      #catch.df.ls <- rbind( catch.df.ls, catch.df[ is.na(catch.df$trapVisitID), ] )
-
       #   ---- Update progress bar
       out.fn.root <- paste0(output.file, run.name)
       setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
-
-      #   Debugging
-      #                tmp.c <<- catch.df.ls
-      #                tmp.r <<- release.df
-
-      #   Debugging
-      #                print(dim(visit.df))
-      #                print(dim(catch.df.ls))
-      #                print( table( tmp.c$FinalRun, useNA="always" ))
-      #                print( table( tmp.c$lifeStage, useNA="always" ))
-      #                print( table( tmp.c$trapVisitID, useNA="always" ))
-      #                cat("in lifestage_passage (hit return) ")
-      #                readline()
 
       # jason add 2/25/2016 -- deal with traps with all zero fish.
       # see if we have non-zero fish for a trap, given the lifestage and run.
@@ -267,17 +235,10 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
         passby <- F.est.passage( catch.df.ls, release.df, by, out.fn.root, ci )
       }
-#       if(pass$nForkLenMM[1] != sum(totalRunXLifeStage[totalRunXLifeStage$FinalRun == run.name & (totalRunXLifeStage$LifeStage != "Unassigned" & totalRunXLifeStage$FinalRun != "Unassigned"),]$x)){
-#         stop('Issue with the accounting of all run-specific fish.  Investigate estimation of passage.')
-#       } else {
-#         cat('No issue with the accounting of all run-specific fish.  Continuing...\n')
-#       }
 
       #   ---- Update progress bar
       setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
       out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
-
-      #print(pass)
 
       #   ---- Save
       ans[ 1, j ] <- pass$passage
@@ -285,8 +246,8 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       uci[ 1, j ] <- pass$upper.95
       setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
 
-
       output.fn <- output.file
+      
       #   ---- Write passage table to a file, if called for
       if( !is.na(output.fn) ){
 
@@ -294,29 +255,14 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         tmp.df <- passby
 
         if(by == 'week'){
-
-          # jason add.
-          db <- get( "db.file", env=.GlobalEnv )                                  #   Open ODBC channel
-          ch <- odbcConnectAccess(db)
-          the.dates <- sqlFetch( ch, "Dates" )                                    #   get the table that has the julian week labels.
           the.dates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(year,julianWeek,julianWeekLabel))
-          close(ch)
           the.dates$week <- paste0(the.dates$year,'-',formatC(the.dates$julianWeek, width=2, flag="0"))
           the.dates <- unique(the.dates)
 
           # can't figure out how to join on posix dates.  so cheating.
-
           tmp.df <- merge(tmp.df,the.dates,by=c('week'),all.x=TRUE)
           tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)
           tmp.df <- subset(tmp.df, select = -c(year,julianWeek,julianWeekLabel) )
-
-          # possibly obsolete, 12/14/2015
-          #           tmp.df$date.alone <- as.Date(strptime(tmp.df$date,format="%F"))
-          #           the.dates$date.alone <- as.Date(strptime(the.dates$uniqueDate,format="%F"))    # jason: from strftime to strptime. why the change?
-          #           tmp.df <- merge(tmp.df,the.dates,by = c("date.alone"),all.x=TRUE)
-          #
-          #           tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)    #paste0(myYear,'-',tmp.jday %/% 7 + 1)
-          #           tmp.df <- subset(tmp.df, select = -c(date.alone,uniqueDate,julianWeek,julianWeekLabel) )
         }
 
         tzn <- get("time.zone", .GlobalEnv )
@@ -360,7 +306,6 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
           }
         }
 
-
         if(by == 'day'){
           nms <- gsub('date,', '', nms)     # by == day results in a slightly different format for tmp.df than the other three.
         }
@@ -388,7 +333,6 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         # task 2.4, 1/8/2016:  if passage = 0, force propImputedCatch to be zero.
         tmp.df$propImputedCatch <- ifelse(tmp.df$passage == 0,0,tmp.df$propImputedCatch)
 
-
         write.table( tmp.df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
 
       }    # close out writing of passage table, if called for
@@ -409,11 +353,6 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
 
     close(progbar)
   }    # close out everything having to do with the run
-
-
-
-
-
 
   cat("Final Run estimates:\n")
   print(ans)
@@ -465,33 +404,9 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
 
     ls.pass.df <<- df
 
-    # Produce pie or bar charts
-#     fl <- F.plot.lifestages( df, output.file, plot.pies=F )
-#     if( fl == "ZEROS" ){
-#       cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")
-#       cat(paste("Working directory:", getwd(), "\n"))
-#       cat(paste("R data frames saved in file:", "<none>", "\n\n"))
-#       nf <- length(out.fn.roots)
-#       cat(paste("Number of files created in working directory = ", nf, "\n"))
-#       for(i in 1:length(out.fn.roots)){
-#         cat(paste(out.fn.roots[i], "\n", sep=""))
-#       }
-#       cat("\n")
-#       return(0)
-#
-#     } else {
-#       out.fn.roots <- c(out.fn.roots, fl)
-#     }
-
-    #fl <- F.plot.runs( df, output.file, plot.pies=F )
-    #out.fn.roots <- c(out.fn.roots, fl)
   }
 
-
   nf <- length(out.fn.roots)
-
-
-
 
   #   ---- Write out message
   cat("SUCCESS - F.run.passage\n\n")

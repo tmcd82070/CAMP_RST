@@ -7,28 +7,28 @@
 capwords(s, strict = FALSE)
 }
 \arguments{
-\item{s}{<describe argument>}
+\item{s}{describe argument}
 
-\item{strict}{= FALSE <describe argument>}
+\item{strict}{= FALSE describe argument}
 }
 \value{
-<describe return value>
+describe return value
 }
 \description{
-<add description>
+add description
 }
 \details{
-<other comments found in file>
-<add details>
+other comments found in file
+add details
 }
 \examples{
-<insert examples>
+# insert examples
 
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{related routine}}, \code{\link{related routine}}
 }
 

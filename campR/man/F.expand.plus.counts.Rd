@@ -2,46 +2,67 @@
 % Please edit documentation in R/expand_plus_counts.r
 \name{F.expand.plus.counts}
 \alias{F.expand.plus.counts}
-\title{F.expand.plus.counts}
+\title{F.expand.plus.counts - Expand plus counts}
 \usage{
 F.expand.plus.counts(catch)
 }
 \arguments{
-\item{catch}{<describe argument>}
+\item{catch}{A data frame containing missing data for variables 
+\code{FinalRun} and/or \code{lifeStage}.}
 }
 \value{
-<describe return value>
+A data frame with fish whose \code{FinalRun} and/or \code{lifeStage}
+  was recorded as unknown reassigned to a run and/or life stage.
 }
 \description{
-Expand the data set in 'catch' to account for plus counts.  Plus counts are lines with missing FinalRun or lifeStage.
-
-
-print( catch[is.na(catch$FinalRun),] )
-
-   On entry there cannot be any rows with Unmarked = 0 or with missing Unmarked. 
-   The Unmarked == 0 correspond to unsuccessful visits.  Missing Unmarked correspond to non-fishing. 
-   Eliminate these lines if they exist.
+Expand a catch data frame to account for plus counts.
 }
 \details{
-<other comments found in file>
-readline()
-   Assign plus counts one dimension at a time, then for the double missing
-
-
-   ---- Deal with missing run, but present lifestage (i.e., Assign a run)
-   ---- Deal with missing lifeStage, but present finalRun (i.e., Assign a life stage)
-   ---- Deal with missing lifeStageID AND missing finalRunID (i.e., assign a life stage and a run)
-source("assign_1dim.r")
-source("assign_2dim.r")
+Data frame \code{catch} contains records with missing data for one 
+  or both of variables \code{FinalRun} and \code{lifeStage}.  These records, 
+  via the number recorded in variable \code{Unassigned}, quantify the number 
+  of fish whose run and/or life stage is unknown.
+  
+  Accurate estimation of passage requires the use of all fish in a catch. 
+  Sometimes however, catch can number in the thousands.  Practically, these 
+  large numbers of fish cannot be individually examined to determine life 
+  stage and run.  To quantify the underlying proportions of life stage and 
+  run on the catch as a whole, a random selection is drawn.  From this random
+  selection, the proportions of individual life stages and runs are 
+  quantified via observation.  Plus counts result from applying the 
+  proportions of life stage and run obtained via sampling to the unsampled 
+  fish.
+  
+  Sometimes, when examining an individual fish for life stage and run, only 
+  one attribute of the two is recorded.  Thus, following sampling and 
+  examination, a caught fish falls into one of four separate scenarios: 
+  \enumerate{ \item both life stage and run are recorded; \item life stage
+  only is missing, but run is recorded; \item run only is missing, but life
+  stage is recorded; \item both life stage and run are not recorded. } The
+  first three scenarios result from a fish being randomly sampled, while the
+  fourth results from a fish not being a part of the sample.
+  
+  Function \code{F.assign.1dim} assigns missing life stage when run is 
+  recorded.  The same function does the same when run is missing but life 
+  stage is recorded. Function \code{F.assign.2dim} assigns both missing life 
+  stage and run.  Thus, function \code{F.assign.1dim} is the workhorse 
+  function for cases 2 and and 3, while \code{F.assign.2dim} is the same for 
+  case 4.  Case 1 requires no plus counting, since life stage and run are 
+  known.  Function \code{F.expand.plus.counts} calls each of these functions 
+  in turn, with each of the one-dimensional calls performed first via
+  \code{F.assign.1dim} followed by one call to \code{F.assign.2dim}.
+  
+  The plus-count algorithm assumes that all unsuccessful or non-fishing 
+  visits have been removed from data frame \code{catch} prior to 
+  implementation. Variable \code{Unmarked} identifies each of these;  a 
+  \code{0} indicates an unsuccessful visit, while missing corresponds to 
+  non-fishing.
 }
 \examples{
-<insert examples>
-
-}
-\author{
-WEST Inc.
+# keep <- preCatch 
+#catch <- keep
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.assign.1dim}, \code{F.assign.2dim}
 }
 

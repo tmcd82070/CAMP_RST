@@ -15,25 +15,25 @@
 #' 
 #'    Build table in Access file containing trap visits we want
 #' 
-#' @param  site <describe argument>
-#' @param  min.date <describe argument>
-#' @param  max.date <describe argument>
-#' @param  output.file  <describe argument>
+#' @param  site describe argument
+#' @param  min.date describe argument
+#' @param  max.date describe argument
+#' @param  output.file  describe argument
 #' 
-#' @details <other comments found in file>
+#' @details other comments found in file
 #'    ---- Write out the data set
 #'    ---- Produce a pie chart and write out the data for it
 #'    ---- Open PNG device
 #'    ---- Send messages back to the interface
 #' 
-#' @return <describe return value>
+#' @return describe return value
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
-#' <insert examples>
+#' #insert examples
 #' 
 F.byCatch.table <- function( site, min.date, max.date, output.file ){
 #

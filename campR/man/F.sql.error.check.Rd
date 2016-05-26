@@ -11,18 +11,18 @@ F.sql.error.check(obj)
 \item{obj}{The results from an Access query. See 'Details.'}
 }
 \value{
-FALSE, assuming successful completion of a SQL query.  Otherwise, an 
+\code{FALSE}, assuming successful completion of a SQL query.  Otherwise, an 
   error message to either the Console window, if running directly via R, or 
-  to the run_R.out file, if running via the Platform.
+  to the \code{run_R.out} file, if running via the Platform.
 }
-\section{}{
-  Details: Function F.sql_error_check is used immediately after the
-use of RODBC function sqlQuery, which queries an Access database via a text
-string formatted as a SQL query. Function sqlQuery, if successful, results in
+\details{
+Function \code{F.sql_error_check} is used immediately after the
+use of \code{RODBC} function \code{sqlQuery}, which queries an Access database via a text
+string formatted as a SQL query. Function \code{sqlQuery}, if successful, results in
 a dataframe, possibly with zero rows. Otherwise, a character vector with
-error messsages is returned. Function F.sql.error.check examines if an error
+error messsages is returned. Function \code{F.sql.error.check} examines if an error
 message is returned, and if found, stops execution and prints an error
-message to the R_run.out text file or the R Console.
+message to the \code{R_run.out} text file or the R Console.
 }
 \examples{
 # db.file <- "C:/yourPath/CAMP.mdb"              # the location of CAMP.mdb
@@ -39,6 +39,6 @@ F.sql.error.check(ans)                           # check for query result validi
 
 }
 \seealso{
-sqlQuery
+\code{sqlQuery}
 }
 
