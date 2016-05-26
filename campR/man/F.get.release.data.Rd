@@ -57,7 +57,7 @@ In the original query results, there is one record for every trap
   
   Variables \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} are
   used in function \code{F.est.efficiency} as helper variables to derive a
-  batch date when the \code{meanEndTime} variable is \codde{NA}.
+  batch date when the \code{meanEndTime} variable is \code{NA}.
 }
 \section{Mean Recapture Time}{
  

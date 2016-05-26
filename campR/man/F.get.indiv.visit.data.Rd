@@ -126,7 +126,6 @@ ORDER BY Site.siteName, SubSite.subSiteName, TrapVisit.visitTime, TrapVisit.visi
    No visits found, exit nicely.
    This query pulls the trap re-starts
    Append restarts to end of visits.  Times will be sorted in assign_sample_period.r
-cat(paste("\nNumber of visits found:", nrow(visit), "\n"))
    Make sure time zones are Pacific. In case analysis is run in another time zone.
    Assign sample period start and stop
    Get rid of missing sampleEnd's.  sampleEnd's are missing for lines when trap restarted.  

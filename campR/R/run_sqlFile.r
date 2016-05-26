@@ -6,7 +6,7 @@
 #' @param sqlFile A text file containing one or more SQL-formatted query 
 #'   strings.
 #' @param ... Additional parameters needed for evaluation of the underlying SQL 
-#'   queries contained in sqlFile.  See 'Details.'
+#'   queries contained in sqlFile.  See Details.
 #'   
 #' @return By itself, function \code{F.run.sqlFile} returns nothing with respect to R. 
 #'   It may, however, based on the queries contained in the \code{sqlFile}, delete and 
@@ -40,10 +40,8 @@
 #' helpful, \code{RODBC} must be made to recognize that these are in fact comments, and
 #' not developed SQL strings. Use a double hyphen (\code{--}) to demonstrate to \code{RODBC} a
 #' comment for which processing is unnecessary. For example,
-#' 
-#' \code{-- This is a comment and won't be read} would communicate to RODBC that this
+#' \code{-- This is a comment and will not be read} would communicate to RODBC that this
 #' particular line should be skipped, whereas
-#' 
 #' \code{SELECT * FROM THIS.TABLE.HERE} forces RODBC to act. Note that double hyphens
 #' need only be entered on the left. Additionally, the space following the
 #' double hyphen is unnecessary. However, it makes comments more readable.}
@@ -53,20 +51,20 @@
 #' all, the R code has been developed to allow for selection of any piscine
 #' species. This means that the \code{WHERE} clause is a variable set by the user. It
 #' also means that this variable quantity must be passed from R to Access.
-#' Within the database, chinook salmon have the character identifier \code{'161980'}.
+#' Within the database, chinook salmon have the character identifier "\code{161980}".
 #' 
-#' In Connie's queries, \code{WHERE} statements for chinook salmon are identified via
+#' In Connies queries, \code{WHERE} statements for chinook salmon are identified via
 #' this identifier. However, because the R code has been developed to allow this
-#' value to vary, Connie's SQL code must be adapted to take variable values in
-#' RODBC. To do this, change all instances of \code{'161980'} to \code{'R.TAXON'}. The
+#' value to vary, Connies SQL code must be adapted to take variable values in
+#' RODBC. To do this, change all instances of "\code{161980}" to "\code{R.TAXON}". The
 #' appellation \code{R.TAXON} reflects the R-code name for the species variable, and is
 #' how a variable quantity is communicated to Access.
 #' 
 #' So, specifically, in any developed SQL, change all instances of
 #' 
-#' \code{CatchRaw.taxonID = '161980'} to
+#' \code{CatchRaw.taxonID = "161980"} to
 #' 
-#' \code{CatchRaw.taxonID = 'R.TAXON'}.}
+#' \code{CatchRaw.taxonID = "R.TAXON"}.}
 #' 
 #'   \item{\code{INTO SQL} Statements. Queries for use in the
 #' Platform are developed for multiple use. This means that once a query for one
@@ -89,7 +87,7 @@
 #' deletes out the old \code{Table_fish} and replaces it with the new version. Syntax
 #' of this nature must be modified for use in \code{RODBC} R code -- the \code{INTO} statement
 #' does not work in quite this way. While \code{RODBC} will create the named table, it
-#' won't first delete out its previous version. This must be done explicitly.
+#' will not first delete out its previous version. This must be done explicitly.
 #' 
 #' To work around this, use a \code{DROP TABLE} statement. Then, the use of the \code{INTO}
 #' statement will work within R. Explicitly, modifying the code block above,
