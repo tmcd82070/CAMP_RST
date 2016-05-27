@@ -1,18 +1,44 @@
-#' @title Opens, formats, and runs all SQL queries from a text file.
+#' @title F.run.sqlFile - run SQL statements.
+#' 
+#' @description Opens, formats, and runs all SQL statements from a text file 
+#' after replacing variables in the SQL statements with values passed 
+#' to this function via the \code{"..."} parameter. 
 #'   
 #' @param ch A conneciton handle originating from a call to RODBC function odbcConnectAccess,
 #'   which essentially opens a connection between R and Access, or more 
 #'   generally, an ODBC database.
-#' @param sqlFile A text file containing one or more SQL-formatted query 
-#'   strings.
-#' @param ... Additional parameters needed for evaluation of the underlying SQL 
-#'   queries contained in sqlFile.  See Details.
 #'   
-#' @return By itself, function \code{F.run.sqlFile} returns nothing with respect to R. 
-#'   It may, however, based on the queries contained in the \code{sqlFile}, delete and 
-#'   re-create several different tables in the accompanying CAMP database. 
-#'   Function \code{sqlFetch} from package \code{RODBC} is then usually paired with this 
-#'   function to bring in the query-derived Access tables as an R data frame.
+#' @param sqlFile name of a text file containing one or more SQL statements. 
+#' This file must exist in the directory given by \code{sql.code.dir}, which 
+#' is a global variable (see \code{\link{GlobalVars}}).  \code{sql.code.dir} 
+#' can be re-set as needed with a call to \code{GlobalVars} or by reassignment 
+#' in regular code.
+#' Statements in \code{sqlFile} must be separated by a semicolon ";".  
+#' Comments, lines starting with "--", are allowed.
+#' 
+#' @param echo If TRUE, the SQL statements are echoed to the log file. 
+#' Defaults to TRUE.
+#'   
+#' @param check.drops If TRUE, the routine will check for errors 
+#' following DROP statements.  The reason this would be done is that 
+#' DROP statements on non-existant tables cause an abort error. 
+#' Often, we don't want this (to abort).  The DROP just needs to insure 
+#' the table is not there so it can be created later.  
+#' Set this to FALSE and these DROP errors will pass through. 
+#' This behavior of DROP may be specific to Access and may not occur 
+#' when querying other SQL data bases (e.g., mySQL or MSSQL). 
+#' 
+#' @param ... Additional named parameters needed for evaluation of the underlying SQL 
+#'   queries contained in \code{sqlFile}. This allows R to pass parameters to SQL 
+#'   for incorporation into things like WHERE clauses.  See Details.
+#'   
+#' @return Results of the \bold{LAST} SQL statment in \code{sqlfile}. 
+#' In many cases, the SQL statments in \code{sqlfile} delete, create, and populate 
+#' tables in the Access file whose values are later queried outside this routine 
+#' using \code{sqlQuery} or \code{sqlFetch}.  One could, however, arrange the 
+#' SQL statements in \code{sqlfile} so that the last statement is a 
+#' query or fetch which produce the desired results.  In that case, this 
+#' routine will return those results. 
 #'   
 #' @details Function \code{F.run.sqlFile} is often paired with the 
 #' \code{RODBC} function \code{sqlQuery}, which reads and returns tables housed in an Access database.
@@ -136,40 +162,7 @@
 #' @export
 
 F.run.sqlFile <- function( ch, sqlFile, echo=TRUE, check.drops=FALSE, ... ){
-#
-#   This function opens the file sqlFile, and runs the sql statements contained therein.
-#
-#   Inputs:
-#       ch = an OPEN RODBC channel
-#       sqlFile = name of a text file containing one or more SQL statements. Statements must 
-#           be separated by a semicolon ";".  Comments, that are "--" at the start of a line are allowed.
-#       echo = if TRUE, the SQL statements are echoed to the R screen. 
-#       check.drops = if TRUE, this will check for errors following DROP statements.  The reason for this is that when 
-#           sending SQL statements to ACCESS, DROP statements on non-existant tables cause an error. 
-#           Many times, we don't want this.  We just need to make sure the table is not there 
-#           so we can create it later.  Set this =FALSE and these errors will pass through. 
-#           I am not sure about the behavior of DROP when querying other SQL data bases. 
-#       ... = named parameters to be substituted into the SQL statement.  This allows R to pass 
-#           parameters to SQL for incorporation into things like WHERE clauses. See note.
-#
-#   Value:
-#   The result of the *LAST* SQL statment in the file. Therefore, if you need results back (i.e., you 
-#   are not just manipulating tables in the data base), you need to split things up so that the 
-#   last SQL statement in the file is the query that returns the results you want.
-#
-#   Note: any named parameters passed in here will get substituted into the sql statement in 
-#   their place.  If, for example, the sql has TAXON in it somewhere, and a parameter to this function is TAXON='16890', 
-#   the value '16890' gets substituted into the SQL prior to execution.
-#
-#
-#   
 
-# ch <- ch
-# sqlFile <- "QryFishingGaps.sql"
-# echo=TRUE
-# check.drops=FALSE
-# R.FISHGAPMIN=fishingGapMinutes 
-  
   
   
 #   --- This is an internal function to check for SQL errors
@@ -194,8 +187,12 @@ FALSE
 #   Figure out what additional parameters there are, if any
 param <- list(...)
 
+#	Get the sql.code.directory. Look in current directory if sql.code.dir is not found 
+# in global environment.
+sql.dir <- get0( "sql.code.dir", envir=.GlobalEnv, ifnotfound="." )
+
 #   Read the SQL statement
-sql.statements <- readLines( sqlFile, warn=FALSE )   # a vector of strings, one for each line
+sql.statements <- readLines( file.path(sql.dir, sqlFile), warn=FALSE )   # a vector of strings, one for each line
 
 #   Substitute the parameters, if any.
 #   Note: double quotes cannot be used to surround string parameters, as in "R.TAXON".  This messes with R's and SQL's string representations. 

@@ -3,7 +3,7 @@
 \name{F.run.sqlFile}
 \alias{}
 \alias{F.run.sqlFile}
-\title{Opens, formats, and runs all SQL queries from a text file.}
+\title{F.run.sqlFile - run SQL statements.}
 \usage{
 F.run.sqlFile(ch, sqlFile, echo = TRUE, check.drops = FALSE, ...)
 }
@@ -12,18 +12,43 @@ F.run.sqlFile(ch, sqlFile, echo = TRUE, check.drops = FALSE, ...)
 which essentially opens a connection between R and Access, or more 
 generally, an ODBC database.}
 
-\item{sqlFile}{A text file containing one or more SQL-formatted query 
-strings.}
+\item{sqlFile}{name of a text file containing one or more SQL statements. 
+This file must exist in the directory given by \code{sql.code.dir}, which 
+is a global variable (see \code{\link{GlobalVars}}).  \code{sql.code.dir} 
+can be re-set as needed with a call to \code{GlobalVars} or by reassignment 
+in regular code.
+Statements in \code{sqlFile} must be separated by a semicolon ";".  
+Comments, lines starting with "--", are allowed.}
 
-\item{...}{Additional parameters needed for evaluation of the underlying SQL 
-queries contained in sqlFile.  See Details.}
+\item{echo}{If TRUE, the SQL statements are echoed to the log file. 
+Defaults to TRUE.}
+
+\item{check.drops}{If TRUE, the routine will check for errors 
+following DROP statements.  The reason this would be done is that 
+DROP statements on non-existant tables cause an abort error. 
+Often, we don't want this (to abort).  The DROP just needs to insure 
+the table is not there so it can be created later.  
+Set this to FALSE and these DROP errors will pass through. 
+This behavior of DROP may be specific to Access and may not occur 
+when querying other SQL data bases (e.g., mySQL or MSSQL).}
+
+\item{...}{Additional named parameters needed for evaluation of the underlying SQL 
+queries contained in \code{sqlFile}. This allows R to pass parameters to SQL 
+for incorporation into things like WHERE clauses.  See Details.}
 }
 \value{
-By itself, function \code{F.run.sqlFile} returns nothing with respect to R. 
-  It may, however, based on the queries contained in the \code{sqlFile}, delete and 
-  re-create several different tables in the accompanying CAMP database. 
-  Function \code{sqlFetch} from package \code{RODBC} is then usually paired with this 
-  function to bring in the query-derived Access tables as an R data frame.
+Results of the \bold{LAST} SQL statment in \code{sqlfile}. 
+In many cases, the SQL statments in \code{sqlfile} delete, create, and populate 
+tables in the Access file whose values are later queried outside this routine 
+using \code{sqlQuery} or \code{sqlFetch}.  One could, however, arrange the 
+SQL statements in \code{sqlfile} so that the last statement is a 
+query or fetch which produce the desired results.  In that case, this 
+routine will return those results.
+}
+\description{
+Opens, formats, and runs all SQL statements from a text file 
+after replacing variables in the SQL statements with values passed 
+to this function via the \code{"..."} parameter.
 }
 \details{
 Function \code{F.run.sqlFile} is often paired with the 

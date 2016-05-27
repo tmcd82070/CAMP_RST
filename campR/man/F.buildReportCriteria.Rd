@@ -2,8 +2,7 @@
 % Please edit documentation in R/build_Report_Criteria.r
 \name{F.buildReportCriteria}
 \alias{F.buildReportCriteria}
-\title{Update a table in the Access CAMP database to contain a particular 
-  site's trapVisitIDs between calendar dates specified by the user.}
+\title{F.buildReportCriteria}
 \usage{
 F.buildReportCriteria(site, min.date, max.date)
 }
@@ -15,16 +14,20 @@ F.buildReportCriteria(site, min.date, max.date)
 \item{max.date}{The end date for which data are requested.}
 }
 \value{
-Within R, function \code{build_Report_Criteria} returns a data frame 
-  containing one row and row column of the total number of visits at a site 
-  between the specified \code{min.date} and \code{max.date}.  Additionally, 
-  it sets up a series of tables, via query sequence 
-  \code{QryBuildReportCriteria.sql} within the Access CAMP database.
+A data frame 
+  containing one row and one column of the total number of visits at \code{siteID}  
+  between \code{min.date} and \code{max.date}.
 }
-\details{
-Generally, function \code{build_Report_Criteria} is the
-workhorse function associated with many query sequences, and sets up data
-within the Access CAMP database for further processing.
+\description{
+Update a table in the Access CAMP database to contain a particular 
+  site's trapVisitIDs between two dates specified by the user.
+}
+\section{Side effect}{
+ The query run by this function, 
+\code{QryBuildReportCriteria.sql}, constructs a temporary table 
+in the CAMP Access file which is later used by other tables and queries
+(i.e., \code{TempReportCriteria_Trapvisit}). 
+Many series of queries start and data extractions start with this one.
 }
 \examples{
 

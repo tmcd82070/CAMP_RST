@@ -68,17 +68,17 @@ First, given a trap, a null Poisson model of total
   points, i.e., unique trapping instances, and maximal model possible.
   
  \tabular{cccc}{
-   dof \tab model type                               \tab n trapping instances \tab model-form # do we care?
+   dof \tab model type                               \tab n trapping instances \tab model-form # do we care? \cr
    0   \tab intercept-only                           \tab 1                    \tab 
-   \ifelse{html}{\out{&beta 0}}{\eqn{\beta_0}{Beta0}}
-   1   \tab linear                                   \tab 15
-   2   \tab quadratic                                \tab 30
-   3   \tab cubic                                    \tab 45
-   4   \tab cubic spline with one internal knot      \tab 60
-   5   \tab cubis spline with two internal knots     \tab 75
-   ... \tab ...                                      \tab ...
+   \ifelse{html}{\out{&beta 0}}{\eqn{\beta_0}{Beta0}} \cr
+   1   \tab linear                                   \tab 15 \cr
+   2   \tab quadratic                                \tab 30 \cr
+   3   \tab cubic                                    \tab 45 \cr
+   4   \tab cubic spline with one internal knot      \tab 60 \cr
+   5   \tab cubis spline with two internal knots     \tab 75 \cr
+   ... \tab ...                                      \tab ... \cr
    k   \tab cubic spline with (k - 3) internal knots \tab 15*(k + 3)           \tab 
-   \ifelse{html}{\out{&beta 0 + &beta 1 + &beta 2}}{\eqn{\beta_0 + \beta_1 + \beta_2}{Beta0 + Beta1 + Beta2}}
+   \ifelse{html}{\out{&beta 0 + &beta 1 + &beta 2}}{\eqn{\beta_0 + \beta_1 + \beta_2}{Beta0 + Beta1 + Beta2}} \cr
  }
    
 Models with at least 60 unique trapping instances incorporate a B-spline 

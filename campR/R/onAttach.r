@@ -7,6 +7,7 @@
 	
 	packageStartupMessage( paste(pkgname, " (vers ", v ,")", sep=""))  
 	packageStartupMessage( cat(paste("Memory limit:", memory.limit(), "Mb")) )
-
+	
+	GlobalVars()
 
 }
