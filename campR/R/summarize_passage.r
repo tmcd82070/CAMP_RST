@@ -38,7 +38,7 @@
 #' df <- df[order(df$batchDate,df$trapPositionID),]
 #' 
 #' # Summarize by different time frames.
-#' df.day <- F.summarize.index( df, "day" )
+#' df.day <- F.summarize.passage( df, "day" )
 #' df.week <- F.summarize.passage( df, "week" )
 #' df.month <- F.summarize.passage( df, "month" )
 #' df.year <- F.summarize.passage( df, "year" )
