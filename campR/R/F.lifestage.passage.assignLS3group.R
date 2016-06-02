@@ -4,7 +4,7 @@
 #' 
 #' @description
 #' 
-#'    ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
+#'    ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
 #'    A table of passage estimates, with lifestages down the rows, and runs across the columns.
 #' 
 #'    Input:
@@ -38,17 +38,17 @@
 #' <insert examples>
 #' 
 F.lifestage.passage.assignLS3group <- function(site, taxon, min.date, max.date, output.file, ci=TRUE){
-###
-###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
-###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
-###
-###   Input:
-###   site = site ID of the place we want, trap locaton
-###   taxon = taxon number (from luTaxon) to retrieve
-###
-
-
-    ## 3 life stage groups are fit and the program will decide if weight will be used or not
-    passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=3,weightUse=NULL)
-
+  ###
+  ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN Â– TABULAR SUMMARY
+  ###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
+  ###
+  ###   Input:
+  ###   site = site ID of the place we want, trap locaton
+  ###   taxon = taxon number (from luTaxon) to retrieve
+  ###
+  
+  
+  ## 3 life stage groups are fit and the program will decide if weight will be used or not
+  passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=3,weightUse=NULL)
+  
 }
