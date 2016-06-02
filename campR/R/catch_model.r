@@ -139,20 +139,20 @@ F.catch.model <- function( catch.df ){
   
   # catch.df <- df2      # from est_catch_trapN.r
   # catch.df <- df3      # from est_catch.r
-
+  
   library(splines)
- 
+  
   #   ---- Sort the data appropriately.  
   catch.df <- catch.df[ order(catch.df$trapPositionID, catch.df$EndTime), ]
-
+  
   #   ---- Calculate an offset in terms of log hours.
   catch.df$log.sampleLengthHrs <- log(as.numeric( catch.df$SampleMinutes/60 ))
-
+  
   #   ---- Fit null model.  The gap catches are NA here, so they
   #   ---- are dropped from the fit.  Later, they are replaced.
   fit <- glm( n.tot ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
   fit.AIC <- AIC(fit)
-
+  
   #   ---- Fit glm model, increasing df, until the model goes bad.  
   cat(paste("Number of non-zero catches : ", sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)), "\n"))
   cat("Catch model fitting:\n")
@@ -171,13 +171,13 @@ F.catch.model <- function( catch.df ){
     
     #   ---- Get the number of good data points we have to work with, for this trap.
     nGoodData <- length(!is.na(catch.df$n.tot))    
-
+    
     #   ---- Build model complexity sequentially.  
     repeat{
-
+      
       #   ---- Check if for N of data points to support complexity for this repeat.
       valid <- (cur.df <= floor(nGoodData / knotMesh))
-
+      
       #   ---- Ensure at least 15 non-NA trapping EndTimes are present in the data.
       #   ---- Need this because of gaps in fishing - don't want to overfit the data.  
       #   ---- Thus, indicator valid must be TRUE.  
@@ -190,10 +190,10 @@ F.catch.model <- function( catch.df ){
       } else if( cur.df > 2 & (valid == TRUE) ){
         bs.sEnd <- bs( catch.df$EndTime, df=cur.df )      # Add cubic spline term.  
       }
-
+      
       #   ---- Hold in memory the current fit.  
       cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df ),error=function(e) e )
-
+      
       #   ---- Ensure current fit is statistically interpretable.  
       if(class(cur.fit)[1] == 'simpleError'){
         cur.AIC <- NA
@@ -202,7 +202,7 @@ F.catch.model <- function( catch.df ){
         cur.AIC <- AIC( cur.fit )
         cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
       }
-
+      
       #   ---- If AIC is NA, we have a problem;  otherwise, compare the 
       #   ---- new fit with the previous fit.  Do we keep going or stop?
       if( is.na(cur.AIC) ){
@@ -215,19 +215,19 @@ F.catch.model <- function( catch.df ){
         bs.sampleEnd <- bs.sEnd
         cur.df <- cur.df + 1
       }
-
+      
     }
   }
   
   #   ---- Done fitting model.
   print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
-
-
+  
+  
   #   ===============================================================================================================================
   #   ---- Loop over gaps one at a time, predicting catch for a maximum of 24-hour periods.  
-
+  
   catch.df$gamEstimated <- FALSE
-
+  
   #   ---- Number of columns in smoother part only.  Excludes intercept.
   degree <- length(coef(fit)) - 1  
   if( degree <= 2 ){
@@ -237,95 +237,94 @@ F.catch.model <- function( catch.df ){
     nots <- attr(bs.sampleEnd,"knots")
     b.knots <- attr(bs.sampleEnd, "Boundary.knots")
   }
-
+  
   #   ---- Setup for creation of goodies below.  
   i <- 1
   all.new.dat <- NULL
   all.gaplens <- NULL
   all.bdates <- NULL
   jason.new <- NULL
-
+  
   #   ---- Sweet through catch.df, inserting imputation rows where needed;
   #   ---- i.e., wherever there is an instance of 'Not fishing'.
   repeat{
-
+    
     #   ---- Don't do last line - no need to check.  At end, no more gaps by def'n.
     if( i >= nrow(catch.df) ) break  
-
-      if( catch.df$TrapStatus[i] == "Fishing" ){
-        i <- i + 1
-      } else if(catch.df$SampleMinutes[i] <= (60*max.ok.gap)){
-        
-        #   ---- Eliminate the small gaps.  I will never be 1 if we are here.  
-        #   ---- But put if just in case.
-        if( i > 1 ){
-          catch.df$EndTime[i-1] <- catch.df$EndTime[i]
-          catch.df$batchDate[i-1] <- catch.df$batchDate[i]
-          catch.df <- catch.df[-i,]
-        }
-      } else {
-
-        #   ---- We have a missing value, i.e., a period of time > max.ok.gap 
-        #   ---- with no estimate of fish.
-
-        #   ---- i.gapLens is length of all intervals for which we want to
-        #   ---- predict. They all sum to total of the 'Not fishing' period.
-        #   ---- Note that we convert to hours, to match the offset.
-        i.gapLens <- c(rep(24, floor(catch.df$SampleMinutes[i]/ (24*60))), (catch.df$SampleMinutes[i]/60) %% 24 ) 
-
-        #   ---- Make sure last interval is > max.ok.gap.  
-        ng <- length(i.gapLens)
-        if( i.gapLens[ng] <= max.ok.gap ){
-          
-          # ---- Add last small gap to previous interval.  
-          i.gapLens[ ng - 1 ] <- i.gapLens[ng-1] + i.gapLens[ng]  
-          i.gapLens <- i.gapLens[-ng]
-        }
-        ng <- length(i.gapLens)
- 
-        #   ---- Calculate the length of time for which we need an estimate.
-        sEnd <- catch.df$StartTime[i] + cumsum(i.gapLens * 60*60)
-        class(sEnd) <- class(catch.df$StartTime)
-        attr(sEnd, "tzone") <- time.zone
-
-        sStart <- catch.df$StartTime[i] + cumsum( c(0,i.gapLens[-ng]) * 60*60 )
-        class(sStart) <- class(sStart)
-        attr(sStart, "tzone") <- time.zone
-
-        #   ---- The smoother.
-        if( degree <= 2 ){
-          bs.sEnd <- -1
-        } else {
-          bs.sEnd <- bs( sEnd, knots=nots, Boundary.knots=b.knots )
-          dimnames(bs.sEnd)[[2]] <- paste("bs.sampleEnd", dimnames(bs.sEnd)[[2]], sep="")
-        }
-
-        if( degree == 0 ){
-          
-          #   ---- Mean model.
-          new.dat <- matrix( 1, length(sEnd), 1 )
-        } else if(degree == 1){
-          
-          #   ---- Linear model.
-          j <- as.numeric( format(sEnd, "%j") )
-          new.dat <- cbind( rep(1, length(sEnd)), j )
-        } else if(degree == 2){
-          
-          #   ---- Quadratic model.
-          j <- as.numeric( format(sEnd, "%j") )
-          new.dat <- cbind( rep(1, length(sEnd)), j, j*j )
-        } else {
-          
-          #   ---- Cubic Spline model.
-          new.dat <- cbind( 1, bs.sEnd )
-        }
+    
+    if( catch.df$TrapStatus[i] == "Fishing" ){
+      i <- i + 1
+    } else if(catch.df$SampleMinutes[i] <= (60*max.ok.gap)){
+      
+      #   ---- Eliminate the small gaps.  I will never be 1 if we are here.  
+      #   ---- But put if just in case.
+      if( i > 1 ){
+        catch.df$EndTime[i-1] <- catch.df$EndTime[i]
+        catch.df$batchDate[i-1] <- catch.df$batchDate[i]
+        catch.df <- catch.df[-i,]
       }
-
+    } else {
+      
+      #   ---- We have a missing value, i.e., a period of time > max.ok.gap 
+      #   ---- with no estimate of fish.
+      
+      #   ---- i.gapLens is length of all intervals for which we want to
+      #   ---- predict. They all sum to total of the 'Not fishing' period.
+      #   ---- Note that we convert to hours, to match the offset.
+      i.gapLens <- c(rep(24, floor(catch.df$SampleMinutes[i]/ (24*60))), (catch.df$SampleMinutes[i]/60) %% 24 ) 
+      
+      #   ---- Make sure last interval is > max.ok.gap.  
+      ng <- length(i.gapLens)
+      if( i.gapLens[ng] <= max.ok.gap ){
+        
+        # ---- Add last small gap to previous interval.  
+        i.gapLens[ ng - 1 ] <- i.gapLens[ng-1] + i.gapLens[ng]  
+        i.gapLens <- i.gapLens[-ng]
+      }
+      ng <- length(i.gapLens)
+      
+      #   ---- Calculate the length of time for which we need an estimate.
+      sEnd <- catch.df$StartTime[i] + cumsum(i.gapLens * 60*60)
+      class(sEnd) <- class(catch.df$StartTime)
+      attr(sEnd, "tzone") <- time.zone
+      
+      sStart <- catch.df$StartTime[i] + cumsum( c(0,i.gapLens[-ng]) * 60*60 )
+      class(sStart) <- class(sStart)
+      attr(sStart, "tzone") <- time.zone
+      
+      #   ---- The smoother.
+      if( degree <= 2 ){
+        bs.sEnd <- -1
+      } else {
+        bs.sEnd <- bs( sEnd, knots=nots, Boundary.knots=b.knots )
+        dimnames(bs.sEnd)[[2]] <- paste("bs.sampleEnd", dimnames(bs.sEnd)[[2]], sep="")
+      }
+      
+      if( degree == 0 ){
+        
+        #   ---- Mean model.
+        new.dat <- matrix( 1, length(sEnd), 1 )
+      } else if(degree == 1){
+        
+        #   ---- Linear model.
+        j <- as.numeric( format(sEnd, "%j") )
+        new.dat <- cbind( rep(1, length(sEnd)), j )
+      } else if(degree == 2){
+        
+        #   ---- Quadratic model.
+        j <- as.numeric( format(sEnd, "%j") )
+        new.dat <- cbind( rep(1, length(sEnd)), j, j*j )
+      } else {
+        
+        #   ---- Cubic Spline model.
+        new.dat <- cbind( 1, bs.sEnd )
+      }
+      
       #   ---- Get the catch estimate, based on the model 
       #   ---- parameters and length of time.
       pred <- (new.dat %*% coef(fit)) + log(i.gapLens)
       pred <- exp(pred)
-
+      
       #   ---- Put things we need into a blank data frame 
       #   ---- suitable for inserting into catch.df.
       
@@ -357,47 +356,48 @@ F.catch.model <- function( catch.df ){
       new$siteID <- catch.df$siteID[i]
       new$trapPositionID <- catch.df$trapPositionID[i]
       new <- F.assign.batch.date( new )
-
+      
       #   ---- Pull out imputed numbers for checking daily counts in baseTable.
       jason.new <- rbind(jason.new,new)
-
+      
       #   ---- Insert new data frame into catch.df.
       catch.df <- rbind( catch.df[1:(i-1),], new, catch.df[(i+1):nrow(catch.df),] )
-
+      
       #   ---- Save model matrix used to make predictions for use in bootstrapping. 
       all.new.dat <- rbind( all.new.dat, new.dat )
       all.gaplens <- c(all.gaplens, i.gapLens)
-        
+      
       #   ---- Save batch dates because it is possible for two 'Not fishing'
       #   ---- estimates to fall on the same batch date - must collapse later.
       all.bdates <- c(all.bdates, new$batchDate)  
-  
+      
       i <- i + ng + 1
+    } 
     #   ---- No brace here for break if above.
   }
-
+  
   #   ---- If there are no gaps, all.new.dat, all.gaplens, and all.bdates are NULL. 
   #   ---- Turn these into NA so that storing them in a list in function est_catch 
   #   ---- works.  (Note that assigning NULL to list item collapses the list.)
   if( is.null( all.new.dat )){
     all.new.dat <- NA
   }
-
+  
   if( is.null( all.gaplens )){
     all.gaplens <- NA
   }
-
+  
   if( is.null( all.bdates )){
     all.bdates <- NA
   } else {
     class(all.bdates) <- class(sEnd)
     attr(all.bdates, "tzone") <- time.zone
   }
-
+  
   if( is.null( jason.new )){
     jason.new <- data.frame(batchDate=as.POSIXlt(character()),trapVisitID=character(),trapPositionID=character(),n.tot=integer(),stringsAsFactors=FALSE)
   }
-
+  
   #   ---- Reduce scope to only those variables needed.  
   jason.new <- jason.new[,c('batchDate','trapVisitID','trapPositionID','n.tot')]   
   list(df2=catch.df, fit=fit, X.for.missings=all.new.dat, gaps=all.gaplens, batchDate.for.missings=all.bdates, true.imp=jason.new)
