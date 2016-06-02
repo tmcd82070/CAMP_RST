@@ -45,9 +45,9 @@ F.lifestage.passage.assignLS2group <- function(site, taxon, min.date, max.date, 
 ###
 
 
-    ## 2 life stage groups are fit and the program will decide if weight will be used or not
-    passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=2,weightUse=NULL)
-
+  ## 2 life stage groups are fit and the program will decide if weight will be used or not
+  passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=2,weightUse=NULL)
+  
 
 
 }
