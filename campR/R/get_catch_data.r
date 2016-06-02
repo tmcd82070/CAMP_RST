@@ -133,7 +133,7 @@
 #' # we would need to query.  what do we want to do?
 
 F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL ){
- 
+  
   # site <- 
   # taxon <- 161980
   # min.date <- "2010-01-01"
@@ -141,14 +141,14 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   # autoLS <- FALSE
   # nLS <- NULL
   # weightUse <- NULL
-
-
+  
+  
   #   ---- STEP 1:  Get original raw catch data via querying. 
   if(autoLS){
     
     #   ---- Obtain catch data with weights.
     catch <- getCatchDataWeight(taxon,site,min.date,max.date)
-
+    
   } else {  
     
     #   ---- Obtain catch data without weights.
@@ -181,52 +181,25 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
       stop
     }
   }
-
-  #   ---- STEP 2:  Reassign lifestage, if requested.     
-  if(autoLS){
-    cat('Starting mixture distribution estimation to assign life stage. \n')
-    ##write.csv(catch,paste0(output.file,site,'.csv'),row.names=FALSE)
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    
-    #   ---- Jason adds so we can see which of the J reports this run originates.  
-    if(exists("testing")){
-      if(testing == TRUE){
-        theBegs <- c(beg0,beg1,beg2,beg3,beg4,beg5,beg6)
-        theJ <- max(theBegs)
-        numJ <<- which(c(theBegs) == theJ) - 1
-      }
-    }
-    
-    #   ---- Swap out the old catch with the new catch.
-    catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  
-    
-    # for debugging
-    #jCatch <<- catch
-    #catch <- jCatch
-    
-    #   ---- Preserve the biologist-assigned lifestages.
-    catch$lifeStage <- catch$bioLS
-    catch$bioLS <- NULL
-    
-    cat('\n')
-    cat('\n')
-    cat('\n')
-    cat('The mixture distribution estimation to assign life stage is over. \n')
-    cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^> \n')
-    ## for debugging
-    ##return(catch)
-    ##stop('That is good enough')
-  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   #   ---- STEP 3:  Look for gaps in fishing, as defined by global
   #   ----          variable fishingGapMinutes.  If any are found, 
   #   ----          reassign trapPositionIDs.  
-  theLongCatches <- catch[catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
+  theLongCatches <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
   nLongCatches <- nrow(theLongCatches)
   if(nLongCatches > 0){
     
@@ -250,7 +223,89 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     #   ---- while ensuring data frame consistency.
     catch$oldtrapPositionID <- catch$trapPositionID
   }
- 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #   ---- STEP 2:  Reassign lifestage, if requested.     
+  if(autoLS){
+    cat('Starting mixture distribution estimation to assign life stage. \n')
+    ##write.csv(catch,paste0(output.file,site,'.csv'),row.names=FALSE)
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    
+    #   ---- Swap out the old catch with the new catch.
+    catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  
+    
+    # for debugging
+    jCatch <<- catch
+    #catch <- jCatch
+    
+    cat('\n')
+    cat('\n')
+    cat('\n')
+    cat('The mixture distribution estimation to assign life stage is over. \n')
+    cat('<^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^><^> \n')
+    ## for debugging
+    ##return(catch)
+    ##stop('That is good enough')
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   #   ---- STEP 4:  Get includeCatchID variable.  This is an
   #   ----          historical addition, based on an old request.
   #   ----          The catch sequence works with this variable 
@@ -278,10 +333,10 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   includecatchID <- includecatchID[,c('trapPositionID','EndTime','ProjID','includeCatchID')]
   catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
   
-
+  
   
   #   ---- STEP 5:  Clean up visits and catch dataframes.  
-
+  
   #   ---- Reduce visits by removing duplicates in trapVisitID and throwing 
   #   ---- out the"Not fishing." 
   visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
@@ -306,7 +361,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   
   #   ---- ID the unassigned lifeStage - necessary to separate measured vs caught.
   catch$Unassd <- catch$lifeStage 
-
+  
   #   ---- See how many halfcone records there are.  
   nHalfCone <- nrow(catch[catch$halfConeID == 1,])
   if(nHalfCone > 0){  
@@ -329,8 +384,8 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     #   ---- Identify the problem records.  
     possiblyOff <- test[is.na(test$preUnmarked),]    # Possible trouble spots.
     test$preUnmarked[is.na(test$preUnmarked)] <- 0   # Unassigned fish that were not assigned to a certain category before, 
-                                                     # but were after -or- fish that were assigned a diff lifestage and 
-                                                     # finalrun between preCatch and catch.
+    # but were after -or- fish that were assigned a diff lifestage and 
+    # finalrun between preCatch and catch.
     
     #   ---- Manipulations to deal with the problem records.  
     test$halfConeAssignedCatch   <- ifelse(test$halfConeID == 1 & test$Unassd != 'Unassigned',test$Unmarked - test$preUnmarked,0)    # halfConeAdj have to originate from a halfCone trapping instance.
@@ -385,10 +440,10 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   attr(catch, "siteID" ) <- site
   attr(catch, "site.name") <- catch$siteName[1]
   attr(catch, "subsites") <- unique(catch$trapPositionID)
-
+  
   cat("First 20 records of catch data frame...\n")
   if( nrow(catch) >= 20 ) print( catch[1:20,] ) else print( catch )
-
+  
   #   ---- Return two data frames via a list.  One contains positive catches, while
   #   ---- the other contains visit and fishing information.
   list( catch=catch, visit=visits )
