@@ -8,8 +8,10 @@ getRiverPassage <- function(thePlatform,theRiver,stemB){
 #   theRiver <- 'Feather River'
 #   stemB <- '//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/Outputs'
   
-  source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",thePlatform,"/R-Interface/Helper/getTheData.R"))
-  
+  #source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",thePlatform,"/R-Interface/Helper/getTheData.R"))
+  source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/getTheData.R"))
+                
+                
   stemB <- paste0(stemB,"/",theRiver)#,"/doug hold")
   
   filesB <- list.files(stemB)
@@ -126,7 +128,7 @@ getRiverPassage <- function(thePlatform,theRiver,stemB){
   temp2
 }
 
-thePlatform <- 'CAMP_RST20160601-DougXXX-4.5'
+thePlatform <- 'CAMP_RST20160715-campR1.0.0'
 
 sac <- getRiverPassage(thePlatform,'Sacramento River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
 ame <- getRiverPassage(thePlatform,'American River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
@@ -135,7 +137,7 @@ mok <- getRiverPassage(thePlatform,'Mokelumne River',paste0('//lar-file-srv/Data
 sta <- getRiverPassage(thePlatform,'Stanislaus River',paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
 #kni <- getRiverPassage(thePlatform,"Knight's Landing",paste0('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',thePlatform,'/Outputs'))
 
-all <- rbind(sac,ame,fea,mok,sta)#,kni)
+all <- fea #rbind(sac,ame,fea,mok,sta)#,kni)
 nrow(all)
 all <- all[!is.na(all$bEst),]
 all <- all[all$bEst > 0,] 
