@@ -70,7 +70,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
   
   
   ## get needed packages
-  getPackages(c('plyr','ellipse','tidyr'))
+  #getPackages(c('plyr','ellipse','tidyr'))
   
   ## order the levels of the life stage
   (LS <- as.character(unique(Data[,'lifeStage'])))
