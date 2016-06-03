@@ -1,12 +1,12 @@
 
-
-
+#   ---- BE SURE TO ATTACH FIRST.  OTHERWISE, YOU OVERWRITE DB.FILE WITH THE 
+#   ---- PLATFORM-SPECIFIC DIRECTORY, AND NOT THE RIVER-SPECIFIC ONE.
 
 #   ---- Set the current Platform development version.  
 platform <- 'CAMP_RST20160715-campR1.0.0'    # points to different platforms
 
 #   ---- Read in "theExcel" of river and constraint information to check.  
-theExcel <- read.csv(paste0('\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',platform,'/R-Interface/campR/inst/helperCode/theExcel.csv'))
+theExcel <- read.csv(paste0('\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',platform,'/R/library/campR/helperCode/theExcel.csv'))
 theExcel <- theExcel[theExcel$Issues == '',]
 rownames(theExcel) <- NULL
 
@@ -43,7 +43,6 @@ for(testi in 1:1){
   max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))
 
   taxon        <- 161980
-  output.file  <- paste0("..//Outputs//",river,"//a500Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   ci           <- TRUE
   output.type  <- "odt"
   from         <- "Trent McDonald, Ph.D., WEST Incorporated"
@@ -62,19 +61,20 @@ for(testi in 1:1){
       by <- 'year'
     }
     output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
-  #     output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
     F.run.passage      (site, taxon,      min.date, max.date, by=by,     output.file=output.file,         ci=TRUE            )
   }
   by <- 'All'
-  output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
+  output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   
-  beg0 <- beg1 <- beg2 <- beg3 <- beg4 <- beg5 <- beg6 <- 0  # set up so jared's function can return the J report.
-  
-  beg0 <- Sys.time(); F.lifestage.passage               (site, taxon, min.date, max.date, output.file, ci=TRUE);                          end0 <- Sys.time(); diff.time0 <- as.numeric(end0 - beg0,units="hours");
+  beg0 <- Sys.time()
+  F.lifestage.passage(site, taxon, min.date, max.date, output.file, ci=TRUE)
+  end0 <- Sys.time()
+  diff.time0 <- as.numeric(end0 - beg0,units="hours")
   
   # ----- automatic lifestage assignment functions --- added 4/4/2016 based on jared's work -----
   
-  # Start writing to an output file
+ 
+   # Start writing to an output file
   
   sink(paste0(output.file,'J1.txt')); 
   output.fileJ1 <- output.file
@@ -141,21 +141,20 @@ for(testi in 1:1){
   write.csv(testi.time,paste0(output.file,'JStuffTime.csv'))
   
   
-    F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
-    F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
-    F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
-    F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
-    F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
+  F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
+  F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
+  F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
+  F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
+  F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
   
-    runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
-    run.names <- c('Spring','Fall','Late Fall','Winter')
-    for(j in 1:4){
-      run <- runs[j]
-      run.name <- run.names[j]
-      #output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"_",run.name)
-      output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"_",run.name)
-      F.size.by.date    ( site, taxon, run, min.date, max.date,            output.file                                         )
-      F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=F"),   by.lifestage=FALSE          )
-      F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=T"),   by.lifestage=TRUE           )
-    }
+  runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
+  run.names <- c('Spring','Fall','Late Fall','Winter')
+  for(j in 1:4){
+    run <- runs[j]
+    run.name <- run.names[j]
+    output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"_",run.name)
+    F.size.by.date    ( site, taxon, run, min.date, max.date,            output.file                                         )
+    F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=F"),   by.lifestage=FALSE          )
+    F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=T"),   by.lifestage=TRUE           )
+  }
 }
