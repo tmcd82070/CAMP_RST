@@ -203,11 +203,9 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
 
             #   ---- Randomly allocate the rounding error to classes.
             if( N.more > 0 ){
-              set.seed(884)
               n.extra <- c(rmultinom( 1, N.more, props ))
               n.j <- n.j + n.extra   
             } else if( N.more < 0 ){
-              set.seed(884)
               n.extra <- c(rmultinom( 1, abs(N.more), props ))
               n.j <- n.j - n.extra                
             }

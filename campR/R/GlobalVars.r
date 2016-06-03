@@ -113,7 +113,8 @@ GlobalVars <- function(
 	forkLength.mean.diff = 10,
 	time.zone = "America/Los_Angeles", 
 	Yes.code = 1,
-	No.code = 2
+	No.code = 2,
+	seed = 884
 	){
 
 	  # DB file -------
@@ -161,6 +162,10 @@ GlobalVars <- function(
 
 	  # No code (must match data lu.YesNo table in data base) ------
 	  assign("No.code", No.code, pos=.GlobalEnv)
+	  
+	  # Set the seed ------
+	  set.seed(884)
+	  assign("seed", seed, pos=.GlobalEnv)
 
     
     # Table names is a special global variable that we intentionally make harder ----
