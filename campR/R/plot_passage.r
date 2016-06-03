@@ -58,7 +58,7 @@
 #' 
 F.plot.passage <- function( df, out.file="passage.png" ){
 
-  #   df       <- pass             # df <- example
+  #   df       <- passby             # df <- example
   #   out.file <- 'passage.png'
   
   if( !is.na(out.file) ){
@@ -147,7 +147,7 @@ F.plot.passage <- function( df, out.file="passage.png" ){
     } else {
       
       #   ---- Label weekly (yearly does not get plotted).  
-      jDates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,julianWeek,julianWeekLabel))
+      jDates <- subset(the.Jdates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,julianWeek,julianWeekLabel))
 
       #   ---- Can't figure out how to join on POSIX dates.  So cheating. 
       df$date.alone <- strftime(df$date,format="%x")

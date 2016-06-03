@@ -93,7 +93,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   if( summarize.by == "week" ){
     db <- get( "db.file", env=.GlobalEnv )
     ch <- odbcConnectAccess(db)
-    the.dates <<- sqlFetch( ch, "Dates" )
+    the.Jdates <<- sqlFetch( ch, "Dates" )
     close(ch)
   }
   

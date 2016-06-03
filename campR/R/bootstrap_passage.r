@@ -151,7 +151,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 
   #   ---- Get Julian weeks for this timeframe.  
   if(sum.by == 'week'){
-    jDates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
+    jDates <- subset(the.Jdates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
   }
 
   #   ---- Compute THE estimate.  F.summarize.passage first averages over traps,
