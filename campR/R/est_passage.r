@@ -88,7 +88,15 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- Obtain text description of trap positions for use in output. 
   catch.df.sites <- unique(catch.df[,c('trapPositionID','TrapPosition')])
   colnames(catch.df.sites) <- c('subSiteID','subSiteName') 
-
+  
+  #   ---- Obtain Julian weeks once and for all and place in Global environment for ease. 
+  if( summarize.by == "week" ){
+    db <- get( "db.file", env=.GlobalEnv )
+    ch <- odbcConnectAccess(db)
+    the.dates <<- sqlFetch( ch, "Dates" )
+    close(ch)
+  }
+  
   time.zone <- get("time.zone", env=.GlobalEnv )
   
   f.banner <- function( x ){
