@@ -91,7 +91,7 @@ F.plot.catch.model <- function( df, file=NA ){
   #df <- df[ df$imputed.catch != 0 | !is.na(df$unassdcatch) ,]
 
   imputed <- df$imputed.catch > 0 & !is.na(df$imputed.catch)
-  rng.y <- range(df$modAssignedCatch[ df$modAssignedCatch < Inf], na.rm=T)
+  rng.y <- range(df$totalEstimatedCatch[ df$totalEstimatedCatch < Inf], na.rm=T)
 
   #   ---- Set up the plot space.
   plot( range(df$batchDate), rng.y, type="n", xlab="Date", ylab="Daily Raw (un-inflated) catch", xaxt="n", yaxt="n" )
