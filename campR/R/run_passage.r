@@ -255,7 +255,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         tmp.df <- passby
 
         if(by == 'week'){
-          the.dates <- subset(the.dates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(year,julianWeek,julianWeekLabel))
+          the.dates <- subset(the.Jdates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(year,julianWeek,julianWeekLabel))
           the.dates$week <- paste0(the.dates$year,'-',formatC(the.dates$julianWeek, width=2, flag="0"))
           the.dates <- unique(the.dates)
 

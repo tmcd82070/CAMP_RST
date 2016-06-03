@@ -47,7 +47,7 @@ F.summarize.index <- function( dt, summarize.by ){
 
   #   ---- A helper function to deal with Julian weeks. 
   f.week <- function( x ){
-    jDates <- the.dates
+    jDates <- the.Jdates
     jDates$week <- paste0(jDates$year,'-',formatC(jDates$julianWeek, width=2, flag="0"))
     jDates <- unique(jDates)
     jDates$uniqueDate <- as.Date(jDates$uniqueDate)
