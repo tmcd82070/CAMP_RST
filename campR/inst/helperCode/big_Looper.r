@@ -1,89 +1,47 @@
-# install RODBC
-# install mvtnorm
-install.packages(c("RODBC"))
-install.packages(c("mvtnorm"))
-install.packages(c("plyr"))
-install.packages(c("mclust"))
-install.packages(c("car"))
-install.packages(c("tidyr"))
-install.packages(c("ellipse"))
-install.packages(c("dplyr"))
-install.packages(c("Rcpp"))
-install.packages(c("lazyeval"))
-
-require("RODBC")
-require("mvtnorm")
-require("plyr")    # these get added in the program run.
-require("mclust")
-require("car")
-require("tidyr")
-require("ellipse")
-require("dplyr")
-require("lazyeval")
 
 
 
 
+#   ---- Set the current Platform development version.  
+platform <- 'CAMP_RST20160715-campR1.0.0'    # points to different platforms
 
-testing <- TRUE                               # points to different output folders.
-platform <- 'CAMP_RST20160601-DougXXX-4.5'    # points to different platforms
-
-paste(cat('testing == TRUE\n'))
-setwd(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/"))
-source(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/source_all_testing.R"))
-
-theExcel <- read.csv(paste0('\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',platform,'/R-Interface/Helper/theExcel.csv'))
+#   ---- Read in "theExcel" of river and constraint information to check.  
+theExcel <- read.csv(paste0('\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/',platform,'/R-Interface/campR/inst/helperCode/theExcel.csv'))
 theExcel <- theExcel[theExcel$Issues == '',]
 rownames(theExcel) <- NULL
 
+#   ---- Point to data and where we want output to go.  
+mdbStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/Data/TestingDBs/")
+outStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/Outputs")
 
-
-
-# specify the range, in terms of theExcel rownames, to test.
-for(testi in 43:43){#34:49){   
+#   ---- User variable testi to specify the range of river combos to test.  
+for(testi in 1:1){   
   
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
-  
-  if(river == ''){
-    db.file <- db.file1
-  } else if(river == 'Sacramento River'){
-    db.file <- db.file2
+
+  #   ---- Assign the correct database stem and mdb.  
+  if(river == 'Sacramento River'){
+    db.file <- paste0(mdbStem,"CAMP_RBDD_19June20151/CAMP.mdb")
   } else if(river == 'American River'){
-    db.file <- db.file3
-  } else if(river == ''){
-    db.file <- db.file4
+    db.file <- paste0(mdbStem,"CAMPAmerican2013_2015Database_23June2015/CAMP.mdb")
   } else if(river == 'Feather River'){
-    db.file <- db.file5
+    db.file <- paste0(mdbStem,"CAMPFeather_17Nov2015/CAMP.mdb")
   } else if(river == 'Stanislaus River'){
-    db.file <- db.file6
-  } else if(river == 'Old American Test'){
-    db.file <- db.file7
+    db.file <- paste0(mdbStem,"CAMPStanislaus_08Oct2015/CAMP.mdb")
   } else if(river == 'Mokelumne River'){
-    db.file <- db.file8
-    #   } else if(river == "Knight's Landing"){
-    #     db.file <- db.file9
+    db.file <- paste0(mdbStem,"CAMPMokelumne23Sept2015/CAMP.mdb")
   } else if(river == "Knight's Landing"){
-    db.file <- db.fileA
+    db.file <- paste0(mdbStem,"CAMPKnightsTinsdaleNEW_04Feb2016/CAMP.mdb")
   }
   
-  if(river != 'Old American Test'){
-    site         <- theExcel[testi,]$siteID
-    siteText     <- as.character(droplevels(theExcel[testi,]$Site))
-    run          <- theExcel[testi,]$RunID
-    runText      <- as.character(droplevels(theExcel[testi,]$SalmonRun))
-    min.date     <- as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))#"2007-01-15"  #
-    max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))#"2007-02-15"  #
-  } else {
-    #     river        <- 'american'
-    #     site         <- 57000
-    #     siteText     <- 'testing'
-    #     run          <- 4
-    #     runText      <- 'Winter'
-    #     min.date     <- "2013-10-01"
-    #     max.date     <- "2014-09-29"
-  }
-  
+  site         <- theExcel[testi,]$siteID
+  siteText     <- as.character(droplevels(theExcel[testi,]$Site))
+  run          <- theExcel[testi,]$RunID
+  runText      <- as.character(droplevels(theExcel[testi,]$SalmonRun))
+  min.date     <- as.character(as.Date(theExcel[testi,]$minvisitTime,format = "%m/%d/%Y"))
+  max.date     <- as.character(as.Date(theExcel[testi,]$maxvisitTime,format = "%m/%d/%Y"))
+
   taxon        <- 161980
   output.file  <- paste0("..//Outputs//",river,"//a500Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   ci           <- TRUE
@@ -92,22 +50,21 @@ for(testi in 43:43){#34:49){
   to           <- "Doug Threloff, USFWS CAMP Coordinator"
   return.addr  <- "FISH AND WILDLIFE SERVICE!USFWS Caswell State Park Office!1234 Abbey Rd.!Caswell, California  96080!(530) 527-3043, FAX (530) 529-0292"
   
-  #   for(byj in 1:4){
-  # 
-  #     if(byj == 1){
-  #       by <- 'day'
-  #     } else if(byj == 2){
-  #       by <- 'week'
-  #     } else if(byj == 3){
-  #       by <- 'month'
-  #     } else if(byj == 4){
-  #       by <- 'year'
-  #     }
-  # 
+  #   ---- Run function run.passage over the four possible temporal periods.  
+  for(byj in 1:4){
+    if(byj == 1){
+      by <- 'day'
+    } else if(byj == 2){
+      by <- 'week'
+    } else if(byj == 3){
+      by <- 'month'
+    } else if(byj == 4){
+      by <- 'year'
+    }
+    output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   #     output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
-  # 
-  #     F.run.passage      (site, taxon,      min.date, max.date, by=by,     output.file=output.file,         ci=TRUE            )
-  #   }
+    F.run.passage      (site, taxon,      min.date, max.date, by=by,     output.file=output.file,         ci=TRUE            )
+  }
   by <- 'All'
   output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   
@@ -184,20 +141,21 @@ for(testi in 43:43){#34:49){
   write.csv(testi.time,paste0(output.file,'JStuffTime.csv'))
   
   
-  #   F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
-  #   F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
-  #   F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
-  #   F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
-  #   F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
+    F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
+    F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
+    F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
+    F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
+    F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
   
-  #   runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
-  #   run.names <- c('Spring','Fall','Late Fall','Winter')
-  #   for(j in 1:4){
-  #     run <- runs[j]
-  #     run.name <- run.names[j]
-  #     output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"_",run.name)
-  #     F.size.by.date    ( site, taxon, run, min.date, max.date,            output.file                                         )
-  #     F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=F"),   by.lifestage=FALSE          )
-  #     F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=T"),   by.lifestage=TRUE           )
-  #   }
+    runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
+    run.names <- c('Spring','Fall','Late Fall','Winter')
+    for(j in 1:4){
+      run <- runs[j]
+      run.name <- run.names[j]
+      #output.file  <- paste0("..//Outputs//",river,"//Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"_",run.name)
+      output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"_",run.name)
+      F.size.by.date    ( site, taxon, run, min.date, max.date,            output.file                                         )
+      F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=F"),   by.lifestage=FALSE          )
+      F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=T"),   by.lifestage=TRUE           )
+    }
 }
