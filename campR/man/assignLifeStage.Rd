@@ -4,7 +4,7 @@
 \alias{assignLifeStage}
 \title{assignLifeStage}
 \usage{
-assignLifeStage(DATA, groupN = NULL, USEWeight = NULL)
+assignLifeStage(DATA, groupN = NULL, USEWeight = NULL, ...)
 }
 \arguments{
 \item{DATA}{describe argument}

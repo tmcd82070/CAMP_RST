@@ -24,7 +24,7 @@ F.lifestage.passage.assignLS3group(site, taxon, min.date, max.date, output.file,
 <describe return value>
 }
 \description{
-ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN – TABULAR SUMMARY
+ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
    A table of passage estimates, with lifestages down the rows, and runs across the columns.
 
    Input:

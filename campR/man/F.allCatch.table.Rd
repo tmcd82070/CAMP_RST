@@ -2,7 +2,7 @@
 % Please edit documentation in R/all_catch_table.r
 \name{F.allCatch.table}
 \alias{F.allCatch.table}
-\title{List all catches, regardless of species.}
+\title{F.allCatch.table}
 \usage{
 F.allCatch.table(site, min.date, max.date, output.file)
 }
@@ -22,6 +22,13 @@ saved.}
 \value{
 A \code{csv} containing catch information for all species.  A data
   frame containing the same information is also returned, but invisibly.
+}
+\description{
+Lists all catch, regardless of species.
+}
+\details{
+This function utilizes the All-Catch Series query to find and identify
+all pertinent records within a catch.  See
 }
 \examples{
  

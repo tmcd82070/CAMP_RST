@@ -10,7 +10,8 @@ GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb", output.dir = "..\\\\outputs",
   fishingGapMinutes = 10080, knotMesh = 15, halfConeMulti = 2,
   sample.size.forkLength = 100, sample.size.forkLengthAndWeight = 100,
   weight.prop.forkLength = 0.5, forkLength.mean.diff = 10,
-  time.zone = "America/Los_Angeles", Yes.code = 1, No.code = 2)
+  time.zone = "America/Los_Angeles", Yes.code = 1, No.code = 2,
+  seed = 884)
 }
 \arguments{
 \item{db.file}{Character string giving the full path and name of the CAMP Access data base file.
