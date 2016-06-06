@@ -199,21 +199,67 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   #   ---- STEP 3:  Look for gaps in fishing, as defined by global
   #   ----          variable fishingGapMinutes.  If any are found, 
   #   ----          reassign trapPositionIDs.  
-  theLongCatches <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes > fishingGapMinutes,c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
+  theLongCatches <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes > fishingGapMinutes & catch$TrapStatus == "Not fishing",c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
   nLongCatches <- nrow(theLongCatches)
   if(nLongCatches > 0){
     
     warning("Long gaps were found in the data so the LongGapLoop series will be run.")
     
-    db <- get( "db.file", env=.GlobalEnv )
-    ch <- odbcConnectAccess(db)
-    
-    #   ---- SQL code to find the gaps, and modify trapPositionIDs accordingly.
-    F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
-    
-    #   ---- Fetch the updated results.  
-    catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-    catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   
+    if( autoLS ){
+      
+      #   ---- The Gaps series doesn't bring back weights.  So we have to assemble the data
+      #   ---- we have from its constituent pieces.  The weight dataframe catch will in theory
+      #   ---- have more rows than catch2, due to particular forkLengths being broken out by
+      #   ---- a distribution of weights.  So, do a left join to identify those trapPositionIDs
+      #   ---- that have had a decimal appended.  
+      
+      #   ---- For QryFishingGaps.sql to work propertly, we need emulate the conditions under
+      #   ---- which it was developed.  
+      
+      #   ---- Obtain catch data without weights.
+      nvisits <- F.buildReportCriteria( site, min.date, max.date )
+      
+      if( nvisits == 0 ){
+        warning("Your criteria returned no trapVisit table records.")
+        return()
+      }
+      
+      #   ---- Open ODBC channel.
+      db <- get( "db.file", env=.GlobalEnv )
+      ch <- odbcConnectAccess(db)
+      
+      save.image(file = "C:/Users/jmitchell/Desktop/camp.RData")
+      
+      
+      #   ---- Develop the hours fished and TempSamplingSummary table.
+      F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
+      F.run.sqlFile( ch, "QryNotFishing.sql" )
+      F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )
+      close(ch)
+      
+      db <- get( "db.file", env=.GlobalEnv )
+      ch <- odbcConnectAccess(db)
+      F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
+      
+      #   ---- Fetch the updated results, which now identify the gaps.  We do all of this just to
+      #   ---- identify those.  
+      catchWgtGaps <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+      test <- merge(catch,catchWgtGaps[catchWgtGaps$trapVisitID,catchWgtGaps$trapPositionID,catchWgtGaps$oldtrapPositionID,],by=c('trapVisitID'),all.x=TRUE)
+      
+    } else {
+      
+      db <- get( "db.file", env=.GlobalEnv )
+      ch <- odbcConnectAccess(db)
+      
+      #   ---- SQL code to find the gaps, and modify trapPositionIDs accordingly.
+      F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
+      
+      #   ---- Fetch the updated results.  
+      catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+      
+      catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   
+    }
+
     
     close(ch)
     
