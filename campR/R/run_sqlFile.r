@@ -74,9 +74,10 @@
 #' hyphens need only be entered on the left. Additionally, the space following
 #' the double hyphen is unnecessary. However, it makes comments more readable.
 #' 
-#' \item \strong{Quotes} All quoted strings must utilize single quotes (\code{'}),
-#' and not double quotes (\code{"}).  Double quotes force the underlying SQL
-#' strings to be misinterpreted, and thus fail.  
+#' \item \strong{Quotes} All quoted strings must utilize single quotes
+#' (\code{'example'}), and not double quotes (\code{"example"}) to wrap text
+#' strings.  Double quotes force the underlying SQL strings to be
+#' misinterpreted, and thus fail.
 #' 
 #' \item \strong{Variables} Many SQL queries developed for the Platform require
 #' subsetting the data to chinook salmon via SQL \code{WHERE} clauses. However,

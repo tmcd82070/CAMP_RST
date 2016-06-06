@@ -83,6 +83,11 @@ communicate to RODBC that this particular line should be skipped, whereas
 hyphens need only be entered on the left. Additionally, the space following
 the double hyphen is unnecessary. However, it makes comments more readable.
 
+\item \strong{Quotes} All quoted strings must utilize single quotes
+(\code{'example'}), and not double quotes (\code{"example"}) to wrap text
+strings.  Double quotes force the underlying SQL strings to be
+misinterpreted, and thus fail.
+
 \item \strong{Variables} Many SQL queries developed for the Platform require
 subsetting the data to chinook salmon via SQL \code{WHERE} clauses. However,
 in most cases, if not all, the R code has been developed to allow for
@@ -98,48 +103,48 @@ variable values via \code{RODBC} and variable "\code{R.TAXON}". The
 appellation \code{R.TAXON} reflects the R-code name for the species variable,
 and is how a variable quantity is communicated to Access.
 
-\item \strong{\code{INTO SQL} Statements} Queries for use in the
-Platform are developed for multiple use. This means that once a query for one
-set of criteria is created, the code must be able to recreate a new query,
-based on separate criteria, without error. Practically, this means that
-different queries must be able to overwrite resultant tables in Access
-databases flawlessly. The way that Access and \code{RODBC} does this varies; this
+\item \strong{\code{INTO SQL} Statements} Queries for use in the Platform are
+developed for multiple use. This means that once a query for one set of
+criteria is created, the code must be able to recreate a new query, based on
+separate criteria, without error. Practically, this means that different
+queries must be able to overwrite resultant tables in Access databases
+flawlessly. The way that Access and \code{RODBC} does this varies; this 
 necessitates more complex changes to developed SQL code.
 
-Within Access, the use of the SQL keyword \code{INTO} forces a table that currently
-exists to be dropped.  It also recreates the table into which data are to be
-placed. For example, suppose within Access a query generates a final
-table named \code{Table_fish}. Now, however, a new query is generated, also within
-Access, creating a new \code{Table_fish}. The new \code{Table_fish} overwrites the old
-\code{Table_fish}; Access does this via SQL code resembling
+Within Access, the use of the SQL keyword \code{INTO} forces a table that
+currently exists to be dropped.  It also recreates the table into which data
+are to be placed. For example, suppose within Access a query generates a
+final table named \code{Table_fish}. Now, however, a new query is generated,
+also within Access, creating a new \code{Table_fish}. The new
+\code{Table_fish} overwrites the old \code{Table_fish}; Access does this via
+SQL code resembling
 
 \code{SELECT * INTO Table_fish FROM Table_helper;}
 
- where the special keyword \code{INTO}
-deletes out the old \code{Table_fish} and replaces it with the new version. Syntax
-of this nature must be modified for use in \code{RODBC} R code -- the \code{INTO} statement
-does not work in this way. While \code{RODBC} will create the named table, it
-will not first delete out its previous version. This must be done explicitly.
+where the special keyword \code{INTO} deletes out the old \code{Table_fish}
+and replaces it with the new version. Syntax of this nature must be modified
+for use in \code{RODBC} R code -- the \code{INTO} statement does not work in
+this way. While \code{RODBC} will create the named table, it will not first
+delete out its previous version. This must be done explicitly.
 
-To work around this, use a \code{DROP TABLE} statement. Then, the use of the \code{INTO}
-statement will work within R. Explicitly, modifying the code block above,
-write
+To work around this, use a \code{DROP TABLE} statement. Then, the use of the
+\code{INTO} statement will work within R. Explicitly, modifying the code
+block above, write
 
-\code{DROP TABLE Table_fish;}
-\code{SELECT * INTO Table_fish FROM Table_helper;} as two
-separate SQL queries, where the semi-colon \code{;} demonstrates the end of a SQL
-query.
+\code{DROP TABLE Table_fish;} \code{SELECT * INTO Table_fish FROM
+Table_helper;} as two separate SQL queries, where the semi-colon \code{;}
+demonstrates the end of a SQL query.
 
-One final to-do is required. Once a SQL query has been modified to include a
-\code{DROP TABLE} statement, an initial table must then be produced in all Access
-databases in which the query is to be run. Practically, the first time this
-particular query is run, SQL cannot drop the table \code{Table_fish} because it will
-not exist, not having been created yet. To work around this, from within
-Access, copy and paste any one of the existing tables, and rename it to the
-name of the final table, which in this case, is \code{Table_fish}. Note that some
-queries create multiple interim tables. These may also need to be modified
-via \code{DROP TABLE} statements. On completion, the modified SQL will be fooled
-into having a table to delete, and will work as intended.
+One final to-do is required. Once a SQL query has been modified to include a 
+\code{DROP TABLE} statement, an initial table must then be produced in all
+Access databases in which the query is to be run. Practically, the first time
+this particular query is run, SQL cannot drop the table \code{Table_fish}
+because it will not exist, not having been created yet. To work around this,
+from within Access, copy and paste any one of the existing tables, and rename
+it to the name of the final table, which in this case, is \code{Table_fish}.
+Note that some queries create multiple interim tables. These may also need to
+be modified via \code{DROP TABLE} statements. On completion, the modified SQL
+will be fooled into having a table to delete, and will work as intended.
 
 \item \strong{Dates} Calendar dates utilized as values within a \code{WHERE}
 clause must have preceding and antecedent \code{#}-signs added to them.
@@ -159,19 +164,20 @@ clause must have preceding and antecedent \code{#}-signs added to them.
   \code{F.get.all.fish.data} calls this query after first running the Build
   Report Criteria query series.
   
-  \item{\strong{Build Report Criteria}} A workhorse query called frequently prior to the 
-  calling of other queries, due to its finding all \code{trapVisitID}s between
-  two specified dates; i.e., the \code{min.date} and \code{max.date}.  
+  \item{\strong{Build Report Criteria}} A workhorse query called frequently
+  prior to the calling of other queries, due to its finding all
+  \code{trapVisitID}s between two specified dates; i.e., the \code{min.date}
+  and \code{max.date}.
   
-  \item{\strong{Build Report Criteria Release}} A query similar to that of the Build 
-  Report Criteria seres, but adapted for identifying releases.  
+  \item{\strong{Build Report Criteria Release}} A query similar to that of
+  the Build Report Criteria seres, but adapted for identifying releases.
   
   \item{\strong{By Catch}} The means by which by-catch is identified.  
   
-  \item{\strong{Efficiency Tests}} Compiles efficiency-test release and recapture
-  data. This series depends on first running the Build Report Criteria
-  series, followed by the Sample Period series.  In running, the
-  \code{includeCatch} variable is pre-set to \code{'yes'} for all recaptured
+  \item{\strong{Efficiency Tests}} Compiles efficiency-test release and
+  recapture data. This series depends on first running the Build Report
+  Criteria series, followed by the Sample Period series.  In running, the 
+  \code{includeCatch} variable is pre-set to \code{'yes'} for all recaptured 
   fish.
   
   In cases where releases temporally overlap, and for which a
@@ -205,9 +211,9 @@ clause must have preceding and antecedent \code{#}-signs added to them.
   identifiers are modified by appending a decimal to their corresponding 
   \code{trapPositionID}.
   
-  \item{\strong{Non-valid Fishing}}  Displays target species by run.  Series results 
-  include trap gear codes and half-cone fields.  Currently, this series 
-  excludes adult and grilse life stages.
+  \item{\strong{Non-valid Fishing}}  Displays target species by run.  Series
+  results include trap gear codes and half-cone fields.  Currently, this
+  series excludes adult and grilse life stages.
   
   Note that the series only pulls data for non-valid trap visits, where the
   variable \code{includeCatchID} equal \code{2}, and for which there are
@@ -220,8 +226,9 @@ clause must have preceding and antecedent \code{#}-signs added to them.
  conjuction with table \code{tempSamplingSummary}.  The running of this query
  requires series Build Report Criteria and Sample Period be run first.
   
-  \item{\strong{Sample Period}} Calculates the amount of time between starts and stops
-  of a trapping instance, as itemized via variable \code{trapVisitID}.
+  \item{\strong{Sample Period}} Calculates the amount of time between starts
+  and stops of a trapping instance, as itemized via variable
+  \code{trapVisitID}.
   
   \item{\strong{Sum Chinook by Trap}} Sums all the chinook caught via trap, i.e., 
   variable \code{trapVisitID}.  Note that species Chinook salmon enters the

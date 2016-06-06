@@ -1,27 +1,43 @@
-#' @title Update a table in the Access CAMP database to contain a particular 
-#'   site's trapVisitIDs between calendar dates specified by the user.
+#' @export
+#' 
+#' @title F.buildReportCriteria 
+#' 
+#' @description Update Access database table \code{TempReportCriteria_Trapvisit}
+#'   to contain all unique trapping instances for the site and inclusive
+#'   calendar dates specified by the user.
 #'   
-#' @param site The \code{siteID} for which data are requested.
-#' @param min.date The start date for which data are requested.
-#' @param max.date The end date for which data are requested.
+#' @param site The identification number of the site for which estimates are 
+#'   required.
+#' @param min.date The start date for data to include. This is a text string in 
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.  
+#' @param max.date The end date for data to include.  Same format as 
+#'   \code{min.date}.
 #'   
 #' @return Within R, function \code{build_Report_Criteria} returns a data frame 
 #'   containing one row and row column of the total number of visits at a site 
-#'   between the specified \code{min.date} and \code{max.date}.  Additionally, 
-#'   it sets up a series of tables, via query sequence 
-#'   \code{QryBuildReportCriteria.sql} within the Access CAMP database.
+#'   between the specified \code{min.date} and \code{max.date}.  Within Access, 
+#'   via the \code{RODBC} package, it creates table \code{TempReportCriteria_Trapvisit}, via query series  
+#'   Build Report Criteria.
 #'   
-#' @section:  Details: Generally, function \code{build_Report_Criteria} is the
-#' workhorse function associated with many query sequences, and sets up data
-#' within the Access CAMP database for further processing.
+#' @details Function \code{build_Report_Criteria} is the
+#' workhorse function associated with many query series, and sets up data
+#' within the Access CAMP database for further processing.  See function 
+#' \code{F.run.sqlFile} for more details on query series.  
 #' 
 #' @seealso \code{sqlQuery}, \code{F.run.sqlFile}, \code{F.sql.error.check}
 #'   
-#' @aliases
+#' @author Trent McDonald (tmcdonald@west-inc.com)
 #' 
 #' @examples
+#' \dontrun{
+#' #   ---- American River at Watt Avenue, 2013 Season
+#' site <- 57000                 
+#' min.date <- "2013-01-16"
+#' max.date <- "2013-06-08" 
 #' 
-#' @export
+#' #   ---- Obtain inclusive trap visits.  
+#' nvisits <- F.buildReportCriteria( site, min.date, max.date )
+#' }
 
 F.buildReportCriteria <- function( site, min.date, max.date ){
   
