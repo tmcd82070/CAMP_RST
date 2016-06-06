@@ -228,7 +228,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
       db <- get( "db.file", env=.GlobalEnv )
       ch <- odbcConnectAccess(db)
       
-      save.image(file = "C:/Users/jmitchell/Desktop/camp.RData")
+      #save.image(file = "C:/Users/jmitchell/Desktop/camp.RData")
       
       
       #   ---- Develop the hours fished and TempSamplingSummary table.
