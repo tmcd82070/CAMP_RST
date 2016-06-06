@@ -1,6 +1,8 @@
 #' @export
 #' 
-#' @title List all catches, regardless of species.  
+#' @title F.allCatch.table
+#' 
+#' @description Lists all catch, regardless of species.  
 #'
 #' @param site The identification number of the site for which estimates are
 #'   required.
@@ -13,6 +15,9 @@
 #'   
 #' @return A \code{csv} containing catch information for all species.  A data
 #'   frame containing the same information is also returned, but invisibly.
+#'   
+#' @details This function utilizes the All-Catch Series query to find and identify
+#' all pertinent records within a catch.  See 
 #'
 #' @seealso \code{F.chinookByDate.table}
 #' 
