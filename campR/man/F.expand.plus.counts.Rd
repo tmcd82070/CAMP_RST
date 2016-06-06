@@ -12,8 +12,9 @@ F.expand.plus.counts(catch)
 }
 \value{
 A data frame with fish tallied via variable \code{Unmarked}, whose 
-  \code{FinalRun} and/or \code{lifeStage} was recorded as
-  \code{"Unassigned"}, reassigned to a run and/or life stage.
+  \code{FinalRun} and/or \code{lifeStage} was recorded as 
+  \code{"Unassigned"}, reassigned to a valid run and/or life stage observed
+  in the data.
 }
 \description{
 Expand a catch data frame to account for plus counts.

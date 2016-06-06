@@ -8,9 +8,9 @@ F.assign.1dim(catch, present.var, absent.var)
 }
 \arguments{
 \item{catch}{A data frame containing records of fish itemized by combinations
-of variables \code{FinalRun}, \code{lifeStage}, and \code{forkLength}. 
-Variable \code{Unmarked} contains the number of fish represented in each 
-record.}
+of variables \code{trapVisitID}, \code{FinalRun}, \code{lifeStage}, and
+\code{forkLength}. Variable \code{Unmarked} contains the number of fish
+represented in each record.}
 
 \item{present.var}{The variable in data frame \code{catch} for which data are
 recorded.  This should be one of \code{FinalRun} or \code{lifeStage}.}
@@ -22,14 +22,14 @@ are not recorded.  This should be either of \code{FinalRun} or
 \value{
 A data frame \code{catch} with any \code{"Unassigned"} counts of fish
   present in the \code{absent.var} variable proportionally allocated to the 
-  levels present in the \code{present.var} variable.  See 'Details.'
+  levels present in the \code{present.var} variable.  See Details.
 }
 \description{
 Assign the missing counts of either \code{FinalRun} or \code{lifeStage},
 based on frequency dist of the other.
 }
 \details{
-Values in one dimension of the basic \code{FinalRun} X 
+Values in one dimension of the basic \code{FinalRun}-by- 
   \code{lifeStage} table is present, but the other is missing.
   
   Except in rare cases, only fish for which variable \code{RandomSelection = 
@@ -37,7 +37,7 @@ Values in one dimension of the basic \code{FinalRun} X
   both of \code{FinalRun} and \code{lifeStage} are recorded, but for which 
   \code{RandomSelection = "No"}, are excluded.
   
-  Function \code{F.assign.1dim} loops individually over each level found in 
+  Function \code{F.assign.1dim} loops individually over each unique level found in 
   the \code{present.var} variable. Within each level, trap occasions, as 
   determined by variable \code{trapVisitID}, are examined one-by-one in order
   to estimate relative frequencies of levels in the \code{absent.var} 
@@ -76,7 +76,7 @@ Values in one dimension of the basic \code{FinalRun} X
   \code{RandomSelection} is set to \code{"no"}.
   
   When one of strategies 3, 4, 5, 6 is used, the resulting relative frequency
-  of counts found in other \code{trapVisitID}s or neighboring days may not
+  of counts found in other \code{trapVisitID}s or neighboring days may not 
   evenly divide the \code{"Unassigned"} count of fish recorded in the 
   \code{absent.var} variable. In this case, the plus counts are obtained by 
   multiplying the number of \code{"Unassigned"} fish by the proportion of 
@@ -84,14 +84,27 @@ Values in one dimension of the basic \code{FinalRun} X
   this occurs, round-off error may occur and accumulate over the various 
   levels for which plus-counts are obtained.  The difference between the 
   original \code{"Unassigned"} count of fish and the sum of the rounded plus 
-  counts thus may not equal zero.  Any non-zero "magic fish" are randomly 
-  allocated to the levels for which rounding occurred via the \code{multinom}
-  function.  In this way, the data dictate to which levels any magic fish are
-  allocated.  Magic fish may be positive or negative quantities, with each 
-  being allocated in the appropriate way to ensure that the sum of the final 
-  plus-count levels equals the original \code{"Unassigned"} count of fish.
+  counts thus may not equal zero, thus leading to "magic fish."  Any non-zero
+  magic fish are randomly allocated to the levels for which rounding
+  occurred via the \code{multinom} function.  In this way, the data dictate
+  to which levels any magic fish are allocated.  Magic fish may be positive
+  or negative quantities, with each being allocated in the appropriate way to
+  ensure that the sum of the final plus-count levels equals the original
+  \code{"Unassigned"} count of fish.
 }
 \examples{
+\dontrun{
+#   ---- Per trapping instance, expand plus counts for fish marked as "Unassigned" 
+#   ---- in variable lifeStage, taking into consideration the frequency
+#   ---- distribution of variable FinalRun.  
+catch2 <- F.assign.1dim(catch, FinalRun, lifeStage)
+}
 
+}
+\author{
+Trent McDonald (tmcdonald@west-inc.com)
+}
+\seealso{
+\code{F.expand.plus.counts}, \code{F.assign2.dim}
 }
 

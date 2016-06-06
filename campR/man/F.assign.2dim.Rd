@@ -8,17 +8,18 @@ F.assign.2dim(catch, var1, var2)
 }
 \arguments{
 \item{catch}{A data frame containing records of fish itemized by combinations
-of variables \code{FinalRun}, \code{lifeStage}, and \code{forkLength}. 
-Variable \code{Unmarked} contains the number of fish represented in each 
-record.  Use of this function assumes that at least one record in 
-\code{FinalRun} and \code{lifeStage} both equal \code{"Unassigned"}.}
+of variables \code{trapVisitID}, \code{FinalRun}, \code{lifeStage}, and 
+\code{forkLength}. Variable \code{Unmarked} contains the number of fish 
+represented in each record.  Use of this function assumes that at least one
+record in \code{FinalRun} and \code{lifeStage} both equal 
+\code{"Unassigned"}.}
 
 \item{var1}{The variable in data frame \code{catch} for which data are 
-recorded.  Function \code{F.assign.2dim}, as utilized in the estimation of
+recorded.  Function \code{F.assign.2dim}, as utilized in the estimation of 
 passage, assumes \code{var1="FinalRun"}.}
 
-\item{var2}{The variable in the data frame \code{catch} for which data are 
-not recorded.  Function \code{F.assign.2dim}, as utilized in the estimation
+\item{var2}{A second variable in the data frame \code{catch} for which data are 
+recorded.  Function \code{F.assign.2dim}, as utilized in the estimation
 of passage, assumes \code{var2="lifeStage"}.}
 }
 \value{
@@ -27,30 +28,43 @@ A data frame \code{catch} containing estimates of the number of fish
   joint distribution.
 }
 \description{
-Assign the missing counts of both \code{FinalRun} and \code{lifeStage} when 
-the number fish in variable \code{Unmarked} is greater than zero.
+Assign the missing counts of both \code{FinalRun} and
+  \code{lifeStage} when the number of fish recorded in variable
+  \code{Unmarked} is greater than zero.
 }
 \details{
-Function \code{F.assign.2dim} makes a new variable, based on 
-  \code{FinalRun} and \code{lifeStage}, with joint levels.  It then utilizes 
-  function \code{F.assign.1dim} on the new joint variable, via its 
-  \code{present.var} argument.  Levels fed to \code{present.var} take the 
-  form \code{FinalRun.lifeStage}, e.g., \code{"Fall.Smolt"} for observed 
-  records and \code{"Unassigned"} for unobserved.  Levels fed to 
-  \var{absent.var} of \code{F.assign.1dim} are either \code{"Yes"} for 
-  observed records, or \code{NA} for those for which plus-counting is 
-  necessary, i.e., where \code{present.var="Unassigned"}.  Function 
-  \code{F.assign.1dim} then allocates plus-counts based on the distribution 
-  of observed joint frequencies in variable \code{present.var}.  Following 
-  allocation to the joint values, function \code{F.assign.2dim} then "cleans 
-  up" by breaking out the joint distribution into its constituent parts
+Function \code{F.assign.2dim} makes a new variable with joint
+  levels, based on the concatenation of values in \code{FinalRun} and
+  \code{lifeStage}.  It then utilizes function \code{F.assign.1dim} on the
+  new joint variable, via its \code{present.var} argument.  Levels fed to
+  \code{present.var} take the form \code{FinalRun.lifeStage}, e.g.,
+  \code{"Fall.Smolt"} for observed records and \code{"Unassigned"} for
+  unobserved.  Levels fed to \code{absent.var} of \code{F.assign.1dim} are
+  either \code{"Yes"} for observed records, or \code{NA} for those for which
+  plus-counting is necessary, i.e., where \code{present.var="Unassigned"}. 
+  Function \code{F.assign.1dim} then allocates plus-counts based on the
+  distribution of observed joint frequencies in variable \code{present.var}. 
+  Following allocation to the joint values, function \code{F.assign.2dim}
+  then "cleans up" by breaking out the joint distribution into its
+  constituent parts.
   
-  Thus, for example, \code{"Fall.Smolt"} becomes \code{"Fall"} and
-  \code{"Smolt"} within variables \code{FinalRun} and \code{lifeStage},
-  respectively, with the appropriate count of plus-count fish recorded in
-  variable \code{Unmarked}.
+  Thus, for example, on completion the joint variable value of
+  \code{"Fall.Smolt"} becomes \code{"Fall"} and \code{"Smolt"} within
+  variables \code{FinalRun} and \code{lifeStage}, respectively, with the
+  appropriate count of plus-count fish recorded in variable \code{Unmarked}.
 }
 \examples{
-
+\dontrun{
+#   ---- Per trapping instance, where both FinalRun and lifeStage are 
+#   ---- recorded as "Unassigned", and the number of observed fish in
+#   ---- Unmarked > 0, assign plus counts.  
+catch2 <- F.assign.2dim(catch, FinalRun, lifeStage)
+}
+}
+\author{
+Trent McDonald (tmcdonald@west-inc.com)
+}
+\seealso{
+\code{F.expand.plus.counts}, \code{F.assign1.dim}
 }
 
