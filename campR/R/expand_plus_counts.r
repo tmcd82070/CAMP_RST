@@ -1,19 +1,23 @@
 #' @export
 #' 
-#' @title F.expand.plus.counts - Expand plus counts
+#' @title F.expand.plus.counts
 #' 
 #' @description Expand a catch data frame to account for plus counts.
 #' 
-#' @param catch A data frame containing missing data for variables 
-#'   \code{FinalRun} and/or \code{lifeStage}.
+#' @param catch A data frame containing missing data, i.e., values of
+#'   \code{"Unassigned"}, for variables \code{FinalRun} and/or \code{lifeStage}.
 #'   
-#' @return A data frame with fish whose \code{FinalRun} and/or \code{lifeStage}
-#'   was recorded as unknown reassigned to a run and/or life stage.
+#' @return A data frame with fish tallied via variable \code{Unmarked}, whose 
+#'   \code{FinalRun} and/or \code{lifeStage} was recorded as 
+#'   \code{"Unassigned"}, reassigned to a valid run and/or life stage observed
+#'   in the data.
 #'   
 #' @details Data frame \code{catch} contains records with missing data for one 
-#'   or both of variables \code{FinalRun} and \code{lifeStage}.  These records, 
-#'   via the number recorded in variable \code{Unassigned}, quantify the number 
-#'   of fish whose run and/or life stage is unknown.
+#'   or both of variables \code{FinalRun} and \code{lifeStage}.  In these
+#'   variables, these records have a value of \code{"Unassigned"}. 
+#'   Additionally, variable \code{Unmarked} quantifies the number of fish whose
+#'   run and/or life stage is unknown.  Together, these two variables identify
+#'   the count and type of fish not measured during sampling.  
 #'   
 #'   Accurate estimation of passage requires the use of all fish in a catch. 
 #'   Sometimes however, catch can number in the thousands.  Practically, these 
@@ -52,9 +56,15 @@
 #'   
 #' @seealso \code{F.assign.1dim}, \code{F.assign.2dim}
 #'   
+#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' 
 #' @examples 
-#' # keep <- preCatch 
-#' #catch <- keep
+#' \dontrun{
+#' #   ---- Expand unassigned run and life stage fish via the proportions
+#' #   ---- observed in a random selection, per trapping instance.  
+#' newCatch <- F.expand.plus.counts(catch)
+#' }
+
 F.expand.plus.counts <- function( catch ){
   #
   # catch <- catch

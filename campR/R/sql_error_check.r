@@ -1,6 +1,10 @@
-#' @title Check if a SQL statement executed correctly.
+#' @export
+#' 
+#' @title F.sql.error.check
+#' 
+#' @description Check if a SQL statement executed correctly.
 #'   
-#' @param obj The results from an Access query. See 'Details.'
+#' @param obj The results from an Access query. See Details.
 #'   
 #' @return \code{FALSE}, assuming successful completion of a SQL query.  Otherwise, an 
 #'   error message to either the Console window, if running directly via R, or 
@@ -16,21 +20,25 @@
 #' 
 #' @seealso \code{sqlQuery}
 #'   
-#' @aliases
+#' @author Trent McDonald (tmcdonald@west-inc.com)
 #' 
 #' @examples
-#' # db.file <- "C:/yourPath/CAMP.mdb"              # the location of CAMP.mdb
-#' db <- get( "db.file", env=.GlobalEnv )           # assign the mdb string to an object
-#' ch <- odbcConnectAccess(db)                      # open a connection between R and Access
+#' \dontrun{
+#' #   ---- Set up an Access mdb in R.  
+#' db.file <- "C:/yourPath/CAMP.mdb"                # The location of CAMP.mdb
+#' db <- get( "db.file", env=.GlobalEnv )           # Assign the mdb string.
+#' ch <- odbcConnectAccess(db)                      # Connect R and Access.
 #' 
-#' # a good query
-#' ans <- sqlQuery( ch, "SELECT * FROM luRun" )     # select all rows via a SQL query
-#' F.sql.error.check(ans)                           # check for query result validity
+#' #   ---- Conduct a good query.
+#' ans <- sqlQuery( ch, "SELECT * FROM luRun" )     # Select all rows.
+#' F.sql.error.check(ans)                           # Check for validity.  
+#'                                                  #  --> Results in FALSE.
 #' 
-#' # a bad query
-#' ans <- sqlQuery( ch, "SELECT * FROM fakeTable" ) # select all rows via a SQL query
-#' F.sql.error.check(ans)                           # check for query result validity
-#' 
+#' #   ---- Conduct a bad query.
+#' ans <- sqlQuery( ch, "SELECT * FROM fakeTable" ) # Select all rows.
+#' F.sql.error.check(ans)                           # Check for validity.  
+#'                                                  #  --> Results in error message.  
+#' }
 #' @export
 
 F.sql.error.check <- function( obj ){

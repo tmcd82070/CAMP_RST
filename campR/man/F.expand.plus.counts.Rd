@@ -2,26 +2,29 @@
 % Please edit documentation in R/expand_plus_counts.r
 \name{F.expand.plus.counts}
 \alias{F.expand.plus.counts}
-\title{F.expand.plus.counts - Expand plus counts}
+\title{F.expand.plus.counts}
 \usage{
 F.expand.plus.counts(catch)
 }
 \arguments{
-\item{catch}{A data frame containing missing data for variables 
-\code{FinalRun} and/or \code{lifeStage}.}
+\item{catch}{A data frame containing missing data, i.e., values of
+\code{"Unassigned"}, for variables \code{FinalRun} and/or \code{lifeStage}.}
 }
 \value{
-A data frame with fish whose \code{FinalRun} and/or \code{lifeStage}
-  was recorded as unknown reassigned to a run and/or life stage.
+A data frame with fish tallied via variable \code{Unmarked}, whose 
+  \code{FinalRun} and/or \code{lifeStage} was recorded as
+  \code{"Unassigned"}, reassigned to a run and/or life stage.
 }
 \description{
 Expand a catch data frame to account for plus counts.
 }
 \details{
 Data frame \code{catch} contains records with missing data for one 
-  or both of variables \code{FinalRun} and \code{lifeStage}.  These records, 
-  via the number recorded in variable \code{Unassigned}, quantify the number 
-  of fish whose run and/or life stage is unknown.
+  or both of variables \code{FinalRun} and \code{lifeStage}.  In these
+  variables, these records have a value of \code{"Unassigned"}. 
+  Additionally, variable \code{Unmarked} quantifies the number of fish whose
+  run and/or life stage is unknown.  Together, these two variables identify
+  the count and type of fish not measured during sampling.  
   
   Accurate estimation of passage requires the use of all fish in a catch. 
   Sometimes however, catch can number in the thousands.  Practically, these 
@@ -59,8 +62,14 @@ Data frame \code{catch} contains records with missing data for one
   non-fishing.
 }
 \examples{
-# keep <- preCatch 
-#catch <- keep
+\dontrun{
+#   ---- Expand unassigned run and life stage fish via the proportions
+#   ---- observed in a random selection, per trapping instance.  
+newCatch <- F.expand.plus.counts(catch)
+}
+}
+\author{
+Trent McDonald (tmcdonald@west-inc.com)
 }
 \seealso{
 \code{F.assign.1dim}, \code{F.assign.2dim}
