@@ -164,13 +164,16 @@ clause must have preceding and antecedent \code{#}-signs added to them.
   \code{F.get.all.fish.data} calls this query after first running the Build
   Report Criteria query series.
   
-  \item{\strong{Build Report Criteria}} A workhorse query called frequently
-  prior to the calling of other queries, due to its finding all
-  \code{trapVisitID}s between two specified dates; i.e., the \code{min.date}
-  and \code{max.date}.
+  \item{\strong{Build Report Criteria}} A workhorse query called frequently 
+  prior to the calling of other queries, due to its finding all 
+  \code{trapVisitID}s between two specified dates; i.e., the \code{min.date} 
+  and \code{max.date}.  This series results in table
+  \code{TempReportCriteria_Trapvisit} in the underlying Access database.
   
-  \item{\strong{Build Report Criteria Release}} A query similar to that of
-  the Build Report Criteria seres, but adapted for identifying releases.
+  \item{\strong{Build Report Criteria Release}} A query similar to that of 
+  the Build Report Criteria seres, but adapted for identifying releases. This
+  series results in table \code{TempReportCriteria_Release} in the underlying
+  Access database.
   
   \item{\strong{By Catch}} The means by which by-catch is identified.  
   

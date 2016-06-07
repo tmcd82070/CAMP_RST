@@ -80,6 +80,11 @@
 #' @author Trent McDonald (tmcdonald@west-inc.com)
 #'   
 #' @examples 
+#' \dontrun{
+#' #   ---- Estimate passage based on a given set of 
+#' #   ---- catch and release dataframes, over weeks.
+#' thePassage <- F.est.passage(catch.df, release.df, "week", "myFileRoot", ci=TRUE )
+#' }
 
 F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 

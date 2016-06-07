@@ -87,6 +87,13 @@ Two main steps comprise the estimation of passage.  The first
   \item{\eqn{inflatedCatch =  assignedCatch + unassignedCatch}}
   \item{\eqn{totalCatch =  inflatedCatch + imputedCatch}} }
 }
+\examples{
+\dontrun{
+#   ---- Estimate passage based on a given set of 
+#   ---- catch and release dataframes, over weeks.
+thePassage <- F.est.passage(catch.df, release.df, "week", "myFileRoot", ci=TRUE )
+}
+}
 \author{
 Trent McDonald (tmcdonald@west-inc.com)
 }
