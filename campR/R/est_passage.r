@@ -1,82 +1,86 @@
 #' @export
 #' 
-#' @title F.est.passage - Estimate passage
-#' 
-#' @description Compute passage estimates, given catch and efficiency trial data.  
-#' 
-#' @param catch.df A data frame with one row per \code{trapvisitID} for a
-#'   particular \code{FinalRun} and \code{lifeStage}.  That is, \code{catch.df}
-#'   has only one (of what could be many) run-by-life-stage combinations.
-#' @param release.df A data frame resulting from a call to function
+#' @title F.est.passage
+#'   
+#' @description Compute passage estimates, given catch and efficiency trial
+#'   data.
+#'   
+#' @param catch.df A data frame with one row per \code{trapvisitID} for a 
+#'   particular \code{FinalRun} and \code{lifeStage}.
+#' @param release.df A data frame resulting from a call to function 
 #'   \code{F.get.release.data}.  Contains efficiency data.
-#' @param summarize.by A text string indicating the temporal unit over which
+#' @param summarize.by A text string indicating the temporal unit over which 
 #'   daily estimated catch is to be summarized.  Can be one of \code{day}, 
-#'   \code{week}, \code{month}, \code{year}.
+#'   \code{week}, \code{month}, or \code{year}.
 #' @param file.root  A text string indicating a prefix to append to all output.
-#' @param ci A logical indicating if 95% bootstrapped confidence intervals
-#'   should be estimated along with passage estimates.
+#' @param ci A logical indicating if bootstrapped confidence intervals should be
+#'   estimated along with passage estimates.  The default is 95\%, although
+#'   levels other than 95\% can be set in function \code{F.bootstrap.passage}.
 #'   
-#' @return A data frame containing daily passage estimates and associated
-#'   standard errors.
+#' @return A data frame containing daily passage estimates, corrected for times 
+#'   not fishing, along with associated standard errors.
 #'   
-#' @details Estimation of passage is comprised of two main steps.  The first 
+#' @details Two main steps comprise the estimation of passage.  The first 
 #'   fetches and formats all the necessary data.  The second performs 
 #'   statistical analysis on those processed data.  Function 
-#'   \code{F.est.passage} is the workhorse function for all statistical 
-#'   analysis.  As such, it calls functions responsible for catch modeling
-#'   (\code{F.est.catch}), efficiency modeling (\code{F.est.efficiency}), and
-#'   bootstrapping (\code{F.bootstrap.passage}).
-#'   
-#'   Function calls resulting in non-zero catch, but zero efficiency, due to no
-#'   valid efficiency trials, result in warnings of zero efficiency.  The 
-#'   function will continue, but all passage estimates will be \code{NA}.
+#'   \code{F.est.passage} is the workhorse function for all statistical analysis
+#'   associated with the estimation of passage.  As such, it calls functions 
+#'   responsible for catch modeling (\code{F.est.catch}), efficiency modeling 
+#'   (\code{F.est.efficiency}), and the bootstrapping of passage
+#'   (\code{F.bootstrap.passage}).
 #'   
 #'   Function \code{F.est.passage} brings together catch and efficiency data. 
-#'   Called the 'grand merge,' resulting data frame \code{grand.df} forms the 
-#'   basis of all passage estimation.  Merging takes places on unique
-#'   combinations of \code{trapPositionID} and \code{batchDate}.  Trap matches
-#'   respect decimal suffixes appended due to gaps in fishing.
+#'   Called the "grand merge," resulting data frame \code{grand.df} forms the 
+#'   basis of all passage estimation.  Merging takes places on unique 
+#'   combinations of \code{trapPositionID} and \code{batchDate}.  Trap matches 
+#'   respect decimal suffixes appended due to gaps in fishing.  See the 
+#'   "Fishing Gaps" SQL series in \code{F.sqlFile}.
 #'   
 #'   In processing prior to the creation of the \code{grand.df}, the dates 
-#'   outside the first and last date are dropped from each trap. In reality 
-#'   however, the season for each trap is identified as non missing catch.  In 
-#'   other words, the grand merge inserts every date for all traps because the 
-#'   underlying efficiency data frame has all dates.
+#'   outside the first and last date of valid fishing are dropped from each
+#'   trap. In reality however, the season for each trap is identified as non
+#'   missing catch.  In other words, the grand merge inserts every date for all
+#'   traps because the underlying efficiency data frame has all dates.  For those
+#'   dates for which a trap was not fishing, the resulting catch (and thus passage)
+#'   is essentially considered zero.  
 #'   
 #'   Function \code{F.bootstrap.passage} summarizes the daily passage estimates 
 #'   housed in \code{grand.df} to the temporal units specified via 
-#'   \code{summarize.by}, and then compiles all statistics for eventual
+#'   \code{summarize.by}, and then compiles all statistics for eventual 
 #'   reporting.  Statistics include weighted mean forklength, standard deviation
-#'   of forklength, and fish n.
-#' 
-#' @section Fish Accounting:  
-#' Passage estimation results in the partitioning of 
+#'   of forklength, and fish counts \eqn{N}.
+#'   
+#'   Function calls resulting in non-zero catch, but zero efficiency, due to no 
+#'   valid efficiency trials, result in warnings of zero efficiency.  The 
+#'   function will continue, but all passage estimates will be \code{NA}.
+#'   
+#' @section Fish Accounting: Passage estimation results in the partitioning of 
 #'   fish into different groups. For example, a fish could be assigned/not 
 #'   assigned, measured/not measured, half-cone/full-cone, plus-count, imputed, 
-#'   or inflated (define these?). Function \code{F.est.passage} organizes all of
-#'   these different types of fish following their initial partitioning in
+#'   or inflated. Function \code{F.est.passage} organizes all of
+#'   these different types of fish following their initial partitioning in 
 #'   function \code{F.get.catch.data}. Fish accounting on a daily basis ensures 
 #'   that the counts of these different types of fish collapse back to their 
 #'   original totals following analytic processing.  Said another way, fish 
 #'   accounting ensures that no fish are mysteriously gained or lost during the 
 #'   passage estimation process.
 #'   
-#'   Three types of daily checks are performed for each individual trap.
+#'   Three types of daily checks are performed for each individual trap, with the
+#'   function stopping in any case for which accounting fails.  
 #'   
-#'   Do we need to define these? 
+#'   \enumerate{ 
+#'   \item{\eqn{totalCatch =  assignedCatch + unassignedCatch +
+#'   imputedCatch}} 
+#'   \item{\eqn{inflatedCatch =  assignedCatch + unassignedCatch}}
+#'   \item{\eqn{totalCatch =  inflatedCatch + imputedCatch}} }
 #'   
-#'   \enumerate{
-#'     \item{eqn{totalCatch =  assignedCatch + unassignedCatch + imputedCatch}}
-#'     \item{eqn{inflatedCatch =  assignedCatch + unassignedCatch}}
-#'     \item{eqn{totalCatch =  inflatedCatch + imputedCatch}}
-#'   }
+#' @seealso \code{F.get.release.data}, \code{F.bootstrap.passage},
+#'   \code{F.est.catch}, \code{F.est.efficiency}
 #'   
+#' @author Trent McDonald (tmcdonald@west-inc.com)
 #'   
-#' 
-#' @seealso \code{F.get.release.data}, \code{F.get.catch.data}, \code{F.est.passage}
-#' 
 #' @examples 
-#' # query mdb?
+
 F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 
   # catch.df <- catch.df.ls
