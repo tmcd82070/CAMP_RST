@@ -3,7 +3,7 @@
 #' @title F.buildReportCriteriaRelease
 #' 
 #' @description Update a table in the underlying Access database to contain release
-#' trapVisitIDs and count the number of efficiency trials.
+#' \code{trapVisitID}s and count the number of efficiency trials.
 #' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
@@ -13,16 +13,24 @@
 #'   \code{min.date}.
 #'   
 #' @return Within R, the total integer count of efficiency trials.  Within
-#'   Access, table \code{blah} is created, itemizing the releases.
+#'   Access, table \code{TempReportCriteria_Release} is created, itemizing the releases.
 #'   
-#' @details Unique efficiency trials are identified by unique \code{releaseIDs}
+#' @details Unique efficiency trials are identified by unique \code{releaseIDs} 
 #'   falling within the specified \code{min.date} and \code{max.date}.
 #'   
-#'   Note that the difference between this and the other
-#'   \code{buildReportCriteria} query sequence is this one's focus on releases
-#'   and subsequent recaptures.
+#'   Note that the difference between this and the \code{buildReportCriteria} 
+#'   query series is this one's focus on releases and subsequent recaptures.
 #'   
 #' @examples
+#' \dontrun{
+#' #   ---- American River at Watt Avenue, 2013 Season
+#' site <- 57000                 
+#' min.date <- "2013-01-16"
+#' max.date <- "2013-06-08" 
+#' 
+#' #   ---- Obtain inclusive releases.    
+#' nreleases <- F.buildReportCriteriaRelease( site, min.date, max.date )
+#' }
 #'
 F.buildReportCriteriaRelease <- function( site, min.date, max.date ){
 
