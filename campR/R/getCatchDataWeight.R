@@ -71,7 +71,7 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
     F.run.sqlFile(ch, "QrySamplePeriod.sql", R.TAXON=taxon ) # trent f'n that works as an access-sql handler
     ## ---- end building ----
 
-
+    F.run.sqlFile(ch, "QryNotFishing.sql", R.TAXON=taxon )
 
 
     ## ---- finally, the new query ----

@@ -196,7 +196,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   
   
   
-  #   ---- STEP 3:  Look for gaps in fishing, as defined by global
+  #   ---- STEP 2:  Look for gaps in fishing, as defined by global
   #   ----          variable fishingGapMinutes.  If any are found, 
   #   ----          reassign trapPositionIDs.  
   theLongCatches <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes > fishingGapMinutes & catch$TrapStatus == "Not fishing",c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
@@ -205,64 +205,47 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     
     warning("Long gaps were found in the data so the LongGapLoop series will be run.")
     
-    if( autoLS ){
+    db <- get( "db.file", env=.GlobalEnv )
+    ch <- odbcConnectAccess(db)
       
-      #   ---- The Gaps series doesn't bring back weights.  So we have to assemble the data
-      #   ---- we have from its constituent pieces.  The weight dataframe catch will in theory
-      #   ---- have more rows than catch2, due to particular forkLengths being broken out by
-      #   ---- a distribution of weights.  So, do a left join to identify those trapPositionIDs
-      #   ---- that have had a decimal appended.  
+    #   ---- SQL code to find the gaps, and modify trapPositionIDs accordingly.
+    F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
       
-      #   ---- For QryFishingGaps.sql to work propertly, we need emulate the conditions under
-      #   ---- which it was developed.  
+    #   ---- Fetch the updated results.  
+    catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
       
-      #   ---- Obtain catch data without weights.
-      nvisits <- F.buildReportCriteria( site, min.date, max.date )
-      
-      if( nvisits == 0 ){
-        warning("Your criteria returned no trapVisit table records.")
-        return()
-      }
-      
-      #   ---- Open ODBC channel.
-      db <- get( "db.file", env=.GlobalEnv )
-      ch <- odbcConnectAccess(db)
-      
-      #save.image(file = "C:/Users/jmitchell/Desktop/camp.RData")
-      
-      
-      #   ---- Develop the hours fished and TempSamplingSummary table.
-      F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
-      F.run.sqlFile( ch, "QryNotFishing.sql" )
-      F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )
-      close(ch)
-      
-      db <- get( "db.file", env=.GlobalEnv )
-      ch <- odbcConnectAccess(db)
-      F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
-      
-      #   ---- Fetch the updated results, which now identify the gaps.  We do all of this just to
-      #   ---- identify those.  
-      catchWgtGaps <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-      test <- merge(catch,catchWgtGaps[catchWgtGaps$trapVisitID,catchWgtGaps$trapPositionID,catchWgtGaps$oldtrapPositionID,],by=c('trapVisitID'),all.x=TRUE)
-      
-    } else {
-      
-      db <- get( "db.file", env=.GlobalEnv )
-      ch <- odbcConnectAccess(db)
-      
-      #   ---- SQL code to find the gaps, and modify trapPositionIDs accordingly.
-      F.run.sqlFile( ch, "QryFishingGaps.sql", R.FISHGAPMIN=fishingGapMinutes )
-      
-      #   ---- Fetch the updated results.  
-      catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
-      
-      catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]   
-    }
-
-    
     close(ch)
     
+    #   ---- If we have weight data, we cannot simply stop with fetching the catch2
+    #   ---- data frame, since that, by design, has no weights.  So, we use what we 
+    #   ---- really need from it, and add it to the weight catch data frame.  
+    if( autoLS ){
+        
+      #   ---- The data frame catch2 doesn't have the weight data.  So, keep what we 
+      #   ---- really need from it -- the crosswalk between trapPositionIDs. 
+      trapXwalk <- unique(catch2[!is.na(catch2$trapVisitID),c('oldtrapPositionID','trapPositionID','trapVisitID')])
+      trapXwalk$oldtrapPositionID <- as.numeric(substr(as.character(trapXwalk$oldtrapPositionID),1,5))
+        
+      #   ---- To keep things straight, temporarily rename the variables in trapXwalk.  
+      names(trapXwalk)[names(trapXwalk) == 'trapPositionID'] <- 'newtrapPositionID'
+      names(trapXwalk)[names(trapXwalk) == 'oldtrapPositionID'] <- 'trapPositionID'
+
+      #   ---- Preserve the current sort order for the weight data.  Probably not 
+      #   ---- necessary, but do it just in case.  
+      catch$R_ID <- seq(1,nrow(catch),1)
+      catch3 <- merge(catch,trapXwalk,by=c('trapVisitID','trapPositionID'))
+      catch3 <- catch3[order(catch3$R_ID),]
+      catch3$R_ID <- NULL
+        
+      #   ---- And put the trapPositionID variables back to what we need them
+      #   ---- to be. 
+      names(catch3)[names(catch3) == 'trapPositionID'] <- 'oldtrapPositionID'        
+      names(catch3)[names(catch3) == 'newtrapPositionID'] <- 'trapPositionID'
+        
+      catch <- catch3[catch3$SampleMinutes <= fishingGapMinutes,]  
+    } else {
+      catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]
+    }
   } else {
     
     #   ---- No long gaps to worry about.  Use catch we already have, 
@@ -283,7 +266,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   
   
   
-  #   ---- STEP 2:  Reassign lifestage, if requested.     
+  #   ---- STEP 3:  Reassign lifestage, if requested.     
   if(autoLS){
     cat('Starting mixture distribution estimation to assign life stage. \n')
     ##write.csv(catch,paste0(output.file,site,'.csv'),row.names=FALSE)
