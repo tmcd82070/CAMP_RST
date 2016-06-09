@@ -164,5 +164,6 @@ pip-log.txt
 .Rhistory
 .RData
 CAMP_RST.Rproj
+campR.Rproj
 Helper/
 Obsolete/
