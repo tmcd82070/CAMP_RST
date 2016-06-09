@@ -1,87 +1,94 @@
 #' @export
 #' 
-#' @title F.catch.model - Estimate catch model to impute catch during gaps in fishing.
-#' 
-#' @description Compute and estimate catch for all days missing in the input data set;  i.e.,
-#' impute a value for catch when missing.
-#' 
-#' @param catch.df A data frame containing all requested trapping data for a 
-#'   particular trapPosition.  See 'Details'.
+#' @title F.catch.model
 #'   
-#' @return A data frame with extra lines in it, when compared to input data
-#'   frame \code{catch.df}, with extra lines due to periods of 'Not fishing.'
+#' @description Compute and estimate catch for all days missing in the input
+#'   data set;  i.e., impute a value for catch when missing.
+#'   
+#' @param catch.df A data frame containing all trapping data for all  
+#'   \code{trapPositionID}s of interest. 
+#'   
+#' @return A data frame with extra lines in it, when compared to input data 
+#'   frame \code{catch.df}, with extra lines due to "Not fishing" periods.
 #'   
 #' @details Function \code{F.catch.model} serves two main purposes.  The first 
 #'   utilizes cubic splines to fit Poisson generalized linear models to observed
 #'   catch for each trapping position over the date range provided.  The second 
-#'   utilizes spline results to impute estimates for periods when the trap was 
+#'   utilizes spline results to impute estimates for periods whenever a trap was 
 #'   not functioning.
 #'   
-#' @section  Cubic splines: 
-#' First, given a trap, a null Poisson model of total 
-#'   catch, with a log link, is fit via function \code{glm}.  A null model is 
-#'   synonymous with an intercept-only model.  Log-transformed trap sampling 
-#'   time, in hours, serves as an offset.  Quality of fit is measured via use of
-#'   Akaiake Information Criterion (AIC).
+#' @section  Cubic splines: First, given a trap, function \code{glm} fits a null
+#'   Poisson model of total catch with a log link.  A null model is synonymous
+#'   with an intercept-only model.  Log-transformed trap sampling time, in
+#'   hours, serves as an offset.  Quality of fit is measured via use of Akaiake
+#'   Information Criterion (AIC).
 #'   
-#'   After the initial intercept-only model, increasingly complex Poisson
-#'   log-link models are fit via \code{glm}. More complex models require at
-#'   least ten unique \code{trapVisitID} fishing instances.  Following the
-#'   initial intercept-only model, linear, quadratic, and cubic polynomial
-#'   models are sequentially fit to the data. Assuming the data support it,
-#'   cubic splines are fit following the rejection of a cubic polynomial model. 
-#'   Note that a cubic polynomial model is a cubic spline with no internal
-#'   knots.
+#'   After the initial intercept-only model, increasingly complex Poisson 
+#'   log-link models are fit via \code{glm}. More complex models require at 
+#'   least ten unique \code{trapVisitID} fishing instances to be considered. 
+#'   Following the initial intercept-only model, linear, quadratic, and cubic
+#'   polynomial models are sequentially fit to the data. Assuming the data
+#'   support it (see below), cubic splines are fit following the rejection of a
+#'   cubic polynomial model. Note that a cubic polynomial model is a cubic
+#'   spline with no internal knots.
 #'   
 #'   Models only consider the next complex model if four conditions are met. 
 #'   First, the difference in the Akaike Information Criterion (AIC), when 
 #'   comparing the current model to the previous model, must be greater than 
 #'   two, after rounding both models to four decimals. 
 #'   
-#'   Second, the number of unique trapping instances, divided by 15, rounded
-#'   down, must be greater than or equal to the model's degrees of freedom,
-#'   excluding an intercept. This means that for a linear model, which has one
-#'   degree of freedom, excluding an intercept, at least 15 data points are
-#'   required. Similar logic requires 30 unique trapping instances for a 
-#'   quadratic, and so on.  Global variable \code{knotMesh} sets the number of 
-#'   unique trapping instances required for consideration of a more complex 
-#'   model.
+#'   Second, the number of unique trapping instances, divided by 15, rounded 
+#'   down, must be greater than or equal to the model's degrees of freedom, 
+#'   excluding an intercept. This means that for a linear model, which has one 
+#'   corrected degree of freedom, requires at least 15 data points. Similar 
+#'   logic requires 30 unique trapping instances for a quadratic, and so on. 
+#'   Global variable \code{knotMesh} in function \code{GlobalVars} sets the
+#'   number of unique trapping instances required for consideration of a more
+#'   complex model.
 #'   
 #'   Third, resulting parameter estimates must not be on the boundary of the
 #'   attainable values.  Due to the log-linked models utilized here, this means
-#'   that parameter estimates must not be infinite.  (correct?)
+#'   that parameter estimates must not be positive or negative infinite.  
 #'   
-#'   Finally, models can at most incorporate up to 15 degrees of freedom.  This
+#'   Finally, models can at most incorporate up to at most 16 degrees of freedom.  This
 #'   means all cubic splines with 270 or more unique trapping instances can top
-#'   off with at most 12 piecewise cubic polynomials. (check this again later)
+#'   off with at most 13 knots, and so 14 piecewise cubic polynomials. 
 #'   
 #'   The table below summarizes the relationship between the number of data
 #'   points, i.e., unique trapping instances, and maximal model possible.
-#'   
-#'  \tabular{cccc}{
-#'    dof \tab model type                               \tab n trapping instances \tab model-form # do we care? \cr
-#'    0   \tab intercept-only                           \tab 1                    \tab 
-#'    \ifelse{html}{\out{&beta 0}}{\eqn{\beta_0}{Beta0}} \cr
-#'    1   \tab linear                                   \tab 15 \cr
-#'    2   \tab quadratic                                \tab 30 \cr
-#'    3   \tab cubic                                    \tab 45 \cr
-#'    4   \tab cubic spline with one internal knot      \tab 60 \cr
-#'    5   \tab cubis spline with two internal knots     \tab 75 \cr
+#'   Here, "DF" represents "Degrees of Freedom."  Note that all polynomial 
+#'   pieces must be of the same degree.  Thus, give a particular catch time
+#'   series, it is not possible to fit an Intercept-only model to the first
+#'   half, say, and a Quadratic to the second.  Both pieces must either be 
+#'   Intercept-only, Quadratic, or perhaps a different polynomial form.  
+#'
+#'  \tabular{ccc}{
+#'    DF  \tab Maximal Model Type                       \tab \eqn{N} Trapping Instances \cr
+#'    0   \tab Intercept-only                           \tab \eqn{1 \le N \le 14}       \cr
+#'    1   \tab Linear                                   \tab \eqn{15 \le N \le 29}      \cr
+#'    2   \tab Quadratic                                \tab \eqn{30 \le N \le 44}      \cr
+#'    3   \tab Cubic                                    \tab \eqn{45 \le N \le 59}      \cr
+#'    4   \tab Cubic Spline with One Internal Knot      \tab \eqn{60 \le N \le 74}      \cr
+#'    5   \tab Cubic Spline with Two Internal Knots     \tab \eqn{75 \le N \le 89}      \cr
 #'    ... \tab ...                                      \tab ... \cr
-#'    k   \tab cubic spline with (k - 3) internal knots \tab 15*(k + 3)           \tab 
-#'    \ifelse{html}{\out{&beta 0 + &beta 1 + &beta 2}}{\eqn{\beta_0 + \beta_1 + \beta_2}{Beta0 + Beta1 + Beta2}} \cr
+#'    k   \tab Cubic Spline with (k - 3) Internal Knots \tab \eqn{15*k \le N \le 15*(k + 1) - 1}    \cr
+#'    ... \tab ...                                      \tab ... \cr
+#'    16  \tab Cubic Spline with 13 Internal Knots      \tab \eqn{240 \le N }    \cr
 #'  }
 #'    
-#' Models with at least 60 unique trapping instances incorporate a B-spline 
-#' basis matrix via function \code{bs}. This means that piecewise polynomials 
-#' are utilized to fit observed trends, with one piece covering a particular 
-#' subset in the date range covered by trapping.  The points covered by one 
-#' polynomial piece correspond to quantiles in the temporal range. (correct?) 
+#' Models with at least 60 unique trapping instances incorporate the possibility
+#' of a B-spline basis matrix via function \code{bs}. This means that piecewise
+#' polynomials are utilized to fit observed trends, with one piece covering a
+#' particular subset in the date range covered by trapping.  The points covered
+#' by one polynomial piece correspond to quantiles in the temporal range.
+#' 
 #' Each piecewise polynomial is at most a cubic polynomial such that the end 
 #' point of one piece connects with the start point of the next. Additionally, 
 #' both first- and second-order derivatives are equal;  thus, resulting splines,
-#' which may be composed of several individual polynomial pieces, appear smooth 
-#' over their entire sample range.
+#' which may be composed of several individual polynomial pieces, appear smooth
+#' over their entire sample range with respect to their local slope (first
+#' derivative condition) and their local convexity (second derivative
+#' condition).
 #' 
 #' Parameter \code{df}, or the model degrees of freedom in \code{bs}, determines
 #' the number of internal knots utilized.  The value of \code{df} corresponds to
@@ -91,26 +98,25 @@
 #' axis.
 #' 
 #' @section  Imputation:  
-#' The trap-specific imputation procedure utilizes the 
-#' final catch spline result obtained via the process described above. 
-#' Specifically, it sweeps through all temporally sorted rows of the catch 
-#' dataframe for the trap of interest, replacing all instances of 'Not fishing,'
-#' with spline-estimated fish.  All estimates loop over periods of 'Not fishing'
-#' one at a time, predicting catch for a maximum of up to 24 hours.  #' All 'Not
-#' fishing' periods estimate on hours, in tandem with the temporal unit utilized
-#' in Poisson model offsets.
+#' The trap-specific imputation procedure utilizes the final catch spline result
+#' obtained via the process described above. Specifically, it sweeps through all
+#' temporally sorted rows of the catch dataframe for the trap of interest,
+#' replacing all instances of "Not fishing," with spline-estimated fish.  All
+#' estimates loop over periods of "Not fishing" one at a time, predicting catch
+#' for a maximum of up to 24 hours.  All 'Not fishing' periods estimate on
+#' hours, in tandem with the temporal unit utilized in Poisson model offsets.
 #' 
-#' One extra line is inserted into \code{catch.df} for each unique 24-hour 'Not
-#' fishing' period larger than global variable \code{max.ok.gap}. Currently, 
-#' \code{max.ok.gap} is set at 2 hours.  Catch is not estimated for individual
-#' 'Not fishing' episodes of duration less than two hours.  In these cases, the
-#' sampleMinutes associated with these small time frames are subsumed by the
-#' valid fishing period of their most immediately preceding valid trapping
-#' instance.
+#' One extra line is inserted into \code{catch.df} for each unique 24-hour "Not 
+#' fishing" period larger than global variable \code{max.ok.gap}. Currently, 
+#' \code{max.ok.gap} is set at 2 hours in function \code{GlobalVars}.  Thus, 
+#' catch is not estimated for individual "Not fishing" episodes of duration less
+#' than two hours.  In these cases, the most immediately preceding valid fishing
+#' period subsumes the \code{sampleMinutes} associated with these small time
+#' frames.
 #' 
-#' For example, for a 56-hour period of 'Not fishing,' predictions occur for 
+#' For example, for a 56-hour period of "Not fishing," predictions occur for 
 #' each unique 24-hour period, with catch estimated proportionally for any 
-#' "leftover" preceding and antecedent times.  Assuming that a 'Not fishing' 
+#' "leftover" preceding and antecedent times.  Assuming that a "Not fishing" 
 #' period coincides with the start of a day, three resulting rows would be 
 #' inserted into \code{catch.df} -- two for the first two 24-hour periods, and a
 #' third for the leftover 8-hour period. The leftover 8-hour period would
@@ -118,23 +124,30 @@
 #' catch model for that day.  This number would then be added to the observed
 #' catch for that day, obtained over the remaining valid fishing of 16 hours. 
 #' The sum of the imputed and observed catch comprises the total catch for that
-#' day. (note that via 'exactly at the start of a day,' i leave ambiguous the
-#' fact that this technically is not midnight.)
+#' day. 
 #' 
-#' The \code{StartTime} and \code{EndTime} variables for each of the new lines
-#' inserted into \code{catch.df} are defined so that no 'Not fishing' periods 
+#' The \code{StartTime} and \code{EndTime} variables for each of the new lines 
+#' inserted into \code{catch.df} are defined so that no "Not fishing" periods 
 #' remain.  For these lines, variable \code{gamEstimated} is set to \code{TRUE}.
 #' Assignment of variable \code{batchDate} is based on \code{EndTime}, as usual.
 #' This methodology applies for all days between the time period requested via 
-#' \code{min.date} and \code{max.date}, for each unique trap in \code{catch.df}.
+#' \code{min.date} and \code{max.date} in associated passage functions, for each
+#' unique trap \code{trapPositionID} in \code{catch.df}.
 #'
-#' If \code{catch.df} contains no periods of 'Not fishing,' no imputation is
+#' If \code{catch.df} contains no periods of "Not fishing," no imputation is
 #' required.
 #' 
 #' @seealso 
+#' 
+#' @author Trent McDonald (tmcdonald@west-inc.com)
 #'
 #' @examples
-#' F.catch.model( catch.df ) # maybe later we'll make this happen.
+#' \dontrun{
+#' #   ---- Fit splines and impute for missing data for each unique
+#' #   ---- trapPositionID in data frame catch.df.
+#' fitCatch <- F.catch.model(catch.df)
+#' }
+
 F.catch.model <- function( catch.df ){
   
   # catch.df <- df2      # from est_catch_trapN.r

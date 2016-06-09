@@ -7,16 +7,15 @@
 F.plot.catch.model(df, file = NA)
 }
 \arguments{
-\item{df}{A data frame input to function \code{F.plot.catch.model} that 
-includes variables \code{trapPositionID}, \code{TrapPosition},
-\code{batchDate}, \code{imputed.catch}, \code{modAssignedCatch}, and 
-\code{imputedCatch}.  See Details.}
+\item{df}{A data frame that includes variables \code{trapPositionID},
+\code{TrapPosition}, \code{batchDate}, \code{imputed.catch},
+\code{modAssignedCatch}, and \code{imputedCatch}.}
 
 \item{file}{The name of the file prefix under which output is to be saved. 
 Set to \code{NA} to plot to the Plot window.}
 }
 \value{
-A \code{png} graphical display of Daily Raw (un-inflated) catch, per
+A \code{png} graphical display of Daily Raw (un-inflated) catch, per 
   trap, by day.
 }
 \description{
@@ -24,27 +23,27 @@ Plot smoothed, possibly imputed, catch data over days per trap.
 }
 \details{
 The input data frame usually has other catch variables, although 
-  these currently serve no purpose.  Variable \code{trapPositionID} contains 
+  these currently serve no graphical purpose.  Variable \code{trapPositionID} contains 
   the numeric code of a trap, while variable \code{TrapPosition} contains in 
   text description.  Variable \code{imputed.catch} holds the proportion of 
-  time, for that day, for which imputed occurred;  as such, it's values are 
+  time, for that day, for which imputed occurred;  as such, its values are 
   between zero and one, inclusive.  Variable \code{imputedCatch} contains the
   total number of imputed fish for the day recorded via \code{batchDate}. 
   Variable \code{modAssignedCatch} contains the total number of caught fish 
   for that \code{batchDate} and incoporates any extra fish arising from 
-  half-cone operations.  The value of \code{inputedCatch} is necessarily 
+  half-cone operations.  The value of \code{imputedCatch} is necessarily 
   equal to or less than the value of \code{modAssignedCatch}.
   
   The imputation curve displayed in the graph is obtained via function 
   \code{supersmu}, and serves as a reasonable approximation to the actual 
-  spline used in the imputation procedure contained in function
+  spline used in the imputation procedure contained in function 
   \code{F.catch.model}.
   
   Jason note 4/26/2016 -- I changed this to graph half-cone adjusted catch. 
   This may not be what Doug wants.
 }
 \examples{
-Create a data frame.
+#   ---- Create a data frame.
 batchDates <- as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="\%F"),tz="America/Los_Angeles")
 df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
                  TrapPosition=c(rep('Left Bank',80),rep('Right Bank',80)),
@@ -63,8 +62,11 @@ attr(df,"species.name") <- "Chinook Salmon"
 attr(df,"run.name") <- "Fall"
 attr(df,"life.stage") <- "Fry"
 
-# Plot results to plot window.
+#   ---- Plot results to plot window.
 F.plot.catch.model( df, file=NA )
+}
+\author{
+Trent McDonald (tmcdonald@west-inc.com)
 }
 \seealso{
 \code{F.catch.model}

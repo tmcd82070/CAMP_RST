@@ -1,49 +1,51 @@
 #' @export
 #' 
-#' @title F.efficiency.model - Compute efficiencies
-#'
-#' @description Compute and estimate efficiency for all traps and days that are missing in 
-#' the input data set;  i.e., "impute" a value for efficiency when it is
-#' missing.
-#' 
-#' @param obs.eff.df A data frame with at least variables \code{batchDate} and
-#'   \code{efficiency}, where \code{efficiency} is \code{NA} for all days
+#' @title F.efficiency.model
+#'   
+#' @description Compute and estimate efficiency for all missing combinations of
+#'   traps and days;  i.e., "impute" a value for efficiency when missing.
+#'   
+#' @param obs.eff.df A data frame with at least variables \code{batchDate} and 
+#'   \code{efficiency}, where \code{efficiency} is \code{NA} for all days 
 #'   requiring an estimate.
 #' @param plot A logical indicating if resulting efficiency should be plotted.
 #' @param method A scalar specifying the type of extrapolation to do. 
-#'   \code{method = 1} takes average of entire season. \code{method = 2} uses
-#'   earliest observed efficiency between in intervals between efficiency trials
-#'   (so called constant model). (jason=what?)  \code{method = 3} is a b-spline
-#'   model with up to \code{max.df.spline} degrees of freedom.
+#'   \code{method = 1} takes average of entire season. \code{method = 2} uses 
+#'   earliest observed efficiency for each unique interval between distinct
+#'   efficiency trials; i.e., a so called "step-function" constant model. 
+#'   \code{method = 3} is a B-spline model with up to \code{max.df.spline}
+#'   degrees of freedom.
 #' @param max.df.spline The maximum degrees of freedom allowed for splines.
 #' @param plot.file The name of the file prefix under which output is to be 
 #'   saved.  Set to NA to plot to the Plot window.
 #'   
-#' @return A data frame with all observed and imputed \code{efficiency} values,
-#'   where variable \code{gam.estimated} identifies imputed values.
-#'
-#' @details 
+#' @return A data frame with all observed and imputed \code{efficiency} values, 
+#'   where variable \code{gam.estimated} identifies days with imputed values.
 #' 
-#' @section Efficiency Methodologies:  
-#' Selection of \code{method} allows for
-#'   efficiency estimation to vary, based on need.  
+#' 
+#' 
+#' @section Efficiency Methodologies:
+#'
+#' Selection of \code{method} allows for efficiency estimation to vary, based on
+#' need.
 #'   
 #'   \itemize{ 
-#'   \item{\code{method=1} : A "Seasonal-mean model".  This means that
-#'   a ratio-of-means bias-corrected global efficiency is calculated, for each 
-#'   trap, where the efficiency is estimated via \eqn{\code{nCaught} + 
-#'   1/\code{nReleased} + 1}.  Values for \code{nCaught} and \code{nReleased} 
-#'   originate via function \code{F.get.releases} and the querying of an 
-#'   underlying Access database.  The resulting ratio-of-means efficiency is 
-#'   then applied to all trapping days, regardless if data were missing or not.}
+#'   \item{\code{method=1} : A "Seasonal-mean model".  This means that a
+#'   ratio-of-means bias-corrected global efficiency is calculated, for each 
+#'   trap, where the efficiency is estimated via \deqn{\frac{\text{nCaught}
+#'   + 1}{\text{nReleased} + 1}}{(nCaught + 1) / (nReleased + 1).}  Values
+#'   for variables \code{nCaught} and \code{nReleased} originate via function
+#'   \code{F.get.releases} and the querying of an underlying Access database. 
+#'   The resulting ratio-of-means efficiency is then applied to all trapping
+#'   days, regardless if data were missing or not.}
 #'   
 #'   \item{\code{method=2} : A "Constant model."  This means that this model
 #'   utilizes a step function to estimate efficiency, where here, steps may
 #'   increase or decrease over time.  Each interval of time for which efficiecy
 #'   needs to be estimated utilizes the earliest observed efficiency between
 #'   efficiency trials.  Note that this method has not been fully programmed to
-#'   be compatible with boostrapping in function \code{bootstrap_passage}.  This
-#'   option should not be used until \code{bootstrap_passage} can handle its
+#'   be compatible with boostrapping in function \code{F.bootstrap.passage}.  This
+#'   option should not be used until \code{F.bootstrap.passage} can handle its
 #'   results.}
 #'   
 #'   \item{\code{method=3} : A "B-spline model."  This efficiency estimation 
@@ -57,27 +59,27 @@
 #'   slopes) and second derivatives (local convexity) at these connecting time
 #'   points are equal.  
 #'   
-#'   Estimation requires at least one trapping instance to occur within the
-#'   earliest and latest date with an efficiency trial.  All three can occur on
-#'   the same one day.  Generalized additive models, or GAMs, first fit the observed
-#'   efficiency-trial data as \eqn{\code{nCaught} / \code{nReleased}} outcome
-#'   proportions (no +1 here?) against a null model with a binomial link.  This
-#'   leads to a constant, or intercept-only, model, where the intercept is the weighted
-#'   avearge of caught fish over all efficiency trials.  The use of an intercept-only
-#'   model means this is a degenerative intercept-only logistic model.  
+#'   Estimation requires at least one trapping instance to occur within the 
+#'   earliest and latest date with an efficiency trial.  All three can occur on 
+#'   the same one day.  Generalized additive models, or GAMs, first fit the
+#'   observed efficiency-trial data as
+#'   \deqn{\frac{\text{nCaught}}{\text{nReleased}}}{nCaught / nReleased} outcome
+#'   proportions against a null model with a binomial link.  This leads to a
+#'   constant, or intercept-only model, where the intercept is the weighted 
+#'   avearge of caught fish over all efficiency trials.
 #'   
-#'   Assuming at least ten efficiency trials (this is a lot--and some may have 
-#'   more fish released than others? and would we want to use bias-corrected?), 
-#'   higher-order polynomial models were considered.  Akaike Information 
-#'   Criterion (AIC), rounded to four decimal places, determined winning models.
-#'   Models with lower AICs trumped all others, with the winning model having to
-#'   be at least two AIC points less than its nearest competitor.
+#'   Assuming at least ten efficiency trials, higher-order polynomial models are
+#'   considered.  Akaike Information Criterion (AIC), rounded to four decimal
+#'   places, determines winning models. Models with lower AICs trump all others,
+#'   with the winning model having to be at least two AIC points less than its
+#'   nearest competitor.  Function \code{bs} identifies the B-spline basis to
+#'   use in higher-order models.  
 #'   
-#'   In generalized additive models, consideration of higher-order polynomials
-#'   often starts with cubic polynomials determined in a piecewise fashion,
-#'   determined at the time values at which observed efficiencies were recorded.
-#'   Currently, however, no polynomials of degree greater than three are
-#'   considered in efficiency models;  thus, models could either be 
+#'   In generalized additive models, consideration of higher-order polynomials 
+#'   often starts with cubic polynomials partitioned in a temporal piecewise
+#'   fashion, chopped at the time values at which observed efficiencies were
+#'   recorded. Currently, however, no polynomials of degree greater than three
+#'   are considered in efficiency models;  thus, models could either be 
 #'   intercept-only, or cubic.
 #'   
 #'   The \eqn{\beta}s from the final selected GAM are saved for use in
@@ -87,14 +89,21 @@
 #'   observed data.  All dates outside the efficiency trial season use an
 #'   estimated mean spline calculated over all dates.}
 #'   
-#'   \item{\code{method=4} : An "Enhanced Efficiency Model"  This means this is a
-#'   fancy schmancy model!}
+#'   \item{\code{method=4} : An "Enhanced Efficiency model."  To be developed
+#'   at a later date.}
 #'   
 #'   }
 #'   
-#' @examples 
+#' @seealso \code{F.get.releases}, \code{F.bootstrap.passage}
 #' 
-#' # All three model types?  What do we want to show? 
+#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' 
+#' @examples 
+#' \dontrun{
+#' #   ---- Fit an efficiency model for each unique trapPositionID 
+#' #   ---- in data frame obs.eff.df.  
+#' F.efficiency.model( obs.eff.df, plot=T, method=1, max.df.spline=4, plot.file=NA)
+#' }
 F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, plot.file=NA ){
 
   # obs.eff.df <- eff

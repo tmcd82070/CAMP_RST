@@ -1,44 +1,44 @@
 #' @export
 #' 
-#' @title F.plot.catch.model 
-#' 
-#' @description 
-#' Plot smoothed, possibly imputed, catch data over days per trap.  
-#' 
-#' @param df A data frame input to function \code{F.plot.catch.model} that 
-#'   includes variables \code{trapPositionID}, \code{TrapPosition},
-#'   \code{batchDate}, \code{imputed.catch}, \code{modAssignedCatch}, and 
-#'   \code{imputedCatch}.  See Details.
+#' @title F.plot.catch.model
+#'   
+#' @description Plot smoothed, possibly imputed, catch data over days per trap.
+#'   
+#' @param df A data frame that includes variables \code{trapPositionID},
+#'   \code{TrapPosition}, \code{batchDate}, \code{imputed.catch},
+#'   \code{modAssignedCatch}, and \code{imputedCatch}.
 #' @param file The name of the file prefix under which output is to be saved. 
 #'   Set to \code{NA} to plot to the Plot window.
 #'   
-#' @return A \code{png} graphical display of Daily Raw (un-inflated) catch, per
+#' @return A \code{png} graphical display of Daily Raw (un-inflated) catch, per 
 #'   trap, by day.
 #'   
 #' @details The input data frame usually has other catch variables, although 
-#'   these currently serve no purpose.  Variable \code{trapPositionID} contains 
+#'   these currently serve no graphical purpose.  Variable \code{trapPositionID} contains 
 #'   the numeric code of a trap, while variable \code{TrapPosition} contains in 
 #'   text description.  Variable \code{imputed.catch} holds the proportion of 
-#'   time, for that day, for which imputed occurred;  as such, it's values are 
+#'   time, for that day, for which imputed occurred;  as such, its values are 
 #'   between zero and one, inclusive.  Variable \code{imputedCatch} contains the
 #'   total number of imputed fish for the day recorded via \code{batchDate}. 
 #'   Variable \code{modAssignedCatch} contains the total number of caught fish 
 #'   for that \code{batchDate} and incoporates any extra fish arising from 
-#'   half-cone operations.  The value of \code{inputedCatch} is necessarily 
+#'   half-cone operations.  The value of \code{imputedCatch} is necessarily 
 #'   equal to or less than the value of \code{modAssignedCatch}.
 #'   
 #'   The imputation curve displayed in the graph is obtained via function 
 #'   \code{supersmu}, and serves as a reasonable approximation to the actual 
-#'   spline used in the imputation procedure contained in function
+#'   spline used in the imputation procedure contained in function 
 #'   \code{F.catch.model}.
 #'   
 #'   Jason note 4/26/2016 -- I changed this to graph half-cone adjusted catch. 
 #'   This may not be what Doug wants.
 #'   
 #' @seealso \code{F.catch.model}
+#' 
+#' @author Trent McDonald (tmcdonald@west-inc.com)
 #'
 #' @examples 
-#' Create a data frame.
+#' #   ---- Create a data frame.
 #' batchDates <- as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="%F"),tz="America/Los_Angeles")
 #' df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
 #'                  TrapPosition=c(rep('Left Bank',80),rep('Right Bank',80)),
@@ -57,7 +57,7 @@
 #' attr(df,"run.name") <- "Fall"
 #' attr(df,"life.stage") <- "Fry"
 #' 
-#' # Plot results to plot window.
+#' #   ---- Plot results to plot window.
 #' F.plot.catch.model( df, file=NA )
 F.plot.catch.model <- function( df, file=NA ){
 #
@@ -80,18 +80,8 @@ F.plot.catch.model <- function( df, file=NA ){
     tryCatch({png(file=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})  
   }
 
-  # impute the imputed number of fish into unassd catch days.  awkward, b/c imputed catch
-  # based on plus-counted fish, but unassd based on measured fish (non-plus-counted).
-  #df$unassdcatch <- ifelse(df$imputed.catch > 0,df$catch,df$unassdcatch)
-
-  # jason add 4/20/2015 -- plotting only measured values means that many days in df have NA.
-  # we need to pull those out before we plot--sometimes, a trap could have caught many fish,
-  # none of which were measured.  so, these traps end up not having anything to plot, even
-  # though the code thinks data for that plot is there.  this causes errors.
-  #df <- df[ df$imputed.catch != 0 | !is.na(df$unassdcatch) ,]
-
   imputed <- df$imputed.catch > 0 & !is.na(df$imputed.catch)
-  rng.y <- range(df$totalEstimatedCatch[ df$totalEstimatedCatch < Inf], na.rm=T)
+  rng.y <- range(df$modAssignedCatch[ df$modAssignedCatch < Inf], na.rm=T)
 
   #   ---- Set up the plot space.
   plot( range(df$batchDate), rng.y, type="n", xlab="Date", ylab="Daily Raw (un-inflated) catch", xaxt="n", yaxt="n" )
@@ -129,11 +119,11 @@ F.plot.catch.model <- function( df, file=NA ){
     
     #   ---- Insert the imputed data points.
     ind <- df$trapPositionID == traps[i] & imputed
-    points( df$batchDate[ ind ], df$imputedCatch[ ind ], pch=my.pch[i]-15, col=my.colors[i], cex=1 ) 
+    points( df$batchDate[ind], df$imputedCatch[ind], pch=my.pch[i]-15, col=my.colors[i], cex=1 ) 
     
     #   ---- Insert the observed data points.
     ind <- df$trapPositionID == traps[i] & !imputed
-    points( df$batchDate[ ind ], df$modAssignedCatch[ ind ], pch=my.pch[i], col=my.colors[i] )
+    points( df$batchDate[ind], df$modAssignedCatch[ind], pch=my.pch[i], col=my.colors[i] )
   }
 
   #   ---- Set-up trapPosition names in lieu of their IDs. 

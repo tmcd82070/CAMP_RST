@@ -1,26 +1,26 @@
 #' @export
 #' 
-#' @title F.bootstrap.passage - Compute bootstrap confidence intervals for passage
-#' 
-#' @description Bootstrap or Monte Carlo simulate data sufficient to compute confidence intervals
-#'  for passage.
-#' 
-#' @param grand.df A data frame containing both daily estimated passage and
+#' @title F.bootstrap.passage
+#'   
+#' @description Bootstrap or Monte-Carlo simulate data sufficient to compute
+#'   confidence intervals for passage.
+#'   
+#' @param grand.df A data frame containing both daily estimated passage and 
 #'   efficiency, for each trap.
 #' @param catch.fits A list of Poisson fitted objects, possibly with basis 
 #'   spline covariates, used to imput missing catches, for each trap.
 #' @param catch.Xmiss A list containing a spline basis matrix of imputed days 
 #'   where catch is missing for each trap.
-#' @param catch.gapLens A list containing a numeric vector of hours of 'Not 
-#'   fishing' for 'Not fishing' days, necessarily with all entries less than 24,
+#' @param catch.gapLens A list containing a numeric vector of hours of "Not 
+#'   fishing" for "Not fishing" days, necessarily with all entries less than 24,
 #'   for each trap.
-#' @param catch.bDates.miss A list containing a POSIX vector of 'Not fishing' 
+#' @param catch.bDates.miss A list containing a POSIX vector of "Not fishing" 
 #'   \code{batchDate}s for missing catches, for each trap.  Necessary because 
 #'   one \code{batchDate} may have two (or more) gaps.
 #' @param eff.fits A list of binomial logistic regression fitted objects used to
 #'   compute efficiency.  One per trap.
 #' @param eff.X NEED TO CHECK. A list containing a numeric vector of days 
-#'   lacking an efficiency trial, and for which efficiency must be estimated, 
+#'   lacking an efficiency trial, and for which efficiency must be estimated,
 #'   for each trap.
 #' @param eff.ind.inside NEED TO CHECK. A list containing the first and last day
 #'   of a sequence of efficiency trials, for each trap.
@@ -29,10 +29,10 @@
 #'   estimated catch is to be summarized.  Can be one of \code{day}, 
 #'   \code{week}, \code{month}, \code{year}.
 #' @param R An integer specifying the number of Monte Carlo iterations to do.
-#' @param ci A logical indicating if 95% bootstrapped confidence intervals 
+#' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
 #'   
-#' @return A data frame containing 95% bias-adjusted confidence intervals for 
+#' @return A data frame containing 95\% bias-adjusted confidence intervals for 
 #'   all unique temporal units summarized via specification of \code{sum.by}.
 #'    
 #' @details In order to bootstrap the estimated passage for a particular trap, 
@@ -126,6 +126,8 @@
 #'   the beta vector from the catch model is non-varying?)
 #'   
 #' @seealso \code{F.est.catch}, \code{F.est.eff}, \code{summarize.passage}
+#' 
+#' @author Trent McDonald (tmcdonald@west-inc.com)
 #' 
 #' @examples 
 #' 

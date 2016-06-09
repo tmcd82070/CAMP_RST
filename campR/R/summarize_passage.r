@@ -1,11 +1,14 @@
 #' @export
 #' 
-#' @title Average passage over all traps at a site, then sum by summarize.by.
+#' @title F.summarize.passage
+#' 
+#' @description Average passage over all traps at a site, then sum by the 
+#' temporal unit specified by variable \code{summarize.by}.
 #'   
 #' @param df The data frame containing days which are to be summarized via the 
 #'   temporal unit specified by \code{summarize.by}.
 #' @param summarize.by A string time unit into which summary occurs, i.e., one 
-#'   of "\code{day}," "\code{week}," "\code{month}," "\code{year}."
+#'   of "\code{day}", "\code{week}", "\code{month}", or "\code{year}".
 #'   
 #' @return A data frame containing summarized passage, per the time unit 
 #'   specified via \code{summarize.by}.
@@ -14,13 +17,14 @@
 #'   day-fished POSIX column \code{batchDate}, formatted via the ISO 8601 date
 #'   format (\code{\%F}), and a column \code{imputed.catch}, containing the
 #'   percentage of the total count of the Total Estimated Catch obtained via
-#'   imputation.  Additionally, the dataframe must contain estimated passage.
+#'   imputation.  Additionally, the dataframe must contain estimated passage 
+#'   via variable \code{passage}.
 #'   
 #'   Function \code{F.summarize.passage} first averages the passage on a per-day
-#'   basis over all traps running on that day.  It then summarizes via the 
-#'   temporal units specified by \code{summarize.by}. See Examples.
+#'   basis over all traps running on that day.  It then summarizes over those
+#'   days via the temporal units specified by \code{summarize.by}. See Examples.
 #'   
-#'   By default, passage estimation involving lifestage always takes place over 
+#'   By default, passage estimation involving life stage always takes place over 
 #'   a year.
 #'   
 #'   The Total Estimated Catch is the sum of Assigned, Unassigned, Half-Cone 
@@ -28,7 +32,7 @@
 #'   estimation of passage, where the denominator is the estimated efficiency.
 #'   
 #' @examples
-#' #Create a data set of trapping.
+#' #   ---- Create a data set of trapping.
 #' beg <- strptime("2014-01-24",format="%F")
 #' df <- data.frame(trapVisitID=c(seq(1234,length.out=10)),
 #'                  trapPositionID=c(rep(12345,10),rep(98765,10)),
@@ -37,11 +41,14 @@
 #'                  passage=c(11,11,14,16,12,10,23,18,17,18,3,5,2,7,5,4,1,3,1,1))
 #' df <- df[order(df$batchDate,df$trapPositionID),]
 #' 
-#' # Summarize by different time frames.
+#' #   ---- Summarize by different time frames.
 #' df.day <- F.summarize.passage( df, "day" )
-#' df.week <- F.summarize.passage( df, "week" )
 #' df.month <- F.summarize.passage( df, "month" )
 #' df.year <- F.summarize.passage( df, "year" )
+ 
+#   ---- Need Julian weeks to compute this particular example.  
+# df.week <- F.summarize.passage( df, "week" )
+
 F.summarize.passage <- function( df, summarize.by ){
   
   # df <- grand.df

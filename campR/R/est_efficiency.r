@@ -1,64 +1,75 @@
 #' @export
 #' 
-#' @title Estimate trap efficiency for every sample period, per trap.
+#' @title F.est.efficiency
 #'   
-#' @param release.df A data frame produced by \code{F.get.release.data}.  Contains
-#'   information on releases and recaptures.  This data frame has one line per 
-#'   release trial per trap, identified via variable \code{TrapPositionID}.
+#' @description Estimate trap efficiency for every sample period, per trap.
+#'   
+#' @param release.df A data frame produced by \code{F.get.release.data}. 
+#'   Contains information on releases and recaptures.  This data frame has one
+#'   line per release trial per trap, with trap identified via variable
+#'   \code{TrapPositionID}.
+#'   
 #' @param batchDate A POSIX-formatted vector of dates.
-#' @param method By default always equal to 3.  WHAT DOES IT DOOOOO  it was a default of 1.
-#' @param df.spline By default always equal to 3.  WHAT DOES IT DOOOOO  it was a default of 4..
-#' @param plot A logical indicating if efficiencies are to be plotted over time, per 
-#'   trap.
+#'   
+#' @param method The method by which efficiency is estimated.  By default always
+#'   equal to 3. See Details.
+#'   
+#' @param df.spline The default degrees of freedom to use in the estimation of
+#'   splines. By default always equal to 3. Only works when \code{method=3}.
+#'   
+#' @param plot A logical indicating if efficiencies are to be plotted over time,
+#'   per trap.
+#'   
 #' @param plot.file The name to which a graph of efficiency is to be output, if 
 #'   \code{plot=TRUE}.
 #'   
-#' @return A data frame containing interval and capture efficiency and 
-#'   \code{$gam.estimated}.  \code{$gam.estimated} is \code{Yes} if efficiency
-#'   for that interval was estimated by the GAM model, rather than being
-#'   empirical.  
+#' @return A data frame containing fishing intervals and associated capture
+#'   efficiency, along with variable \code{gam.estimated}.  Variable
+#'   \code{gam.estimated} is \code{Yes} if efficiency for that interval was
+#'   estimated by the GAM model (\code{method=3}), rather than being empirical
+#'   (\code{method=1}).
 #'   
-#' @details Run season is a vector length 2 of dates for beginning and ending of
-#'   run, stored as an attribute of the \code{release.df} data frame.
-#'   
-#'   Function \code{F.est.efficiency} first checks to ensure that at least one 
-#'   fish, out of what could be many efficiency trials, was caught.  The lack of
-#'   any caught fish prevents any estimation of total passage, given the role 
-#'   that efficiency plays as a denominator quantity.
+#' @details Function \code{F.est.efficiency} first checks to ensure that at 
+#'   least one fish, out of what could be many efficiency trials, was caught. 
+#'   The lack of any caught fish prevents any estimation of total passage, given
+#'   the role that efficiency plays as a denominator quantity.
 #'   
 #'   Generally, fish released as part of an efficiency trial arrive in traps 
 #'   over the course of several days.  Function \code{F.est.efficiency} 
 #'   condenses what may be a large temporal spread by calculating the mean 
 #'   recapture time of all caught fish.  In the case that a release trial 
 #'   resulted in no caught fish, the recorded \code{releaseTime}, plus the mean 
-#'   of the recorded \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} 
-#'   ensures the subsequent assigning of a \code{batchDate}.
+#'   of the recorded \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter},
+#'   ensures the subsequent assigning of a \code{batchDate}.  Note that 
+#'   variables \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} are 
+#'   used as helper variables to derive a batch date when the \code{meanEndTime}
+#'   variable is \code{NA}.
 #'   
 #'   Function \code{F.assign.batch.date} collapses mean recapture time, which is
 #'   mesured to the nearest minute, to \code{batchDate}, a simple calendar date.
-#'   These dates are then collapsed per trap to create integer counts of 
-#'   \code{nReleased} and \code{nCaught}. From these, the efficiency is then 
-#'   calculated as \eqn{(\code{nCaught} + 1) / (\code{nReleased} + 1)}.  (are 
-#'   the +1s here for statistical reasons, or to guard against zeros?  did we 
-#'   not check for zeros?)  Note that variables \code{HrsToFirstVisitAfter} and 
-#'   \code{HrsToLastVisitAfter} are used as helper variables to derive a batch 
-#'   date when the \code{meanEndTime} variable is \code{NA}.
 #'   
 #'   Fishing instances during which traps utilized half-cones are recorded via 
 #'   variable \code{HalfCone}.  During these instances, the number of captured 
-#'   fish, variable \code{Recaps}, has been multiplied by 2.  The expansion by
-#'   two happens on the raw catch, and not the mean recapture.  In this way, the
-#'   number recorded in variable \code{Recaps} may not be twice the number 
-#'   recorded in variable \code{oldRecaps}.
+#'   fish, variable \code{Recaps}, is multiplied by 2, where the value 2 is
+#'   specified via use of the \code{halfConeMulti} variable in function
+#'   \code{GlobalVars}.  The expansion by two happens on the raw catch, and not
+#'   the mean recapture.  In this way, the number recorded in variable
+#'   \code{Recaps} may not be twice the number recorded in variable
+#'   \code{oldRecaps}.
+#'   
+#'   Note that the run season sample period is a vector of length 2 of dates, 
+#'   housing the beginning and ending of the run.  These are stored as an 
+#'   attribute of the \code{release.df} data frame.
 #' 
-#' @seealso \code{F.assign.batch.date} \code{}
+#' @seealso \code{F.get.release.data}, \code{F.assign.batch.date}
+#'   
+#' @author Trent McDonald (tmcdonald@west-inc.com)   
 #'   
 #' @examples
-#' 
-#' # Maybe we call in a dataframe here? 
-#' 
-#' 
-#' Recaps
+#' \dontrun{
+#' #   ---- Estimate the efficiency.  
+#' theEff <- F.est.efficiency(release.df,batchDate,method=3,df.spline=3,plot=TRUE,plots.file=NA)
+#' }
 
 F.est.efficiency <- function( release.df, batchDate, method=3, df.spline=3, plot=TRUE, plot.file=NA ){
   

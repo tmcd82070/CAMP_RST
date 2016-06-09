@@ -2,41 +2,49 @@
 #' 
 #' @title F.plot.eff.model 
 #' 
-#' @description 
-#' Plot trap efficiency values over days per trap.
+#' @description Plot per-trap efficiency values over days.
 #' 
-#' @param df A data frame input to function \code{F.efficiency.model} that 
-#'   includes variables \code{TrapPositionID}, \code{batchDate},
-#'   \code{nReleased}, \code{nCaught}, \code{efficiency}, \code{imputed.eff},
-#'   and \code{trapPositionID}.  Variable \code{TrapPositionID} and 
-#'   \code{trapPositionID} appear to be the same, although both are called in 
-#'   subsequent points in the code.
+#' @param df A data frame that includes variables \code{TrapPositionID},
+#'   \code{batchDate}, \code{nReleased}, \code{nCaught}, \code{efficiency},
+#'   \code{imputed.eff}, and \code{trapPositionID}.  Currently variables
+#'   \code{TrapPositionID} and \code{trapPositionID} appear to be the same,
+#'   although both are called in subsequent points in the code.
 #' @param file The name of the file prefix under which output is to be saved. 
 #'   Set to \code{NA} to plot to the Plot window.
 #'   
 #' @return Output includes a \code{png} graphical display of estimated 
 #'   efficiencies, per trap, by day, as well as a \code{csv} of the data points 
 #'   utilized in making the graph.  The \code{csv} includes both the estimated 
-#'   values from the efficiency model, as well as the observed counts of fish 
-#'   deriving from efficiency trials.
+#'   values from the specified efficiency model fit by function
+#'   \code{F.efficiency.model}, as well as the observed counts of fish deriving
+#'   from efficiency trials.
+#'   
+#' @seealso \code{F.efficiency.model}
+#' 
+#' @author Trent McDonald (tmcdonald@west-inc.com)
 #'   
 #' @examples 
-#' # Create a data frame.
-#' df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
-#'                  batchDate=as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="%F"),tz="America/Los_Angeles"),
-#'                  nReleased=c(rep(NA,40),1050,rep(NA,15),844,rep(NA,23),rep(NA,40),1050,rep(NA,15),844,rep(NA,23)),
-#'                  nCaught=c(rep(NA,40),52,rep(NA,15),10,rep(NA,23),rep(NA,40),71,rep(NA,15),15,rep(NA,23)),
-#'                  efficiency=c(rep(0.03273495,80),rep(0.04540655,80)),
-#'                  imputed.eff=c(rep("Yes",160)))
-#' subsites <- data.frame(subSiteName=c('Left Bank','Right Bank'),subSiteID=c(12345,98765))
-#' subsites$subSiteName <- as.character(droplevels(subsites$subSiteName))
-#' attr(df,"subsites") <- subsites
-#' attr(df,"site.name") <- as.factor(c("A River in the Central Valley"))
-#' 
-#' # Plot results to plot window.
+#' \dontrun{
+#' #   ---- Plot efficiency results housed in data frame 
+#' #   ---- df to the plot window.
 #' F.plot.eff.model( df, file=NA )
-#' 
-#' 
+#' }
+
+#   ---- Currently, the code for this functions queries an Access db to get 
+#   ---- site names;  thus, example code won't currently work.  Save for 
+#   ---- possibly future incorporation.  
+# # Create a data frame.
+# df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
+#                  batchDate=as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="%F"),tz="America/Los_Angeles"),
+#                  nReleased=c(rep(NA,40),1050,rep(NA,15),844,rep(NA,23),rep(NA,40),1050,rep(NA,15),844,rep(NA,23)),
+#                  nCaught=c(rep(NA,40),52,rep(NA,15),10,rep(NA,23),rep(NA,40),71,rep(NA,15),15,rep(NA,23)),
+#                  efficiency=c(rep(0.03273495,80),rep(0.04540655,80)),
+#                  imputed.eff=c(rep("Yes",160)))
+# subsites <- data.frame(subSiteName=c('Left Bank','Right Bank'),subSiteID=c(12345,98765))
+# subsites$subSiteName <- as.character(droplevels(subsites$subSiteName))
+# attr(df,"subsites") <- subsites
+# attr(df,"site.name") <- as.factor(c("A River in the Central Valley"))
+
 F.plot.eff.model <- function( df, file ){
   #
   #   df <- ans    df <- example

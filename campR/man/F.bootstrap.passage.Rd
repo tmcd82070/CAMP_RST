@@ -2,14 +2,14 @@
 % Please edit documentation in R/bootstrap_passage.r
 \name{F.bootstrap.passage}
 \alias{F.bootstrap.passage}
-\title{F.bootstrap.passage - Compute bootstrap confidence intervals for passage}
+\title{F.bootstrap.passage}
 \usage{
 F.bootstrap.passage(grand.df, catch.fits, catch.Xmiss, catch.gapLens,
   catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R,
   ci = T)
 }
 \arguments{
-\item{grand.df}{A data frame containing both daily estimated passage and
+\item{grand.df}{A data frame containing both daily estimated passage and 
 efficiency, for each trap.}
 
 \item{catch.fits}{A list of Poisson fitted objects, possibly with basis 
@@ -18,11 +18,11 @@ spline covariates, used to imput missing catches, for each trap.}
 \item{catch.Xmiss}{A list containing a spline basis matrix of imputed days 
 where catch is missing for each trap.}
 
-\item{catch.gapLens}{A list containing a numeric vector of hours of 'Not 
-fishing' for 'Not fishing' days, necessarily with all entries less than 24,
+\item{catch.gapLens}{A list containing a numeric vector of hours of "Not 
+fishing" for "Not fishing" days, necessarily with all entries less than 24,
 for each trap.}
 
-\item{catch.bDates.miss}{A list containing a POSIX vector of 'Not fishing' 
+\item{catch.bDates.miss}{A list containing a POSIX vector of "Not fishing" 
 \code{batchDate}s for missing catches, for each trap.  Necessary because 
 one \code{batchDate} may have two (or more) gaps.}
 
@@ -30,7 +30,7 @@ one \code{batchDate} may have two (or more) gaps.}
 compute efficiency.  One per trap.}
 
 \item{eff.X}{NEED TO CHECK. A list containing a numeric vector of days 
-lacking an efficiency trial, and for which efficiency must be estimated, 
+lacking an efficiency trial, and for which efficiency must be estimated,
 for each trap.}
 
 \item{eff.ind.inside}{NEED TO CHECK. A list containing the first and last day
@@ -44,16 +44,16 @@ estimated catch is to be summarized.  Can be one of \code{day},
 
 \item{R}{An integer specifying the number of Monte Carlo iterations to do.}
 
-\item{ci}{A logical indicating if 95% bootstrapped confidence intervals 
+\item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 }
 \value{
-A data frame containing 95% bias-adjusted confidence intervals for 
+A data frame containing 95\% bias-adjusted confidence intervals for 
   all unique temporal units summarized via specification of \code{sum.by}.
 }
 \description{
-Bootstrap or Monte Carlo simulate data sufficient to compute confidence intervals
- for passage.
+Bootstrap or Monte-Carlo simulate data sufficient to compute
+  confidence intervals for passage.
 }
 \details{
 In order to bootstrap the estimated passage for a particular trap, 
@@ -151,6 +151,9 @@ Catch fit models are utilized to generate random
 }
 \examples{
 
+}
+\author{
+Trent McDonald (tmcdonald@west-inc.com)
 }
 \seealso{
 \code{F.est.catch}, \code{F.est.eff}, \code{summarize.passage}
