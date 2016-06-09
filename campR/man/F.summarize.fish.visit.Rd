@@ -7,31 +7,37 @@
 F.summarize.fish.visit(catch, variable)
 }
 \arguments{
-\item{catch}{A data frame containing one line per fish or fish group with 
-identical lengths.  This data frame results from \code{F.get.catch.data}.}
+\item{catch}{A data frame containing one record per fish or fish group, where
+each record or fish group contains identical fork lengths.  This data frame
+results from \code{F.get.catch.data}.}
 
-\item{The}{type of fish for which summary is required.}
+\item{variable}{The type of fish for which summary is required.}
 }
 \value{
-A data frame with one line per visit, with catch summarized. Summary
-  statistics include N, mean, and standard deviation.
+A data frame with one line per visit, with catch summarized. Summary 
+  statistics for each fish record or group of fish include \eqn{N}, mean fork
+  length, and standard deviation of fork length.
 }
 \description{
 Summarize fish count and fork lengths over visits.
 }
 \details{
-Results from the catch-query sequence summarize the number of fish 
-  per \code{trapVisitID}, \code{lifeStage}, \code{FinalRun}, and 
-  \code{forkLength};  these need to be summarized, depending on the type of 
-  fish.
+Results from the catch-query series (see \code{F.sqlFile}) summarize
+  the number of fish per \code{trapVisitID}, \code{lifeStage},
+  \code{FinalRun}, and \code{forkLength}.  Following the initial queries,
+  these need to be summarized, depending on the type of fish, for further
+  processing.  Types of fish summarized by \code{F.summarize.fish.visit}
+  include counts under variables \code{unassigned}, \code{inflated},
+  \code{assigned}, \code{halfConeAssignedCatch},
+  \code{halfConeUnassignedCatch}, \code{assignedCatch},
+  \code{unassignedCatch}, \code{modAssignedCatch}, \code{modUnassignedCatch}.
   
-  Assigned fish are summarized via an index comprised of variables 
-  \code{trapVisitID}, \code{FinalRun}, and \code{Unassd}.  Note that here, 
-  assigned fish are assumed to have only their run assigned, and not 
-  necessarily their life stage.  Assigned fish are separate from unassigned
-  fish, meaning they were randomly selected, and thus form the basis of
-  sampling proportions of run and life stage utilized via the plus-count
-  algorithm.
+  An index comprised of variables \code{trapVisitID}, \code{FinalRun}, and 
+  \code{Unassd} summarizes assigned fish.  Note that here, assigned fish are 
+  assumed to have only their run assigned, and not necessarily their life 
+  stage.  Assigned fish are separate from unassigned fish, meaning they were 
+  randomly selected, and thus form the basis of sampling proportions of run 
+  and life stage utilized via the plus-count algorithm.
   
   Unassigned fish are summarized via an index comprised of variables 
   \code{trapVisitID}, \code{FinalRun}, \code{lifeStage}, and \code{Unassd}.
@@ -42,14 +48,34 @@ Results from the catch-query sequence summarize the number of fish
   have been re-assigned to sampled-based counts of run and life stage, 
   indexing by variable \code{Unassd} is unnecessary.
   
-  All other fish types for which summaries are required, namely those
+  Finally, the other fish types for which summaries are required, namely those 
   involved with the adjustment for half-cone operations, have an index of 
   \code{trapVisitID}, \code{FinalRun}, and \code{lifeStage}.
   
-  Weighted fork lengths are recorded to the nearest millimeter.  Each is
+  "Half-cone fish" and the "\code{mod}" variables listed above comprise
+  additive adjustments to the observed counts of fish due to those fish being
+  associated with half-cone operations.  Generally, these fish equal the
+  amount actually captured; together, the sum of captured fish and half-cone
+  fish equals twice the number of captured fish, where the multiplier of two
+  originates from the \code{halfConeMulti} global variable set in function 
+  \code{GlobalVars}.  See \code{F.get.catch.data}.
+  
+  Weighted fork lengths are recorded to the nearest millimeter.  Each is 
   calculated over unique indices and weighted on the number of fish.
 }
 \examples{
+\dontrun{
+#   ---- Summarize fish and obtain simple statistics for unassigned
+#   ---- fish broken out by run, and possibly life stage as well,
+#   ---- in data frame catch.  
+catch.df0 <- F.summarize.fish.visit(catch,"unassigned")
+}
 
+}
+\author{
+Trent McDonald (tmcdonald@west-inc.com)
+}
+\seealso{
+\code{F.get.catch.data}
 }
 

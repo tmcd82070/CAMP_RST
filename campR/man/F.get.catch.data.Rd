@@ -104,6 +104,27 @@ On some rivers, the use of half-cone
   utilizing half-cones via variable \code{halfConeID} have their catch 
   multiplied by the value of the global variable \code{halfConeMulti}, which 
   is currently set at 2.
+  
+  Within the process of estimating passage, original catch is paritioned into
+  many different groupings.  This eases calculations and provides a 
+  check;  see "Fish Accounting" in functon \code{F.est.passage}.  Generally,
+  variables check for appropriate tallying of added half-cone fish for each
+  of assigned and unassigned catch.  A break-out for tallying counts of fish between assigned and 
+  unassigned catch is necessary due to plus-counting.  
+  
+  The check for assigned fish sums the counts of assigned fish and the added
+  count of half-cone fish, following plus-counting.  Practically, variable
+  \code{halfConeAssignedCatch} is summed with variable \code{assignedCatch}
+  to form variable \code{modAssignedCatch}, with all three variables
+  containing integer counts of fish.  The plus-count algorithm applies
+  proportions of observed fish to unassigned fish, often resulting in 
+  fractional fish.  Due to rounding, this means that sometimes, the numbers
+  of half-cone fish does not exactly equal the number of assigned fish.  See
+  \code{F.assign.1dim}.
+  
+  A similar calculation sums variables \code{halfConeUnassignedCatch} and
+  \code{unassignedCatch} of integer fish to create variable
+  \code{modUnassignedCatch}.
 }
 
 \section{Half-cone Operations \& Plus Counts}{
