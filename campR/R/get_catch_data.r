@@ -169,7 +169,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     
     #   ---- Obtain catch data with weights.
     catch <- getCatchDataWeight(taxon,site,min.date,max.date)
-    
+
   } else {  
     
     #   ---- Obtain catch data without weights.
@@ -202,24 +202,15 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
       stop
     }
   }
+
+  #   ---- We have records brought back with missing StartTimes.  While these may be found in the 
+  #   ---- original catch query, they seem to not be found in the gaps in fishing routine in Step 2.
+  #   ---- To ensure consistency in computation, just get rid of these for all types of queries now.
+  #   ---- This should be a very rare occurrence.  Discovered in the Feather, Run 3. 
+  catch <- catch[!(is.na(catch$StartTime)) & !(is.na(catch$EndTime)),]
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  #   ---- STEP 2:  Look for gaps in fishing, as defined by global
-  #   ----          variable fishingGapMinutes.  If any are found, 
-  #   ----          reassign trapPositionIDs.  
+  #   ---- STEP 2:  Look for gaps in fishing, as defined by global variable fishingGapMinutes.  If any 
+  #   ---- are found, reassign trapPositionIDs. 
   theLongCatches <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes > fishingGapMinutes & catch$TrapStatus == "Not fishing",c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
   nLongCatches <- nrow(theLongCatches)
   if(nLongCatches > 0){
@@ -244,28 +235,47 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
         
       #   ---- The data frame catch2 doesn't have the weight data.  So, keep what we 
       #   ---- really need from it -- the crosswalk between trapPositionIDs. 
-      trapXwalk <- unique(catch2[!is.na(catch2$trapVisitID),c('oldtrapPositionID','trapPositionID','trapVisitID')])
-      trapXwalk$oldtrapPositionID <- as.numeric(substr(as.character(trapXwalk$oldtrapPositionID),1,5))
+      
+      #   ---- The crosswalk needs a unique identifier for each trapVisitID.  This is a 
+      #   ---- problem for 'Not fishing' instances, which by design, have a trapVisitID
+      #   ---- of NA; i.e., there is no uniqueness.  So, make them have a unique 
+      #   ---- trapVisitID that is clearly bogus.  
+      catch2 <- catch2[order(catch2$trapPositionID,catch2$EndTime,catch2$RandomSelection,catch2$lifeStage,catch2$FinalRun,catch2$forkLength),]
+      indNA <- is.na(catch2$trapVisitID)
+      catch2[indNA,]$trapVisitID <- seq(-9000,length(indNA[indNA == TRUE])-9000-1,1)
+      
+      #   ---- Make the crosswalk.  
+      trapXwalk <- unique(catch2[,c('oldtrapPositionID','trapPositionID','trapVisitID')])
+      trapXwalk$oldtrapPositionID <- as.numeric(strsplit(as.character(trapXwalk$oldtrapPositionID),".",fixed=TRUE)[[1]][1])
         
       #   ---- To keep things straight, temporarily rename the variables in trapXwalk.  
       names(trapXwalk)[names(trapXwalk) == 'trapPositionID'] <- 'newtrapPositionID'
       names(trapXwalk)[names(trapXwalk) == 'oldtrapPositionID'] <- 'trapPositionID'
 
-      #   ---- Preserve the current sort order for the weight data.  Probably not 
-      #   ---- necessary, but do it just in case.  
-      catch$R_ID <- seq(1,nrow(catch),1)
-      catch3 <- merge(catch,trapXwalk,by=c('trapVisitID','trapPositionID'))
-      catch3 <- catch3[order(catch3$R_ID),]
-      catch3$R_ID <- NULL
+      #   ---- Make unique identifiers for trapVisitID and 'Not fishing' records for the
+      #   ---- weight data.  This way, the two data frames find each other in the merge.
+      catch <- catch[order(catch$trapPositionID,catch$EndTime,catch$RandomSelection,catch$lifeStage,catch$FinalRun,catch$forkLength,catch$weight),]
+      indNA <- is.na(catch$trapVisitID)
+      catch[indNA,]$trapVisitID <- seq(-9000,length(indNA[indNA == TRUE])-9000-1,1)
+      
+      #   ---- The merge assumes the correct records find each other.  This is why I go
+      #   ---- through the trouble of sorting catch and catch2 prior to enumerating 
+      #   ---- the trapVisitIDs.  Maybe I should merge on EndTime?
+      catch3 <- merge(catch,trapXwalk,by=c('trapVisitID','trapPositionID'),all.x=TRUE)
+      
+      #   ---- Put those originally NA trapVisitIDs back to NA.
+      catch3$trapVisitID <- ifelse(catch3$TrapStatus == "Not fishing",NA,catch3$trapVisitID)
         
-      #   ---- And put the trapPositionID variables back to what we need them
-      #   ---- to be. 
+      #   ---- And put the trapPositionID variables back to what we need them to be.
       names(catch3)[names(catch3) == 'trapPositionID'] <- 'oldtrapPositionID'        
       names(catch3)[names(catch3) == 'newtrapPositionID'] <- 'trapPositionID'
-        
-      catch <- catch3[catch3$SampleMinutes <= fishingGapMinutes,]  
+      
+      #   ---- Keep 'Not fishing' less than 7 days, but all 'Fishing', regardless of how
+      #   ---- long they were fishing.  This keeps fishing instances of duration 
+      #   ---- greater than seven days, if any actaully exist.  
+      catch <- catch3[(catch3$TrapStatus == "Not fishing" & catch3$SampleMinutes <= fishingGapMinutes) | catch3$TrapStatus == "Fishing",]  
     } else {
-      catch <- catch2[catch2$SampleMinutes <= fishingGapMinutes,]
+      catch <- catch2[(catch2$TrapStatus == "Not fishing" & catch2$SampleMinutes <= fishingGapMinutes) | catch2$TrapStatus == "Fishing",]
     }
   } else {
     
@@ -299,11 +309,21 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     cat('\n')
     
     #   ---- Swap out the old catch with the new catch.
-    catch <- assignLifeStage(DATA=catch,groupN=nLS,USEWeight=weightUse)  
+    catchFishing <- catch[catch$TrapStatus == "Fishing",]
+    catchNotFishing <- catch[catch$TrapStatus == "Not fishing",]
+    catchFishing <- assignLifeStage(DATA=catchFishing,groupN=nLS,USEWeight=weightUse)  
     
     # for debugging
-    jCatch <<- catch
+    jCatch <<- catchFishing
     #catch <- jCatch
+    
+    #   ---- Make the catch data frame whole again.  But first, make sure that 
+    #   ---- data frame catchNotFishing matches the new catchFishing.
+    catchNotFishing$id <- catchNotFishing$days <- catchNotFishing$bioLS <- NA
+    catchNotFishing <- catchNotFishing[,names(catchFishing)]
+    
+    #   ---- Put it all back together again.  
+    catch <- rbind(catchFishing,catchNotFishing)
     
     cat('\n')
     cat('\n')
