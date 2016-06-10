@@ -34,7 +34,7 @@
 #' @examples
 #' #insert examples
 #' 
-F.lifestage.passage.assignLS2group <- function(site, taxon, min.date, max.date, output.file, ci=TRUE){
+F.lifestage.passage.assignLS2group <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autoLS=TRUE){
   ###
   ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN  TABULAR SUMMARY
   ###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
@@ -46,7 +46,7 @@ F.lifestage.passage.assignLS2group <- function(site, taxon, min.date, max.date, 
   
   
   ## 2 life stage groups are fit and the program will decide if weight will be used or not
-  passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=2,weightUse=NULL)
+  passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=2,weightUse=NULL,autoLS=TRUE)
   
   
   

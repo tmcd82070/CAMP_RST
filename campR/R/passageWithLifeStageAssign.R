@@ -118,7 +118,7 @@
 
 
 
-passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,nLS=NULL,weightUse=NULL){
+passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,nLS=NULL,weightUse=NULL,autoLS=FALSE){
   ###
   ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
   ###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
@@ -159,7 +159,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   ##   ---- Fetch the catch and visit data
   ## autoLS=TRUE, uses mixture distribution to assign life stage
   ## nLS = NULL, allows the routine to decide the number of life stages
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,autoLS=TRUE,nLS=nLS,weightUse=weightUse)
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,autoLS=autoLS,nLS=nLS,weightUse=weightUse)
   
   catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later

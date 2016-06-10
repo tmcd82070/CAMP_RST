@@ -37,7 +37,7 @@
 #' @examples
 #' <insert examples>
 #' 
-F.lifestage.passage.assignLS3groupNoWeight <- function(site, taxon, min.date, max.date, output.file, ci=TRUE){
+F.lifestage.passage.assignLS3groupNoWeight <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autoLS=TRUE){
   ###
   ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN  TABULAR SUMMARY
   ###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
@@ -49,7 +49,7 @@ F.lifestage.passage.assignLS3groupNoWeight <- function(site, taxon, min.date, ma
   
   
   ## 3 life stage groups are fit and weight will not be used to assign lifestage
-  passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=3,weightUse=FALSE)
+  passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=3,weightUse=FALSE,autoLS=TRUE)
   
 }
 
