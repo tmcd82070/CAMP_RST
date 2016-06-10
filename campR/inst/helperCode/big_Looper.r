@@ -15,7 +15,7 @@ mdbStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/
 outStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/Outputs")
 
 #   ---- User variable testi to specify the range of river combos to test.  
-for(testi in 1:1){   
+for(testi in 3:6){   
   
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
@@ -68,6 +68,7 @@ for(testi in 1:1){
   
   beg0 <- Sys.time()
   F.lifestage.passage(site, taxon, min.date, max.date, output.file, ci=TRUE)
+  passageWithLifeStageAssign(site, taxon, min.date, max.date,output.file,ci=TRUE,autoLS=FALSE)
   end0 <- Sys.time()
   diff.time0 <- as.numeric(end0 - beg0,units="hours")
   
@@ -80,7 +81,7 @@ for(testi in 1:1){
   output.fileJ1 <- output.file
   output.file <- paste0(output.fileJ1,"_",'J1')
   beg1 <- Sys.time(); 
-  F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, output.file, ci=TRUE);         
+  F.lifestage.passage.assignLS2group(site,taxon,min.date,max.date, output.file,ci=TRUE,autoLS=TRUE)         
   end1 <- Sys.time(); 
   diff.time1 <- as.numeric(end1 - beg1,units="hours"); 
   output.file <- output.fileJ1
@@ -90,7 +91,7 @@ for(testi in 1:1){
   output.fileJ2 <- output.file
   output.file <- paste0(output.file,"_",'J2')
   beg2 <- Sys.time(); 
-  F.lifestage.passage.assignLS2groupNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE); 
+  F.lifestage.passage.assignLS2groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE) 
   end2 <- Sys.time(); 
   diff.time2 <- as.numeric(end2 - beg2,units="hours"); 
   output.file <- output.fileJ2
@@ -100,7 +101,7 @@ for(testi in 1:1){
   output.fileJ3 <- output.file   
   output.file <- paste0(output.file,"_",'J3')
   beg3 <- Sys.time(); 
-  F.lifestage.passage.assignLS3group(site, taxon, min.date, max.date, output.file, ci=TRUE);         
+  F.lifestage.passage.assignLS3group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE)       
   end3 <- Sys.time(); 
   diff.time3 <- as.numeric(end3 - beg3,units="hours"); 
   output.file <- output.fileJ3
@@ -110,7 +111,7 @@ for(testi in 1:1){
   output.fileJ4 <- output.file    
   output.file <- paste0(output.file,"_",'J4')
   beg4 <- Sys.time(); 
-  F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date, output.file, ci=TRUE); 
+  F.lifestage.passage.assignLS3groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE) 
   end4 <- Sys.time(); 
   diff.time4 <- as.numeric(end4 - beg4,units="hours"); 
   output.file <- output.fileJ4
@@ -120,7 +121,7 @@ for(testi in 1:1){
   output.fileJ5 <- output.file    
   output.file <- paste0(output.file,"_",'J5')
   beg5 <- Sys.time(); 
-  F.lifestage.passage.assignLS(site, taxon, min.date, max.date, output.file, ci=TRUE);               
+  F.lifestage.passage.assignLS(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE)            
   end5 <- Sys.time(); 
   diff.time5 <- as.numeric(end5 - beg5,units="hours"); 
   output.file <- output.fileJ5
@@ -130,31 +131,31 @@ for(testi in 1:1){
   output.fileJ6 <- output.file    
   output.file <- paste0(output.file,"_",'J6')
   beg6 <- Sys.time();
-  F.lifestage.passage.assignLSNoWeight(site, taxon, min.date, max.date,  output.file, ci=TRUE);       
+  F.lifestage.passage.assignLSNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE)       
   end6 <- Sys.time(); 
   diff.time6 <- as.numeric(end6 - beg6,units="hours"); 
   output.file <- output.fileJ6
   sink(); # let program decide 2/3 groups, don't use weight var
   
   # output time stats
-  testi.time <- data.frame(testi=rep(paste0("Run ",testi),7),file=c('J0','J1','J2','J3','J4','J5','J6'),times=c(diff.time0, diff.time1, diff.time2, diff.time3, diff.time4, diff.time5, diff.time6))
+  testi.time <- data.frame(testi=rep(paste0("Run ",testi),7),file=c('J0','J1','J2','J3','J4','J5','J6'),times=c(diff.time0,diff.time1,diff.time2,diff.time3, diff.time4, diff.time5, diff.time6))
   write.csv(testi.time,paste0(output.file,'JStuffTime.csv'))
   
   
-  F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
-  F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
-  F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
-  F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
-  F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
-  
-  runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
-  run.names <- c('Spring','Fall','Late Fall','Winter')
-  for(j in 1:4){
-    run <- runs[j]
-    run.name <- run.names[j]
-    output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"_",run.name)
-    F.size.by.date    ( site, taxon, run, min.date, max.date,            output.file                                         )
-    F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=F"),   by.lifestage=FALSE          )
-    F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=T"),   by.lifestage=TRUE           )
-  }
+#   F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
+#   F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
+#   F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
+#   F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
+#   F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
+#   
+#   runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
+#   run.names <- c('Spring','Fall','Late Fall','Winter')
+#   for(j in 1:4){
+#     run <- runs[j]
+#     run.name <- run.names[j]
+#     output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"_",run.name)
+#     F.size.by.date    ( site, taxon, run, min.date, max.date,            output.file                                         )
+#     F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=F"),   by.lifestage=FALSE          )
+#     F.length.frequency( site, taxon, run, min.date, max.date,     paste0(output.file,"_ls=T"),   by.lifestage=TRUE           )
+#   }
 }
