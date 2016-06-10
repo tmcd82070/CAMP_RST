@@ -169,6 +169,18 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     
     #   ---- Obtain catch data with weights.
     catch <- getCatchDataWeight(taxon,site,min.date,max.date)
+    
+    #   ---- We have records brought back with missing StartTimes.  While these may be found in the 
+    #   ---- original catch query, they seem to not be found in the gaps in fishing routine in Step 2.
+    #   ---- To ensure consistency in computation, just get rid of these for all types of queries now.
+    #   ---- This should be a very rare occurrence.  Discovered in the Feather, Run 3. 
+    catch <- catch[!(is.na(catch$StartTime)) & !(is.na(catch$EndTime)),]
+    
+    #   ---- When dealing with weight, I have records in catch that don't appear in the gap series 
+    #   ---- below, e.g., report J1, Run 33, trapVisitID 5274 is not in catch2.  It has Unmarked 
+    #   ---- equal zero, along with four other records.  I don't like the inconsistency, but drop
+    #   ---- records with zero Unmarked.
+    catch <- catch[ (!is.na(catch$Unmarked) & catch$Unmarked > 0) | is.na(catch$Unmarked),]
 
   } else {  
     
@@ -203,11 +215,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     }
   }
 
-  #   ---- We have records brought back with missing StartTimes.  While these may be found in the 
-  #   ---- original catch query, they seem to not be found in the gaps in fishing routine in Step 2.
-  #   ---- To ensure consistency in computation, just get rid of these for all types of queries now.
-  #   ---- This should be a very rare occurrence.  Discovered in the Feather, Run 3. 
-  catch <- catch[!(is.na(catch$StartTime)) & !(is.na(catch$EndTime)),]
+
   
   #   ---- STEP 2:  Look for gaps in fishing, as defined by global variable fishingGapMinutes.  If any 
   #   ---- are found, reassign trapPositionIDs. 
@@ -246,9 +254,9 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
       
       #   ---- Make the crosswalk.  
       trapXwalk <- unique(catch2[,c('oldtrapPositionID','trapPositionID','trapVisitID')])
-      trapXwalk$oldtrapPositionID <- as.numeric(strsplit(as.character(trapXwalk$oldtrapPositionID),".",fixed=TRUE)[[1]][1])
+      trapXwalk$oldtrapPositionID <- as.numeric(unlist(strsplit(as.character( format(round(trapXwalk$oldtrapPositionID,2),nsmall=2) ),".",fixed=TRUE))[c(TRUE,FALSE)]) #[[1]][1])
         
-      #   ---- To keep things straight, temporarily rename the variables in trapXwalk.  
+      #   ---- To keep things straight, temporarily rename the variables in trapXwalk.   
       names(trapXwalk)[names(trapXwalk) == 'trapPositionID'] <- 'newtrapPositionID'
       names(trapXwalk)[names(trapXwalk) == 'oldtrapPositionID'] <- 'trapPositionID'
 

@@ -15,7 +15,7 @@ mdbStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/
 outStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/Outputs")
 
 #   ---- User variable testi to specify the range of river combos to test.  
-for(testi in 3:6){   
+for(testi in 33:34){   
   
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
@@ -67,7 +67,7 @@ for(testi in 3:6){
   output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   
   beg0 <- Sys.time()
-  F.lifestage.passage(site, taxon, min.date, max.date, output.file, ci=TRUE)
+  #F.lifestage.passage(site, taxon, min.date, max.date, output.file, ci=TRUE)
   passageWithLifeStageAssign(site, taxon, min.date, max.date,output.file,ci=TRUE,autoLS=FALSE)
   end0 <- Sys.time()
   diff.time0 <- as.numeric(end0 - beg0,units="hours")

@@ -193,12 +193,21 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
       winner$origEnd.date <- origEnd.date
       
       df2 <- df2[order(df2$batchDate),]
+      
       #jBaseTable <- tryCatch(plot_spline(trap,df2,thisTrap[[1]],file="spline.pdf",df3), error=function(e) e)
       df.and.fit <- thisTrap[[1]]   
     } else {
       
       #   ---- All records are thrown out, due to zeros and NA.  
       df.and.fit <- suppressWarnings( F.catch.model( df2 ) )
+      
+      beg.date <- min(df2$batchDate)
+      end.date <- max(df2$batchDate)
+      winner <- data.frame(bZerosRem=buffs[1] - 1,eZerosRem=buffs[2] - 1,bZerosKept=bb,eZerosKept=eb,nrow=nrow(df2),Nrow=nrow(df2[df2$trapPositionID == trap,]),beg.date=beg.date,end.date=end.date)
+      winner$trap <- trap
+      winner$origBeg.date <- origBeg.date
+      winner$origEnd.date <- origEnd.date
+      
       #jBaseTable <- tryCatch(plot_spline(trap,df2,df.and.fit,file="spline.pdf",df3), error=function(e) e)
     }
 
