@@ -39,7 +39,7 @@
 #' 
 F.lifestage.passage.assignLSNoWeight <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autoLS=TRUE){
   ###
-  ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN  TABULAR SUMMARY
+  ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN TABULAR SUMMARY
   ###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
   ###
   ###   Input:
