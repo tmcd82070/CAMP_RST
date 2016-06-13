@@ -5,7 +5,7 @@
 \title{F.lifestage.passage.assignLS}
 \usage{
 F.lifestage.passage.assignLS(site, taxon, min.date, max.date, output.file,
-  ci = TRUE)
+  ci = TRUE, autoLS = TRUE)
 }
 \arguments{
 \item{site}{<describe argument}

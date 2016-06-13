@@ -58,11 +58,11 @@ F.assign.batch.date <- function( df ){
   
   # df <- times 
   
-  cuttime <- get( "samplePeriodCutTime", env=.GlobalEnv )
+  cuttime <- get( "samplePeriodCutTime", envir=.GlobalEnv )
   
   #   ---- This is the time of day assigned to batchDates.  Could be halfway between cut times or (cuttime - 12*60*60).
   midtime <- "00:00:00"   
-  time.zone <- get( "time.zone", env=.GlobalEnv )
+  time.zone <- get( "time.zone", envir=.GlobalEnv )
   
   #   ---- A sequence of dates at cuttime every day.
   min.day <- min(df$EndTime) - 24*60*60

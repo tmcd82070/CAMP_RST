@@ -52,8 +52,8 @@ F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file,
     #   ---- Pull the min and max dates from the data base
     
     #   Retrieve db file name and table names
-    tables <- get( "table.names", env=.GlobalEnv )
-    db <- get( "db.file", env=.GlobalEnv ) 
+    tables <- get( "table.names", envir=.GlobalEnv )
+    db <- get( "db.file", envir=.GlobalEnv ) 
     
     #   Open ODBC channel
     ch <- odbcConnectAccess(db)

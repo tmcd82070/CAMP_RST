@@ -198,7 +198,7 @@ assignLSCompare <- function(Data,SAVE=TRUE){
     if(save){
       pdf(file=paste0(output.file,gsub(' ','',fRun),'plotLifeStageAssignComparison.pdf'),width=7)
     }else{
-      windows(width=7)
+      dev.new(width=7)
     }
     ##par(mfrow=c(1,2))
     

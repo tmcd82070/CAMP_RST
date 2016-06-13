@@ -5,7 +5,7 @@
 \title{F.lifestage.passage.assignLSNoWeight}
 \usage{
 F.lifestage.passage.assignLSNoWeight(site, taxon, min.date, max.date,
-  output.file, ci = TRUE)
+  output.file, ci = TRUE, autoLS = TRUE)
 }
 \arguments{
 \item{site}{<describe argument>}

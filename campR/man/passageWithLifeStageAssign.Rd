@@ -5,7 +5,7 @@
 \title{passageWithLifeStageAssign}
 \usage{
 passageWithLifeStageAssign(site, taxon, min.date, max.date, output.file,
-  ci = TRUE, nLS = NULL, weightUse = NULL)
+  ci = TRUE, nLS = NULL, weightUse = NULL, autoLS = FALSE)
 }
 \arguments{
 \item{site}{<describe argument>}

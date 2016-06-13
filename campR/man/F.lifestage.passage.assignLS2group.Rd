@@ -5,7 +5,7 @@
 \title{F.lifestage.passage.assignLS2group}
 \usage{
 F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, output.file,
-  ci = TRUE)
+  ci = TRUE, autoLS = TRUE)
 }
 \arguments{
 \item{site}{describe argument}

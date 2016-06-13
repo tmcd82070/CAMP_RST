@@ -5,7 +5,7 @@ Version: 1.0.0
 Date: 2016-06-13
 Author: Trent McDonald
 Maintainer: Trent McDonald <tmcdonald@west-inc.com>
-Description: R routines for the CAMP R platform
+Description: R routines for the CAMP R platform. 
 License: GNU General Public License
 RoxygenNote: 5.0.1
 Depends: RODBC
@@ -18,5 +18,6 @@ Imports:
  plyr,
  mclust,
  car,
- tools
+ tools,
+ utils
 
