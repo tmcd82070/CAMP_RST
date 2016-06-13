@@ -275,7 +275,7 @@
 #' @examples
 #' \dontrun{
 #' #   ---- Open ODBC channel.
-#' db <- get( "db.file", env=.GlobalEnv )
+#' db <- get( "db.file", envir=.GlobalEnv )
 #' ch <- odbcConnectAccess(db)
 #' 
 #' #   ---- Develop the hours fished and TempSamplingSummary table in the

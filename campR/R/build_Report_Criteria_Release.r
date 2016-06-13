@@ -39,7 +39,7 @@ F.buildReportCriteriaRelease <- function( site, min.date, max.date ){
   end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )
 
   #   ---- Communicate with Access database, run queries, and pull down count of efficiency trials.  
-  db <- get( "db.file", env=.GlobalEnv )
+  db <- get( "db.file", envir=.GlobalEnv )
   ch <- odbcConnectAccess(db)
   F.run.sqlFile( ch, "QryBuildReportCriteriaRelease.sql", SITE=site, STRT.DT=format(strt.dt, "%m/%d/%Y"), END.DT=format(end.dt, "%m/%d/%Y") )
   ans <- sqlQuery( ch, "SELECT COUNT(1) FROM TempReportCriteria_Release" )

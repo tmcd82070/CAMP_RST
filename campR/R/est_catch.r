@@ -107,7 +107,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
   # plot <- TRUE
   # plot.file <- file.root
 
-  time.zone <- get("time.zone", env=.GlobalEnv )
+  time.zone <- get("time.zone", envir=.GlobalEnv )
 
   #   ---- Fill in the gaps for individual traps
   df <- NULL

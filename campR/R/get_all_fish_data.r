@@ -64,7 +64,7 @@ F.get.all.fish.data <- function( site, min.date, max.date ){
 
 #   *******
 #   Open ODBC channel
-db <- get( "db.file", env=.GlobalEnv ) 
+db <- get( "db.file", envir=.GlobalEnv ) 
 ch <- odbcConnectAccess(db)
 
 # ====== 

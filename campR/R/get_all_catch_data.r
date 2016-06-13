@@ -37,7 +37,7 @@ F.get.all.catch.data <- function( site, taxon, min.date, max.date ){
   }
 
   #   ---- Open ODBC channel.
-  db <- get( "db.file", env=.GlobalEnv )
+  db <- get( "db.file", envir=.GlobalEnv )
   ch <- odbcConnectAccess(db)
 
   #   ---- This SQL file develops the hours fished and TempSamplingSummary table.

@@ -64,7 +64,7 @@ F.est.catch.trapN <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 #  plot.file=file.root
 
   
-time.zone <- get("time.zone", env=.GlobalEnv )
+time.zone <- get("time.zone", envir=.GlobalEnv )
 
 #   ---- Establish the days on which estimates need to be produced.
 #        Times in run season must be same as time in batchDate each day. 

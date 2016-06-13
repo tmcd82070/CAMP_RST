@@ -170,7 +170,7 @@ if(nrow(catch.df) == 0){
 
 #  grab non-valid Catch
 attributesSafe <- attributes(catch.df)
-db <- get( "db.file", env=.GlobalEnv ) 
+db <- get( "db.file", envir=.GlobalEnv ) 
 ch <- odbcConnectAccess(db)
 
 F.run.sqlFile( ch, "QryNonValidFishing.sql", R.TAXON=taxon )   
@@ -178,7 +178,7 @@ nvCatch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_X_final" )        #   Now, f
 F.sql.error.check(nvCatch)
 
 #   Fetch run name
-tables <- get( "table.names", env=.GlobalEnv )
+tables <- get( "table.names", envir=.GlobalEnv )
 runs <- sqlQuery(ch, paste( "SELECT run, runID FROM", tables["run.codes"] ))
 F.sql.error.check(runs)
 run.name <- as.character(runs$run[ runs$runID == run ])

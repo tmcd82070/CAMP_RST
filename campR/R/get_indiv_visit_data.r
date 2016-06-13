@@ -188,8 +188,8 @@ run.season <- data.frame( start=strt.dt, end=end.dt )
 
 #   *******
 #   Retrieve db file name and table names
-tables <- get( "table.names", env=.GlobalEnv )
-db <- get( "db.file", env=.GlobalEnv ) 
+tables <- get( "table.names", envir=.GlobalEnv )
+db <- get( "db.file", envir=.GlobalEnv ) 
 
 
 #   *******

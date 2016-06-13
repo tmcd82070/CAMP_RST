@@ -93,7 +93,7 @@ if( nvisits == 0 ){
 
 #  === update 5/23/2015 === requires new connie-query. ===================================
 #   Open ODBC channel
-db <- get( "db.file", env=.GlobalEnv ) 
+db <- get( "db.file", envir=.GlobalEnv ) 
 ch <- odbcConnectAccess(db)
 
 #   *****

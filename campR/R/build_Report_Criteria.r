@@ -44,7 +44,7 @@ F.buildReportCriteria <- function( site, min.date, max.date ){
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
   end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )
   
-  db <- get( "db.file", env=.GlobalEnv ) 
+  db <- get( "db.file", envir=.GlobalEnv ) 
   ch <- odbcConnectAccess(db)
   
   F.run.sqlFile( ch, "QryBuildReportCriteria.sql", SITE=site, STRT.DT=format(strt.dt, "%m/%d/%Y"), END.DT=format(end.dt, "%m/%d/%Y") )

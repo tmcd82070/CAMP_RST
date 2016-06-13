@@ -100,13 +100,13 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   
   #   ---- Obtain Julian weeks once and for all and place in Global environment for ease. 
   if( summarize.by == "week" ){
-    db <- get( "db.file", env=.GlobalEnv )
+    db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
     the.Jdates <<- sqlFetch( ch, "Dates" )
     close(ch)
   }
   
-  time.zone <- get("time.zone", env=.GlobalEnv )
+  time.zone <- get("time.zone", envir=.GlobalEnv )
   
   f.banner <- function( x ){
       cat("\n")

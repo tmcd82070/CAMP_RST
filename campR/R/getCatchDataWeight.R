@@ -65,7 +65,7 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
     }
 
 
-    db <- get( "db.file", env=.GlobalEnv )
+    db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
 
     F.run.sqlFile(ch, "QrySamplePeriod.sql", R.TAXON=taxon ) # trent f'n that works as an access-sql handler
