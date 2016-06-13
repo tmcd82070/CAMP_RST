@@ -30,7 +30,7 @@ message to the \code{R_run.out} text file or the R Console.
 \dontrun{
 #   ---- Set up an Access mdb in R.  
 db.file <- "C:/yourPath/CAMP.mdb"                # The location of CAMP.mdb
-db <- get( "db.file", env=.GlobalEnv )           # Assign the mdb string.
+db <- get( "db.file", envir=.GlobalEnv )           # Assign the mdb string.
 ch <- odbcConnectAccess(db)                      # Connect R and Access.
 
 #   ---- Conduct a good query.

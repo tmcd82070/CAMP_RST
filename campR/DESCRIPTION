@@ -19,5 +19,6 @@ Imports:
  mclust,
  car,
  tools,
- utils
+ utils,
+ grDevices
 

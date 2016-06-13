@@ -228,7 +228,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   bd <- strptime(sort( seq(as.Date(min(na.omit(release.df$ReleaseDate),na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$ReleaseDate),na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
 
   #   ---- Estimate capture for every day of season.  
-  eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df=3, plot=TRUE, plot.file=file.root )
+  eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df.spline=3, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)
     setWinProgressBar(progbar, (2*tmp + 1)/3 )
