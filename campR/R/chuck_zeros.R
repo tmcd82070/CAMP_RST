@@ -19,8 +19,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' #insert examples
 #' 
+#' }
 chuck.zeros <- function(b,e,beg.buff,end.buff,df){  
   
   # beg.buff <- 0

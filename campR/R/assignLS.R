@@ -28,8 +28,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' # insert examples
 #' 
+#' }
 assignLS <- function(runDat,G=NULL,USEWeight=NULL){
 	cat('\n')
 	cat('\n')

@@ -20,8 +20,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 plot_spline <- function(trap,catch.df,df.and.fit,file=NA,df3){
   
   # trap <- trap                       trap <- trap

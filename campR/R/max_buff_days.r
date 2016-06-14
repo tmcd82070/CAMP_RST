@@ -19,8 +19,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 maxBuffDays <- function(df,trap){
   
   # df <- df2

@@ -33,8 +33,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' #insert examples
 #' 
+#' }
 F.byCatch.table <- function( site, min.date, max.date, output.file ){
 #
 #   List all non-chinook catches,

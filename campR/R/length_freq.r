@@ -108,8 +108,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.length.frequency <- function( site, taxon, run, min.date, max.date, output.file, by.lifestage ){
 #
 #   Plot frequency distribution of lengths.

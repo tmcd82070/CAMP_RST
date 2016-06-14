@@ -150,8 +150,10 @@
 #'   \code{assignLSCompare.R}? 
 #'   
 #' @examples  
+#' \dontrun{
 #' 
 #' # we would need to query.  what do we want to do?
+#' }
 
 F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL ){
   

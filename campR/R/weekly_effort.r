@@ -63,8 +63,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
 #
 #   compute weekly effort.  Effort is number of days/hours that trap was fishing.

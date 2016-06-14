@@ -92,12 +92,14 @@
 #' 
 #' 
 #' @examples 
+#' \dontrun{
 #' #Change data base file 
 #' GlobalVars(db.file="../../Platform/data/StanislawCAMP.mdb" ) 
 #' 
 #' #Change where output goes 
 #' GlobalVars(ouput.dir="~/Camp_output" ) 
 #' 
+#' }
 GlobalVars <- function(
 	db.file="..\\Data\\CAMP.mdb",
 	output.dir="..\\outputs",

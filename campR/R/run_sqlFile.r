@@ -270,7 +270,7 @@
 #' 
 #' @seealso \code{sqlQuery}, \code{sqlFetch}
 #'   
-#' @author R: Trent McDonald (tmcdonald@west-inc.com), SQL: Connie Shannon (Connie.Shannon@wildlife.ca.gov)
+#' @author WEST Inc.
 #' 
 #' @examples
 #' \dontrun{

@@ -25,8 +25,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' #insert examples
 #' 
+#' }
 ###################################################
 ## Jared Studyvin
 ## 15 Jan 2016

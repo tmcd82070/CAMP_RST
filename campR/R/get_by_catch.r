@@ -18,9 +18,11 @@
 #' @seealso
 #' 
 #' @examples
+#' \dontrun{
 #' 
 #' # requires mdb.
 #' 
+#' }
 F.getByCatch <- function( site, min.date, max.date ){
 
   # site <- 7000

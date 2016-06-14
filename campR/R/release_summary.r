@@ -26,9 +26,11 @@
 #' @seealso
 #' 
 #' @examples
+#' \dontrun{
 #' 
 #' # requires an mdb.
 #'     
+#' }
 F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   
   # site <- 7000

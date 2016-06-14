@@ -35,8 +35,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.lifestage.passage.assignLS2groupNoWeight <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autoLS=TRUE){
   ###
   ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN  TABULAR SUMMARY

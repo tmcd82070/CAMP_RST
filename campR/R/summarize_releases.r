@@ -26,8 +26,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.summarize.releases <- function( release.df ){
 #
 #   Summarize trap efficiency for every release.  This function

@@ -18,8 +18,10 @@
 #'   specified by \code{min.date} and \code{max.date}.
 #'   
 #' @examples 
+#' \dontrun{
 #' 
 #' # requires an mdb.
+#' }
 F.get.all.catch.data <- function( site, taxon, min.date, max.date ){
 
 	

@@ -77,7 +77,7 @@
 #' @seealso \code{F.get.release.data}, \code{F.bootstrap.passage},
 #'   \code{F.est.catch}, \code{F.est.efficiency}
 #'   
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #'   
 #' @examples 
 #' \dontrun{

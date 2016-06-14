@@ -93,7 +93,7 @@
 #'   
 #' @seealso \code{F.get.catch.data}, \code{F.est.catch.trapN}
 #'  
-#' @author Trent McDonald (tmcdonald@west-inc.com)    
+#' @author WEST Inc.
 #'   
 #' @examples
 #' \dontrun{

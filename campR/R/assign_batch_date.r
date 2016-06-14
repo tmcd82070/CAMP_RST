@@ -38,9 +38,10 @@
 #'   avoid confusion, new variable \code{batchDate} replaces old variable 
 #'   \code{SampleDate} after the running of this function.
 #'
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #' 
 #' @examples
+#' \dontrun{
 #' #   ---- Set the time zone to Pacific.
 #' time.zone <- "America/Los_Angeles"
 #' 
@@ -53,6 +54,7 @@
 #' #   ---- BatchDate for trapVisitID=1234 is now 1/23, 
 #' #   ---- since that trap stopped before 4 AM.  
 #' newDate <- F.assign.batch.date(origDate)
+#' }
 
 F.assign.batch.date <- function( df ){
   

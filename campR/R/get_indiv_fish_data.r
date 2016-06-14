@@ -82,8 +82,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.get.indiv.fish.data <- function( site, taxon, run, min.date, max.date, keep="unmarked" ){
 #
 #   Fetch the fish data for a SINGLE TAXON from an Access data base. The resulting data 

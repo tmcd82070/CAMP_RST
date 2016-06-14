@@ -34,8 +34,10 @@
 #' @seealso \code{\link{}}, \code{\link{}}
 #' 
 #' @examples
+#' \dontrun{
 #' 
 #' 
+#' }
 F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file, ci=TRUE ){
 #
 #   Estimate passage for all years in the data base.

@@ -127,10 +127,12 @@
 #'   
 #' @seealso \code{F.est.catch}, \code{F.est.eff}, \code{summarize.passage}
 #' 
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #' 
 #' @examples 
+#' \dontrun{
 #' 
+#' }
 F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R, ci=T ){
 
   # grand.df <- grand.df

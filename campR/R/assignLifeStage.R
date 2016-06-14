@@ -131,8 +131,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' # insert examples
 #' 
+#' }
 ###############################################
 ## Jared Studyvin
 ## 10 Feb 2016

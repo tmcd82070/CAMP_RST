@@ -26,7 +26,7 @@
 #' 
 #' @seealso \code{sqlQuery}, \code{F.run.sqlFile}, \code{F.sql.error.check}
 #'   
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #' 
 #' @examples
 #' \dontrun{

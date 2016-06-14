@@ -63,7 +63,7 @@
 #' 
 #' @seealso \code{F.get.release.data}, \code{F.assign.batch.date}
 #'   
-#' @author Trent McDonald (tmcdonald@west-inc.com)   
+#' @author WEST Inc.
 #'   
 #' @examples
 #' \dontrun{

@@ -43,8 +43,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.plot.lifestages <- function( df, file.root, plot.pies=FALSE ){
 #
 #   Produce a plot of the lifestages.

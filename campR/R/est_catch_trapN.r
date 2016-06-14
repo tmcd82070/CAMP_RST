@@ -46,8 +46,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' # insert examples
 #' 
+#' }
 F.est.catch.trapN <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 #
 #   Estimate capture for every day of the season.

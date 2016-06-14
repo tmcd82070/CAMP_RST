@@ -135,8 +135,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.get.indiv.visit.data <- function( site, run, min.date, max.date ){
 #
 #   Fetch the visit data for a particular site and run from an Access data base. The resulting data

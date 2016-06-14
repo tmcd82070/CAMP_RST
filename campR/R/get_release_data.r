@@ -68,9 +68,11 @@
 #' 
 #' 
 #' @examples
+#' \dontrun{
 #' 
 #' # Need to be able to query, no?  What to do about that?
 #' 
+#' }
 F.get.release.data <- function( site, taxon, min.date, max.date ){
 
   # site <- 1111

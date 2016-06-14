@@ -50,8 +50,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' #insert examples
 #' 
+#' }
 ###################################################
 ## Jared Studyvin
 ## 8 March 2016

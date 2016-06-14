@@ -21,7 +21,7 @@
 #'   
 #' @seealso \code{F.efficiency.model}
 #' 
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #'   
 #' @examples 
 #' \dontrun{

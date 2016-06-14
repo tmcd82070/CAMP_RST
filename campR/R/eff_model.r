@@ -96,7 +96,7 @@
 #'   
 #' @seealso \code{F.get.releases}, \code{F.bootstrap.passage}
 #' 
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #' 
 #' @examples 
 #' \dontrun{

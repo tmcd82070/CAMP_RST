@@ -75,8 +75,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.size.by.date <- function( site, taxon, run, min.date, max.date, output.file ){
 #
 #   Plot fork length of fish by date of catch ro a particular site and year. 
