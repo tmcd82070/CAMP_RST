@@ -77,7 +77,7 @@ theEff <- F.est.efficiency(release.df,batchDate,method=3,df.spline=3,plot=TRUE,p
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.get.release.data}, \code{F.assign.batch.date}

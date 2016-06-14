@@ -42,8 +42,10 @@ Estimate passage for all years in the data base.
 
 }
 \examples{
+\dontrun{
 
 
+}
 }
 \author{
 WEST Inc.

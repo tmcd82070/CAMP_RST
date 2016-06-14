@@ -35,7 +35,7 @@ F.plot.eff.model( df, file=NA )
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.efficiency.model}

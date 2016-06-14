@@ -156,7 +156,7 @@ fitCatch <- F.catch.model(catch.df)
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 

@@ -26,8 +26,10 @@ other comments found in file
  colRep = single string of the frequency to repeat the data
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

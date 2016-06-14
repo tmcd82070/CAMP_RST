@@ -41,6 +41,7 @@ The dataframe fed to function \code{F.summarize.passage} must have a
   estimation of passage, where the denominator is the estimated efficiency.
 }
 \examples{
+\dontrun{
 #   ---- Create a data set of trapping.
 beg <- strptime("2014-01-24",format="\%F")
 df <- data.frame(trapVisitID=c(seq(1234,length.out=10)),
@@ -54,5 +55,10 @@ df <- df[order(df$batchDate,df$trapPositionID),]
 df.day <- F.summarize.passage( df, "day" )
 df.month <- F.summarize.passage( df, "month" )
 df.year <- F.summarize.passage( df, "year" )
+
+  ---- Need Julian weeks to compute this particular example.  
+df.week <- F.summarize.passage( df, "week" )
+
+}
 }
 

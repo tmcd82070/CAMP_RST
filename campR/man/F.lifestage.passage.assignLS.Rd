@@ -43,8 +43,10 @@ NA
  allow the program to decide the number of life stage groups and if weight will be used or not
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

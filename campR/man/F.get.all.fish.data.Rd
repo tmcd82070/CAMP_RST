@@ -44,8 +44,10 @@ NA
    Subsampling is handled above in the SQL with [CatchRaw].[n]*[CatchRaw].[subsampleDenominator]/[CatchRaw].[subsampleNumerator]
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

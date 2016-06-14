@@ -28,7 +28,9 @@ A data frame entitled \code{visit}.  To be included, a record has to
 Fetch catch data for a single taxon from an Access data base.
 }
 \examples{
+\dontrun{
 
 # requires an mdb.
+}
 }
 

@@ -116,8 +116,10 @@ out.fn.roots <- c(out.fn.roots, fl)
    ---- Write out message
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

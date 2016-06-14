@@ -45,7 +45,7 @@ F.sql.error.check(ans)                           # Check for validity.
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{sqlQuery}

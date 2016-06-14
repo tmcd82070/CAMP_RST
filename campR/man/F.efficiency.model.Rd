@@ -113,7 +113,7 @@ F.efficiency.model( obs.eff.df, plot=T, method=1, max.df.spline=4, plot.file=NA)
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.get.releases}, \code{F.bootstrap.passage}

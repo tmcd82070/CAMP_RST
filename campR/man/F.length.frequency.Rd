@@ -117,8 +117,10 @@ layout.show(nl+2)
    ---- Send messages back to the interface
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

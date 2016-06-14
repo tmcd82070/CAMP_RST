@@ -150,10 +150,12 @@ Catch fit models are utilized to generate random
   the beta vector from the catch model is non-varying?)
 }
 \examples{
+\dontrun{
 
 }
+}
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.est.catch}, \code{F.est.eff}, \code{summarize.passage}

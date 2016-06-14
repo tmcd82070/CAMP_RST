@@ -89,8 +89,10 @@ subsite.string <- paste(subSites.found, collapse="+")
    This is correct, just be sure to check for nrow(catch) > 0 in any routines that use this data.
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

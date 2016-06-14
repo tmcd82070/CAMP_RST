@@ -98,12 +98,14 @@ One additional global variable is defined. \code{table.names} is a list containi
  The data base name in use is written to the R log file.
 }
 \examples{
+\dontrun{
 #Change data base file 
 GlobalVars(db.file="../../Platform/data/StanislawCAMP.mdb" ) 
 
 #Change where output goes 
 GlobalVars(ouput.dir="~/Camp_output" ) 
 
+}
 }
 \author{
 WEST Inc.

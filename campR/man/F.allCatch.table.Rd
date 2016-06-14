@@ -32,9 +32,11 @@ all pertinent records within a catch.  See
 }
 \examples{
  
+\dontrun{
 
 #requires an mdb.
 
+}
 }
 \seealso{
 \code{F.chinookByDate.table}

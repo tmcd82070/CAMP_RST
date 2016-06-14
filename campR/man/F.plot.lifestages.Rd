@@ -46,8 +46,10 @@ Produce a plot of the lifestages.
    Write out the ls.names along the bottom
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

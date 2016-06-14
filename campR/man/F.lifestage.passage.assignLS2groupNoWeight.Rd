@@ -43,8 +43,10 @@ NA
  2 life stage groups are fit and weight will not be used for assigning lifestage
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

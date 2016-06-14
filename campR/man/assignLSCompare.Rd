@@ -49,8 +49,10 @@ legBio
 ddply(Data,~FinalRun,compare,save=FALSE)
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

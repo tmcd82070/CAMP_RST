@@ -59,7 +59,7 @@
 #'   reports generated. Thus, reports spanning different time periods and sites
 #'   may report different run and life stage passage combinations.  
 #'   
-#'   @examples 
+#' @examples 
 #' \dontrun{
 #'   
 #'   

@@ -37,9 +37,11 @@ specified dates.
 
 }
 \examples{
+\dontrun{
 
 # requires an mdb.
     
+}
 }
 \seealso{
 

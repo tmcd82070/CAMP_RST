@@ -71,4 +71,10 @@ The date range difference specified via \code{max.date} and
   reports generated. Thus, reports spanning different time periods and sites
   may report different run and life stage passage combinations.
 }
+\examples{
+\dontrun{
+  
+  
+}
+}
 

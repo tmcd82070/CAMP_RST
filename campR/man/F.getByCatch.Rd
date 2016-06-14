@@ -24,9 +24,11 @@ A \code{csv} with all non-Chinook records between the two dates
 Retreive all non-Chinook data between two dates at site.
 }
 \examples{
+\dontrun{
 
 # requires mdb.
 
+}
 }
 \seealso{
 

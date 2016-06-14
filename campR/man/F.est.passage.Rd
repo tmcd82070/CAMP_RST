@@ -95,7 +95,7 @@ thePassage <- F.est.passage(catch.df, release.df, "week", "myFileRoot", ci=TRUE 
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.get.release.data}, \code{F.bootstrap.passage},

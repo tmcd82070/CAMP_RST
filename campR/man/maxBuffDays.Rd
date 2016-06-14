@@ -23,8 +23,10 @@ df <- df2
  calculate ending buffer
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

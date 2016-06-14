@@ -81,8 +81,10 @@ There are some variables calculated in here that I think are
   expectation that they can be deleted.
 }
 \examples{
+\dontrun{
 
 # Need to be able to query, no?  What to do about that?
 
+}
 }
 

@@ -27,8 +27,10 @@ Removes zeros
 other comments found in file
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

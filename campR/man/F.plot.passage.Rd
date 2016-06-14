@@ -47,7 +47,7 @@ F.plot.passage( df, out.file=NA )
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 

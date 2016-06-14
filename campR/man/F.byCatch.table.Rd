@@ -38,8 +38,10 @@ other comments found in file
    ---- Send messages back to the interface
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

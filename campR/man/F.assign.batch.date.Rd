@@ -47,6 +47,7 @@ In order to process the sequence of dates correctly, function
   \code{SampleDate} after the running of this function.
 }
 \examples{
+\dontrun{
 #   ---- Set the time zone to Pacific.
 time.zone <- "America/Los_Angeles"
 
@@ -60,7 +61,8 @@ EndTime <- strptime(c("2014-01-24 03:59:00","2014-01-24 04:00:00"),"\%Y-\%m-\%d 
 #   ---- since that trap stopped before 4 AM.  
 newDate <- F.assign.batch.date(origDate)
 }
+}
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 

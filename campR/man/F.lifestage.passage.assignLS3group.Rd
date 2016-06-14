@@ -43,8 +43,10 @@ NA
  3 life stage groups are fit and the program will decide if weight will be used or not
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

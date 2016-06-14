@@ -89,10 +89,14 @@ write.csv(jBaseTable,'C:/Users/jmitchell/Desktop/jBaseTable.csv')
 Need details
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

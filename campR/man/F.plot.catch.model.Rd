@@ -43,6 +43,7 @@ The input data frame usually has other catch variables, although
   This may not be what Doug wants.
 }
 \examples{
+\dontrun{
 #   ---- Create a data frame.
 batchDates <- as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="\%F"),tz="America/Los_Angeles")
 df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
@@ -65,8 +66,9 @@ attr(df,"life.stage") <- "Fry"
 #   ---- Plot results to plot window.
 F.plot.catch.model( df, file=NA )
 }
+}
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.catch.model}

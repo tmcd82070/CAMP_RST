@@ -73,7 +73,7 @@ catch.df0 <- F.summarize.fish.visit(catch,"unassigned")
 
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.get.catch.data}

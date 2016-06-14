@@ -29,8 +29,10 @@ Jared Studyvin
 Need some details
 }
 \examples{
+\dontrun{
 # insert examples
 
+}
 }
 \author{
 WEST Inc.

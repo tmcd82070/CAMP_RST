@@ -292,7 +292,7 @@ F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
  
 }
 \author{
-R: Trent McDonald (tmcdonald@west-inc.com), SQL: Connie Shannon (Connie.Shannon@wildlife.ca.gov)
+WEST Inc.
 }
 \seealso{
 \code{sqlQuery}, \code{sqlFetch}

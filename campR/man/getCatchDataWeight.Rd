@@ -31,8 +31,10 @@ Jared Studyvin
  return the data
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

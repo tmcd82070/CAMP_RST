@@ -46,7 +46,7 @@ nvisits <- F.buildReportCriteria( site, min.date, max.date )
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{sqlQuery}, \code{F.run.sqlFile}, \code{F.sql.error.check}

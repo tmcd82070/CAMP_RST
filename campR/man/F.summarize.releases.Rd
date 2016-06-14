@@ -25,8 +25,10 @@ Summarize trap efficiency for every release.  This function
 <other comments found in file>
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.
