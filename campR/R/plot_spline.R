@@ -282,7 +282,7 @@ plot_spline <- function(trap,catch.df,df.and.fit,file=NA,df3){
     if(file.exists(out.pass.graphs)){
       file.remove(out.pass.graphs)
     }
-    tryCatch({png(file=out.pass.graphs,width=14,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})  # produces hi-res graphs unless there's an error, then uses default png settings
+    tryCatch({png(filename=out.pass.graphs,width=14,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})  # produces hi-res graphs unless there's an error, then uses default png settings
   }
 
   # set graphical bounds

@@ -77,7 +77,7 @@ F.plot.catch.model <- function( df, file=NA ){
     }
     
     #   ---- Produces hi-res graphs unless there's an error, then uses default png setting.
-    tryCatch({png(file=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})  
+    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})  
   }
 
   imputed <- df$imputed.catch > 0 & !is.na(df$imputed.catch)

@@ -144,7 +144,7 @@ F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file,
         if(file.exists(out.pass.graphs)){
             file.remove(out.pass.graphs)
         }
-        png(file=out.pass.graphs,width=7,height=7,units="in",res=600)
+        png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)
     }
 
     rs <- c(strt.date, end.date)

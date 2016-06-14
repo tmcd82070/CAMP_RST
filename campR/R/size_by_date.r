@@ -103,7 +103,7 @@ if( !is.na(output.file) ){
     if(file.exists(out.graphs)){
         file.remove(out.graphs)
     }
-    tryCatch({png(file=out.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.graphs)})
+tryCatch({png(filename=out.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.graphs)})
 }
 
 #   *******

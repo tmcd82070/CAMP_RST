@@ -242,7 +242,7 @@ for(i in 1:stopHere){
   }
   
   out.fn <- paste(output.file, paste0(" Effort - ",eff.df3$Position[1],".png"), sep="")
-  tryCatch({png(file=out.fn,width=7,height=7,units="in",res=1000)}, error=function(x){png(file=out.fn)})
+  tryCatch({png(filename=out.fn,width=7,height=7,units="in",res=1000)}, error=function(x){png(filename=out.fn)})
   z <- layout( matrix(c(1,2,3), ncol=1), height=c(0.1,0.45,0.45), widths=1)                                                           # layout plot area
   layout.show(z)                                                                                                                    # check plot area
 

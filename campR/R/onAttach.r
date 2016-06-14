@@ -1,4 +1,5 @@
-#' @import  quantreg splines MASS mvtnorm RODBC Rcpp plyr mclust car tools
+#' @import  quantreg splines MASS mvtnorm RODBC Rcpp plyr mclust car tools utils grDevices
+#' @import graphics stats
 #' 
 #' 
 .onAttach <- function(libname, pkgname){

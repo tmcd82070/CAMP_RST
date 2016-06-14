@@ -61,7 +61,7 @@ F.plot.eff.model <- function( df, file ){
     if(file.exists(out.pass.graphs)){
       file.remove(out.pass.graphs)
     }
-    tryCatch({png(file=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})
+    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})
   }
   
   #   ---- Compute results from efficiency trials.  
