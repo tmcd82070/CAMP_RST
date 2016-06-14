@@ -1,4 +1,4 @@
-#' @export max.buff.days
+#' @export maxBuffDays
 #' 
 #' @title max.buff.days
 #' 
@@ -21,7 +21,7 @@
 #' @examples
 #' <insert examples>
 #' 
-max.buff.days <- function(df,trap){
+maxBuffDays <- function(df,trap){
   
   # df <- df2
   
