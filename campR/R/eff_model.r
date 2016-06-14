@@ -192,8 +192,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
           #   ---- Go with the mean model.  
           cat("Fewer than 10 trials found.  Mean efficiency model used\n")
         } else {
-          require(splines)
-        
+
           cur.df <- 3
           repeat{
                  

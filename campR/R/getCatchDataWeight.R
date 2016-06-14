@@ -44,7 +44,6 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
 
 
 
-    require(RODBC)
 
     ## the string must be 'db.file', or else f'n 'build_Report_Criteria.r' won't work.
     ##db.file <<- paste0(pathData,"/CAMP.mdb")

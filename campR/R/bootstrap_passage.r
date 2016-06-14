@@ -146,7 +146,6 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
   # R <- 100
   # ci=T <- ci
 
-  library(mvtnorm)
 
   #   ---- Set the confidence level of the intervals.
   conf <- 0.95   
