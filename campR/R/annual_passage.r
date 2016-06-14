@@ -23,7 +23,7 @@
 #' @param  min.date describe argument
 #' @param  max.date describe argument
 #' @param  output.file describe argument
-#' @param  ci=TRUE  describe argument
+#' @param  ci TRUE  describe argument
 #' 
 #' @details 
 #' 
@@ -167,7 +167,7 @@ F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file,
 
     lab.y.at <- axTicks(2)
     lab.y.lab <- formatC( lab.y.at, big.mark=",", digits=9 )
-    axis( side=2, at=lab.y.at, label=lab.y.lab )
+    axis( side=2, at=lab.y.at, labels=lab.y.lab )
     
     axis( side=1, at=ans.2$year )
 

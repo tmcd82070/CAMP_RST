@@ -19,7 +19,7 @@ F.annual.passage(site, taxon, run, min.date, max.date, output.file, ci = TRUE)
 
 \item{output.file}{describe argument}
 
-\item{ci=TRUE}{describe argument}
+\item{ci}{TRUE  describe argument}
 }
 \value{
 

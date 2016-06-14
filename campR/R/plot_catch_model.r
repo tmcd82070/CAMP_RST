@@ -88,11 +88,11 @@ F.plot.catch.model <- function( df, file=NA ){
     
   #   ---- Add in the x-axis.
   lab.x.at <- pretty(df$batchDate)
-  axis( side=1, at=lab.x.at, label=format(lab.x.at, "%d%b%y"))
+  axis( side=1, at=lab.x.at, labels=format(lab.x.at, "%d%b%y"))
 
   #   ---- Add in the y-axis. 
   lab.y.at <- pretty(rng.y)
-  axis( side=2, at=lab.y.at, label=formatC(lab.y.at, big.mark=",") )
+  axis( side=2, at=lab.y.at, labels=formatC(lab.y.at, big.mark=",") )
 
   #   ---- Set up the colors and pch symbols for use with different trapPositionIDs.  
   traps <- sort(unique(df$trapPositionID))

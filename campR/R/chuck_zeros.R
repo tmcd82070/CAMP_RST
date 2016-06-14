@@ -2,7 +2,7 @@
 #' 
 #' @title chuck.zeros
 #' 
-#' @description
+#' @description Removes zeros
 #' 
 #' @param b describe argument
 #' @param e describe argument

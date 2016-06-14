@@ -98,7 +98,7 @@ F.plot.eff.model <- function( df, file ){
   plot( range(df$batchDate,na.rm=T), range(eff,na.rm=T), type="n", xlab="Date", 
         ylab="Efficiency proportion", xaxt="n" )
   lab.x.at <- pretty(df$batchDate)
-  axis( side=1, at=lab.x.at, label=format(lab.x.at, "%d%b%y"))
+  axis( side=1, at=lab.x.at, labels=format(lab.x.at, "%d%b%y"))
   
   #   ---- Set up points and lines.
   traps <- sort(unique(df$trapPositionID))

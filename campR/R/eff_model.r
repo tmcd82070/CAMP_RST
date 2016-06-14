@@ -32,8 +32,8 @@
 #'   \itemize{ 
 #'   \item{\code{method=1} : A "Seasonal-mean model".  This means that a
 #'   ratio-of-means bias-corrected global efficiency is calculated, for each 
-#'   trap, where the efficiency is estimated via \deqn{\frac{\text{nCaught}
-#'   + 1}{\text{nReleased} + 1}}{(nCaught + 1) / (nReleased + 1).}  Values
+#'   trap, where the efficiency is estimated via \deqn{\frac{nCaught
+#'   + 1}{nReleased + 1}}{(nCaught + 1) / (nReleased + 1).}  Values
 #'   for variables \code{nCaught} and \code{nReleased} originate via function
 #'   \code{F.get.releases} and the querying of an underlying Access database. 
 #'   The resulting ratio-of-means efficiency is then applied to all trapping
@@ -63,7 +63,7 @@
 #'   earliest and latest date with an efficiency trial.  All three can occur on 
 #'   the same one day.  Generalized additive models, or GAMs, first fit the
 #'   observed efficiency-trial data as
-#'   \deqn{\frac{\text{nCaught}}{\text{nReleased}}}{nCaught / nReleased} outcome
+#'   \deqn{\frac{nCaught}{nReleased}}{nCaught / nReleased} outcome
 #'   proportions against a null model with a binomial link.  This leads to a
 #'   constant, or intercept-only model, where the intercept is the weighted 
 #'   avearge of caught fish over all efficiency trials.
@@ -181,7 +181,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
 
         #   ---- At least one efficiency trial "inside" for this trap.
         #   ---- Fit a null model.  
-        fit <- glm( nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weight=nReleased ) 
+        fit <- glm( nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=nReleased ) 
         fit.AIC <- AIC(fit)
     
         cat(paste("df= ", 1, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
@@ -199,7 +199,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
             cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
             tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
         
-            cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weight=nReleased )   
+            cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=nReleased )   
             cur.AIC <- AIC(cur.fit)
                     
             cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))

@@ -243,7 +243,7 @@ for(i in 1:stopHere){
   
   out.fn <- paste(output.file, paste0(" Effort - ",eff.df3$Position[1],".png"), sep="")
   tryCatch({png(filename=out.fn,width=7,height=7,units="in",res=1000)}, error=function(x){png(filename=out.fn)})
-  z <- layout( matrix(c(1,2,3), ncol=1), height=c(0.1,0.45,0.45), widths=1)                                                           # layout plot area
+  z <- layout( matrix(c(1,2,3), ncol=1), heights=c(0.1,0.45,0.45), widths=1)                                                           # layout plot area
   layout.show(z)                                                                                                                    # check plot area
 
   par(mar = c(0.2,0.2,0.2,0.2)); plot(1,1,type = "n",frame.plot = FALSE,axes = FALSE); u <- par("usr");                             # blank area for title                                             # zero out margins, make empty plot, get bounding box     

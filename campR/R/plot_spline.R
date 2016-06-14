@@ -2,101 +2,16 @@
 #' 
 #' @title plot_spline
 #' 
-#' @description
-#'  trap <- trap                       trap <- trap
-#'  catch.df <- catch.df               catch.df <- df2
-#'  df.and.fit <- df.and.fit           df.and.fit <- thisTrap[[1]]
-#'                                     df3 <- df3
+#' @description Plot smoothing splines 
 #' 
 #' 
 #' @param trap <describe argument>
 #' @param catch.df <describe argument>
 #' @param df.and.fit <describe argument>
-#' @param file=NA <describe argument>
+#' @param file =NA <describe argument>
 #' @param df3 <describe argument>
 #' 
-#' @details <other comments found in file>
-#'  get a per-day record of halfcone status.  traps can have more than one
-#'  record per day, so if at least one record on a day is half-cone, just
-#'  say the whole day is half-cone, for plotting ease.  
-#'  cannot use the df <- df.and.fit$df2 here -- the catch algorithm screws with the
-#'  usually easily identifiable non-fishing periods.  so, use original catch.df to get
-#'  halfcone status data.
-#'  get the goods we need to make a spline plot.
-#'  estimate fish counts via the spline model -- use rownames throughout for merging.
-#'    theNewP <- merge(df2[,c('batchDate','rownames','log.sampleLengthHrs')])
-#'    
-#'    test <- df.and.fit$fit
-#'    test$offset <- NULL
-#'    test$model$`offset(log.sampleLengthHrs)` <- rep(log(24),nrow(test$model))
-#'    
-#'    
-#'    test$call <- as.call("glm(formula = n.tot ~ bs.sEnd, family = poisson, data = catch.df)")
-#'    
-#'    pdat <- data.frame(x = seq(catch.df$batchDate[1], catch.df$batchDate[nrow(catch.df)], length = 10000))
-#'    ## predict for new `x`
-#'  
-#'    pdat <- transform(pdat, yhat = predict(test, newdata = pdat))
-#'    
-#'    ## now plot
-#'    ylim <- range(pdat$y, y) ## not needed, but may be if plotting CIs too
-#'    plot(y ~ x)
-#'    lines(yhat ~ x, data = pdat, lwd = 2, col = "red")
-#'    
-#'    
-#'    pdat <- data.frame(x = seq(df0$batchDate[1], df0$batchDate[nrow(df0)], length = 100))
-#'  merge model info with outcome and date
-#'  * insert here???
-#'  summarize all observed catch to batchDate and bring in to model-spline df
-#'  model2$diff <- model2$n.totDay - model2$n.tot
-#'    # old?  1/21/2016
-#'    n.totDay <- data.frame(n.totDay=tapply(model$n.tot,model$batchDate,FUN=sum))   # tapply may not need to work on df model???
-#'    n.totDay$batchDateC <- rownames(n.totDay)
-#'    model <- merge(model,n.totDay,by=c('batchDateC'),all.x=TRUE)
-#'  summarize all imputations of catch to batchDate 
-#'  summarize all sums of observed and imputed catch to batchDate and bring in to model-spline df
-#'  rename imputed catch and bring in to model-spline df
-#'  bring in to model-spline df halfcone operation days
-#'  nEstDay -- imputed or observed, collapsed to batchDate  == nEstDay + nImp
-#'  n.totDay -- observed, collapsed to batchDate == sum of all n.tot for a batchDate
-#'  n.tot -- observed, per trapping instance
-#'  deal with days that have imputation, but zero caught fish.  happens
-#'  often when dealing with a lesser run, e.g., Late Fall.  trap was 
-#'  running, and fish caught becomes a zero (none were caught). 
-#'  for plotting ease, make dfs specific to different catch quantities
-#'  --- now, make the plot. ---
-#'    If file=NA, a pdf graphing device is assumed to be open already.
-#'    Shut down all graphics devices
-#'    ---- Open PNG device
-#'  set graphical bounds
-#' stopifnot(y1 < Inf)
-#'  natural scale plot -- make an empty plot/palette
-#'  draw the vertical segments)
-#'    # draw the exponentiated spline curve
-#'    par(new=TRUE)
-#'    plot(modelA$EndTime,modelA$theP,xaxt='n',xlab='Date',ylab='Caught Fish',type='l',col='blue',xlim=c(x0,x1),ylim=c(y0,y1),lwd=3)
-#'  draw the dots of observed and imputed catch
-#'  this code sequence same as full-cone catch above...although there is no easily obtainable cone status here...
-#'  put in x-axis tick and labels
-#'  put in a header
-#'  make the legends
-#'                Full Cone (1st legend)                                  Half Cone (2nd legend)                                        Other Stuff (3rd legend)
-#'  ---- end plotting ----
-#'  ---- compile graphing statistics and data ----------------------    
-#' write.csv(jBaseTable,'C:/Users/jmitchell/Desktop/jBaseTable.csv')
-#'         
-#'    sum(na.omit(jBaseTable$preCatch))                 # assignedCatch + unassignedCatch
-#'    sum(na.omit(as.vector(jBaseTable$imputedCatch)))  # imputedCatch
-#'    sum(na.omit(jBaseTable$totalCatch))               # totalCatch
-#'    sum(na.omit(allJBaseTable$preCatch))                 # assignedCatch + unassignedCatch
-#'    sum(na.omit(as.vector(allJBaseTable$imputedCatch)))  # imputedCatch
-#'    sum(na.omit(allJBaseTable$totalCatch))               # totalCatch 
-#'  tapply(allJBaseTable[!is.na(allJBaseTable$preCatch),]$preCatch,allJBaseTable[!is.na(allJBaseTable$preCatch),]$siteID,FUN=sum)
-#'    # log scale
-#'    model2 <- model[model$n.tot != 0,]
-#'    plot(model2$EndTime,model2$logTheP,type='l',col='red',ylim=c(min(model2$logTheP,model2$logN.tot),max(model2$logTheP,model2$logN.tot)))
-#'    par(new=TRUE)
-#'    plot(model2$EndTime,model2$logN.tot,type='p',pch=19,cex=0.7,col='black',ylim=c(min(model2$logTheP,model2$logN.tot),max(model2$logTheP,model2$logN.tot)))
+#' @details Need details
 #' 
 #' @return <describe return value>
 #' 
@@ -373,7 +288,7 @@ plot_spline <- function(trap,catch.df,df.and.fit,file=NA,df3){
   } else {
     lab.x.at <- pretty(seq(x0,x1,by=24*60*60) + 12*60*60,n=length(seq(x0,x1,by=24*60*60))/14)
   }
-  axis(side=1, at=lab.x.at, label=format(lab.x.at, "%d%b%y"),cex.axis=0.75)#""))
+  axis(side=1, at=lab.x.at, labels=format(lab.x.at, "%d%b%y"),cex.axis=0.75)#""))
   
   # put in a header
   if(nrow(df0) > 5){
