@@ -1,12 +1,10 @@
 #' @export assignLSCompare
 #'
+#' @import ellipse plyr
+#'	
 #' @title assignLSCompare
 #'
-#' @description
-#'
-#'  Jared Studyvin
-#'  8 March 2016
-#'  output comparison table and figure between biologist life stage assignment and mixture distribution results
+#' @description  Assigns life stage
 #'
 #'
 #'

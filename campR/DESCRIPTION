@@ -14,11 +14,11 @@ Imports:
  splines, 
  MASS,
  mvtnorm,
- Rcpp,
  plyr,
  mclust,
  car,
  tools,
  utils,
- grDevices
+ grDevices,
+ ellipse
 
