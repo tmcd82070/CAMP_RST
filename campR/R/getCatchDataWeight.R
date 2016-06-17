@@ -1,38 +1,37 @@
 #' @export getCatchDataWeight
-#' 
+#'
 #' @title getCatchDataWeight
-#' 
+#'
 #' @description
-#' 
-#'  Jared Studyvin
-#'  14 Jan 2016
-#'  get the data for the life stage assignment
-#' 
-#' 
-#' 
-#' 
-#' 
-#' @param taxon <describe argument>
-#' @param site <describe argument>
-#' @param min.date <describe argument>
-#' @param max.date <describe argument>
-#' 
-#' @details <other comments found in file>
-#'  ---- end building ----
-#'  ---- finally, the new query ----
-#'  ---- end new query -----
-#'  return the data
-#' 
-#' @return <describe return value>
-#' 
-#' @author WEST Inc.
-#' 
+#' Get the catch data from the database file with the weight measurement.
+#'
+#'
+#' @param site The identification number of the site for which estimates are
+#'   required.
+#' @param taxon The species identifier indicating the type of fish of interest.
+#'   This is always \code{161980}; i.e., Chinook Salmon.
+#' @param min.date The start date for data to include. This is a text string in
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#' @param max.date The end date for data to include.  Same format as
+#'   \code{min.date}.
+#'
+#' @details
+#' When the passage estimation routine is called with the analytical life stage assignment, this function is called.
+#' The default queries that retrieve the catch data do not include the weight. This function is need to retrieve the weight information.
+#' This function is intended for internal use only.
+#'
+#'
+#'
+#' @return Data.frame of the catch data with the weight measurements.
+#'
+#' @author Jared Studyvin WEST Inc.
+#'
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' <insert examples>
-#' 
+#'
 #' }
 ############################################
 ## Jared Studyvin

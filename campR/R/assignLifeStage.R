@@ -66,13 +66,13 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
     sample.size.forkLengthAndWeight <- get('sample.size.forkLengthAndWeight',envir=.mycampREnv)
     weight.prop.forkLength <- get('site',envir=.mycampREnv)
     forkLength.mean.diff <- get('forkLength.mean.diff',envir=.mycampREnv)
-    output.file <- get('output.file',envir=.mycampREnv)
+    output.dir <- get('output.dir',envir=.mycampREnv)
 
 
     ##	JARED:  WHY IS THIS SAVE HERE?  IS IT NECESSARY?
     ## This should be done until the next release
     ## save data before assignment
-    save(DATA,site,min.date,max.date,sample.size.forkLength,sample.size.forkLengthAndWeight,weight.prop.forkLength ,forkLength.mean.diff,output.file,file=paste0(output.file,'DATA.Rdata'))
+    save(DATA,site,min.date,max.date,sample.size.forkLength,sample.size.forkLengthAndWeight,weight.prop.forkLength ,forkLength.mean.diff,output.dir,file=paste0(output.dir,'DATA.Rdata'))
 
 
 
@@ -136,7 +136,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
         sample.size.forkLengthAndWeight <- get('sample.size.forkLengthAndWeight',envir=.mycampREnv)
         weight.prop.forkLength <- get('site',envir=.mycampREnv)
         forkLength.mean.diff <- get('forkLength.mean.diff',envir=.mycampREnv)
-        output.file <- get('output.file',envir=.mycampREnv)
+        output.dir <- get('output.dir',envir=.mycampREnv)
 
 
 	## keep only needed columns
@@ -163,7 +163,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
             runDat$lifeStage <- 'Unassigned'
 
             assignCheck$assignment <- 'low sample size/unassigned run'
-            write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+            write.csv(assignCheck,paste0(output.dir,site,fRun,'AssignCheck.csv'),row.names=FALSE)
             cat('\n')
             cat('Final run is either unassigned or there is not enough fish with a forklength. Life stage is being written as unassigned. \n')
             return(list(runDat=runDat,mu=NA,Sigma=NA,run=fRun))
@@ -349,7 +349,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 
         ########################
         ## This might not be need when for the release, but it is nice for testing.
-	write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+	write.csv(assignCheck,paste0(output.dir,site,fRun,'AssignCheck.csv'),row.names=FALSE)
 
 
 	## get group names based on number of groups
@@ -385,25 +385,6 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
             rownames(mu) <- covars
 	}
 
-
-	## save mixture distribution summary statistics
-	##mixDistMUList[[length(mixDistMUList)+1]] <<- mu
-	##mixDistSigmaList[[length(mixDistSigmaList)+1]] <<- Sigma
-
-	##names(mixDistMUList)[length(mixDistMUList)] <<- as.character(fRun)
-	##names(mixDistSigmaList)[length(mixDistSigmaList)] <<- as.character(fRun)
-
-	##    mixDistSigmaList
-	##    mixDistMUList
-
-	###################################
-	## for debugging
-	## save mu and Sigma
-	## print('save mu and sigma')
-	## print(saveName <- gsub(' ','',paste0(as.character(runDat[1,c('river','trap','year','FinalRun')]),collapse='')))
-	## parm <- list(mu,Sigma)
-	## save(parm,file=paste0(output.file,'parm',saveName,'.Rdata'))
-	###################################
 
 
 
@@ -568,7 +549,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
                             cat(as.character(cond),'\n')
                             assignCheck <- data.frame(site=site,minDate=min.date,maxDate=max.date,run=fRun,assignment=as.character(cond),stringsAsFactors=FALSE)
 
-                            write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+                            write.csv(assignCheck,paste0(output.dir,site,fRun,'AssignCheck.csv'),row.names=FALSE)
 
 
                             cat('\n')
@@ -600,7 +581,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
     ## save data after assignment
     ## JARED: WHY THIS SAVE?
     ## This is for debugging and should be removed right before the next release
-    save(DATA,output.file,muList,sigmaList,file=paste0(output.file,'newLS.Rdata'))
+    save(DATA,output.dir,muList,sigmaList,file=paste0(output.dir,'newLS.Rdata'))
 
 
     assignLSCompare(DATA,muLIST=muList,sigmaLIST=sigmaList,...)
