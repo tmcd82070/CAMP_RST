@@ -1,7 +1,7 @@
 #' @export assignLSCompare
 #'
 #' @import ellipse plyr
-#'	
+#'
 #' @title assignLSCompare
 #'
 #' @description  Assigns life stage
@@ -147,11 +147,14 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
       vars <- c('days','forkLength')
 
       mu <- muL[[run]]
-      if(is.na(mu)){
+      Sigma <- sigL[[run]]
+
+      ## catch some bad data
+      if(!is.matrix(mu)|!is.array(Sigma)){
         return(NULL)
       }
 
-      Sigma <- sigL[[run]]
+
       for(j in 1:ncol(mu)){
         points(ellipse::ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')
 
@@ -203,7 +206,7 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
     ##par(mfrow=c(1,2))
 
     ## title for figure
-    varUsed <- paste(rownames(mixDistMUList[[fRun]]),collapse=", ")
+    varUsed <- paste(rownames(muList[[fRun]]),collapse=", ")
     plotMain <- paste0(fRun,'\nVariables used to assign lifestage: ',gsub('days','date',varUsed))
     ## plot forklength and date
     with(data,plot(days,forkLength,ylab='Fork Length (mm)',xlab='Sample Date',col=col,pch=pch,xaxt='n',main=plotMain))

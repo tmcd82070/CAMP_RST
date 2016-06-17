@@ -26,103 +26,6 @@
 #'  if(length(noRun)>0){
 #'      finalRun - finalRun[-noRun]
 #'  }
-#'  save biologist life stage assignment
-#'  for debugging
-#' runDat - subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
-#'  create list for saving mean vectors and variance covariance matrices from each mixture distribution
-#'
-#'  save data before assignment
-#'  save data after assignment
-#'
-#'
-#'
-#'
-#'
-#'
-#'  keep only needed columns
-#'  final run
-#'  number of fish with a forklength
-#'  if final run is unassigned OR if number of fish with fork length <100
-#'  then make life stage unassigned and return
-#'  number of fish with a weight
-#'  number of fish with a forklength and weight
-#'  won't use weight unless enough there is enough data
-#'  subset data to be used for analysis
-#'  use these rows for analysis
-#'  use these columns for analysis
-#'  columns to keep when collapsing data
-#'  use these rows for analysis
-#'  use these columns for analysis
-#'  columns to keep when collapsing data
-#'  need the cluster means to be at least this far apart in the forklength dimension otherwise the number of groups is reduced
-#'  The reduction only happens if the number of groups is not specified by the user
-#'  user overwrite choice of number of groups
-#'  fit cluster with user specified number of groups
-#'  fit 2 groups if means are close
-#'  fit 1 group if means are close
-#'  allow computer to choose
-#'  while(!goodClust){
-#'      clustTemp <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
-#'      (meanFL <- clust[['parameters']]$mean['forkLength',])
-#'      if(min(pairDiff(meanFL))<minMeanDiff){
-#'          print(nGroup)
-#'          if(nGroup == 1){
-#'              goodClust <- TRUE
-#'          }else{
-#'              nGroup <- nGroup-1
-#'          }
-#'          ## if(nGroup==1){
-#'          ##     runDat$lifeStage <- 'Unassigned'
-#'          ##     runDat[with(runDat,!is.na(forkLength)),'lifeStage'] <- 'Medium'
-#'          ##     return(runDat)
-#'          ## }
-#'      }else{
-#'          goodClust <- TRUE
-#'      }
-#'  }
-#' summary(clustTemp)
-#' summary(clust)
-#'  get group names based on number of groups
-#'  array for var-cov matrices, last dim indicates groups
-#'  array of mean vectors, last dim indicates groups
-#'  save mixture distribution summary statistics
-#'     mixDistSigmaList
-#'     mixDistMUList
-#'
-#'  for debugging
-#'  save mu and Sigma
-#'  print('save mu and sigma')
-#'  print(saveName <- gsub(' ','',paste0(as.character(runDat[1,c('river','trap','year','FinalRun')]),collapse='')))
-#'  parm <- list(mu,Sigma)
-#'  save(parm,file=paste0(output.file,'parm',saveName,'.Rdata'))
-#'
-#'  this these did not get an assignment
-#' ddply(expDat,~group,summarize,FL=mean(forkLength))
-#' row <- subset(expDat,id%in%c(1,2))
-#'  this is the collapse data
-#'  should have the same number of rows at runDat
-#'  This is not needed any more, remove to not take up memory
-#'  ddply(collapseDat,~group,summarize,FL=mean(forkLength,na.rm=TRUE))
-#'  mu
-#' with(runDat,sum(is.na(forkLength)))
-#'  for debugging
-#'  M <- mu
-#'  S <- Sigma
-#'  dat <- collapseDat
-#'  w <- haveFLnoW
-#'  varHave <- 'forkLength'
-#'  rm(M,S,dat,w)
-#' dat = whole data frame
-#' w = logical vector of where assignment needs to be done
-#'  M = mean matrix from Mclust
-#'  S = variance covariance array from Mclust
-#' print(X[,y])
-#'  If weight was used some fish may only have a weight or forklength
-#'  This if statement assigns lifestage to fish with either a weight or a forklength
-#'  where there is a weight but no forklength
-#'  where there is a forklength but no weight
-#'  this matches up the group number to the group name
-#' ddply(collapseDat[haveFLnoW,],~group,summarize,FL=mean(forkLength,na.rm=TRUE))
 #'
 #' @return describe return value
 #'
@@ -210,8 +113,8 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 
   ## create list for saving mean vectors and variance covariance matrices from each mixture distribution
   # JARED: CAN THESE <<- BE CHANGED TO <- ?
-  mixDistMUList <<- list()
-  mixDistSigmaList <<- list()
+  ##mixDistMUList <<- list()
+  ##mixDistSigmaList <<- list()
 ####################################################################
 ####################################################################
 ####################################################################
@@ -278,10 +181,18 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
             useWeight <- TRUE
 	}
 
-
+        ## allow some user control if weight is to be used
 	if(!is.null(USEWeight)){
             useWeight <- USEWeight
 	}
+
+
+        if(useWeight & nW<2){
+            useWeight <- FALSE
+            message('I know you requested to use weight in the life stage assignment but there is not adequate sample to do so.')
+        }
+
+
 
 	if(useWeight){
             cat('Weight will be used in the analysis. \n')
@@ -368,7 +279,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 
 
 
-	cat('covars:',covars)
+	cat('covars:',covars,'\n')
 	cat('\n')
 	cat('\n')
 	cat('\n')
@@ -434,6 +345,10 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 	if(is.null(assignCheck$assignment)){
             assignCheck$assignment <- paste('The final number of groups is',nGroup)
 	}
+
+
+        ########################
+        ## This might not be need when for the release, but it is nice for testing.
 	write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
 
 
@@ -492,7 +407,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 
 
 
-	head(expDat)
+	##head(expDat)
 	expDat[inRow,'group'] <- clust[['classification']]
 
 	## this these did not get an assignment
@@ -525,7 +440,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 	## this is the collapse data
 	## should have the same number of rows at runDat
 	runDat <- ddply(expDat,~id,collapseRow)
-	cat('After collapsing:')
+	cat('After collapsing:\n')
 	cat('nrow(runDat):',nrow(runDat),'\n')
 	cat('with(runDat,sum(Unmarked)):',with(runDat,sum(Unmarked)),'\n')
 
@@ -670,27 +585,28 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
     assignList <- dlply(DATA,~FinalRun,assignTry,G=groupN,USEWeight=USEWeight)
 
 
-    assignNew <- ldply(assignList,function(x){x$runDat})
+    ## extract list information
+    assignNew <- ldply(assignList,function(x){x[['runDat']]})
     muList <- llply(assignList,function(x){x$mu})
     sigmaList <- llply(assignList,function(x){x$Sigma})
 
 
 
 
-
-  DATA <- merge(assignNew[,c('id','lifeStage','days')],DATA)
-
-
-  ## save data after assignment
-  ## JARED: WHY THIS SAVE?
-  ## This is for debugging and should be removed right before the next release
-  save(DATA,output.file,muList,sigmaList,file=paste0(output.file,'newLS.Rdata'))
+    ## merge life stage assignment into original data
+    DATA <- merge(assignNew[,c('id','lifeStage','days')],DATA)
 
 
-  assignLSCompare(DATA,muLIST=muList,sigmaLIST=sigmaList,...)
+    ## save data after assignment
+    ## JARED: WHY THIS SAVE?
+    ## This is for debugging and should be removed right before the next release
+    save(DATA,output.file,muList,sigmaList,file=paste0(output.file,'newLS.Rdata'))
 
 
-  return(DATA)
+    assignLSCompare(DATA,muLIST=muList,sigmaLIST=sigmaList,...)
+
+
+    return(DATA)
 
 } # end assignLifeStage
 
