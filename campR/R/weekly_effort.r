@@ -114,7 +114,7 @@ Site <- sqlFetch( ch, "Site")
 F.sql.error.check(newDF)
 close(ch) 
 
-setWinProgressBar( progbar, getWinProgressBar(progbar)*.7 + .3 , label="Formatting results." )
+setWinProgressBar( get("progbar",envir=.GlobalEnv), getWinProgressBar(get("progbar",envir=.GlobalEnv))*.7 + .3 , label="Formatting results." )
 
 # manipulate data
 eff.df <- newDF[,c('Position','Year','JWeek','EffortDate','FishingEffort','Minutes')]
@@ -139,7 +139,7 @@ eff.dfWide$Total <- eff.dfWide$Minutes.1 + eff.dfWide$Minutes.2 + eff.dfWide$Min
 eff.dfWide$Diff <- eff.dfWide$Total - 1440
 
 eff.dfWide <- eff.dfWide[,c('Position','Year','JWeek','Date','Minutes.1','Minutes.2','Minutes.3','Total','Diff')]
-eff.dfWide$Date <- as.POSIXct(as.character(eff.dfWide$Date), tz=time.zone, format="%Y-%m-%d")
+eff.dfWide$Date <- as.POSIXct(as.character(eff.dfWide$Date), tz=get("time.zone",envir=.GlobalEnv), format="%Y-%m-%d")
 eff.dfWide$Date <- as.Date(eff.dfWide$Date)
 
 # set up df of dates and time possibilities.  get min and max over all traps so all resulting dfs are the same size.
