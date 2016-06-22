@@ -63,7 +63,7 @@
 #' 
 #' @seealso \code{F.get.release.data}, \code{F.assign.batch.date}
 #'   
-#' @author Trent McDonald (tmcdonald@west-inc.com)   
+#' @author WEST Inc.
 #'   
 #' @examples
 #' \dontrun{
@@ -86,7 +86,7 @@ F.est.efficiency <- function( release.df, batchDate, method=3, df.spline=3, plot
     return(data.frame(no.fish=NA))
   }
 
-  time.zone <- get("time.zone", env=.GlobalEnv)
+  time.zone <- get("time.zone", envir=.GlobalEnv)
 
   #   ---- Fix up the data frame.
   rel.df <- release.df[,c("releaseID","ReleaseDate","nReleased","HrsToFirstVisitAfter","HrsToLastVisitAfter","trapPositionID","meanRecapTime","Recaps",'beg.date','end.date')]

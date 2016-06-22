@@ -23,7 +23,7 @@
 #' @param  min.date describe argument
 #' @param  max.date describe argument
 #' @param  output.file describe argument
-#' @param  ci=TRUE  describe argument
+#' @param  ci TRUE  describe argument
 #' 
 #' @details 
 #' 
@@ -34,8 +34,10 @@
 #' @seealso \code{\link{}}, \code{\link{}}
 #' 
 #' @examples
+#' \dontrun{
 #' 
 #' 
+#' }
 F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file, ci=TRUE ){
 #
 #   Estimate passage for all years in the data base.
@@ -52,8 +54,8 @@ F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file,
     #   ---- Pull the min and max dates from the data base
     
     #   Retrieve db file name and table names
-    tables <- get( "table.names", env=.GlobalEnv )
-    db <- get( "db.file", env=.GlobalEnv ) 
+    tables <- get( "table.names", envir=.GlobalEnv )
+    db <- get( "db.file", envir=.GlobalEnv ) 
     
     #   Open ODBC channel
     ch <- odbcConnectAccess(db)
@@ -144,7 +146,7 @@ F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file,
         if(file.exists(out.pass.graphs)){
             file.remove(out.pass.graphs)
         }
-        png(file=out.pass.graphs,width=7,height=7,units="in",res=600)
+        png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)
     }
 
     rs <- c(strt.date, end.date)
@@ -167,7 +169,7 @@ F.annual.passage <- function( site, taxon, run, min.date, max.date, output.file,
 
     lab.y.at <- axTicks(2)
     lab.y.lab <- formatC( lab.y.at, big.mark=",", digits=9 )
-    axis( side=2, at=lab.y.at, label=lab.y.lab )
+    axis( side=2, at=lab.y.at, labels=lab.y.lab )
     
     axis( side=1, at=ans.2$year )
 

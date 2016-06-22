@@ -5,7 +5,7 @@
 \title{F.lifestage.passage.assignLS2groupNoWeight}
 \usage{
 F.lifestage.passage.assignLS2groupNoWeight(site, taxon, min.date, max.date,
-  output.file, ci = TRUE)
+  output.file, ci = TRUE, autoLS = TRUE)
 }
 \arguments{
 \item{site}{<describe argument>}
@@ -43,8 +43,10 @@ NA
  2 life stage groups are fit and weight will not be used for assigning lifestage
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

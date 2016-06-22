@@ -35,9 +35,11 @@ As its name implies, function \code{F.chinookByDate.table} retrieves
   passage, differs from \code{F.get.all.catch.data}.
 }
 \examples{
+\dontrun{
 
 # requires an mdb.
 
+}
 }
 \seealso{
 F.get.catch.data.

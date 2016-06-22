@@ -5,7 +5,7 @@
 \title{F.lifestage.passage.assignLS2group}
 \usage{
 F.lifestage.passage.assignLS2group(site, taxon, min.date, max.date, output.file,
-  ci = TRUE)
+  ci = TRUE, autoLS = TRUE)
 }
 \arguments{
 \item{site}{describe argument}
@@ -40,8 +40,10 @@ other comments found in file
  2 life stage groups are fit and the program will decide if weight will be used or not
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

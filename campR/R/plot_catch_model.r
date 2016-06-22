@@ -35,9 +35,10 @@
 #'   
 #' @seealso \code{F.catch.model}
 #' 
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #'
 #' @examples 
+#' \dontrun{
 #' #   ---- Create a data frame.
 #' batchDates <- as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="%F"),tz="America/Los_Angeles")
 #' df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
@@ -59,6 +60,7 @@
 #' 
 #' #   ---- Plot results to plot window.
 #' F.plot.catch.model( df, file=NA )
+#' }
 F.plot.catch.model <- function( df, file=NA ){
 #
 # df   <- masterCatch     df <- example
@@ -77,7 +79,7 @@ F.plot.catch.model <- function( df, file=NA ){
     }
     
     #   ---- Produces hi-res graphs unless there's an error, then uses default png setting.
-    tryCatch({png(file=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})  
+    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})  
   }
 
   imputed <- df$imputed.catch > 0 & !is.na(df$imputed.catch)
@@ -88,11 +90,11 @@ F.plot.catch.model <- function( df, file=NA ){
     
   #   ---- Add in the x-axis.
   lab.x.at <- pretty(df$batchDate)
-  axis( side=1, at=lab.x.at, label=format(lab.x.at, "%d%b%y"))
+  axis( side=1, at=lab.x.at, labels=format(lab.x.at, "%d%b%y"))
 
   #   ---- Add in the y-axis. 
   lab.y.at <- pretty(rng.y)
-  axis( side=2, at=lab.y.at, label=formatC(lab.y.at, big.mark=",") )
+  axis( side=2, at=lab.y.at, labels=formatC(lab.y.at, big.mark=",") )
 
   #   ---- Set up the colors and pch symbols for use with different trapPositionIDs.  
   traps <- sort(unique(df$trapPositionID))

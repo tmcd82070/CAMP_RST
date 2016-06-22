@@ -43,8 +43,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.plot.lifestages <- function( df, file.root, plot.pies=FALSE ){
 #
 #   Produce a plot of the lifestages.
@@ -118,7 +120,7 @@ if( plot.pies ){
             if(file.exists(out.pass.graphs)){
                 file.remove(out.pass.graphs)
             }
-            tryCatch({png(file=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})  # produces hi-res graphs unless there's an error, then uses default png settings
+          tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})  # produces hi-res graphs unless there's an error, then uses default png settings
             file.list <- c(file.list, out.pass.graphs)
         }
 
@@ -149,7 +151,7 @@ if( plot.pies ){
             if(file.exists(out.pass.graphs)){
                 file.remove(out.pass.graphs)
             }
-            tryCatch({png(file=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})  # produces hi-res graphs unless there's an error, then uses default png settings
+            tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})  # produces hi-res graphs unless there's an error, then uses default png settings
             file.list <- c(file.list, out.pass.graphs)
         }
 

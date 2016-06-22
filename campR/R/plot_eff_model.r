@@ -21,7 +21,7 @@
 #'   
 #' @seealso \code{F.efficiency.model}
 #' 
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #'   
 #' @examples 
 #' \dontrun{
@@ -61,7 +61,7 @@ F.plot.eff.model <- function( df, file ){
     if(file.exists(out.pass.graphs)){
       file.remove(out.pass.graphs)
     }
-    tryCatch({png(file=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})
+    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})
   }
   
   #   ---- Compute results from efficiency trials.  
@@ -98,7 +98,7 @@ F.plot.eff.model <- function( df, file ){
   plot( range(df$batchDate,na.rm=T), range(eff,na.rm=T), type="n", xlab="Date", 
         ylab="Efficiency proportion", xaxt="n" )
   lab.x.at <- pretty(df$batchDate)
-  axis( side=1, at=lab.x.at, label=format(lab.x.at, "%d%b%y"))
+  axis( side=1, at=lab.x.at, labels=format(lab.x.at, "%d%b%y"))
   
   #   ---- Set up points and lines.
   traps <- sort(unique(df$trapPositionID))

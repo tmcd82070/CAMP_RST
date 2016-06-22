@@ -5,7 +5,7 @@
 \title{F.lifestage.passage.assignLS3groupNoWeight}
 \usage{
 F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date,
-  output.file, ci = TRUE)
+  output.file, ci = TRUE, autoLS = TRUE)
 }
 \arguments{
 \item{site}{<describe argument>}
@@ -43,8 +43,10 @@ NA
  3 life stage groups are fit and weight will not be used to assign lifestage
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

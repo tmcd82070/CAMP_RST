@@ -28,8 +28,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' insert examples
 #' 
+#' }
 F.lifestage.passage.other <- function( site, taxon, min.date, max.date, output.file, ci=TRUE ){
   #
   #   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY

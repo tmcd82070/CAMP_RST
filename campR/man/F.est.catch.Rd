@@ -109,7 +109,7 @@ F.est.catch(catch.df, plot=TRUE, plot.file="raw_catch.pdf")
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.get.catch.data}, \code{F.est.catch.trapN}

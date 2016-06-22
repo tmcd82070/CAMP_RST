@@ -22,8 +22,10 @@ other comments found in file
 add details
 }
 \examples{
+\dontrun{
 # insert examples
 
+}
 }
 \author{
 WEST Inc.

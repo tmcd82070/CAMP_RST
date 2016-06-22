@@ -38,9 +38,10 @@
 #'   avoid confusion, new variable \code{batchDate} replaces old variable 
 #'   \code{SampleDate} after the running of this function.
 #'
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #' 
 #' @examples
+#' \dontrun{
 #' #   ---- Set the time zone to Pacific.
 #' time.zone <- "America/Los_Angeles"
 #' 
@@ -53,16 +54,17 @@
 #' #   ---- BatchDate for trapVisitID=1234 is now 1/23, 
 #' #   ---- since that trap stopped before 4 AM.  
 #' newDate <- F.assign.batch.date(origDate)
+#' }
 
 F.assign.batch.date <- function( df ){
   
   # df <- times 
   
-  cuttime <- get( "samplePeriodCutTime", env=.GlobalEnv )
+  cuttime <- get( "samplePeriodCutTime", envir=.GlobalEnv )
   
   #   ---- This is the time of day assigned to batchDates.  Could be halfway between cut times or (cuttime - 12*60*60).
   midtime <- "00:00:00"   
-  time.zone <- get( "time.zone", env=.GlobalEnv )
+  time.zone <- get( "time.zone", envir=.GlobalEnv )
   
   #   ---- A sequence of dates at cuttime every day.
   min.day <- min(df$EndTime) - 24*60*60

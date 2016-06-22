@@ -82,8 +82,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.get.indiv.fish.data <- function( site, taxon, run, min.date, max.date, keep="unmarked" ){
 #
 #   Fetch the fish data for a SINGLE TAXON from an Access data base. The resulting data 
@@ -117,8 +119,8 @@ F.get.indiv.fish.data <- function( site, taxon, run, min.date, max.date, keep="u
 #   Retrieve db file name and table names and any other constants
 No.code <- get("No.code", pos=.GlobalEnv)
 Yes.code <- get("Yes.code", pos=.GlobalEnv)
-tables <- get( "table.names", env=.GlobalEnv )
-db <- get( "db.file", env=.GlobalEnv ) 
+tables <- get( "table.names", envir=.GlobalEnv )
+db <- get( "db.file", envir=.GlobalEnv ) 
 
 
 #   *******

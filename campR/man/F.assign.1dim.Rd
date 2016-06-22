@@ -102,7 +102,7 @@ catch2 <- F.assign.1dim(catch, FinalRun, lifeStage)
 
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.expand.plus.counts}, \code{F.assign2.dim}

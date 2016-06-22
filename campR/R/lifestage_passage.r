@@ -59,7 +59,11 @@
 #'   reports generated. Thus, reports spanning different time periods and sites
 #'   may report different run and life stage passage combinations.  
 #'   
+#' @examples 
+#' \dontrun{
 #'   
+#'   
+#' }
 F.lifestage.passage <- function( site, taxon, min.date, max.date, output.file, ci=TRUE ){
 
   # site <- 12345

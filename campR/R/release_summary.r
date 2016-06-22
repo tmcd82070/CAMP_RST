@@ -26,9 +26,11 @@
 #' @seealso
 #' 
 #' @examples
+#' \dontrun{
 #' 
 #' # requires an mdb.
 #'     
+#' }
 F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   
   # site <- 7000
@@ -45,7 +47,7 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   release.sum <- F.summarize.releases( release.df )
 
   #   ---- Get a couple of variables from quickie lookups.
-  db <- get( "db.file", env=.GlobalEnv ) 
+  db <- get( "db.file", envir=.GlobalEnv ) 
   ch <- odbcConnectAccess(db)
   siteTable <- sqlFetch( ch, "site" )[,c('siteName','siteAbbreviation','siteID')]
   runTable <- sqlFetch( ch, "luRun" )   

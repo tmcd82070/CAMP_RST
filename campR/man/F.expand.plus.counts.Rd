@@ -70,7 +70,7 @@ newCatch <- F.expand.plus.counts(catch)
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.assign.1dim}, \code{F.assign.2dim}

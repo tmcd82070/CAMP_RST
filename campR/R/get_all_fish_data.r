@@ -40,8 +40,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.get.all.fish.data <- function( site, min.date, max.date ){
 #
 #   Fetch ALL the fish data from Access data base between two dated. 
@@ -64,7 +66,7 @@ F.get.all.fish.data <- function( site, min.date, max.date ){
 
 #   *******
 #   Open ODBC channel
-db <- get( "db.file", env=.GlobalEnv ) 
+db <- get( "db.file", envir=.GlobalEnv ) 
 ch <- odbcConnectAccess(db)
 
 # ====== 

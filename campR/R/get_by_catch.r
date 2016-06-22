@@ -18,9 +18,11 @@
 #' @seealso
 #' 
 #' @examples
+#' \dontrun{
 #' 
 #' # requires mdb.
 #' 
+#' }
 F.getByCatch <- function( site, min.date, max.date ){
 
   # site <- 7000
@@ -28,7 +30,7 @@ F.getByCatch <- function( site, min.date, max.date ){
   # max.date <- "2010-05-30"
   
   #   ---- Open ODBC channel.
-  db <- get( "db.file", env=.GlobalEnv )
+  db <- get( "db.file", envir=.GlobalEnv )
   ch <- odbcConnectAccess(db)
 
   cat("SQL to retrieve BY-CATCH records between ")

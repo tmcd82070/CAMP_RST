@@ -46,8 +46,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' # insert examples
 #' 
+#' }
 F.est.catch.trapN <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 #
 #   Estimate capture for every day of the season.
@@ -64,7 +66,7 @@ F.est.catch.trapN <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 #  plot.file=file.root
 
   
-time.zone <- get("time.zone", env=.GlobalEnv )
+time.zone <- get("time.zone", envir=.GlobalEnv )
 
 #   ---- Establish the days on which estimates need to be produced.
 #        Times in run season must be same as time in batchDate each day. 

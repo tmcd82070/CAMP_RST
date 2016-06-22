@@ -132,8 +132,10 @@ print(X[,y])
 ddply(collapseDat[haveFLnoW,],~group,summarize,FL=mean(forkLength,na.rm=TRUE))
 }
 \examples{
+\dontrun{
 # insert examples
 
+}
 }
 \author{
 WEST Inc.

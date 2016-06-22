@@ -38,6 +38,7 @@ The vector fed to function \code{F.summarize.passage} must have a
   includes two distinct years.
 }
 \examples{
+\dontrun{
 #   ---- Create a list containing a vector of POSIX dates.
 beg <- strptime("2013-12-24",format="\%F",tz="America/Los_Angeles")
 batchDate <- rep(seq(beg,by=60*60*24,length.out=100),2)
@@ -47,9 +48,18 @@ list.day <- F.summarize.index( batchDate, "day" )
 
 #   ---- All indices 2014, even though some dates 2013.
 list.year <- F.summarize.index( batchDate, "year" )
+
+  ---- Removed these since they depend on having Julian weeks with which 
+  ---- to work.  But these require querying an Access database.  
+
+#   ---- Dec. 31st becomes the 53rd week, by design.
+list.week <- F.summarize.index( batchDate, "week" )
+list.month <- F.summarize.index( batchDate, "month" )
+
+}
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 

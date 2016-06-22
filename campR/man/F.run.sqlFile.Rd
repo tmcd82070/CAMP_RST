@@ -282,7 +282,7 @@ clause must have preceding and antecedent \code{#}-signs added to them.
 \examples{
 \dontrun{
 #   ---- Open ODBC channel.
-db <- get( "db.file", env=.GlobalEnv )
+db <- get( "db.file", envir=.GlobalEnv )
 ch <- odbcConnectAccess(db)
 
 #   ---- Develop the hours fished and TempSamplingSummary table in the
@@ -292,7 +292,7 @@ F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
  
 }
 \author{
-R: Trent McDonald (tmcdonald@west-inc.com), SQL: Connie Shannon (Connie.Shannon@wildlife.ca.gov)
+WEST Inc.
 }
 \seealso{
 \code{sqlQuery}, \code{sqlFetch}

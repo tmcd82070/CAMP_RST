@@ -66,7 +66,9 @@
 #' @seealso \code{F.get.release.data}, \code{F.get.catch.data}, \code{F.est.passage}
 #' 
 #' @examples  
+#' \dontrun{
 #' # query mdb?
+#' }
 F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE ){
   
   # site <- 12345

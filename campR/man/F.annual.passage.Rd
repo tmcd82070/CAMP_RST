@@ -19,7 +19,7 @@ F.annual.passage(site, taxon, run, min.date, max.date, output.file, ci = TRUE)
 
 \item{output.file}{describe argument}
 
-\item{ci=TRUE}{describe argument}
+\item{ci}{TRUE  describe argument}
 }
 \value{
 
@@ -42,8 +42,10 @@ Estimate passage for all years in the data base.
 
 }
 \examples{
+\dontrun{
 
 
+}
 }
 \author{
 WEST Inc.

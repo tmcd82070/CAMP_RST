@@ -78,7 +78,9 @@ Function \code{F.run.passage} is the main workhorse function for estimating
 }
 \examples{
  
+\dontrun{
 # query mdb?
+}
 }
 \seealso{
 \code{F.get.release.data}, \code{F.get.catch.data}, \code{F.est.passage}

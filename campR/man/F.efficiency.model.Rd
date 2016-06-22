@@ -43,8 +43,8 @@ need.
   \itemize{ 
   \item{\code{method=1} : A "Seasonal-mean model".  This means that a
   ratio-of-means bias-corrected global efficiency is calculated, for each 
-  trap, where the efficiency is estimated via \deqn{\frac{\text{nCaught}
-  + 1}{\text{nReleased} + 1}}{(nCaught + 1) / (nReleased + 1).}  Values
+  trap, where the efficiency is estimated via \deqn{\frac{nCaught
+  + 1}{nReleased + 1}}{(nCaught + 1) / (nReleased + 1).}  Values
   for variables \code{nCaught} and \code{nReleased} originate via function
   \code{F.get.releases} and the querying of an underlying Access database. 
   The resulting ratio-of-means efficiency is then applied to all trapping
@@ -74,7 +74,7 @@ need.
   earliest and latest date with an efficiency trial.  All three can occur on 
   the same one day.  Generalized additive models, or GAMs, first fit the
   observed efficiency-trial data as
-  \deqn{\frac{\text{nCaught}}{\text{nReleased}}}{nCaught / nReleased} outcome
+  \deqn{\frac{nCaught}{nReleased}}{nCaught / nReleased} outcome
   proportions against a null model with a binomial link.  This leads to a
   constant, or intercept-only model, where the intercept is the weighted 
   avearge of caught fish over all efficiency trials.
@@ -113,7 +113,7 @@ F.efficiency.model( obs.eff.df, plot=T, method=1, max.df.spline=4, plot.file=NA)
 }
 }
 \author{
-Trent McDonald (tmcdonald@west-inc.com)
+WEST Inc.
 }
 \seealso{
 \code{F.get.releases}, \code{F.bootstrap.passage}

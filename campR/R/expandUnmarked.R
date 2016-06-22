@@ -25,8 +25,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' #insert examples
 #' 
+#' }
 ###################################################
 ## Jared Studyvin
 ## 15 Jan 2016
@@ -38,7 +40,6 @@ expandUnmarked <- function(dat,colKeep,colRep){
     ## dat = data frame
     ## colKeep = string vector of the columns names of the data to be repeated
     ## colRep = single string of the frequency to repeat the data
-    require(plyr)
     repeatRow <- function(data,col.Keep,col.Rep){
         row <- data[,col.Keep]
         rep <- data[,col.Rep]

@@ -45,7 +45,7 @@
 #'   
 #' @seealso \code{F.expand.plus.counts}, \code{F.assign1.dim}
 #' 
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #' 
 #' @examples 
 #' \dontrun{

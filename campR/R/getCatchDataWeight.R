@@ -30,8 +30,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 ############################################
 ## Jared Studyvin
 ## 14 Jan 2016
@@ -44,7 +46,6 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
 
 
 
-    require(RODBC)
 
     ## the string must be 'db.file', or else f'n 'build_Report_Criteria.r' won't work.
     ##db.file <<- paste0(pathData,"/CAMP.mdb")
@@ -65,7 +66,7 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
     }
 
 
-    db <- get( "db.file", env=.GlobalEnv )
+    db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
 
     F.run.sqlFile(ch, "QrySamplePeriod.sql", R.TAXON=taxon ) # trent f'n that works as an access-sql handler

@@ -35,8 +35,10 @@ ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
 other comments found in file
 }
 \examples{
+\dontrun{
 insert examples
 
+}
 }
 \author{
 WEST Inc.

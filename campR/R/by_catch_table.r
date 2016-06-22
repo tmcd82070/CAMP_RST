@@ -33,8 +33,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' #insert examples
 #' 
+#' }
 F.byCatch.table <- function( site, min.date, max.date, output.file ){
 #
 #   List all non-chinook catches,
@@ -83,8 +85,9 @@ if( !is.na(output.file) ){
     if(file.exists(out.fn[3])){
         file.remove(out.fn[3])
     }
-    tryCatch({png(file=out.fn[3],width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.fn[3])})  # produces hi-res graphs unless there's an error, then uses default png settings
-    
+    # produce hi-res graphs unless there's an error, then uses default png settings
+    tryCatch({png(filename=out.fn[3],width=7,height=7,units="in",res=600)}, 
+    				 error=function(x){png(filename=out.fn[3])})  
 }
 
 pie(tmp4, col=rainbow(length(tmp4)), radius=.65, cex=0.75)

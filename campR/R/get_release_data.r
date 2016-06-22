@@ -68,9 +68,11 @@
 #' 
 #' 
 #' @examples
+#' \dontrun{
 #' 
 #' # Need to be able to query, no?  What to do about that?
 #' 
+#' }
 F.get.release.data <- function( site, taxon, min.date, max.date ){
 
   # site <- 1111
@@ -95,7 +97,7 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
   }
 
   #   ---- Open ODBC channel.
-  db <- get( "db.file", env=.GlobalEnv )
+  db <- get( "db.file", envir=.GlobalEnv )
   ch <- odbcConnectAccess(db)
 
   #   ---- Develop the TempSamplingSummary table.
@@ -111,7 +113,7 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
   close(ch)
 
   #   ---- Assign time zones to date-time columns
-  time.zone <- get( "time.zone", env=.GlobalEnv )
+  time.zone <- get( "time.zone", envir=.GlobalEnv )
   attr(release.visit$ReleaseDate, "tzone") <- time.zone
   attr(release.visit$VisitTime, "tzone") <- time.zone
 

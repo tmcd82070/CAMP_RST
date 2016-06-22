@@ -93,7 +93,7 @@
 #'   
 #' @seealso \code{F.get.catch.data}, \code{F.est.catch.trapN}
 #'  
-#' @author Trent McDonald (tmcdonald@west-inc.com)    
+#' @author WEST Inc.
 #'   
 #' @examples
 #' \dontrun{
@@ -107,7 +107,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
   # plot <- TRUE
   # plot.file <- file.root
 
-  time.zone <- get("time.zone", env=.GlobalEnv )
+  time.zone <- get("time.zone", envir=.GlobalEnv )
 
   #   ---- Fill in the gaps for individual traps
   df <- NULL
@@ -137,7 +137,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
     #   ---- First value of buffs is index of first non-zero / non-NA in the beginning.
     #   ---- Second value is index of last non-zero / non-NA in the end. 
     #   ---- Third value is length of n.tot vector.
-    buffs <- max.buff.days(df2,trap)       
+    buffs <- maxBuffDays(df2,trap)       
 
     #   ---- Preserve the original start and end dates.
     origBeg.date <- min(df2$batchDate)

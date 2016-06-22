@@ -140,8 +140,10 @@ warning("Trap stopped, but no trap start record.  See LOG.")
    Store values as attribute for convienance.
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

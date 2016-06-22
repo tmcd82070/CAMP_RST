@@ -56,7 +56,7 @@
 #'   
 #' @seealso \code{F.assign.1dim}, \code{F.assign.2dim}
 #'   
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #' 
 #' @examples 
 #' \dontrun{

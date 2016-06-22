@@ -150,8 +150,10 @@
 #'   \code{assignLSCompare.R}? 
 #'   
 #' @examples  
+#' \dontrun{
 #' 
 #' # we would need to query.  what do we want to do?
+#' }
 
 F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL ){
   
@@ -193,7 +195,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     }
     
     #   ---- Open ODBC channel.
-    db <- get( "db.file", env=.GlobalEnv )
+    db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
     
     #   ---- Develop the hours fished and TempSamplingSummary table.
@@ -225,7 +227,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     
     warning("Long gaps were found in the data so the LongGapLoop series will be run.")
     
-    db <- get( "db.file", env=.GlobalEnv )
+    db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
       
     #   ---- SQL code to find the gaps, and modify trapPositionIDs accordingly.
@@ -391,19 +393,19 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   #   ----          be removed.  So, this section stays for now. 
   
   #   ---- Fetch variable includeCatchID.  
-  db <- get( "db.file", env=.GlobalEnv )
+  db <- get( "db.file", envir=.GlobalEnv )
   ch <- odbcConnectAccess(db)
   includecatchID <- sqlFetch(ch, "TempSamplingSummary")             
   F.sql.error.check(catch)
   close(ch)
   
   #   ---- Assign time zone (probably does not matter).
-  time.zone <- get( "time.zone", env=.GlobalEnv )
+  time.zone <- get( "time.zone", envir=.GlobalEnv )
   attr(catch$StartTime, "tzone") <- time.zone
   attr(catch$EndTime, "tzone") <- time.zone
   
   #   ---- Add in includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST).
-  time.zone <- get( "time.zone", env=.GlobalEnv )
+  time.zone <- get( "time.zone", envir=.GlobalEnv )
   includecatchID$EndTime <- includecatchID$timeSampleEnded
   includecatchID$ProjID <- includecatchID$projectDescriptionID
   includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL

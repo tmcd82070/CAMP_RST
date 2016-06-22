@@ -49,8 +49,10 @@ other comments found in file
         But, gaps are filled.  Take back out the gaps when counting.
 }
 \examples{
+\dontrun{
 # insert examples
 
+}
 }
 \author{
 WEST Inc.

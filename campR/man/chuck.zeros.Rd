@@ -21,14 +21,16 @@ chuck.zeros(b, e, beg.buff, end.buff, df)
 describe return value
 }
 \description{
-
+Removes zeros
 }
 \details{
 other comments found in file
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

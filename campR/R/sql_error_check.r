@@ -20,13 +20,13 @@
 #' 
 #' @seealso \code{sqlQuery}
 #'   
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #' 
 #' @examples
 #' \dontrun{
 #' #   ---- Set up an Access mdb in R.  
 #' db.file <- "C:/yourPath/CAMP.mdb"                # The location of CAMP.mdb
-#' db <- get( "db.file", env=.GlobalEnv )           # Assign the mdb string.
+#' db <- get( "db.file", envir=.GlobalEnv )           # Assign the mdb string.
 #' ch <- odbcConnectAccess(db)                      # Connect R and Access.
 #' 
 #' #   ---- Conduct a good query.

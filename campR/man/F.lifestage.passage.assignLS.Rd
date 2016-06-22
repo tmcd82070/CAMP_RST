@@ -5,7 +5,7 @@
 \title{F.lifestage.passage.assignLS}
 \usage{
 F.lifestage.passage.assignLS(site, taxon, min.date, max.date, output.file,
-  ci = TRUE)
+  ci = TRUE, autoLS = TRUE)
 }
 \arguments{
 \item{site}{<describe argument}
@@ -43,8 +43,10 @@ NA
  allow the program to decide the number of life stage groups and if weight will be used or not
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

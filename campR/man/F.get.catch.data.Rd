@@ -172,8 +172,10 @@ Similar to "gaps in fishing" are periods of "Not
 }
 \examples{
  
+\dontrun{
 
 # we would need to query.  what do we want to do?
+}
 }
 \seealso{
 \code{getCatchDataWeight.R}, \code{expand.plus.counts}, \code{assign.1dim}, and \code{assign.2dim} these also: \code{assignLifeStage.R},

@@ -5,7 +5,7 @@
 \title{F.lifestage.passage.assignLSNoWeight}
 \usage{
 F.lifestage.passage.assignLSNoWeight(site, taxon, min.date, max.date,
-  output.file, ci = TRUE)
+  output.file, ci = TRUE, autoLS = TRUE)
 }
 \arguments{
 \item{site}{<describe argument>}
@@ -43,8 +43,10 @@ NA
  allow the program to decide the number of life stage groups but weight will not be used to assign lifestage
 }
 \examples{
+\dontrun{
 <insert examples>
 
+}
 }
 \author{
 WEST Inc.

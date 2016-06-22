@@ -77,7 +77,7 @@
 #' @seealso \code{F.get.release.data}, \code{F.bootstrap.passage},
 #'   \code{F.est.catch}, \code{F.est.efficiency}
 #'   
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #'   
 #' @examples 
 #' \dontrun{
@@ -100,13 +100,13 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   
   #   ---- Obtain Julian weeks once and for all and place in Global environment for ease. 
   if( summarize.by == "week" ){
-    db <- get( "db.file", env=.GlobalEnv )
+    db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
     the.Jdates <<- sqlFetch( ch, "Dates" )
     close(ch)
   }
   
-  time.zone <- get("time.zone", env=.GlobalEnv )
+  time.zone <- get("time.zone", envir=.GlobalEnv )
   
   f.banner <- function( x ){
       cat("\n")
@@ -228,7 +228,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   bd <- strptime(sort( seq(as.Date(min(na.omit(release.df$ReleaseDate),na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$ReleaseDate),na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
 
   #   ---- Estimate capture for every day of season.  
-  eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df=3, plot=TRUE, plot.file=file.root )
+  eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df.spline=3, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)
     setWinProgressBar(progbar, (2*tmp + 1)/3 )

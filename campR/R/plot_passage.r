@@ -32,7 +32,7 @@
 #'   
 #' @seealso 
 #' 
-#' @author Trent McDonald (tmcdonald@west-inc.com)
+#' @author WEST Inc.
 #'   
 #' @examples 
 #' \dontrun{
@@ -73,7 +73,7 @@ F.plot.passage <- function( df, out.file="passage.png" ){
     if(file.exists(out.pass.graphs)){
         file.remove(out.pass.graphs)
     }
-    tryCatch({png(file=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(file=out.pass.graphs)})  # produces hi-res graphs unless there's an error, then uses default png settings
+    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})  # produces hi-res graphs unless there's an error, then uses default png settings
   }
 
   #   ---- Construct matrix of bar heights.
@@ -124,7 +124,7 @@ F.plot.passage <- function( df, out.file="passage.png" ){
       lab.x.at <- mp[ind]
       lab.x.lab <- format(dt, "%d%b%y")
 
-      axis( side=1, at=lab.x.at, label=lab.x.lab )
+      axis( side=1, at=lab.x.at, labels=lab.x.lab )
     } else {
       
       #   ---- Label every day.
@@ -138,7 +138,7 @@ F.plot.passage <- function( df, out.file="passage.png" ){
       lab.x.at <- mp[ind]
       lab.x.lab <- format(dt, "%d%b%y")
         
-      axis( side=1, at=lab.x.at, label=rep("", length(lab.x.at)) )
+      axis( side=1, at=lab.x.at, labels=rep("", length(lab.x.at)) )
       for( i in 1:length(dt) ){
         mtext( side=1, at=lab.x.at[i], text=lab.x.lab[i], las=my.las, line=my.line, adj=my.adj, cex=my.cex )
       }
@@ -172,7 +172,7 @@ F.plot.passage <- function( df, out.file="passage.png" ){
 
   #   ---- Add y axis labels.
   lab.y.lab <- format( lab.y.at, scientific=F, big.mark=",", trim=T )
-  axis( side=2, at=lab.y.at, label=lab.y.lab )
+  axis( side=2, at=lab.y.at, labels=lab.y.lab )
 
   #   ---- Add total passage.
   N <- round(sum( df$passage ))

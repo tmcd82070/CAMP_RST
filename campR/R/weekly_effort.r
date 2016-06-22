@@ -63,8 +63,10 @@
 #' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
 #' 
 #' @examples
+#' \dontrun{
 #' <insert examples>
 #' 
+#' }
 F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
 #
 #   compute weekly effort.  Effort is number of days/hours that trap was fishing.
@@ -93,7 +95,7 @@ if( nvisits == 0 ){
 
 #  === update 5/23/2015 === requires new connie-query. ===================================
 #   Open ODBC channel
-db <- get( "db.file", env=.GlobalEnv ) 
+db <- get( "db.file", envir=.GlobalEnv ) 
 ch <- odbcConnectAccess(db)
 
 #   *****
@@ -242,8 +244,8 @@ for(i in 1:stopHere){
   }
   
   out.fn <- paste(output.file, paste0(" Effort - ",eff.df3$Position[1],".png"), sep="")
-  tryCatch({png(file=out.fn,width=7,height=7,units="in",res=1000)}, error=function(x){png(file=out.fn)})
-  z <- layout( matrix(c(1,2,3), ncol=1), height=c(0.1,0.45,0.45), widths=1)                                                           # layout plot area
+  tryCatch({png(filename=out.fn,width=7,height=7,units="in",res=1000)}, error=function(x){png(filename=out.fn)})
+  z <- layout( matrix(c(1,2,3), ncol=1), heights=c(0.1,0.45,0.45), widths=1)                                                           # layout plot area
   layout.show(z)                                                                                                                    # check plot area
 
   par(mar = c(0.2,0.2,0.2,0.2)); plot(1,1,type = "n",frame.plot = FALSE,axes = FALSE); u <- par("usr");                             # blank area for title                                             # zero out margins, make empty plot, get bounding box     

@@ -24,8 +24,10 @@ NA
    Look for gaps by trapPositionID
 }
 \examples{
+\dontrun{
 #insert examples
 
+}
 }
 \author{
 WEST Inc.

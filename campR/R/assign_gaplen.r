@@ -22,8 +22,10 @@
 #' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
+#' \dontrun{
 #' #insert examples
 #' 
+#' }
 F.assign.gaplen <- function(df){
 #
 #   Function to look for and assign gaps in sampling

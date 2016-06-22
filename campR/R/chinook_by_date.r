@@ -26,9 +26,11 @@
 #' @seealso F.get.catch.data.
 #'   
 #' @examples 
+#' \dontrun{
 #' 
 #' # requires an mdb.
 #' 
+#' }
 F.chinookByDate.table <- function(site, min.date, max.date, output.file ){
 
   # site <- 7000
