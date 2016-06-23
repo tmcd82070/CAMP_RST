@@ -7,77 +7,75 @@
 F.weekly.effort(site, taxon, min.date, max.date, output.file)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{A text string indicating a prefix to append to all output.}
 }
 \value{
-<describe return value>
+A png graphical display and csv of underlying data, for each unique
+trap with fishing data between the specified \code{min.date} and \code{max.date}.
+An additional png and csv is output summarizing all traps together.
 }
 \description{
-compute weekly effort.  Effort is number of days/hours that trap was fishing.
-
-   site = site to do summary for
-   min.date = minimum date to include
-   max.date = maximum date to include
-   output.file = root name of output file(s)
-
-   ---- Check that times are less than 1 year apart
+Compute weekly effort, in terms of time spent "Fishing" versus "Not
+  fishing."
 }
 \details{
-<other comments found in file>
-  === update 5/23/2015 === requires new connie-query. ===================================
-   Open ODBC channel
-   *****
-   This SQL file develops the hours fished and TempSamplingSummary table 
-   *****
-   This SQL generates the daily allocation of minutes, so they sum to 1440
-   Now, fetch the result 
- manipulate data
- check to make sure minutes.1 minutes.2 minutes.3 all exist, and if not, insert.
- set up df of dates and time possibilities.  get min and max over all traps so all resulting dfs are the same size.
- get helpful stuff for looping about traps
- clean up the julian week info 
- check for julian week 53
- make nice dfs for csv and for prep for plotting
- combine all the traps into an overall df
- the.sum <- NULL
- for(i in 1:nTraps){
-   if(i == 1){
-     the.sum <- df.Day[[1]][,c(6:10)]
-   } else {
-     the.sum <- the.sum + df.Day[[i]][,c(6:10)]
-   }
- }  
- df.Day[[nTraps + 1]]$nTrapsDay <- (df.Day[[nTraps + 1]]$Total - df.Day[[nTraps + 1]]$Diff) / 1440
- get site label
- for each trap (and over all traps)
- check for week 53
-   Compute locations for, and labels of, months'
-   Lower plot
-   Compute locations for, and labels of, months'
- output csv of minutes for trap i
-   out.week.table2 <- paste(output.file, " Daily Effort Summary Table - ",eff.df3$Position[1],".csv", sep="")  
-   write.table( df.Day[[i]], file=out.week.table2, sep=",", row.names=FALSE, col.names=TRUE)
-cat(eff.df3Print)
-   ---- Send messages back to the interface
+Dates provided by variables \code{min.date} and \code{max.date} 
+  cannot span more than 366 days.  Additionally, the code is only setup
+  to calculate fishing with a provided \code{taxon} of \code{161980}, i.e.,
+  Chinook salmon.
+  
+  Function \code{F.weekly.effort} utilizes the Build Report Criteria Release 
+  and Sample Period query series to first identify appropriate fishing 
+  instances via variables \code{min.date} and \code{max.date}.  Series Weekly
+  Effort then massages the fishing time data into the format necessary for 
+  output.  See \code{F.run.sqlFile} for more information on queries.
+  
+  Allocation of time is to one of either three possibilities.  The first 
+  tabulates time during which a trap was not fishing; i.e., the trap was out
+  of the water.  The second and third summarize time for which the trap was
+  deployed but for which fishing was unsuccessful or successful,
+  respectively.  Variable \code{includeCatchID} determines whether or not a
+  fishing instance (identifiable via a unique \code{trapVisitID}) is
+  successful or not.
+  
+  All vertical bars in the resulting graphical display cover seven calendar 
+  days, or 168 hours, with the exception of Julian week 53, which covers 
+  December 30th to December 31st in leap years, and December 31st alone in 
+  non-leap years. In this case, the "week" spans only 2 or 1 day(s), 
+  respectively.  Gray coloring is used to flush out the remaining 5 or 6 
+  days, respectively, for this special week.  In this way, all weeks cover a 
+  7-day period within the bar-chart graphical output.
+  
+  Resulting bar chart pngs and csvs for summary fishing over all unique traps
+  between the provided \code{min.date} and \code{max.date} calculate total 
+  minutes on a per-day basis.  Thus, if three traps fished on one day, but 
+  only two the next, the program utilizes \eqn{1440*3=4320} total minutes for
+  the first day, but only \eqn{1440*2=2880} total minutes for the second. 
+  Note that \eqn{1440 = 24*60} minutes for one day.
 }
 \examples{
 \dontrun{
-<insert examples>
-
+#   ---- Estimate the weekly effort on the American River for all 
+#   ---- inclusive traps, from Jan. 16, 2013 through June 8, 2013.  
+F.weekly.effort(57000,161980,"2013-01-16","2013-06-08","American River")
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{\link{F.run.sqlFile}}
 }
 
