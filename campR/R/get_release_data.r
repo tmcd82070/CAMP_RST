@@ -1,10 +1,8 @@
-#' @export
+#' @export F.get.release.data
 #' 
-#' @title F.get.release.data - Retrieve data frame containing release trials. 
+#' @title F.get.release.data 
 #' 
-#' @description Fetch data on catchability trials from the Access database. 
-#' Do some initial computations,
-#' like dates.
+#' @description Fetch data on efficiency trials from the Access database. 
 #' 
 #' @param site The identification number of the site for which estimates are
 #'   required.
@@ -19,20 +17,24 @@
 #'   for all traps between the dates indicated.  Data include \code{Recaps}
 #'   numerators and \code{nReleased} denominators.
 #'   
-#' @details In the original query results, there is one record for every trap 
-#'   visit within a \code{releaseTime}, say 7 days, even if the trap visit did 
-#'   not catch any marked fish.  In other words, zeros are recorded because all 
-#'   combinations of \code{releaseID}, \code{trapPositionID}, and 
-#'   \code{trapVisitID} upon which marked fish could have been caused are here. 
-#'   Jason: Is this still true?
+#' @details Function \code{F.get.release.data} utilizes query sequences Build 
+#'   Report Criteria and Build Report Criteria Release to obtain all results 
+#'   within the specified \code{min.date} and \code{max.date}.  See
+#'   \code{F.run.sqlFile} for more details.
+#'   
+#'   Query results include one record for every trap visit within a 
+#'   \code{releaseTime}, say 7 days, even if the trap visit did not catch any 
+#'   marked fish.  In this case, zeros are recorded for all combinations of 
+#'   \code{releaseID}, \code{trapPositionID}, and \code{trapVisitID}.
 #'   
 #'   Given a specific release, the resulting data frame tells how many fish from
 #'   the release were captured on subsequent trap visits, for each trap.  These 
 #'   result from collapsing all trap visits and computing the total number of 
-#'   each release's captured fish.
-#'   
-#'   Generally, at any one time, more than one release can "go," and so a single
-#'   trap visit may catch fish from multiple releases.
+#'   each release's captured fish.  Note that generally, at any one time, more
+#'   than one release can "go," and so a single trap visit may catch fish from
+#'   multiple releases.  Total recaptures are summarized over unique
+#'   combinations of trap visits and positions, via variables \code{releaseID}
+#'   and \code{trapPositionID}.
 #'   
 #'   Release records need to have both variables \code{IncludeTest} and 
 #'   \code{IncludeCatch} flagged as \code{Yes} for inclusion in efficiency 
@@ -41,37 +43,31 @@
 #'   at 2. Half cone operations are identified by variable \code{HalfCone} 
 #'   having a value of \code{Yes}.
 #'   
-#'   Total recaptures are summarized over unique combinations of trap visits and
-#'   positions, via variables \code{releaseID} and \code{trapPositionID}.
-#'   
-#'   Variables \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} are
-#'   used in function \code{F.est.efficiency} as helper variables to derive a
+#'   Variables \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} are 
+#'   used in function \code{F.est.efficiency} as helper variables to derive a 
 #'   batch date when the \code{meanEndTime} variable is \code{NA}.
 #'   
-#' @section Mean Recapture Time: 
-#' The mean recapture time is estimated for each
+#' @section Mean Recapture Time: The mean recapture time is estimated for each 
 #'   unique grouping of \code{releaseID} and \code{trapPositionID}.  In the case
 #'   of no recaptures, the mean recapture time is recorded as \code{NA}.  In all
 #'   other cases, the mean recapture time is calculated as the weighted mean of 
-#'   recapture times, weighting on the number of caught fish.  For example,
+#'   recapture times, weighting on the number of caught fish.  For example, 
 #'   suppose fishing takes place at a particular trap over 7 consecutive days. 
 #'   If the bulk of fish were caught on day 7, then the mean recapture time 
 #'   would be near that 7th day of fishing.  This is in contrast to a "straight"
-#'   mean recapture time, which would estimate a mean recapture time
-#'   3.5 days after the start of fishing.
+#'   mean recapture time, which would estimate a mean recapture time 3.5 days
+#'   after the start of fishing, regardless of the temporal distribution of 
+#'   captured fish over the entire 7-day period.
 #'   
-#' @section What?: 
-#' There are some variables calculated in here that I think are
-#'   obsolete, i.e., HrsToFirstVisitAfter, HrsToLastVisitAfter,
-#'   meanTimeAtLargeHrs.  I have commented out these lines/sections, with the
-#'   expectation that they can be deleted.
+#' @seealso \code{F.run.sqlFile}, \code{F.summarize.releases}, \code{F.release.summary}
 #' 
+#' @author WEST Inc. 
 #' 
 #' @examples
 #' \dontrun{
-#' 
-#' # Need to be able to query, no?  What to do about that?
-#' 
+#' #   ---- Fetch all Chinook salmon efficiency data on the American River 
+#' #   ---- between Jan. 16, 2013 and June 8th, 2013.  
+#' df <- F.get.release.data(57000,161980,"2013-01-16","2013-06-08")
 #' }
 F.get.release.data <- function( site, taxon, min.date, max.date ){
 
@@ -150,11 +146,11 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
     #   ---- Mean time frame of released fish that were captured.
     if( one.row$Recaps == 0 ){
       one.row$meanRecapTime <- NA
-    #  one.row$meanTimeAtLargeHrs <- NA   # possibly delete.
+      one.row$meanTimeAtLargeHrs <- NA   
     } else {
       tmp.v <- as.numeric(tmp$VisitTime)
       one.row$meanRecapTime <- sum(tmp.v * tmp$Recaps, na.rm=T) / one.row$Recaps
-    #  one.row$meanTimeAtLargeHrs <- sum(tmp.hdiff * tmp$Recaps, na.rm=T) / one.row$Recaps  # possibly delete.
+      one.row$meanTimeAtLargeHrs <- sum(tmp.hdiff * tmp$Recaps, na.rm=T) / one.row$Recaps 
     }
     
     #   ---- Drop the columns over which we are summing.

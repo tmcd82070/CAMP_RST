@@ -1,10 +1,10 @@
-#' @export
+#' @export F.release.summary
 #' 
-#' @title F.release.summary - Summarize releases
-#' 
-#' @description Summarize efficiency (catchability) trials, or releases, for a site, run, and taxon between
-#' specified dates.
-#' 
+#' @title F.release.summary
+#'   
+#' @description Summarize efficiency trials, or releases, for a site, run, and
+#'   taxon, between specified dates.
+#'   
 #' @param site The identification number of the site for which estimates are 
 #'   required.
 #' @param taxon The species identifier indicating the type of fish of interest. 
@@ -17,23 +17,26 @@
 #' @param output.file The name of the file prefix under which output is to be 
 #'   saved.  Set to NA to plot to the Plot window.
 #'   
-#' @return A \code{csv} file summarizing efficiency trials for the specified
-#'   criteria.  A data frame containing the same information is also returned,
+#' @return A \code{csv} file summarizing efficiency trials for the specified 
+#'   criteria.  A data frame containing the same information is also returned, 
 #'   but invisibly.
 #'   
-#' @details
+#' @details Function \code{F.release.summary} calls helper functions \code{F.get.release.data}
+#' and \code{F.summarize.releases} to fetch, and then process, recorded releases.  
+#' The results returned from \code{F.summarize.releases} are then cleaned up for 
+#' output via a csv.   
 #' 
-#' @seealso
+#' @seealso \code{F.get.release.data}, \code{F.summarize.releases}
 #' 
 #' @examples
 #' \dontrun{
-#' 
-#' # requires an mdb.
-#'     
+#' #   ---- Summarize releases for all efficiency trials involving Chinook
+#' #   ---- salmon on the American River between Jan 16, 2013 and June 8, 2013.
+#' df <- F.release.summary(57000,161980,"2013-01-16","2013-06-08","American River")
 #' }
 F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   
-  # site <- 7000
+  # site <- 57000
   # taxon <- 161980
   # run <- "Fall"
   # min.date <- "2010-01-01"
