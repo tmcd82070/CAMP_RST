@@ -103,7 +103,7 @@
 GlobalVars <- function(
 	db.file="..\\Data\\CAMP.mdb",
 	output.dir="..\\outputs",
-	sql.code.dir=file.path(find.package("campR"),"sql"),
+	sql.code.dir=file.path(find.package("campR"),"inst","sql"),
 	samplePeriodCutTime = "04:00:00", 
 	max.ok.gap = 2,
 	fishingGapMinutes = 10080,
