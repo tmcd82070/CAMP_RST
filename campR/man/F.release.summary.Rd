@@ -2,7 +2,7 @@
 % Please edit documentation in R/release_summary.r
 \name{F.release.summary}
 \alias{F.release.summary}
-\title{F.release.summary - Summarize releases}
+\title{F.release.summary}
 \usage{
 F.release.summary(site, taxon, run, min.date, max.date, output.file)
 }
@@ -25,25 +25,28 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-A \code{csv} file summarizing efficiency trials for the specified
-  criteria.  A data frame containing the same information is also returned,
+A \code{csv} file summarizing efficiency trials for the specified 
+  criteria.  A data frame containing the same information is also returned, 
   but invisibly.
 }
 \description{
-Summarize efficiency (catchability) trials, or releases, for a site, run, and taxon between
-specified dates.
+Summarize efficiency trials, or releases, for a site, run, and
+  taxon, between specified dates.
 }
 \details{
-
+Function \code{F.release.summary} calls helper functions \code{F.get.release.data}
+and \code{F.summarize.releases} to fetch, and then process, recorded releases.  
+The results returned from \code{F.summarize.releases} are then cleaned up for 
+output via a csv.
 }
 \examples{
 \dontrun{
-
-# requires an mdb.
-    
+#   ---- Summarize releases for all efficiency trials involving Chinook
+#   ---- salmon on the American River between Jan 16, 2013 and June 8, 2013.
+df <- F.release.summary(57000,161980,"2013-01-16","2013-06-08","American River")
 }
 }
 \seealso{
-
+\code{F.get.release.data}, \code{F.summarize.releases}
 }
 

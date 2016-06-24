@@ -93,7 +93,9 @@ F.size.by.date <- function( site, taxon, run, min.date, max.date, output.file ){
 #   A graph, in "file" of the length by date data. 
 #
 
-  
+  #   ---- Get global environment stuff.
+  db.file <- get("db.file",envir=.GlobalEnv)
+  table.names <- get("table.names",envir=.GlobalEnv)
 
 #   Open a graphics device
 if( !is.na(output.file) ){

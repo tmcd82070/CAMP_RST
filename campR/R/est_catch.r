@@ -107,6 +107,8 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
   # plot <- TRUE
   # plot.file <- file.root
 
+  #   ---- Get stuff from the global environment.
+  run.name <- get("run.name", envir=.GlobalEnv)
   time.zone <- get("time.zone", envir=.GlobalEnv )
 
   #   ---- Fill in the gaps for individual traps
@@ -137,7 +139,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
     #   ---- First value of buffs is index of first non-zero / non-NA in the beginning.
     #   ---- Second value is index of last non-zero / non-NA in the end. 
     #   ---- Third value is length of n.tot vector.
-    buffs <- maxBuffDays(df2,trap)       
+    buffs <- max.buff.days(df2,trap)       
 
     #   ---- Preserve the original start and end dates.
     origBeg.date <- min(df2$batchDate)

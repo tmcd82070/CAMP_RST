@@ -63,6 +63,9 @@ F.summarize.passage <- function( df, summarize.by ){
   dt <- c(tapply( df$batchDate, index, FUN=function(x, narm){ min(x, na.rm=narm) }, narm=T ))
   class(dt) <- class(df$batchDate)  # the tapply above strips class information.  make this back into a POSIX date
   attr(dt, "tzone") <- attr(df$batchDate, "tzone")   
+  
+  #   ---- Push this along for bootstrapping by week.  
+  attr(dt, "JDates") <- attr(df, "JDates") 
   p.imp <- c(tapply( df$imputed.catch, index, FUN=mean, na.rm=T ))   # imputed.catch is the var with % per day.
   
   #   ----- Now, summarize passage by time period -----   

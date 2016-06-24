@@ -75,6 +75,9 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
   # taxon <- 161980
   # min.date <- "2006-01-01"
   # max.date <- "2006-12-01"
+  
+  #   ---- Get global environment data. 
+  halfConeMulti <- get("halfConeMulti",envir=.GlobalEnv)
 
   #   ---- Run report criteria for trap visits. Build TempReportCriteria_Trapvisit.
   nvisits <- F.buildReportCriteria( site, min.date, max.date )

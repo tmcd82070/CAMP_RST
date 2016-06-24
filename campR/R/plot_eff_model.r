@@ -50,6 +50,9 @@ F.plot.eff.model <- function( df, file ){
   #   df <- ans    df <- example
   #   file <- plot.file
   
+  #   ---- Get global environment information. 
+  db.file <- get("db.file",envir=.GlobalEnv)
+  
   #   ---- Prepare for plotting.  
   if( !is.na(file) ){
     

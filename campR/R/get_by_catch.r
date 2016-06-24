@@ -1,9 +1,8 @@
-#' @export
+#' @export F.getByCatch
 #' 
 #' @title F.getByCatch 
 #' 
-#' @description 
-#' Retreive all non-Chinook data between two dates at site.
+#' @description Retreive all non-Chinook catch data between two dates at a site.
 #' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
@@ -15,13 +14,17 @@
 #' @return A \code{csv} with all non-Chinook records between the two dates
 #'   specified at the specified site.
 #'   
-#' @seealso
+#' @details Function \code{F.getByCatch} utilizes query sequence By Catch 
+#' to obtain all non-Chinook records within a catch.  See \code{F.run.sqlFile}
+#' for details.  
+#'   
+#' @seealso \code{F.run.sqlFile}
+#' 
+#' @author WEST Inc.  
 #' 
 #' @examples
 #' \dontrun{
-#' 
-#' # requires mdb.
-#' 
+#' df <- F.getByCatch(57000,"2013-01-16","2013-06-08")
 #' }
 F.getByCatch <- function( site, min.date, max.date ){
 

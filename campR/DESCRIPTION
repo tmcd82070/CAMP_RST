@@ -20,5 +20,11 @@ Imports:
  car,
  tools,
  utils,
- grDevices
+ grDevices,
+ tidyr,
+ dplyr,
+ DBI,
+ assertthat,
+ R6,
+ magrittr
 

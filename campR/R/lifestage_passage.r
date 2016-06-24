@@ -1,9 +1,8 @@
-#' @export
+#' @export F.lifestage.passage
 #' 
 #' @title F.lifestage.passage 
 #' 
-#' @description 
-#' Estimate annual passage / production estimates between specified.
+#' @description Estimate annual passage / production estimates between specified.
 #' 
 #' @param site The identification number of the site for which estimates are
 #'   required.

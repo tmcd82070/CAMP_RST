@@ -135,26 +135,41 @@
 #' }
 F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R, ci=T ){
 
-  # grand.df <- grand.df
-  # catch.fits <- catch.and.fits$fits
-  # catch.Xmiss <- catch.and.fits$X.miss
-  # catch.gapLens <- catch.and.fits$gaps
-  # catch.bDates.miss <- catch.and.fits$bDates.miss
-  # eff.fits <- eff.and.fits$fits
-  # eff.X <- eff.and.fits$X
-  # eff.ind.inside <- eff.and.fits$ind.inside
-  # eff.X.dates <- eff.and.fits$X.dates
-  # sum.by <- summarize.by
-  # R <- 100
-  # ci=T <- ci
+#   grand.df <- grand.df
+#   catch.fits <- catch.and.fits$fits
+#   catch.Xmiss <- catch.and.fits$X.miss
+#   catch.gapLens <- catch.and.fits$gaps
+#   catch.bDates.miss <- catch.and.fits$bDates.miss
+#   eff.fits <- eff.and.fits$fits
+#   eff.X <- eff.and.fits$X
+#   eff.ind.inside <- eff.and.fits$ind.inside
+#   eff.X.dates <- eff.and.fits$X.dates
+#   sum.by <- summarize.by
+#   R <- 100
+#   ci=T <- ci
 
 
   #   ---- Set the confidence level of the intervals.
   conf <- 0.95   
-
+  
   #   ---- Get Julian weeks for this timeframe.  
   if(sum.by == 'week'){
-    jDates <- subset(the.Jdates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
+    
+    #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
+    db <- get( "db.file", envir=.GlobalEnv ) 
+    ch <- odbcConnectAccess(db)
+    JDates <- sqlFetch( ch, "Dates" )
+    close(ch) 
+    
+    #   ---- Clean up the Julian week information.
+    theDates <- data.frame(Date=as.Date(seq(as.Date(attr(grand.df,"min.date"),format="%Y-%m-%d"),as.Date(attr(grand.df,"max.date"),format="%Y-%m-%d"),by="days")))
+    JDates$Year <- as.numeric(format(JDates$uniqueDate,"%Y"))
+    JDates$Date <- as.Date(JDates$uniqueDate,format="%Y-%m-%d")
+    theDates <- merge(theDates,JDates[,c('Date','julianWeek','Year','julianWeekLabel')],by=c('Date'))
+    names(theDates)[names(theDates) == 'julianWeek'] <- 'JWeek'
+    
+    jDates <- subset(JDates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
+    attr(grand.df,"JDates") <- jDates
   }
 
   #   ---- Compute THE estimate.  F.summarize.passage first averages over traps,
@@ -373,10 +388,23 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
     #   ---- We now need to average the cells over the traps, and summarize by time.  Do this by calling 
     #   ---- F.summarize.passage on each column.
 
+    #   ---- Get Julian week information in the case of weeks.  Only adds a couple of seconds, so don't check if 
+    #   ---- the temporal summary is by week;  just do it. 
+    db <- get( "db.file", envir=.GlobalEnv ) 
+    ch <- odbcConnectAccess(db)
+    JDates <- sqlFetch( ch, "Dates" )
+    close(ch) 
+    
+    JDates$uniqueDate <- as.Date(JDates$uniqueDate,format="%Y-%m-%d")
+    JDates <- JDates[JDates$uniqueDate >= attr(grand.df,"min.date") & JDates$uniqueDate <= attr(grand.df,"max.date"),]
+    
     #   ---- Internal function to summarize catch by s.by by applying
     #   ---- F.summarize to every column of pass.
     f.sumize.pass <- function(p, s.by, bd){#}, imp.catch){
       df <- data.frame( batchDate=bd, passage=p, imputed.catch=1 )  
+
+      #   ---- Attach JDates if we need to bootstrap by week.  
+      attr(df,"JDates") <- JDates
       n <- F.summarize.passage( df, s.by )
       n$passage
     }

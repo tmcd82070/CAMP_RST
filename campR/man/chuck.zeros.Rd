@@ -7,35 +7,53 @@
 chuck.zeros(b, e, beg.buff, end.buff, df)
 }
 \arguments{
-\item{b}{describe argument}
+\item{b}{An integer of the number of zeros and \code{NA} to keep before the 
+first non-zero and non-\code{NA} catch record. Always set to zero.}
 
-\item{e}{describe argument}
+\item{e}{An integer of the number of zeros and \code{NA} to keep after the 
+last non-zero and non-\code{NA} catch record. Always set to zero.}
 
-\item{beg.buff}{describe argument}
+\item{beg.buff}{An integer.  The number of zeros and \code{NA} prior to the 
+first non-zero and non-\code{NA} catch record in the original data frame 
+\code{df}.}
 
-\item{end.buff}{describe argument}
+\item{end.buff}{An integer.  The number of zeros and \code{NA} after the last
+non-zero and non-\code{NA} catch record in the original data frame 
+\code{df}.}
 
-\item{df}{describe argument}
+\item{df}{A catch data frame containing catch records for one particular 
+trap.}
 }
 \value{
-describe return value
+A data frame, necessarily a subset of the data frame \code{df}
+  provided to the function, with all zero and \code{NA} catch records removed
+  before the first, and after the last, valid catch record.
 }
 \description{
-Removes zeros
+Removes zeros before the first non-zero catch, and the same for
+  zeros following the last non-zero catch.
 }
 \details{
-other comments found in file
+The number of trapping days with preceding and antecedent zeros in 
+  the catch record for a trap can be specified via manipulation of the 
+  \code{b} and \code{e} variables.  Thus, the number of zero catch records 
+  both before the first and after the last caught fish is independently 
+  adjustable.
+  
+  Variable \code{n.tot} identifies zero and \code{NA} catch records.
 }
 \examples{
 \dontrun{
-#insert examples
-
+#   ---- Remove all zero and NA records before the first non-zero and non-NA
+#   ---- catch record in record 4 in data frame catch.df.  Do the same for
+#   ---- the last, which is in record 12.  
+df <- chuck.zeros(0,0,4,12,catch.df)
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{related routine}}, \code{\link{related routine}}
+\code{max.buff.days}
 }
 

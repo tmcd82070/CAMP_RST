@@ -7,46 +7,43 @@
 F.byCatch.table(site, min.date, max.date, output.file)
 }
 \arguments{
-\item{site}{describe argument}
+\item{site}{The identification number of the site for which estimates are
+required.}
 
-\item{min.date}{describe argument}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{describe argument}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{output.file}{describe argument}
+\item{output.file}{The name of the file prefix under which output is to be 
+saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-describe return value
+A csv file containing all non-Chinook catch, along with a png pie 
+chart detailing underlying counts and proportions of caught species.
 }
 \description{
-List all non-chinook catches,
-
-   Input:
-   site = site ID of the place we want, trap locaton
-
-   Output:
-   The take table is output to a CSV file
-
-
-   Build table in Access file containing trap visits we want
+List all non-Chinook catch.
 }
 \details{
-other comments found in file
-   ---- Write out the data set
-   ---- Produce a pie chart and write out the data for it
-   ---- Open PNG device
-   ---- Send messages back to the interface
+Query sequence Build Report Criteria builds the appropriate time frame
+of interest.  See \code{F.run.sqlFile} for details.  
+
+Function \code{F.byCatch.table} calls helper function \code{F.getByCatch}
+to obtain the non-Chinook catch.
 }
 \examples{
 \dontrun{
-#insert examples
-
+#   ---- Find all non-Chinook catch resulting from fishing the American
+#   ---- River, from Jan. 16, 2013 through June 8, 2103.  
+F.byCatch.table(57000,"2013-01-16","2013-06-08",output.file="American River")
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{related routine}}, \code{\link{related routine}}
+\code{F.run.sqlFile}, \code{F.getByCatch}
 }
 

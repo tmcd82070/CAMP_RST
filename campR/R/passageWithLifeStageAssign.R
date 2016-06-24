@@ -334,6 +334,10 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
         theZeros <- names(theSums[theSums == 0])
         catch.df.ls <- catch.df.ls[!(catch.df.ls$trapPositionID %in% theZeros),]
         
+        #   ---- Set these attributes so they can be passed along.
+        attr(catch.df.ls,"min.date") <- min.date
+        attr(catch.df.ls,"max.date") <- max.date
+        
         #   ---- Compute passage
         if(nrow(catch.df.ls) > 0 & sum(as.numeric(theSums)) > 0){
           pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )

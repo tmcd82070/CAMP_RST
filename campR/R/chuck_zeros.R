@@ -1,27 +1,45 @@
 #' @export chuck.zeros
-#' 
+#'   
 #' @title chuck.zeros
-#' 
-#' @description Removes zeros
-#' 
-#' @param b describe argument
-#' @param e describe argument
-#' @param beg.buff describe argument
-#' @param end.buff describe argument
-#' @param df describe argument
-#' 
-#' @details other comments found in file
-#' 
-#' @return describe return value
-#' 
+#'   
+#' @description Removes zeros before the first non-zero catch, and the same for
+#'   zeros following the last non-zero catch.
+#'   
+#' @param b An integer of the number of zeros and \code{NA} to keep before the 
+#'   first non-zero and non-\code{NA} catch record. Always set to zero.
+#' @param e An integer of the number of zeros and \code{NA} to keep after the 
+#'   last non-zero and non-\code{NA} catch record. Always set to zero.
+#' @param beg.buff An integer.  The number of zeros and \code{NA} prior to the 
+#'   first non-zero and non-\code{NA} catch record in the original data frame 
+#'   \code{df}.
+#' @param end.buff An integer.  The number of zeros and \code{NA} after the last
+#'   non-zero and non-\code{NA} catch record in the original data frame 
+#'   \code{df}.
+#' @param df A catch data frame containing catch records for one particular 
+#'   trap.
+#'   
+#' @details The number of trapping days with preceding and antecedent zeros in 
+#'   the catch record for a trap can be specified via manipulation of the 
+#'   \code{b} and \code{e} variables.  Thus, the number of zero catch records 
+#'   both before the first and after the last caught fish is independently 
+#'   adjustable.
+#'   
+#'   Variable \code{n.tot} identifies zero and \code{NA} catch records.
+#'   
+#' @return A data frame, necessarily a subset of the data frame \code{df}
+#'   provided to the function, with all zero and \code{NA} catch records removed
+#'   before the first, and after the last, valid catch record.
+#'   
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
+#' @seealso \code{max.buff.days}
 #' 
 #' @examples
 #' \dontrun{
-#' #insert examples
-#' 
+#' #   ---- Remove all zero and NA records before the first non-zero and non-NA
+#' #   ---- catch record in record 4 in data frame catch.df.  Do the same for
+#' #   ---- the last, which is in record 12.  
+#' df <- chuck.zeros(0,0,4,12,catch.df)
 #' }
 chuck.zeros <- function(b,e,beg.buff,end.buff,df){  
   
@@ -31,19 +49,25 @@ chuck.zeros <- function(b,e,beg.buff,end.buff,df){
   
   dfO <- df[order(df$batchDate),]
   
+  #   ---- Identify the beginning date of catch, i.e., the first with non-zero catch. 
+  #   ---- Variable b is the index identifying the first day of non-zero data.
   if((b - beg.buff) > 0){
-    beg.date <- dfO$batchDate[b - beg.buff]                               # b is the index identifying the first day of non-zero data.
+    beg.date <- dfO$batchDate[b - beg.buff]                               
   } else {
     beg.date <- dfO$batchDate[1]
   }
   
+  #   ---- Identify the ending date of catch, i.e., the last with non-zero catch.
+  #   ---- Variable e is the first zero or NA after non-zero data
   if((e - end.buff) > 0){
-    end.date <- dfO$batchDate[nrow(dfO) - e + 1 + end.buff]               # e is the first zero or NA after non-zero data
+    end.date <- dfO$batchDate[nrow(dfO) - e + 1 + end.buff]              
   } else {
     end.date <- dfO$batchDate[nrow(dfO)]
   }
   
-  df.small <- df[df$batchDate >= beg.date & df$batchDate <= end.date,]    # restrict on the original unordered df
+  #    ---- Restrict on the original unordered data frame based on the beg.date 
+  #    ---- end.date identified via the provided size of the requested buffer.
+  df.small <- df[df$batchDate >= beg.date & df$batchDate <= end.date,]    
   
   df.small
 }  

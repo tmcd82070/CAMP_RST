@@ -150,12 +150,18 @@ F.plot.passage <- function( df, out.file="passage.png" ){
       my.cex <- 1
     } else {
       
+      #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
+      db <- get( "db.file", envir=.GlobalEnv ) 
+      ch <- odbcConnectAccess(db)
+      JDates <- sqlFetch( ch, "Dates" )
+      close(ch) 
+      
       #   ---- Label weekly (yearly does not get plotted).  
-      jDates <- subset(the.Jdates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,julianWeek,julianWeekLabel))
+      jDates <- subset(JDates, as.Date(uniqueDate) >= attr(df,"min.date") & as.Date(uniqueDate) <= attr(df,"max.date"),c(uniqueDate,julianWeek,julianWeekLabel))
 
       #   ---- Can't figure out how to join on POSIX dates.  So cheating. 
-      df$date.alone <- strftime(df$date,format="%x")
-      jDates$date.alone <- strftime(jDates$uniqueDate,format="%x")
+      df$date.alone <- as.Date(df$date,format="%Y-%m-%d")
+      jDates$date.alone <- as.Date(jDates$uniqueDate,format="%Y-%m-%d")
       df2 <- merge(df,jDates,by = c("date.alone"),all.x=TRUE)
       df2 <- df2[order(df2$uniqueDate),]
       dt <- df2$julianWeekLabel  

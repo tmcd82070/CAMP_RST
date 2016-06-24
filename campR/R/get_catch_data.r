@@ -165,6 +165,9 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   # nLS <- NULL
   # weightUse <- NULL
   
+  #   ---- Get stuff we need from the global environment.
+  fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
+  halfConeMulti <- get("halfConeMulti",envir=.GlobalEnv)
   
   #   ---- STEP 1:  Get original raw catch data via querying. 
   if(autoLS){
@@ -183,6 +186,21 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     #   ---- equal zero, along with four other records.  I don't like the inconsistency, but drop
     #   ---- records with zero Unmarked.
     catch <- catch[ (!is.na(catch$Unmarked) & catch$Unmarked > 0) | is.na(catch$Unmarked),]
+    
+    #   ---- Fetch variable includeCatchID.  It looks like when we do this crosswalk solution
+    #   ---- that some of the included catches are includeCatchID == 2.  But this variable 
+    #   ---- is not in the table.  I'm certain this is because of old data (RBDD 1998).
+    db <- get( "db.file", envir=.GlobalEnv )
+    ch <- odbcConnectAccess(db)
+    catchIncludeCatchID <- sqlFetch(ch, "TrapVisit")             
+    F.sql.error.check(catchIncludeCatchID)
+    close(ch)
+    
+    #   ---- Now, identify the includeCatchIDs we do not want to include.  
+    catch4 <- merge(catch,catchIncludeCatchID[,c('trapVisitID','includeCatchID')],by=c('trapVisitID'),all.x=TRUE)
+    catch5 <- catch4[ (!is.na(catch4$includeCatchID) & catch4$includeCatchID == 1) | catch4$TrapStatus == "Not fishing",]
+    catch5$includeCatchID <- NULL
+    catch <- catch5
 
   } else {  
     
@@ -242,10 +260,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     #   ---- data frame, since that, by design, has no weights.  So, we use what we 
     #   ---- really need from it, and add it to the weight catch data frame.  
     if( autoLS ){
-        
-      #   ---- The data frame catch2 doesn't have the weight data.  So, keep what we 
-      #   ---- really need from it -- the crosswalk between trapPositionIDs. 
-      
+
       #   ---- The crosswalk needs a unique identifier for each trapVisitID.  This is a 
       #   ---- problem for 'Not fishing' instances, which by design, have a trapVisitID
       #   ---- of NA; i.e., there is no uniqueness.  So, make them have a unique 
@@ -280,10 +295,28 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
       names(catch3)[names(catch3) == 'trapPositionID'] <- 'oldtrapPositionID'        
       names(catch3)[names(catch3) == 'newtrapPositionID'] <- 'trapPositionID'
       
+      #   ---- Reduce catches to just positives.  Toss the 0 catches and non-fishing visits.
+      #   ---- We also do this below, but I believe this helps induce a clean merge.  
+      catch3 <- catch3[ (catch3$Unmarked > 0) & (catch3$TrapStatus == "Fishing"), ]
+      
+      #   ---- Fetch variable includeCatchID.  It looks like when we do this crosswalk solution
+      #   ---- that some of the included catches are includeCatchID == 2.  But this variable 
+      #   ---- is not in the table.  
+      db <- get( "db.file", envir=.GlobalEnv )
+      ch <- odbcConnectAccess(db)
+      catchIncludeCatchID <- sqlFetch(ch, "TrapVisit")             
+      F.sql.error.check(catchIncludeCatchID)
+      close(ch)
+
+      #   ---- Now, identify the includeCatchIDs we do not want to include.  
+      catch4 <- merge(catch3,catchIncludeCatchID[,c('trapVisitID','includeCatchID')],by=c('trapVisitID'),all.x=TRUE)
+      catch5 <- catch4[ (!is.na(catch4$includeCatchID) & catch4$includeCatchID == 1) | catch4$TrapStatus == "Not fishing",]
+      catch5$includeCatchID <- NULL
+      
       #   ---- Keep 'Not fishing' less than 7 days, but all 'Fishing', regardless of how
       #   ---- long they were fishing.  This keeps fishing instances of duration 
       #   ---- greater than seven days, if any actaully exist.  
-      catch <- catch3[(catch3$TrapStatus == "Not fishing" & catch3$SampleMinutes <= fishingGapMinutes) | catch3$TrapStatus == "Fishing",]  
+      catch <- catch5[(catch5$TrapStatus == "Not fishing" & catch5$SampleMinutes <= fishingGapMinutes) | catch5$TrapStatus == "Fishing",]  
     } else {
       catch <- catch2[(catch2$TrapStatus == "Not fishing" & catch2$SampleMinutes <= fishingGapMinutes) | catch2$TrapStatus == "Fishing",]
     }
@@ -324,7 +357,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     catchFishing <- assignLifeStage(DATA=catchFishing,groupN=nLS,USEWeight=weightUse)  
     
     # for debugging
-    jCatch <<- catchFishing
+    #jCatch <<- catchFishing
     #catch <- jCatch
     
     #   ---- Make the catch data frame whole again.  But first, make sure that 
@@ -429,14 +462,14 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   #   ---- STEP 6:  Expand for half-cone adjustments, and calculate plus counts.  
   
   #   ---- Get summary counts of catch run vs. lifetstage for internal checking.
-  totalFish <<- sum(catch$Unmarked)
+  #totalFish <<- sum(catch$Unmarked)
   
   #   ---- Allow for 0 valid catch, but non-zero invalid catch.
   #   ---- Use if-clause since aggregate doesn't work on zero rows.
   if(nrow(catch) > 0){
-    totalRun <<- aggregate(catch$Unmarked, list(FinalRun=catch$FinalRun), FUN=sum)
-    totalLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage), FUN=sum)
-    totalRunXLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage,FinalRun=catch$FinalRun), FUN=sum)
+    #totalRun <<- aggregate(catch$Unmarked, list(FinalRun=catch$FinalRun), FUN=sum)
+    #totalLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage), FUN=sum)
+    #totalRunXLifeStage <<- aggregate(catch$Unmarked, list(LifeStage=catch$lifeStage,FinalRun=catch$FinalRun), FUN=sum)
   }
   
   #   ---- ID the unassigned lifeStage - necessary to separate measured vs caught.

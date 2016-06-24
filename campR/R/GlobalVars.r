@@ -75,6 +75,9 @@
 #'  future analysis combined sites over large areas (e.g., states). 
 #'  In the current routines, all times are assigned (or forced) to be in this time zone. 
 #'  
+#' @param seed An integer specifying the seed to use in all functions utilizing a random draw.  Currently set 
+#' equal to 884.  
+#'  
 #'
 #' @details   
 #'  One additional global variable is defined. \code{table.names} is a list containing the mapping 
@@ -103,7 +106,7 @@
 GlobalVars <- function(
 	db.file="..\\Data\\CAMP.mdb",
 	output.dir="..\\outputs",
-	sql.code.dir=file.path(find.package("campR"),"inst","sql"),
+	sql.code.dir=file.path(find.package("campR"),"sql"),
 	samplePeriodCutTime = "04:00:00", 
 	max.ok.gap = 2,
 	fishingGapMinutes = 10080,

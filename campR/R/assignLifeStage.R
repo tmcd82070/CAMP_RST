@@ -201,7 +201,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
   ####################################################################
   
   # JARED: SEEMS LIKE WE CAN ERASE THIS CALL TO MEMORYUSAGE()
-  #memoryUsage()
+  memoryUsage()
   
   ## This function wraps the assign life stage into a try statement
   assignTry <- function(runDat,G=NULL,USEWeight=NULL){
@@ -262,7 +262,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
   
   
   # JARED: SEEMS LIKE WE CAN ERASE THIS CALL TO MEMORYUSAGE()
-  #memoryUsage()
+  memoryUsage()
   
   ## save data after assignment
   # JARED: WHY THIS SAVE?
@@ -272,7 +272,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
   assignLSCompare(DATA,...)
   
   # JARED: SEEMS LIKE WE CAN ERASE THIS CALL TO MEMORYUSAGE()
-  #memoryUsage()
+  memoryUsage()
   
   return(DATA)
   
@@ -287,11 +287,11 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 ################################################################################
 
 
-# ## report the memory
-# memoryUsage <- function(){
-#   cat('The memory size is',memory.limit(NA),'\n')
-#   cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
-#   cat('The current amount of memory in use is', memory.size(FALSE),'\n')
-#   cat('\n')
-#   cat('\n')
-# }
+## report the memory
+memoryUsage <- function(){
+  cat('The memory size is',memory.limit(NA),'\n')
+  cat('The max amount of memory obtained from the OS is', memory.size(TRUE),'\n')
+  cat('The current amount of memory in use is', memory.size(FALSE),'\n')
+  cat('\n')
+  cat('\n')
+}

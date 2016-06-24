@@ -127,6 +127,9 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
 #   A graph, in "file". 
 #
 
+  #   ---- Get global environment stuff.
+  db.file <- get("db.file",envir=.GlobalEnv)
+  table.names <- get("table.names",envir=.GlobalEnv)
 
 #  Open a graphics device
 if( !is.na(output.file) ){

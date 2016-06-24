@@ -153,7 +153,11 @@ F.catch.model <- function( catch.df ){
   # catch.df <- df2      # from est_catch_trapN.r
   # catch.df <- df3      # from est_catch.r
   
-
+  #   ---- Get necessary variables from the global environment.
+  knotMesh <- get("knotMesh",envir=.GlobalEnv)
+  max.ok.gap <- get("max.ok.gap",envir=.GlobalEnv)
+  time.zone <- get("time.zone",envir=.GlobalEnv)
+  
   #   ---- Sort the data appropriately.  
   catch.df <- catch.df[ order(catch.df$trapPositionID, catch.df$EndTime), ]
   

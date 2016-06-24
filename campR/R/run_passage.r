@@ -229,6 +229,10 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       theZeros <- names(theSums[theSums == 0])
       catch.df.ls <- catch.df.ls[!(catch.df.ls$trapPositionID %in% theZeros),]
 
+      #   ---- Set these attributes so they can be passed along.
+      attr(catch.df.ls,"min.date") <- min.date
+      attr(catch.df.ls,"max.date") <- max.date
+      
       #   ---- Compute passage
       if(by == 'year'){
         pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
@@ -257,7 +261,14 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         tmp.df <- passby
 
         if(by == 'week'){
-          the.dates <- subset(the.Jdates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(year,julianWeek,julianWeekLabel))
+          
+          #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
+          db <- get( "db.file", envir=.GlobalEnv ) 
+          ch <- odbcConnectAccess(db)
+          JDates <- sqlFetch( ch, "Dates" )
+          close(ch) 
+          
+          the.dates <- subset(JDates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(year,julianWeek,julianWeekLabel))
           the.dates$week <- paste0(the.dates$year,'-',formatC(the.dates$julianWeek, width=2, flag="0"))
           the.dates <- unique(the.dates)
 
@@ -347,6 +358,8 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       attr(passby, "site.name") <- catch.df$siteName[1]
       attr(passby, "run.name" ) <- run.name#catch.df$FinalRun[1]
       attr(passby, "lifestage.name" ) <- "All lifestages"
+      attr(passby, "min.date" ) <- min.date
+      attr(passby, "max.date" ) <- max.date
 
       passby$passage <- round(passby$passage,0)   # task 2.4: 1/8/2016.  make the passage csv and barplot passage png agree on integer fish.
       out.f <- F.plot.passage( passby, out.file=output.fn )

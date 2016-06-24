@@ -5,7 +5,7 @@
 \title{CAMP RST Global Variables}
 \usage{
 GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb", output.dir = "..\\\\outputs",
-  sql.code.dir = file.path(find.package("campR"), "sql"),
+  sql.code.dir = file.path(find.package("campR"), "inst", "sql"),
   samplePeriodCutTime = "04:00:00", max.ok.gap = 2,
   fishingGapMinutes = 10080, knotMesh = 15, halfConeMulti = 2,
   sample.size.forkLength = 100, sample.size.forkLengthAndWeight = 100,
@@ -81,6 +81,9 @@ routine.}
 table named \code{table.names["yes.no.codes"]}. Unless it has changed, this table was named \code{luNoYes} in Access.
 To read this code from Access, an ODBC connection is established and disconnected during execution of this 
 routine.}
+
+\item{seed}{An integer specifying the seed to use in all functions utilizing a random draw.  Currently set 
+equal to 884.}
 }
 \value{
 No return value.

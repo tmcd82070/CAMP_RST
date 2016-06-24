@@ -21,16 +21,22 @@ A \code{csv} with all non-Chinook records between the two dates
   specified at the specified site.
 }
 \description{
-Retreive all non-Chinook data between two dates at site.
+Retreive all non-Chinook catch data between two dates at a site.
+}
+\details{
+Function \code{F.getByCatch} utilizes query sequence By Catch 
+to obtain all non-Chinook records within a catch.  See \code{F.run.sqlFile}
+for details.
 }
 \examples{
 \dontrun{
-
-# requires mdb.
-
+df <- F.getByCatch(57000,"2013-01-16","2013-06-08")
 }
+}
+\author{
+WEST Inc.
 }
 \seealso{
-
+\code{F.run.sqlFile}
 }
 

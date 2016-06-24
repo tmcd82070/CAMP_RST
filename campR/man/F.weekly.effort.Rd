@@ -22,18 +22,19 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 \item{output.file}{A text string indicating a prefix to append to all output.}
 }
 \value{
-A png graphical display and csv of underlying data, for each unique
-trap with fishing data between the specified \code{min.date} and \code{max.date}.
-An additional png and csv is output summarizing all traps together.
+A png graphical display and csv of underlying data, for each unique 
+  trap with fishing data between the specified \code{min.date} and
+  \code{max.date}. An additional png and csv is output summarizing all traps
+  together.
 }
 \description{
-Compute weekly effort, in terms of time spent "Fishing" versus "Not
-  fishing."
+Compute weekly effort, in terms of time spent "Fishing" versus
+  "Not fishing."
 }
 \details{
 Dates provided by variables \code{min.date} and \code{max.date} 
-  cannot span more than 366 days.  Additionally, the code is only setup
-  to calculate fishing with a provided \code{taxon} of \code{161980}, i.e.,
+  cannot span more than 366 days.  Additionally, the code is only set up to
+  calculate fishing with a provided \code{taxon} of \code{161980}, i.e., 
   Chinook salmon.
   
   Function \code{F.weekly.effort} utilizes the Build Report Criteria Release 
@@ -42,12 +43,12 @@ Dates provided by variables \code{min.date} and \code{max.date}
   Effort then massages the fishing time data into the format necessary for 
   output.  See \code{F.run.sqlFile} for more information on queries.
   
-  Allocation of time is to one of either three possibilities.  The first 
-  tabulates time during which a trap was not fishing; i.e., the trap was out
-  of the water.  The second and third summarize time for which the trap was
-  deployed but for which fishing was unsuccessful or successful,
-  respectively.  Variable \code{includeCatchID} determines whether or not a
-  fishing instance (identifiable via a unique \code{trapVisitID}) is
+  Allocation of time spent fishing is to one of either three possibilities.  The first 
+  tabulates time during which a trap was not fishing; i.e., the trap was out 
+  of the water.  The second and third summarize time for which the trap was 
+  deployed but for which fishing was unsuccessful or successful, 
+  respectively.  Variable \code{includeCatchID} determines whether or not a 
+  fishing instance (identifiable via a unique \code{trapVisitID}) is 
   successful or not.
   
   All vertical bars in the resulting graphical display cover seven calendar 

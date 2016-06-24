@@ -102,11 +102,11 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   
   #   ---- Fetch the result.
   newDF <- sqlFetch( ch, "TempEffortSummary_b" )
+  F.sql.error.check(newDF)
   
   #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
   JDates <- sqlFetch( ch, "Dates" )
   Site <- sqlFetch( ch, "Site")
-  F.sql.error.check(newDF)
   close(ch) 
   
   setWinProgressBar( get("progbar",envir=.GlobalEnv), getWinProgressBar(get("progbar",envir=.GlobalEnv))*.7 + .3 , label="Formatting results." )

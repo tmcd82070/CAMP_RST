@@ -62,6 +62,6 @@ list.month <- F.summarize.index( batchDate, "month" )
 WEST Inc.
 }
 \seealso{
-
+\code{F.summarize.passage}
 }
 

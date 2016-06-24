@@ -7,30 +7,32 @@
 capwords(s, strict = FALSE)
 }
 \arguments{
-\item{s}{describe argument}
+\item{strict}{= FALSE If \code{TRUE}, force all letters of a word to 
+lowercase after the first letter.  Default is \code{FALSE}.}
 
-\item{strict}{= FALSE describe argument}
+\item{A}{character vector of length one.}
 }
 \value{
-describe return value
+The character vector originally submitted via argument \code{s} with
+  the first letter of each word capitalized.
 }
 \description{
-add description
+Capitalize each word in a character vector of length one.
 }
 \details{
-other comments found in file
-add details
-}
-\examples{
-\dontrun{
-# insert examples
 
 }
+\examples{
+#   ---- Capitalize each of hello and there.  
+capwords("hello there")
+
+#   ---- Use the strict argument.  Returns 'Camp'.
+capwords("CAMP",strict=TRUE)
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{related routine}}, \code{\link{related routine}}
+
 }
 

@@ -88,23 +88,28 @@
 
 F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 
-  # catch.df <- catch.df.ls
-  # release.df <- release.df
-  # summarize.by <- by
-  # file.root <- out.fn.root
-  # ci <- ci
+#   catch.df <- catch.df.ls
+#   release.df <- release.df
+#   summarize.by <- by
+#   file.root <- out.fn.root
+#   ci <- ci
+  
+  #   ---- Data frame catch.df gets manipulated along the way.  Preserve the min.date and
+  #   ---- max.date entered as attribute variables.  
+  min.date <- attr(catch.df,"min.date")
+  max.date <- attr(catch.df,"max.date")
   
   #   ---- Obtain text description of trap positions for use in output. 
   catch.df.sites <- unique(catch.df[,c('trapPositionID','TrapPosition')])
   colnames(catch.df.sites) <- c('subSiteID','subSiteName') 
   
-  #   ---- Obtain Julian weeks once and for all and place in Global environment for ease. 
-  if( summarize.by == "week" ){
-    db <- get( "db.file", envir=.GlobalEnv )
-    ch <- odbcConnectAccess(db)
-    the.Jdates <<- sqlFetch( ch, "Dates" )
-    close(ch)
-  }
+#   #   ---- Obtain Julian weeks once and for all and place in Global environment for ease. 
+#   if( summarize.by == "week" ){
+#     db <- get( "db.file", envir=.GlobalEnv )
+#     ch <- odbcConnectAccess(db)
+#     the.Jdates <<- sqlFetch( ch, "Dates" )
+#     close(ch)
+#   }
   
   time.zone <- get("time.zone", envir=.GlobalEnv )
   
@@ -160,7 +165,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   
     #   ---- Keep the original, because it has mean and sd info over all the fish.  
     #   ---- We're not amending those data to fix the collapsing over lifestage issue here.
-    catch.df.old <- catch.df    
+    catch.df.old <- catch.df   
     catch.df <- df3d
   }
 
@@ -322,6 +327,10 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- The passage estimator.
   grand.df$passage <- rep(NA, nrow(grand.df))
   grand.df$passage <- grand.df$totalEstimatedCatch / grand.df$efficiency   #ifelse(!is.na(grand.df$efficiency),grand.df$totalEstimatedCatch / grand.df$efficiency,0)
+  
+  #   ---- Need this information to construct week-based confidence intervals.
+  attr(grand.df,"min.date") <- min.date
+  attr(grand.df,"max.date") <- max.date
 
   if( !is.na(file.root) ){
     
@@ -368,8 +377,24 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 
   #   ---- Grab the correct catch.df for use in summarizing.
   if(passReport == 'ALLRuns'){
+    
+    #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
+    db <- get( "db.file", envir=.GlobalEnv ) 
+    ch <- odbcConnectAccess(db)
+    JDates <- sqlFetch( ch, "Dates" )
+    close(ch) 
+    
+    attr(catch.df.old$batchDate,"JDates") <- JDates
     index.aux <- F.summarize.index( catch.df.old$batchDate, summarize.by )
   } else {  # by lifeStage
+    
+    #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
+    db <- get( "db.file", envir=.GlobalEnv ) 
+    ch <- odbcConnectAccess(db)
+    JDates <- sqlFetch( ch, "Dates" )
+    close(ch) 
+    
+    attr(catch.df$batchDate,"JDates") <- JDates
     index.aux <- F.summarize.index( catch.df$batchDate, summarize.by )
   }
 
@@ -434,6 +459,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   catch.df.reduced$batchDate <- as.POSIXct( strptime( format(catch.df.reduced$batchDate, "%Y-%m-%d"), "%Y-%m-%d", tz=tzn),tz=tzn)
 
   #   ---- Index in reduced data frame.  
+  attr(catch.df.reduced$batchDate,"JDates") <- JDates
   index.aux <- F.summarize.index(catch.df.reduced$batchDate,summarize.by)               
 
   #   ---- Hours actually sampled during the 'index' period.

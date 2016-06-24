@@ -1,40 +1,45 @@
-#' @export maxBuffDays
-#' 
+#' @export max.buff.days
+#'   
 #' @title max.buff.days
+#'   
+#' @description df <- df2
+#'   
+#' @param df A data frame containing catch records for one
+#'   \code{trapPositionID}, with catch counts contained in \code{n.tot}.
+#' @param trap A vector of length one containing the \code{trapPositionID} for
+#'   which buffering is necessary.
+#'   
+#' @details
 #' 
-#' @description
-#'  df <- df2
-#' 
-#' @param df <describe argument>
-#' @param trap <describe argument>
-#' 
-#' @details <other comments found in file>
-#'  calculate beginning buffer
-#'  calculate ending buffer
-#' 
-#' @return <describe return value>
-#' 
+#' @return A vector containing three values.  The first contains the row index 
+#'   of the first non-zero / non-\code{NA} in the catch record provided via data
+#'   frame \code{df}. The second contains the row index of the last non-zero / 
+#'   non-\code{NA} in the catch record provided via data frame \code{df}.  The 
+#'   third contains the length of the vector containing 
+#'   \code{trapVisitID}-specific fish counts (vector \code{n.tot}).
+#'   
 #' @author WEST Inc.
-#' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
-#' 
+#'   
+#' @seealso \code{F.chuck.zeros}
+#'   
 #' @examples
 #' \dontrun{
-#' <insert examples>
-#' 
+#' #   ---- Find the first and last non-zero and non-NA catch record
+#' #   ---- for trap "12345".
+#' vec <- max.buff.days(df,"12345")
 #' }
-maxBuffDays <- function(df,trap){
+max.buff.days <- function(df,trap){
   
   # df <- df2
   
-  # calculate beginning buffer
+  #   ---- Calculate beginning buffer.
   n.totVec <- df[order(df$batchDate),]$n.tot
   b <- 1
   while( (n.totVec[b] == 0 | is.na(n.totVec[b])) & b <= (length(n.totVec) - 1) ){
     b <- b + 1
   }
   
-  # calculate ending buffer
+  #   ---- Calculate ending buffer.
   n.totVec <- df[order(df$batchDate,decreasing=TRUE),]$n.tot
   e <- 1
   while( (n.totVec[e] == 0 | is.na(n.totVec[e])) & e <= (length(n.totVec) - 1) ){

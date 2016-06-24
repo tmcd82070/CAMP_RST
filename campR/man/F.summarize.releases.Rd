@@ -7,33 +7,33 @@
 F.summarize.releases(release.df)
 }
 \arguments{
-\item{release.df}{<describe argument>}
+\item{release.df}{A data frame read by function \code{F.get.release.data}
+containing information on releases, marks, etc.  Run season is a vector of
+dates for the start and end of a run, and is stored as an attribute of the
+data frame.}
 }
 \value{
-<describe return value>
+A data frame containing a summary of unique combinations of traps
+  (via \code{trapPosition}) and releases (via \code{releaseID}).
 }
 \description{
-Summarize trap efficiency for every release.  This function
-   produces a table of information that is used by other routines.
-
-   Input:
-   release.df = data frame read by F.get.release.data().  Contains
-       information on releases, marks, etc.  Run season is a vector
-       of dates for beginning and ending of run, stored as an attribute of the data frame.
+Summarize trap efficiency for every release.
 }
 \details{
-<other comments found in file>
+The multiplicative expansion of caught fish due to half-cone 
+  operations utilizes the value of the global variable \code{halfConeMulti}, 
+  set in function \code{GlobalVars}. This value is currently set to 2.
 }
 \examples{
 \dontrun{
-<insert examples>
-
+#   ---- Summarize releases for provided data frame release.df. 
+df <- F.summarize.releases(release.df)
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.get.release.data}
 }
 

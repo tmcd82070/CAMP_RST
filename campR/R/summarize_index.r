@@ -28,7 +28,7 @@
 #'   necessary because dates could span up to 365 days, which almost always
 #'   includes two distinct years.
 #'   
-#' @seealso 
+#' @seealso \code{F.summarize.passage}
 #' 
 #' @author WEST Inc.
 #'   
@@ -55,15 +55,16 @@
 
 F.summarize.index <- function( dt, summarize.by ){
 
-  # dt <- catch.df.reduced$batchDate
+  # dt <- catch.df.old$batchDate
   # summarize.by <- "week"
-
+  
   #   ---- A helper function to deal with Julian weeks. 
   f.week <- function( x ){
-    jDates <- the.Jdates
+    jDates <- attr(dt,"JDates")
+    jDates <- jDates[,c('uniqueDate','year','julianWeek')]
+    jDates$uniqueDate <- as.Date(jDates$uniqueDate,format="%Y-%m-%d")
     jDates$week <- paste0(jDates$year,'-',formatC(jDates$julianWeek, width=2, flag="0"))
     jDates <- unique(jDates)
-    jDates$uniqueDate <- as.Date(jDates$uniqueDate)
   
     dtDF <- data.frame(uniqueDate=as.Date(dt))
     dtDF$R_ID <- seq(1,nrow(dtDF),1)
