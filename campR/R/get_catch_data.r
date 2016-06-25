@@ -362,11 +362,15 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     
     #   ---- Make the catch data frame whole again.  But first, make sure that 
     #   ---- data frame catchNotFishing matches the new catchFishing.
-    catchNotFishing$id <- catchNotFishing$days <- catchNotFishing$bioLS <- NA
-    catchNotFishing <- catchNotFishing[,names(catchFishing)]
-    
-    #   ---- Put it all back together again.  
-    catch <- rbind(catchFishing,catchNotFishing)
+    if(nrow(catchNotFishing) > 0){
+      catchNotFishing$id <- catchNotFishing$days <- catchNotFishing$bioLS <- NA
+      catchNotFishing <- catchNotFishing[,names(catchFishing)]
+      
+      #   ---- Put it all back together again.  
+      catch <- rbind(catchFishing,catchNotFishing)
+    } else {
+      catch <- catchFishing
+    }
     
     cat('\n')
     cat('\n')

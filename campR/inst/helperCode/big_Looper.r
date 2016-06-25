@@ -15,7 +15,7 @@ mdbStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/
 outStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/Outputs")
 
 #   ---- User variable testi to specify the range of river combos to test.  
-for(testi in 3:3){   
+for(testi in 4:70){   
   
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
