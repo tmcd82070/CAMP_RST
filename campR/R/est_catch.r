@@ -150,7 +150,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
     dateFramer[dateFramer$trapPositionID == trap,3] <- as.POSIXct( as.character(origEnd.date), "%Y-%m-%d", tz=time.zone)
 
     #   ---- Assuming vector of goods isn't all zero, proceed.  
-    if( !(buffs[1] == buffs[3] & buffs[2] == buffs[3]) ){ 
+    if( !(buffs[1] == buffs[3] & buffs[2] == buffs[3] & df2$n.tot[1] == 0) ){ 
       
       thisTrap <- vector("list",length(u.traps))
       

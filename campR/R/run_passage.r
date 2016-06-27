@@ -71,13 +71,13 @@
 #' }
 F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE ){
   
-  # site <- 12345
-  # taxon <- 161980
-  # min.date <- "2005-01-01
-  # max.date <- "2005-06-30
-  # by <- "week"
-  # output.file <- NA
-  # ci <- TRUE
+#   site <- 12345
+#   taxon <- 161980
+#   min.date <- "2005-01-01"
+#   max.date <- "2005-06-30"
+#   by <- "week"
+#   output.file <- NA
+#   ci <- TRUE
 
   #   Check that times are less than 1 year apart
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
