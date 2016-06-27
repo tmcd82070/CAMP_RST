@@ -99,6 +99,9 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   min.date <- attr(catch.df,"min.date")
   max.date <- attr(catch.df,"max.date")
   
+  #   ---- Get global variable values.
+  max.ok.gap <- get("max.ok.gap",envir=.GlobalEnv)
+  
   #   ---- Obtain text description of trap positions for use in output. 
   catch.df.sites <- unique(catch.df[,c('trapPositionID','TrapPosition')])
   colnames(catch.df.sites) <- c('subSiteID','subSiteName') 
@@ -174,7 +177,27 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- for different trapPositionIDs/subSiteIDs, summarise and add togeter (because some days have more 
   #   ---- than one record).  This brings back more dates than ultimately wanted; let merge below (after 
   #   ---- grand.df) take care of which to keep.
-  jason.catch2.df <- catch.df[,c('trapVisitID','batchDate','trapPositionID','n.Orig')]
+  
+  #   ---- In the case a trap runs more than 24 hours, followed by a short "Not fishing" period of duration 
+  #   ---- less than 2 hours (but greater than 30 mintues), that short duration is subsumed into the preivious
+  #   ---- fishing period.  In this case, the endDate and batchDate are overwritten with the "Not fishing" 
+  #   ---- period values.  This leads to a problem in fish accounting, which records any fish tied to this 
+  #   ---- overwriting process with the original day.  So, in creating jason.catch4.df, redefine the batchDate
+  #   ---- to be the latest day.  All of this takes place in the creation of data frame jason.catch1.df,
+  #   ---- and the two commented lines that feed into data frame jason.catch2.df.
+  
+  jason.catch1.df <- catch.df
+  jason.catch1.df$R_ID <- seq(1,nrow(jason.catch1.df),1)
+  jason.catch1.df <- jason.catch1.df[order(jason.catch1.df$EndTime),]
+  jason.catch1.df$mday_lead <- as.POSIXlt(dplyr::lead(jason.catch1.df$EndTime,1))$mday 
+  jason.catch1.df$mday <- as.POSIXlt(jason.catch1.df$EndTime)$mday
+  
+  jason.catch1.df$candidate <- ifelse( (dplyr::lead(jason.catch1.df$TrapStatus,1) == "Not fishing") & (dplyr::lead(jason.catch1.df$SampleMinutes,1) <= max.ok.gap*60) & (jason.catch1.df$mday != jason.catch1.df$mday_lead),1,0 )
+  jason.catch1.df$batchDate <- as.POSIXct(ifelse(jason.catch1.df$candidate == 1 & !is.na(jason.catch1.df$candidate),dplyr::lead(jason.catch1.df$batchDate,1),jason.catch1.df$batchDate),origin="1970-01-01 00:00.00 UTC",format="%Y-%m-%d",tz=time.zone)
+  jason.catch1.df <- jason.catch1.df[order(jason.catch1.df$R_ID),]
+  
+  jason.catch2.df <- jason.catch1.df[,c('trapVisitID','batchDate','trapPositionID','n.Orig')]
+  #jason.catch2.df <- catch.df[,c('trapVisitID','batchDate','trapPositionID','n.Orig')]
   jason.catch3.df <- data.frame(with(jason.catch2.df,tapply(n.Orig, list(batchDate,trapPositionID), sum, na.rm=T )))
   jason.catch4.df <- na.omit(reshape(jason.catch3.df,idvar='batchDate',ids=row.names(jason.catch3.df),times=names(jason.catch3.df),timevar='trapPositionID',varying=list(names(jason.catch3.df)),direction='long'))
   colnames(jason.catch4.df)[2] <- 'rawCatch'
@@ -182,7 +205,8 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   jason.catch4.df$batchDate <- as.POSIXct(jason.catch4.df$batchDate,time.zone)
   
   #   ---- Do the same as above, but with n.tot.  Sloppy to do this twice like this, but it works.
-  jason.totCatch2.df <- catch.df[,c('trapVisitID','batchDate','trapPositionID','n.tot')]
+  jason.totCatch2.df <- jason.catch1.df[,c('trapVisitID','batchDate','trapPositionID','n.tot')]
+  #jason.totCatch2.df <- catch.df[,c('trapVisitID','batchDate','trapPositionID','n.tot')]
   jason.totCatch3.df <- data.frame(with(jason.totCatch2.df,tapply(n.tot, list(batchDate,trapPositionID), sum, na.rm=T )))
   jason.totCatch4.df <- na.omit(reshape(jason.totCatch3.df,idvar='batchDate',ids=row.names(jason.totCatch3.df),times=names(jason.totCatch3.df),timevar='trapPositionID',varying=list(names(jason.totCatch3.df)),direction='long'))
   colnames(jason.totCatch4.df)[2] <- 'n.tot'
