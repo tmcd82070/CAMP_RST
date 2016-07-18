@@ -83,7 +83,7 @@ F.plot.catch.model <- function( df, file=NA ){
   }
 
   imputed <- df$imputed.catch > 0 & !is.na(df$imputed.catch)
-  rng.y <- range(df$modAssignedCatch[ df$modAssignedCatch < Inf], na.rm=T)
+  rng.y <- range(df$totalEstimatedCatch[ df$totalEstimatedCatch < Inf], na.rm=T)
 
   #   ---- Set up the plot space.
   plot( range(df$batchDate), rng.y, type="n", xlab="Date", ylab="Daily Raw (un-inflated) catch", xaxt="n", yaxt="n" )
@@ -116,8 +116,8 @@ F.plot.catch.model <- function( df, file=NA ){
   for( i in 1:length(traps) ){
     
     #   ---- Insert a "supersmoother" of the modified assigned catch (adjusted for half-cone counts).
-    ind <- df$trapPositionID == traps[i] & !is.na(df$modAssignedCatch)
-    lines( supsmu(df$batchDate[ind], df$modAssignedCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
+    ind <- df$trapPositionID == traps[i] & !is.na(df$totalEstimatedCatch)
+    lines( supsmu(df$batchDate[ind], df$totalEstimatedCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
     
     #   ---- Insert the imputed data points.
     ind <- df$trapPositionID == traps[i] & imputed
@@ -125,7 +125,7 @@ F.plot.catch.model <- function( df, file=NA ){
     
     #   ---- Insert the observed data points.
     ind <- df$trapPositionID == traps[i] & !imputed
-    points( df$batchDate[ind], df$modAssignedCatch[ind], pch=my.pch[i], col=my.colors[i] )
+    points( df$batchDate[ind], df$totalEstimatedCatch[ind], pch=my.pch[i], col=my.colors[i] )
   }
 
   #   ---- Set-up trapPosition names in lieu of their IDs. 
