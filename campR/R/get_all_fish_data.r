@@ -1,113 +1,68 @@
 #' @export F.get.all.fish.data
-#' 
+#'   
 #' @title F.get.all.fish.data
-#' 
-#' @description
-#' 
-#'    Fetch ALL the fish data from Access data base between two dated. 
-#'    This is a version of F.get.indiv.fish.data, but that routine returns records for a single taxon.
-#' 
-#'    input:
-#'    site = site ID of place we want to do estimates for. Note; Site is a location along a river where
-#'        we can compute passage.  Subsites are places in the river (thalweg, right bank, etc) at the project.
-#'        Project is a parent of subsite.
-#'        Site is also a parent of subsite.
-#'        Project is the funding source of the site.  Site and Project are parallel fields.  In theory,
-#'        this makes it easier query sites and projects because sometimes the same site is sampled by
-#'        two different projects.
-#'    min.date and max.date = minimum and maximum dates for a visit to be included. A string in format "YYYY-MM-DD"
-#' 
-#' 
-#' 
-#'    ---NOTE: build_report_Criteria must be run before here. 
-#' 
-#' 
-#'    *******
-#'    Open ODBC channel
-#' 
-#' @param  site <describe argument>
-#' @param  min.date <describe argument>
-#' @param  max.date  <describe argument>
-#' 
-#' @details <other comments found in file>
-#' NA
-#'    Subsampling is handled above in the SQL with [CatchRaw].[n]*[CatchRaw].[subsampleDenominator]/[CatchRaw].[subsampleNumerator]
-#' 
-#' @return <describe return value>
-#' 
+#'   
+#' @description Fetch all fish data, regardless of taxon, from an Access data 
+#'   base between two dates.
+#'   
+#' @param site The identification number of the site for which estimates are 
+#'   required.
+#' @param min.date The start date for data to include. This is a text string in 
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#' @param max.date The end date for data to include.  Same format as 
+#'   \code{min.date}.
+#'   
+#' @details This is a generalization of \code{F.get.indiv.fish.data} which
+#'   returns records for a single taxon.  Function \code{F.get.all.fish.data}
+#'   utilizes the all-catch query series in order to obtain the proper data.
+#'   
+#' @return A data frame containing all catch, regardless of taxon, between the 
+#'   specified dates.
+#'   
 #' @author WEST Inc.
-#' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
-#' 
+#'   
+#' @seealso \code{F.get.indiv.fish.data}
+#'   
 #' @examples
 #' \dontrun{
-#' <insert examples>
-#' 
+#' # Obtain all catch on the American between the specified dates.  
+#' F.get.all.fish.data(57000,"2014-01-01","2014-06-30")
 #' }
 F.get.all.fish.data <- function( site, min.date, max.date ){
-#
-#   Fetch ALL the fish data from Access data base between two dated. 
-#   This is a version of F.get.indiv.fish.data, but that routine returns records for a single taxon.
-#
-#   input:
-#   site = site ID of place we want to do estimates for. Note; Site is a location along a river where
-#       we can compute passage.  Subsites are places in the river (thalweg, right bank, etc) at the project.
-#       Project is a parent of subsite.
-#       Site is also a parent of subsite.
-#       Project is the funding source of the site.  Site and Project are parallel fields.  In theory,
-#       this makes it easier query sites and projects because sometimes the same site is sampled by
-#       two different projects.
-#   min.date and max.date = minimum and maximum dates for a visit to be included. A string in format "YYYY-MM-DD"
-#
+  
+  # site <- 57000
+  # min.date <- "2014-01-01"
+  # max.date <- "2014-06-30"
 
+  #   ---- Open ODBC channel.
+  db <- get( "db.file", envir=.GlobalEnv ) 
+  ch <- odbcConnectAccess(db)
 
-#   ---NOTE: build_report_Criteria must be run before here. 
+  #   ---- Communicate to the Console and/or out file.  
+  cat("SQL to retrieve ALL catch records between ")
+  cat(paste(min.date, "and", max.date, "\n"))
 
+  #   ---- Execute the final SQL statement
+  catch <- F.run.sqlFile( ch, "QryAllCatch.sql" )
 
-#   *******
-#   Open ODBC channel
-db <- get( "db.file", envir=.GlobalEnv ) 
-ch <- odbcConnectAccess(db)
+  #   ---- Communicate to the Console and/or out file. 
+  cat(paste(nrow(catch), "records retrieved.\n\n"))
+  if(nrow(catch) >= 10) {cat("First 10 records...\n"); print(catch[1:10,])} else {cat("Catch records...\n"); print(catch)}
 
-# ====== 
-
-
-cat("SQL to retrieve ALL catch records between ")
-cat(paste(min.date, "and", max.date, "\n"))
-
-
-#   Execute the final SQL statement
-catch <- F.run.sqlFile( ch, "QryAllCatch.sql" )
-
-cat(paste(nrow(catch), "records retrieved.\n\n"))
-
-if(nrow(catch) >= 10) {cat("First 10 records...\n"); print(catch[1:10,])} else {cat("Catch records...\n"); print(catch)}
-
-
-#   Check for missing catches
-if( any( is.na(catch$n) )){
+  #   ---- Check for missing catches.
+  if( any( is.na(catch$n) )){
     cat("Number of fish is missing for the following records:\n")
     print( catch[ is.na(catch$n), ] )
     stop("There are missing catches. Make sure at least 0 is entered for every count. ")
-}
+  }
 
+  #   ---- Communicate to the Console and/or out file.  
+  cat("Subsites found...\n")
+  subSites.found <- sort(unique(catch$trapPositionID))
+  print(subSites.found)
+  subsite.string <- paste(subSites.found, collapse="+")
 
-
-
-
-
-cat("Subsites found...\n")
-subSites.found <- sort(unique(catch$trapPositionID))
-print(subSites.found)
-subsite.string <- paste(subSites.found, collapse="+")
-
-
-#   Subsampling is handled above in the SQL with [CatchRaw].[n]*[CatchRaw].[subsampleDenominator]/[CatchRaw].[subsampleNumerator]
-
-
-odbcClose(ch)
-
-catch
+  odbcClose(ch)
+  catch
 
 }
-

@@ -9,6 +9,8 @@
 #'   required.
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#' @param run The text seasonal identifier.  This is a one of \code{"Spring"}, \code{"Fall"},
+#' \code{"Late Fall"}, or \code{"Winter"}.
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.  
 #' @param max.date The end date for data to include.  Same format as 

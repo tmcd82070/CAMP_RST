@@ -17,9 +17,9 @@
 #'   frame containing the same information is also returned, but invisibly.
 #'   
 #' @details This function utilizes the All-Catch Series query to find and identify
-#' all pertinent records within a catch.  See 
+#' all pertinent records within a catch.  
 #'
-#' @seealso \code{F.chinookByDate.table}
+#' @seealso \code{F.chinookByDate.table}, \code{F.get.all.fish.data}
 #' 
 #' @examples  
 #' \dontrun{
@@ -63,4 +63,3 @@ F.allCatch.table <- function( site, min.date, max.date, output.file ){
   invisible(df)
 
 }
-

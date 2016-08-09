@@ -1,6 +1,6 @@
-#' @export
+#' @export F.get.all.catch.data
 #' 
-#' @title F.get.all.catch.data - Retrieve data frame containing catch data.
+#' @title F.get.all.catch.data 
 #' 
 #' @description Fetch catch data for a single taxon from an Access data base.
 #' 
@@ -13,9 +13,14 @@
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
 #'   
+#' @details Function \code{F.get.all.catch.data} is called from within function
+#' \code{F.all.catch.table}, and helps 
+#'   
 #' @return A data frame entitled \code{visit}.  To be included, a record has to
 #'   be from the correct \code{site} and \code{taxon}, and be between the values
 #'   specified by \code{min.date} and \code{max.date}.
+#'   
+#' @seealso \code{F.all.catch.table}
 #'   
 #' @examples 
 #' \dontrun{
@@ -23,8 +28,6 @@
 #' # requires an mdb.
 #' }
 F.get.all.catch.data <- function( site, taxon, min.date, max.date ){
-
-	
 
   # site <- 7000
   # taxon <- 161980
