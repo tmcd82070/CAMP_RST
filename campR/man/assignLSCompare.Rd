@@ -4,7 +4,7 @@
 \alias{assignLSCompare}
 \title{assignLSCompare}
 \usage{
-assignLSCompare(Data, SAVE = TRUE)
+assignLSCompare(Data, muLIST, sigmaLIST, SAVE = TRUE)
 }
 \arguments{
 \item{Data}{describe argument}
@@ -15,9 +15,7 @@ assignLSCompare(Data, SAVE = TRUE)
 describe return value
 }
 \description{
-Jared Studyvin
- 8 March 2016
- output comparison table and figure between biologist life stage assignment and mixture distribution results
+Assigns life stage
 }
 \details{
 other comments found in file
