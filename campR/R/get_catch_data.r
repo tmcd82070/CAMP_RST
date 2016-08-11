@@ -237,6 +237,21 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
 
 
   
+  
+  
+  #   ---- If a flag is set, we map forklength into separate sets.  
+  
+  #if( reClassifyLS == "Y" ){
+    
+    catch <- reClassifyLS(catch)
+    
+  #}
+  
+  
+  
+  
+  
+  
   #   ---- STEP 2:  Look for gaps in fishing, as defined by global variable fishingGapMinutes.  If any 
   #   ---- are found, reassign trapPositionIDs. 
   theLongCatches <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes > fishingGapMinutes & catch$TrapStatus == "Not fishing",c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]

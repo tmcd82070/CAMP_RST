@@ -7,52 +7,38 @@
 F.get.all.fish.data(site, min.date, max.date)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 }
 \value{
-<describe return value>
+A data frame containing all catch, regardless of taxon, between the 
+  specified dates.
 }
 \description{
-Fetch ALL the fish data from Access data base between two dated. 
-   This is a version of F.get.indiv.fish.data, but that routine returns records for a single taxon.
-
-   input:
-   site = site ID of place we want to do estimates for. Note; Site is a location along a river where
-       we can compute passage.  Subsites are places in the river (thalweg, right bank, etc) at the project.
-       Project is a parent of subsite.
-       Site is also a parent of subsite.
-       Project is the funding source of the site.  Site and Project are parallel fields.  In theory,
-       this makes it easier query sites and projects because sometimes the same site is sampled by
-       two different projects.
-   min.date and max.date = minimum and maximum dates for a visit to be included. A string in format "YYYY-MM-DD"
-
-
-
-   ---NOTE: build_report_Criteria must be run before here. 
-
-
-   *******
-   Open ODBC channel
+Fetch all fish data, regardless of taxon, from an Access data 
+  base between two dates.
 }
 \details{
-<other comments found in file>
-NA
-   Subsampling is handled above in the SQL with [CatchRaw].[n]*[CatchRaw].[subsampleDenominator]/[CatchRaw].[subsampleNumerator]
+This is a generalization of \code{F.get.indiv.fish.data} which
+  returns records for a single taxon.  Function \code{F.get.all.fish.data}
+  utilizes the all-catch query series in order to obtain the proper data.
 }
 \examples{
 \dontrun{
-<insert examples>
-
+# Obtain all catch on the American between the specified dates.  
+F.get.all.fish.data(57000,"2014-01-01","2014-06-30")
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.get.indiv.fish.data}
 }
 

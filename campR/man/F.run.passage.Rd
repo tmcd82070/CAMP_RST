@@ -27,6 +27,9 @@ estimated catch is to be summarized.  Can be one of \code{day},
 
 \item{ci}{A logical indicating if 95% bootstrapped confidence intervals
 should be estimated along with passage estimates.}
+
+\item{run}{The text seasonal identifier.  This is a one of \code{"Spring"}, \code{"Fall"},
+\code{"Late Fall"}, or \code{"Winter"}.}
 }
 \value{
 A \code{csv} table of passage estimates over the specified date 

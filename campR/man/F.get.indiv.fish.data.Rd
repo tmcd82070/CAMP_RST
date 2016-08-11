@@ -7,86 +7,41 @@
 F.get.indiv.fish.data(site, taxon, run, min.date, max.date, keep = "unmarked")
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{run}{<describe argument>}
+\item{run}{The text seasonal identifier.  This is a one of \code{"Spring"}, \code{"Fall"},
+\code{"Late Fall"}, or \code{"Winter"}.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{keep="unmarked"}{<describe argument>}
+\item{by}{A text string indicating the temporal unit over which daily
+estimated catch is to be summarized.  Can be one of \code{day},
+\code{week}, \code{month}, \code{year}.}
+
+\item{keep="unmarked"}{A text string specifying the type of fish to retain.
+\code{keep="unmarked"} keeps all fish without efficiency trail marks, i.e.,
+all fish not in efficiency trial.  \code{keep="marked"} keeps only fish
+that were involved in an efficiency trial. \code{keep="all"}, i.e.,
+anything else, will keep all fish records --- both marked and unmarked.}
 }
 \value{
-<describe return value>
+
 }
 \description{
-Fetch the fish data for a SINGLE TAXON from an Access data base. The resulting data 
-   set has one line per fish (or group of fish of same length). 
-
-   input:
-   site = site ID of place we want to do estimates for. Note; Site is a location along a river where 
-       we can compute passage.  Subsites are places in the river (thalweg, right bank, etc) at the project.  
-       Project is a parent of subsite.
-       Site is also a parent of subsite.
-       Project is the funding source of the site.  Site and Project are parallel fields.  In theory, 
-       this makes it easier query sites and projects because sometimes the same site is sampled by 
-       two different projects. 
-   taxon = the taxon number(s) (from luTaxon) to retrieve.  If a scalar, only 
-       one taxon is retrieved.  If vector of taxon id's, the sum of all 
-       taxons is retrieved.
-   run = the single run ID of the fish we want.  If run = NA, all records for the fish
-       will be pulled. 
-   min.date and max.date = minimum and maximum dates for a visit to be included. A string in format "YYYY-MM-DD"
-   keep = string specifying the type of fish to keep in the records. keep="unmarked" keeps all 
-       fish without efficiency trail marks (all fish not in efficiency trial).  keep="marked" keeps 
-       only fish that were involved in an efficiency trial. keep="all" (anything else) will keep 
-       all fish records, both marked and unmarked. 
-
-   To be included in the catch data, a record has to be from the site, 
-   of the correct taxon, of the correct run, and between min and max date. 
-
-
-
-   *******
-   Retrieve db file name and table names and any other constants
+Fetch the fish data for a single taxon from an Access data base. The resulting data 
+   set has one line per group of fish with the same forklength.
 }
 \details{
-<other comments found in file>
-   Need these to determine visits.
-   Need these to filter visits.
-   *******
-   Open ODBC channel
-   *******
-   Retreive common names for the site
-   Fetch subsite names
-   Fetch species name 
-   Fetch run name
- F.sql.error.check(catch)
- if( nrow(catch) == 0 ){
-     return(catch)    
- }
-   Now, subset to run. We cannot do this in the SQL above because we need unknown runs in order to expand for plus counts
- catch <- catch[ !is.na(catch$finalRunID) & catch$finalRunID == run, ]
- -----
- JASON: THE CATCH QUERY CLEARLY ALREADY HAS THE SUBSITEID NAMES/LABELS, SO OBSOLETE. 1/26/2015
- -----
-   Find subsiteID names
- subSites.found <- data.frame(subSiteID=sort(unique(catch$trapPositionID)))
- subSites.found <- merge( subSites.found, subsite.names, by="subSiteID", all.x=T )
- print(subSites.found)
-subsite.string <- paste(subSites.found, collapse="+")
-   A note on subsampling: subsampling is handled by the people entering data.  I.e., they enter a subsampleNumerator 
-   and a subsampleDenominator, and these are used in the SQL statement above.  The calculation is 
-   [CatchRaw].[n]*[CatchRaw].[subsampleDenominator]/[CatchRaw].[subsampleNumerator]
-   subsampleMethodID should not be used to find subsampling. 
-   Store values of run.season as attribute for convienance. 
- attr(catch, "subsites") <- subSites.found
- attr(catch, "taxonID" ) <- taxon.string
-   If there are none of the particular taxon caught, there are no records in data frame catch. 
-   This is correct, just be sure to check for nrow(catch) > 0 in any routines that use this data.
+To be included in the catch data, a record has to be from the site, 
+   of the correct taxon, of the correct run, and between min and max date. F.size.by.date
 }
 \examples{
 \dontrun{
@@ -98,6 +53,6 @@ subsite.string <- paste(subSites.found, collapse="+")
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.get.catch.data}, \code{F.sql.error.check}
 }
 

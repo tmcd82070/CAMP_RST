@@ -7,57 +7,43 @@
 F.est.catch.trapN(catch.df, plot = TRUE, plot.file = "raw_catch.pdf")
 }
 \arguments{
-\item{catch.df}{describe argument}
+\item{catch.df}{A data frame, possibly restricted to one \code{lifeStage},
+resulting from a call to \code{F.get.catch.data}.  Run season is an
+attribute of this data frame.}
 
-\item{plot=TRUE}{describe argument}
+\item{plot}{A logical indicating if catch is to be plotted over time, per
+trap.}
 
-\item{plot.file="raw_catch.pdf"}{describe argument}
+\item{plot.file}{The name to which a graph of catch is to be output, if 
+\code{plot=TRUE}.}
 }
 \value{
-describe return value
+A list \code{ans} containing catch model information for each trap 
+  listed in \code{catch.df}.  See Details.
 }
 \description{
-Estimate capture for every day of the season.
-   This assumes that only species and life stages we want are
-   in catch.df.  I.e., that appropriate filtering has already been done.
-
-   Input:
-   catch.df = data frame resulting from call to F.get.catch.data.  Run season is
-       an attribute of this data frame
-
-   Output:
-   A data frame containing $batchDay and $catch
-
-  plot.file=file.root
+Estimate catch for every day of the season, per trap.
 }
 \details{
-other comments found in file
-        Times in run season must be same as time in batchDate each day. 
-        batchDate must occur at same time every day.  Can be missing days, but always at same time when present.
-   Impute a value for the gaps
-   When df2 comes back from F.catch.model, it has extra lines in it.  One extra line for each 24 hour period in the 
-   gaps that were bigger than max.ok.gap. If gap = 3 days, there will be 3 extra lines.
-   sampleStart and sampleEnd for each of the new lines are defined so that no gap appears  now.  Variable
-   'gamEstimated' is true for these periods. Batch date is assigned based on sampleEnd, as usual. 
-   On return, there is a value or imputed value for each day from start of season to end of season.
-   ---- Now that there are no gaps, sum within traps operating on a batch day, and all checks that occurred on a batch day.
-   ---- Un-matrix the results and put into a data frame
-   ---- Now remove times before and after a trap started and stopped.  The above tapply's using ind inserted NA for days when one trap was not fishing but others where. 
-        There are no gaps between the start and stop of a trap in a season, but each trap could operated over a different part of the season.
-        If you want to leave all the days in, comment the following code out.
-   ---- Before we un-matrix-ized est.catch, we saved a copy so we could compute number of traps operating each day because it is easier.
-        But, gaps are filled.  Take back out the gaps when counting.
+Function \code{F.est.catch.trapN} performs exactly the same 
+  functionality as function \code{F.est.catch}.  However,
+  \code{F.est.catch.trapN} utilizes the full observed catch dataset in its
+  implementation, i.e., including all preceding and antecedent strings of
+  zeros, for each individual trap contained in the data.  Via the use of
+  these modified data, accurate data regarding the number of deployed traps,
+  per day, are obtained.
 }
 \examples{
 \dontrun{
-# insert examples
-
+#   ---- Estimate catch for each unique trap in data 
+#   ---- frame catch.df.  Also output a plot.  
+F.est.catch.trapN(catch.df, plot=TRUE, plot.file="raw_catch.pdf")
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{related routine}}, \code{\link{related routine}}
+\code{F.est.catch}
 }
 

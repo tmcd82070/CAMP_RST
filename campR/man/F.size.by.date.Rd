@@ -7,88 +7,57 @@
 F.size.by.date(site, taxon, run, min.date, max.date, output.file)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{run}{<describe argument>}
+\item{run}{The text seasonal identifier.  This is a one of \code{"Spring"}, 
+\code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{The name of the file prefix under which output is to be 
+saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-<describe return value>
+A graphical png entitled via parameter \code{output.file}, displyaing 
+fork length in millimeters as a function of time.  Also, an accompanying csv
+containing the data used in plotting.
 }
 \description{
-Plot fork length of fish by date of catch ro a particular site and year. 
-
-   Input:
-   db = full path and name of the Access data base to retrieve data from
-   site = site ID of the place we want, trap locaton 
-   taxon = taxon number (from luTaxon) to retrieve
-   run = run ID of fish we want to do estimates for. 
-
-   Output:
-   A graph, in "file" of the length by date data.
+Plot fork length (mm) of fish by date of catch for a particular
+  site and year.
 }
 \details{
-<other comments found in file>
-   ---- Open PNG device
-   *******
-   Open ODBC channel and retrieve lifestage labels
-   ********
-   Retrieve basic data set, one line per fish or group of fish of same length.
- don't drop includeCatchID here.  this is a contrast with length_freq.r
- jason 3/25/2016 -- drop oldTrapPositionID here.  code assumes that var not here
- if catch.df has no data, it doesn't get batchDates added.  
-catch.df <-  data.frame(catch.df,batchDate=integer(0))
-  grab non-valid Catch
-   Fetch run name
- no attributes to bring in -- do it now
-   ********
-   Now plot
-   Define plotting variables
- x <- catch.df$visitTime
- n <- catch.df$n
- lstage <- catch.df$lifeStageID
-   Drop record if any critical data is missing
-   If we are talking salmon here, limit the lifestages to fry, parr, and smolt
-     drop <- drop | (lstage > 8)
-   Convert from lifestages the traps used to life stages that CAMP uses.  The conversion is in table rst.life.stages
- JASON OBSOLETE -- QUERY THAT GETS CATCH WORKS ON DESCRIPTORS INSTEAD OF IDS -- 1/26/2015
- u.l.s <- sort(unique(lstage))
- for( l.s in u.l.s ){
-     camp.l.s <- rst.life.stage$lifeStageCAMPID[ rst.life.stage$lifeStageID == l.s ]
-     lstage[ lstage == l.s ] <- camp.l.s
- }
-   Rep the values for number of fish of that particular length
-   Main plot
-jity <- rnorm(sum(ind), sd=diff(range(y))/100)
-95, 108, 122, 151, 152, 155
-   Add quantile lines
- jason add.  this can sometimes be singular, apparently.  leads to problems in finding an inverse. 
-     ans.qr <- data.frame( date=xpred, q.05=ypred[,1], q.95=ypred[,2] )
-   Main title
-   Legend
-print(myleg)
-print(myleg)
-   ---- Close the graphics file
-   ---- Write out the csv's
-   ---- Send messages back to the interface
+Function \code{F.size.by.date} first compiles fish data via function
+  \code{F.get.indiv.fish.data}.  Trapping instances include both valid and
+  invalid catch, as determined via variable \code{includeCatchID}.  Thus, 
+  resulting graphs may display both valid and invalid fishing instances, if 
+  both trappining instances took place within the time period specified 
+  via \code{min.date} and \code{max.date.}
+  
+  All observations are jittered when plotted, so as to ensure the volume of 
+  any one particular date and fork length combination can be visualized.  
+  
+  In the case when no valid catch records are found, and hence no fish can 
+  contribute to the analysis, a blank png stating as such is returned.
 }
 \examples{
 \dontrun{
-<insert examples>
-
+# Create a plot of fork length by data for the American.
+F.size.by.date(57000,161980,"Fall","2014-01-01","2014-6-30","AmericanRiver")
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.size.by.date}
 }
 

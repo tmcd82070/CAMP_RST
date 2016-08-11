@@ -5,7 +5,7 @@
 \title{CAMP RST Global Variables}
 \usage{
 GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb", output.dir = "..\\\\outputs",
-  sql.code.dir = file.path(find.package("campR"), "inst", "sql"),
+  sql.code.dir = file.path(find.package("campR"), "sql"),
   samplePeriodCutTime = "04:00:00", max.ok.gap = 2,
   fishingGapMinutes = 10080, knotMesh = 15, halfConeMulti = 2,
   sample.size.forkLength = 100, sample.size.forkLengthAndWeight = 100,

@@ -28,7 +28,7 @@ Lists all catch, regardless of species.
 }
 \details{
 This function utilizes the All-Catch Series query to find and identify
-all pertinent records within a catch.  See
+all pertinent records within a catch.
 }
 \examples{
  
@@ -39,6 +39,6 @@ all pertinent records within a catch.  See
 }
 }
 \seealso{
-\code{F.chinookByDate.table}
+\code{F.chinookByDate.table}, \code{F.get.all.fish.data}
 }
 

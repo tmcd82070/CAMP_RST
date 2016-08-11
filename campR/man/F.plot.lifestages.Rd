@@ -7,48 +7,32 @@
 F.plot.lifestages(df, file.root, plot.pies = FALSE)
 }
 \arguments{
-\item{df}{<describe argument>}
+\item{df}{A data frame containing lifestages in the rows and runs across the
+columns.}
 
-\item{file.root}{<describe argument>}
+\item{file.root}{A text string indicating a prefix to append to all output.}
 
-\item{plot.pies=FALSE}{<describe argument>}
+\item{plot.pies=FALSE}{If true, a pie chart is produced instead of a bar
+chart.}
 }
 \value{
-<describe return value>
+A graphical png plotting a bar chart showing relative numbers of 
+  estimated passage, with lifestages down the rows, and runs across the 
+  columns.  Generally, all passage routines utilize the bar-chart option via
+  paramter \code{plot.pies};  thus, pie charts are never returned.
 }
 \description{
-Produce a plot of the lifestages.
-
-   df = a table with lifestages down the rows and runs across the columns.
-   plot.pies = If TRUE, pie charts are produced
+Produce a plot of the passage associated with all distinct 
+  combinations of lifestage and run.
 }
 \details{
-<other comments found in file>
-   df <- df
-   file.root <- output.file
-   plot.pies <- F
-   Get passage columns and totals row indices
-   Get totals
-   Pare down the data frame to just passage columns, no totals
-   drop the runs with 0 fish. 
-   drop the lifestages with no fish
-   Reorder the columns to make the bar charts go through time
-   Reorder the rows so life stages increase from left to right
-   Do the plot
-   If file=NA, a pdf graphing device is assumed to be open already.
-   Shut down all graphics devices
-   ---- Open PNG device
-   If file=NA, a pdf graphing device is assumed to be open already.
-   Shut down all graphics devices
-   ---- Open PNG device
-   Y axis label in margin
-   the barplots 
-   Write out the ls.names along the bottom
+
 }
 \examples{
 \dontrun{
-<insert examples>
-
+# Plot passage estimates housed in a data frame
+# entitled allCatch.  
+F.plot.lifestages(df=allCatch,file.root="PassageResults",plot.pies=FALSE)
 }
 }
 \author{
