@@ -1,37 +1,51 @@
 #' @export assignLifeStage
 #'
+#' @import plyr mclust
+#'
 #' @title assignLifeStage
 #'
 #' @description
 #'
-#'  Jared Studyvin
-#'  10 Feb 2016
-#'  Assign life stage
-#'
-#'
 #'  This function will be called within F.get.catch.data
-#'  The purpose is to replace the life stage column with an updated assignment based on a clustering routine
+#'  The purpose is to replace the life stage column with an updated assignment based on a clustering routine.
 #'
 #'
 #'
 #'
-#' @param DATA describe argument
-#' @param groupN=NULL describe argument
-#' @param USEWeight=NULL describe argument
+#' @param DATA A data frame of the catch data with the weight measurement, as returned from \code{\link{getWeightData}}.
+#' @param groupN The number of life stage groups to be estimated, see details.
+#' @param USEWeight Indicate whether weight should not (FALSE) be used in the analytical assignment or allow (NULL) weight to be used, see details.
 #'
-#' @details other comments found in file
-#'  create id column to keep track of expanding and collapsing the data
-#'  get unique final runs
-#'  noRun - grep('unassig',finalRun,ignore.case=TRUE)
-#'  if(length(noRun)>0){
-#'      finalRun - finalRun[-noRun]
-#'  }
+#' @param ... Arguments passed to \code{\link{assignLSCompare}}.
 #'
-#' @return describe return value
+#' @details
 #'
-#' @author WEST Inc.
+#' The function expects the data frame DATA to have column names: \code{lifeStage, SampleDate, FinalRun, forkLength, weight, Unmarked}. The \code{lifeStage} column is overwritten with the new analytical life stage assignment.
 #'
-#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
+#' The life stage assignment is done by each unique value in the \code{FinalRun} column. If the final run is unassigned, no estimation is done and the life stage is set to Unassigned.
+#'
+#' This function relies on several global variables as set by \code{\link{GlobalVars}}: \code{sample.size.forkLength, sample.size.forkLengthAndWeight, weight.prop.forkLength, forkLength.mean.diff}, see \code{\link{GlobalVars}} for default values.
+#'
+#' If the number of fish with a fork length value is less than \code{sample.size.forkLength} the life stage is set to Unassigned, else the life stage assignment will continue.
+#'
+#' If \code{USEWeight=FALSE} the life stage is analytically assigned using fork length and date only. If \code{USEWeight=NULL} the weight variable is also used to assign life stage if the number of fish with a weight measurement divided by the number of fish with a fork length measurement is greater than \code{weight.prop.forkLength} AND the number of fish with a weight and fork length measurements is greater than \code{sample.size.forkLengthAndWeight}. It is not recommend for the user to specify \code{USEWeight=TRUE}, if done, weight is only used if the number of fish with a weight measurement is greater than \code{sample.size.forkLengthAndWeight} else weight is not used. In all cases fork length and date are used in the life stage assignment and based on user input and these condition weight might also be used to assign life stage.
+#'
+#' \code{groupN} may take the values 2, 3, or NULL. If 2 or 3 the analytical life stage is done with that number of groups. If 2, the group names are Small and Large, if 3 the group names are Small, Medium, and Large. These names are chosen to distinguish from the morphometric life stage names. If \code{groupN=NULL} the analytical life stage begins with 3 groups. If the minimum pairwise fork length mean difference is less than \code{forkLength.mean.diff} the number of groups fit is reduced by one. In this protocol the number of groups can be one, in which case the group name is All.
+#'
+#' The analytical assignment is done through a call to the \code{\link[mclust]{Mclust}} function in the \code{\pkg{mclust}} package. The \code{Mclust} function is fitting a mixture of multivariate normal distribution. The number of distribution fit corresponds to the number of life stage groups. The \code{Mclust} function returns mean vectors and variance covariance matrices for each group and the group member ship for each fish used in the mixture distribution estimation. The group names are assigned based on the means of the fork length, smallest mean is label as Small, etc.
+#'
+#' In some cases not all of the fish are used in the mixture distribution estimation. For example if weight is to be used, there could be some fish without a weight measurement and complete observations are needed for the \code{Mclust} function. For these fish a minimum Mahalanobis distance is used for the life stage assignment. For each fish not used in the mixture distribution estimation, but have at least a fork length or weight, the Mahalanobis distance from the fish to each of the group means is calculated. The minimum distance indicates which group that fish will be assigned too. The concept is that all fish with a recorded fork length will have a group assignment.
+#'
+#'
+#' The analytical and morphometric life stage assignments are compared with a call to \code{\link{assignLSCompare}}.
+#'
+#'
+#'
+#' @return The data frame DATA is returned with the \code{lifeStage} column being updated by the analytical assignment.
+#'
+#' @author Jared Studyvin, WEST Inc.
+#'
+#' @seealso \code{\link{assignLSCompare}}, \code{\link{GlobalVars}}
 #'
 #' @examples
 #' \dontrun{
@@ -178,7 +192,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 	(nFLW <- sum(runDat[with(runDat,!is.na(forkLength)&!is.na(weight)),'Unmarked']))
 	## won't use weight unless enough there is enough data
 	useWeight <- FALSE
-	if(nW/nFL > .5 & nFLW > sample.size.forkLengthAndWeight){
+	if(nW/nFL > weight.prop.forkLength & nFLW > sample.size.forkLengthAndWeight){
             useWeight <- TRUE
 	}
 
@@ -188,7 +202,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 	}
 
 
-        if(useWeight & nW<2){
+        if(useWeight & nW<=sample.size.forkLengthAndWeight){
             useWeight <- FALSE
             message('I know you requested to use weight in the life stage assignment but there is not adequate sample to do so.')
         }
@@ -349,7 +363,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 
 
         ########################
-        ## This might not be need when for the release, but it is nice for testing.
+        ## This might not be needed when we get to the next release, but it is nice for testing.
 	write.csv(assignCheck,paste0(output.dir,site,fRun,'AssignCheck.csv'),row.names=FALSE)
 
 
