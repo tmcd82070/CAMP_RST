@@ -155,7 +155,7 @@
 #' # we would need to query.  what do we want to do?
 #' }
 
-F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL ){
+F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL,reclassifyFL=FALSE ){
   
   # site <- 
   # taxon <- 161980
@@ -164,6 +164,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   # autoLS <- FALSE
   # nLS <- NULL
   # weightUse <- NULL
+  # reclassifyFL <- FALSE
   
   #   ---- Get stuff we need from the global environment.
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
@@ -235,23 +236,15 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     }
   }
 
-
-  
-  
-  
   #   ---- If a flag is set, we map forklength into separate sets.  
-  
-  #if( reClassifyLS == "Y" ){
-    
-    catch <- reClassifyLS(catch)
-    
-  #}
+  if( reclassifyFL == TRUE ){
+    catch <- F.reclassifyLS(catch)
+  }
   
   
   
   
-  
-  
+
   #   ---- STEP 2:  Look for gaps in fishing, as defined by global variable fishingGapMinutes.  If any 
   #   ---- are found, reassign trapPositionIDs. 
   theLongCatches <- catch[!is.na(catch$SampleMinutes) & catch$SampleMinutes > fishingGapMinutes & catch$TrapStatus == "Not fishing",c('SampleDate','StartTime','EndTime','SampleMinutes','TrapStatus','siteID','siteName','trapPositionID','TrapPosition')]
@@ -270,6 +263,12 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     catch2 <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
       
     close(ch)
+    
+    #   ---- If we have to run the LongGapLoop series, then we lose our already mapped new lifeStages, if we 
+    #   ---- want that.  So, we must remap the forklengths again.  
+    if( reclassifyFL == TRUE ){
+      catch2 <- F.reclassifyLS(catch2)
+    }
     
     #   ---- If we have weight data, we cannot simply stop with fetching the catch2
     #   ---- data frame, since that, by design, has no weights.  So, we use what we 

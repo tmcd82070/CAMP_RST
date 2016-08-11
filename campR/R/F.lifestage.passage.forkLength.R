@@ -1,6 +1,6 @@
-#' @export F.lifestage.passage.assignLS3groupNoWeight
+#' @export F.lifestage.passage.forkLength
 #' 
-#' @title F.lifestage.passage.assignLS3groupNoWeight
+#' @title F.lifestage.passage.forkLength
 #' 
 #' @description
 #' 
@@ -13,7 +13,7 @@
 #' 
 #' 
 #' 
-#'  3 life stage groups are fit and weight will not be used to assign lifestage
+#'  2 life stage groups are fit and the program will decide if weight will be used or not
 #' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
@@ -31,36 +31,22 @@
 #' @param weightUse Boolean variable indicating if weight should be used for the analytical assignment, default is NULL. Ignored if autoLS=FALSE, see details.
 #' @param reclassifyFL A logical indicating if passage should be estimated via forklength-based class groups.  
 #' 
-#' @details <other comments found in file>
-#' NA
-#' NA
-#' NA
-#'  3 life stage groups are fit and weight will not be used to assign lifestage
+#' @details other comments found in file
+#'  2 life stage groups are fit and the program will decide if weight will be used or not
 #' 
-#' @return <describe return value>
+#' @return describe return value
 #' 
 #' @author WEST Inc.
 #' 
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{\link{related routine}}, \code{\link{related routine}}
 #' 
 #' @examples
 #' \dontrun{
-#' <insert examples>
+#' F.lifestage.passage.forkLength
 #' 
 #' }
-F.lifestage.passage.assignLS3groupNoWeight <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE){
-  ###
-  ###   ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN TABULAR SUMMARY
-  ###   A table of passage estimates, with lifestages down the rows, and runs across the columns.
-  ###
-  ###   Input:
-  ###   site = site ID of the place we want, trap locaton
-  ###   taxon = taxon number (from luTaxon) to retrieve
-  ###
-  
-  
-  ## 3 life stage groups are fit and weight will not be used to assign lifestage
-  passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=3,weightUse=FALSE,autoLS=TRUE,reclassifyFL=FALSE)
+F.lifestage.passage.forkLength <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autoLS=FALSE,reclassifyLS=TRUE){
+
+  passageWithLifeStageAssign(site=site,taxon=taxon,min.date=min.date,max.date=max.date,output.file=output.file,ci=ci,nLS=2,weightUse=NULL,autoLS=TRUE,reclassifyFL=TRUE)
   
 }
-

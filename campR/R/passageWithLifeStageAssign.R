@@ -44,7 +44,6 @@
 #'   accompanying \code{csv} tabular datasheet.
 #'
 #'   A plot (\code{pdf}) and a confusion matrix (\code{csv}) comparing the analytical and morphometric life stage assignment.
-
 #'
 #' @author WEST Inc.
 #'
@@ -104,7 +103,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   ##   ---- Fetch the catch and visit data
   ## autoLS=TRUE, uses mixture distribution to assign life stage
   ## nLS = NULL, allows the routine to decide the number of life stages
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,autoLS=autoLS,nLS=nLS,weightUse=weightUse)
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,autoLS=autoLS,nLS=nLS,weightUse=weightUse,reclassifyFL=reclassifyFL)
 
   catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
