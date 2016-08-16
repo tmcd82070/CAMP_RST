@@ -18,7 +18,6 @@ Imports:
  mclust,
  car,
  tools,
- utils,
  grDevices,
  tidyr,
  dplyr,
@@ -26,5 +25,6 @@ Imports:
  assertthat,
  R6,
  magrittr,
+ Rcpp,
  ellipse
 

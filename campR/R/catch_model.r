@@ -244,41 +244,41 @@ F.catch.model <- function( catch.df ){
   
   
   
-  #   ---- Very rarely, we end up with two 'Not fishing' periods in neighboring rows, where 
-  #   ---- each is of duration < max.ok.gap.  This can occur when their in-between 
-  #   ---- Fishing instance has zero fish, which by this point in the process, is long
-  #   ---- since deleted.  If, the batchDate between the two 'Not fishing' instances 
-  #   ---- does not agree, imputed fish can be lodged on one day, while truly caught
-  #   ---- fish can end up on another.  This causes fish accounting in function 
-  #   ---- F.est.passage to fail.  Try and prevent this from happening here. 
-  
-  #   ---- A nice lag function.  http://www.r-bloggers.com/generating-a-laglead-variables/
-  shift<-function(x,shift_by){
-    stopifnot(is.numeric(shift_by))
-    stopifnot(is.numeric(x))
-    
-    if (length(shift_by)>1)
-      return(sapply(shift_by,shift, x=x))
-    
-    out<-NULL
-    abs_shift_by=abs(shift_by)
-    if (shift_by > 0 )
-      out<-c(tail(x,-abs_shift_by),rep(NA,abs_shift_by))
-    else if (shift_by < 0 )
-      out<-c(rep(NA,abs_shift_by), head(x,-abs_shift_by))
-    else 
-      out<-x
-    out
-  }
-  
-  #   ---- Manipulate the batchDates to prevent the error described above.  
-  catch.df$dblMaxGap <- ifelse(catch.df$SampleMinutes < 60*max.ok.gap & catch.df$TrapStatus == "Not fishing" & shift(catch.df$SampleMinutes,-1) < 60*max.ok.gap & catch.df$trapPositionID == shift(catch.df$trapPositionID,-1),1,0)
-  for(i in 1:nrow(catch.df)){
-    if(catch.df$dblMaxGap[i] == 1){
-      catch.df$batchDate[i] <- catch.df$batchDate[i-1]
-    }
-  }
-  catch.df$dblMaxGap <- NULL
+#   #   ---- Very rarely, we end up with two 'Not fishing' periods in neighboring rows, where 
+#   #   ---- each is of duration < max.ok.gap.  This can occur when their in-between 
+#   #   ---- Fishing instance has zero fish, which by this point in the process, is long
+#   #   ---- since deleted.  If, the batchDate between the two 'Not fishing' instances 
+#   #   ---- does not agree, imputed fish can be lodged on one day, while truly caught
+#   #   ---- fish can end up on another.  This causes fish accounting in function 
+#   #   ---- F.est.passage to fail.  Try and prevent this from happening here. 
+#   
+#   #   ---- A nice lag function.  http://www.r-bloggers.com/generating-a-laglead-variables/
+#   shift<-function(x,shift_by){
+#     stopifnot(is.numeric(shift_by))
+#     stopifnot(is.numeric(x))
+#     
+#     if (length(shift_by)>1)
+#       return(sapply(shift_by,shift, x=x))
+#     
+#     out<-NULL
+#     abs_shift_by=abs(shift_by)
+#     if (shift_by > 0 )
+#       out<-c(tail(x,-abs_shift_by),rep(NA,abs_shift_by))
+#     else if (shift_by < 0 )
+#       out<-c(rep(NA,abs_shift_by), head(x,-abs_shift_by))
+#     else 
+#       out<-x
+#     out
+#   }
+#   
+#   #   ---- Manipulate the batchDates to prevent the error described above.  
+#   catch.df$dblMaxGap <- ifelse(catch.df$SampleMinutes < 60*max.ok.gap & catch.df$TrapStatus == "Not fishing" & shift(catch.df$SampleMinutes,-1) < 60*max.ok.gap & catch.df$trapPositionID == shift(catch.df$trapPositionID,-1),1,0)
+#   for(i in 1:nrow(catch.df)){
+#     if(catch.df$dblMaxGap[i] == 1){
+#       catch.df$batchDate[i] <- catch.df$batchDate[i-1]
+#     }
+#   }
+#   catch.df$dblMaxGap <- NULL
   
   
   

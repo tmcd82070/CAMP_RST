@@ -94,6 +94,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 #   file.root <- out.fn.root
 #   ci <- ci
   
+  
   #   ---- Data frame catch.df gets manipulated along the way.  Preserve the min.date and
   #   ---- max.date entered as attribute variables.  
   min.date <- attr(catch.df,"min.date")
@@ -101,6 +102,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   
   #   ---- Get global variable values.
   max.ok.gap <- get("max.ok.gap",envir=.GlobalEnv)
+  passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Obtain text description of trap positions for use in output. 
   catch.df.sites <- unique(catch.df[,c('trapPositionID','TrapPosition')])

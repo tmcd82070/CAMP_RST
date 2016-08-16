@@ -78,7 +78,7 @@
 #' @param seed An integer specifying the seed to use in all functions utilizing a random draw.  Currently set 
 #' equal to 884.  
 #' 
-#' @parm forkLengthCutPoints A dataframe specifying the groups into which fish 
+#' @param forkLengthCutPoints A dataframe specifying the groups into which fish 
 #'   are to be partitioned via forklength.  The first column containing text 
 #'   strings, which must be named \code{lifeStage}, contains new group names, 
 #'   while the second column containing integers, which must be named 
@@ -195,7 +195,7 @@ GlobalVars <- function(
 	  assign("seed", seed, pos=.GlobalEnv)
 	  
 	  # Set dataframe forkLengthCutPoints
-	  assign("forkLengthCutPoints",data.frame(lifeStage=c("<=41mm","42-72mm","73-110mm",">=111mm"),cutPoints=c(41,72,110,9999)),pos=.GlobalEnv)
+	  assign("forkLengthCutPoints",data.frame(lifeStage=c("FL1 leq 41mm","FL2 42-72mm","FL3 73-110mm","FL4 geq 111mm"),cutPoints=c(41,72,110,9999)),pos=.GlobalEnv)
 
     
     # Table names is a special global variable that we intentionally make harder ----

@@ -61,27 +61,32 @@ for(testi in 6:70){
       by <- 'year'
     }
     output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
-    F.run.passage      (site, taxon,      min.date, max.date, by=by,     output.file=output.file,         ci=TRUE            )
+    F.run.passage(site,taxon,min.date,max.date,by=by,output.file=output.file,ci=TRUE)
+    
+    #   ---- Reclassify lifeStage by forklength. 
+    output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"FL")
+    F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file,ci=TRUE,autoLS=FALSE,reclassifyFL=TRUE)
   }
   by <- 'All'
   output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   
   beg0 <- Sys.time()
   #F.lifestage.passage(site, taxon, min.date, max.date, output.file, ci=TRUE)
-  passageWithLifeStageAssign(site, taxon, min.date, max.date,output.file,ci=TRUE,autoLS=FALSE)
+  passageWithLifeStageAssign(site, taxon, min.date, max.date,output.file,ci=TRUE,autoLS=FALSE,reclassifyFL=FALSE)
   end0 <- Sys.time()
   diff.time0 <- as.numeric(end0 - beg0,units="hours")
   
+  
+  
   # ----- automatic lifestage assignment functions --- added 4/4/2016 based on jared's work -----
   
- 
    # Start writing to an output file
   
   sink(paste0(output.file,'J1.txt')); 
   output.fileJ1 <- output.file
   output.file <- paste0(output.fileJ1,"_",'J1')
   beg1 <- Sys.time(); 
-  F.lifestage.passage.assignLS2group(site,taxon,min.date,max.date, output.file,ci=TRUE,autoLS=TRUE)         
+  F.lifestage.passage.assignLS2group(site,taxon,min.date,max.date, output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)         
   end1 <- Sys.time(); 
   diff.time1 <- as.numeric(end1 - beg1,units="hours"); 
   output.file <- output.fileJ1
@@ -91,7 +96,7 @@ for(testi in 6:70){
   output.fileJ2 <- output.file
   output.file <- paste0(output.file,"_",'J2')
   beg2 <- Sys.time(); 
-  F.lifestage.passage.assignLS2groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE) 
+  F.lifestage.passage.assignLS2groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
   end2 <- Sys.time(); 
   diff.time2 <- as.numeric(end2 - beg2,units="hours"); 
   output.file <- output.fileJ2
@@ -101,7 +106,7 @@ for(testi in 6:70){
   output.fileJ3 <- output.file   
   output.file <- paste0(output.file,"_",'J3')
   beg3 <- Sys.time(); 
-  F.lifestage.passage.assignLS3group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE)       
+  F.lifestage.passage.assignLS3group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
   end3 <- Sys.time(); 
   diff.time3 <- as.numeric(end3 - beg3,units="hours"); 
   output.file <- output.fileJ3
@@ -111,7 +116,7 @@ for(testi in 6:70){
   output.fileJ4 <- output.file    
   output.file <- paste0(output.file,"_",'J4')
   beg4 <- Sys.time(); 
-  F.lifestage.passage.assignLS3groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE) 
+  F.lifestage.passage.assignLS3groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
   end4 <- Sys.time(); 
   diff.time4 <- as.numeric(end4 - beg4,units="hours"); 
   output.file <- output.fileJ4
@@ -121,7 +126,7 @@ for(testi in 6:70){
   output.fileJ5 <- output.file    
   output.file <- paste0(output.file,"_",'J5')
   beg5 <- Sys.time(); 
-  F.lifestage.passage.assignLS(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE)            
+  F.lifestage.passage.assignLS(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)            
   end5 <- Sys.time(); 
   diff.time5 <- as.numeric(end5 - beg5,units="hours"); 
   output.file <- output.fileJ5
@@ -131,7 +136,7 @@ for(testi in 6:70){
   output.fileJ6 <- output.file    
   output.file <- paste0(output.file,"_",'J6')
   beg6 <- Sys.time();
-  F.lifestage.passage.assignLSNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE)       
+  F.lifestage.passage.assignLSNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
   end6 <- Sys.time(); 
   diff.time6 <- as.numeric(end6 - beg6,units="hours"); 
   output.file <- output.fileJ6

@@ -22,7 +22,14 @@ Reclassify lifeStage via forklength into groups specified
 via Global Enviornment dataframe \code{forkLengthCutPoints}.
 }
 \details{
-
+Generally speaking, the process by which a new \code{lifeStage}
+  variable is constructed is straight-forward.  Care must be taken, however,
+  to ensure that records with no recorded \code{forkLength}, i.e., those
+  containing a value of \code{NA}, are mapped to \code{"Unassigned"} in the
+  new \code{lifeStage} variable.  This process is programmed in order to
+  ensure correct processing of plus counts via function \code{F.assign.1dim},
+  for records containing valid \code{FinalRun}, but not \code{lifeStage}, or
+  \code{forkLength}, as the case may be.
 }
 \examples{
  
@@ -31,6 +38,6 @@ catchWithNewLifeStageCats <- reclassifyLS(catch)
 }
 }
 \seealso{
-\code{GlobalVars.R}, \code{F.get.catch.data}
+\code{GlobalVars.R}, \code{F.get.catch.data}, \code{F.assign.1dim}
 }
 

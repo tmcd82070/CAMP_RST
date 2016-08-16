@@ -7,44 +7,51 @@
 assignLSCompare(Data, muLIST, sigmaLIST, SAVE = TRUE)
 }
 \arguments{
-\item{Data}{describe argument}
+\item{Data}{A data.frame of the catch data with both the morphometric and
+analytical life stage assignments.}
 
-\item{SAVE=TRUE}{describe argument}
+\item{SAVE}{Default is TRUE, a plot (PDF file) and confusion matrix (CSV
+file)  for each final run is saved in the \code{output.dir} location (see
+\code{\link{GlobalVars}}). If FALSE the each plot is displayed in a new R
+plot window. In either case the confusion matrix is print to the R console.}
+
+\item{muList}{A list of matrices. The names of the elements in the list need
+to correspond to the final run names in the catch data. The columns of each
+matrix correspond to the mean vector from the mixture distribution from
+\code{\link{assignLifeStage}}, the row names need to be the variable names
+in Data that were used in the mixture distribution.}
+
+\item{sigmaList}{A list of 3d arrays. The names of the elements in the list
+need to correspond to the final run names in the catch data. The third
+dimension indexes the different life stage groups, for which a matrix of
+the variance covariance exists, from the mixture distribution from
+\code{\link{assignLifeStage}}. The first and second dimension names need to
+be the same and correspond to the variable names in Data that were used in
+the mixture distribution.}
 }
 \value{
-describe return value
+NA
 }
 \description{
-Assigns life stage
+Compares the morphometric life stage assignment to the
+  analytical life stage assignment. The comparison is presented through both
+  a confusion matrix and a plot.
 }
 \details{
-other comments found in file
- for debugging
-data <- subset(Data,FinalRun=='Fall')
- this run
- confusion matrix
-head(data)
- mixture distribution life stage level colors
- biologist life stage symbols
- data to be plotted now
-nrow(plotData)
-nrow(data)
-head(plotData)
- add ellipse to the figure
- add ellipse to the figure
- save.image(file="C:/Users/jmitchell/Desktop/FirstLineBigLooper.RData")
-monthLabel
-par(mfrow=c(1,2))
- title for figure
- plot forklength and date
-with(data,table(col,pch))
- legend info for mixture life stage
- legend info for biologist life stage
-legMix
-legBio
- prepares the legend so the color and pch match up correctly
- for debugging
-ddply(Data,~FinalRun,compare,save=FALSE)
+This function is only intended to be called within the
+\code{\link{assignLifeStage}} function.
+
+The confusion matrix's rows correspond to the morphometric life stage
+assignment (labeled \code{bioLS}) and the columns the analytical life stage
+assignment. The cells of the confusion matrix present the number of fish.
+
+The plot has date on the horizontal axis and fish fork length on the vertical
+axis, the color of the symbol refers to the analytical assignment and the
+symbol type indicated the morphometic assignment. The colors are red (Small),
+green (Medium), blue (Large), and orange (All). The circle (Fry), triangle
+(Parr), and plus sign (Smolt). For example if a fish was morphometrically
+assigned as a Parr and analytically assigned as a Large the plot symbol would
+be a blue triangle.
 }
 \examples{
 \dontrun{
@@ -53,9 +60,9 @@ ddply(Data,~FinalRun,compare,save=FALSE)
 }
 }
 \author{
-WEST Inc.
+Jared Studyvin WEST Inc.
 }
 \seealso{
-\code{\link{related routine}}, \code{\link{related routine}}
+\code{\link{assignLifeStage}}
 }
 

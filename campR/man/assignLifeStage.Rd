@@ -7,129 +7,91 @@
 assignLifeStage(DATA, groupN = NULL, USEWeight = NULL, ...)
 }
 \arguments{
-\item{DATA}{describe argument}
+\item{DATA}{A data frame of the catch data with the weight measurement, as
+returned from \code{\link{getWeightData}}.}
 
-\item{groupN=NULL}{describe argument}
+\item{groupN}{The number of life stage groups to be estimated, see details.}
 
-\item{USEWeight=NULL}{describe argument}
+\item{USEWeight}{Indicate whether weight should not (FALSE) be used in the
+analytical assignment or allow (NULL) weight to be used, see details.}
+
+\item{...}{Arguments passed to \code{\link{assignLSCompare}}.}
 }
 \value{
-describe return value
+The data frame DATA is returned with the \code{lifeStage} column
+  being updated by the analytical assignment.
 }
 \description{
-Jared Studyvin
- 10 Feb 2016
- Assign life stage
-
-
- This function will be called within F.get.catch.data
- The purpose is to replace the life stage column with an updated assignment based on a clustering routine
+This function will be called within F.get.catch.data The purpose is to
+replace the life stage column with an updated assignment based on a
+clustering routine.
 }
 \details{
-other comments found in file
- create id column to keep track of expanding and collapsing the data
- get unique final runs
- noRun - grep('unassig',finalRun,ignore.case=TRUE)
- if(length(noRun)>0){
-     finalRun - finalRun[-noRun]
- }
- save biologist life stage assignment
- for debugging
-runDat - subset(DATA,FinalRun==sample(finalRun,1));with(runDat,unique(FinalRun))
- create list for saving mean vectors and variance covariance matrices from each mixture distribution
+The function expects the data frame DATA to have column names:
+\code{lifeStage, SampleDate, FinalRun, forkLength, weight, Unmarked}. The
+\code{lifeStage} column is overwritten with the new analytical life stage
+assignment.
 
- save data before assignment
- save data after assignment
+The life stage assignment is done by each unique value in the \code{FinalRun}
+column. If the final run is unassigned, no estimation is done and the life
+stage is set to Unassigned.
+
+This function relies on several global variables as set by
+\code{\link{GlobalVars}}: \code{sample.size.forkLength,
+sample.size.forkLengthAndWeight, weight.prop.forkLength,
+forkLength.mean.diff}, see \code{\link{GlobalVars}} for default values.
+
+If the number of fish with a fork length value is less than
+\code{sample.size.forkLength} the life stage is set to Unassigned, else the
+life stage assignment will continue.
+
+If \code{USEWeight=FALSE} the life stage is analytically assigned using fork
+length and date only. If \code{USEWeight=NULL} the weight variable is also
+used to assign life stage if the number of fish with a weight measurement
+divided by the number of fish with a fork length measurement is greater than
+\code{weight.prop.forkLength} AND the number of fish with a weight and fork
+length measurements is greater than \code{sample.size.forkLengthAndWeight}.
+It is not recommend for the user to specify \code{USEWeight=TRUE}, if done,
+weight is only used if the number of fish with a weight measurement is
+greater than \code{sample.size.forkLengthAndWeight} else weight is not used.
+In all cases fork length and date are used in the life stage assignment and
+based on user input and these condition weight might also be used to assign
+life stage.
+
+\code{groupN} may take the values 2, 3, or NULL. If 2 or 3 the analytical
+life stage is done with that number of groups. If 2, the group names are
+Small and Large, if 3 the group names are Small, Medium, and Large. These
+names are chosen to distinguish from the morphometric life stage names. If
+\code{groupN=NULL} the analytical life stage begins with 3 groups. If the
+minimum pairwise fork length mean difference is less than
+\code{forkLength.mean.diff} the number of groups fit is reduced by one. In
+this protocol the number of groups can be one, in which case the group name
+is All.
+
+The analytical assignment is done through a call to the
+\code{\link[mclust]{Mclust}} function in the \code{\pkg{mclust}} package. The
+\code{Mclust} function is fitting a mixture of multivariate normal
+distribution. The number of distribution fit corresponds to the number of
+life stage groups. The \code{Mclust} function returns mean vectors and
+variance covariance matrices for each group and the group member ship for
+each fish used in the mixture distribution estimation. The group names are
+assigned based on the means of the fork length, smallest mean is label as
+Small, etc.
+
+In some cases not all of the fish are used in the mixture distribution
+estimation. For example if weight is to be used, there could be some fish
+without a weight measurement and complete observations are needed for the
+\code{Mclust} function. For these fish a minimum Mahalanobis distance is used
+for the life stage assignment. For each fish not used in the mixture
+distribution estimation, but have at least a fork length or weight, the
+Mahalanobis distance from the fish to each of the group means is calculated.
+The minimum distance indicates which group that fish will be assigned too.
+The concept is that all fish with a recorded fork length will have a group
+assignment.
 
 
-
-
-
-
- keep only needed columns
- final run
- number of fish with a forklength
- if final run is unassigned OR if number of fish with fork length <100
- then make life stage unassigned and return
- number of fish with a weight
- number of fish with a forklength and weight
- won't use weight unless enough there is enough data
- subset data to be used for analysis
- use these rows for analysis
- use these columns for analysis
- columns to keep when collapsing data
- use these rows for analysis
- use these columns for analysis
- columns to keep when collapsing data
- need the cluster means to be at least this far apart in the forklength dimension otherwise the number of groups is reduced
- The reduction only happens if the number of groups is not specified by the user
- user overwrite choice of number of groups
- fit cluster with user specified number of groups
- fit 2 groups if means are close
- fit 1 group if means are close
- allow computer to choose
- while(!goodClust){
-     clustTemp <- Mclust(data=expDat[inRow,covars],G=nGroup,mclust.options("emModelNames"))
-     (meanFL <- clust[['parameters']]$mean['forkLength',])
-     if(min(pairDiff(meanFL))<minMeanDiff){
-         print(nGroup)
-         if(nGroup == 1){
-             goodClust <- TRUE
-         }else{
-             nGroup <- nGroup-1
-         }
-         ## if(nGroup==1){
-         ##     runDat$lifeStage <- 'Unassigned'
-         ##     runDat[with(runDat,!is.na(forkLength)),'lifeStage'] <- 'Medium'
-         ##     return(runDat)
-         ## }
-     }else{
-         goodClust <- TRUE
-     }
- }
-summary(clustTemp)
-summary(clust)
- get group names based on number of groups
- array for var-cov matrices, last dim indicates groups
- array of mean vectors, last dim indicates groups
- save mixture distribution summary statistics
-    mixDistSigmaList
-    mixDistMUList
-
- for debugging
- save mu and Sigma
- print('save mu and sigma')
- print(saveName <- gsub(' ','',paste0(as.character(runDat[1,c('river','trap','year','FinalRun')]),collapse='')))
- parm <- list(mu,Sigma)
- save(parm,file=paste0(output.file,'parm',saveName,'.Rdata'))
-
- this these did not get an assignment
-ddply(expDat,~group,summarize,FL=mean(forkLength))
-row <- subset(expDat,id%in%c(1,2))
- this is the collapse data
- should have the same number of rows at runDat
- This is not needed any more, remove to not take up memory
- ddply(collapseDat,~group,summarize,FL=mean(forkLength,na.rm=TRUE))
- mu
-with(runDat,sum(is.na(forkLength)))
- for debugging
- M <- mu
- S <- Sigma
- dat <- collapseDat
- w <- haveFLnoW
- varHave <- 'forkLength'
- rm(M,S,dat,w)
-dat = whole data frame
-w = logical vector of where assignment needs to be done
- M = mean matrix from Mclust
- S = variance covariance array from Mclust
-print(X[,y])
- If weight was used some fish may only have a weight or forklength
- This if statement assigns lifestage to fish with either a weight or a forklength
- where there is a weight but no forklength
- where there is a forklength but no weight
- this matches up the group number to the group name
-ddply(collapseDat[haveFLnoW,],~group,summarize,FL=mean(forkLength,na.rm=TRUE))
+The analytical and morphometric life stage assignments are compared with a
+call to \code{\link{assignLSCompare}}.
 }
 \examples{
 \dontrun{
@@ -138,9 +100,9 @@ ddply(collapseDat[haveFLnoW,],~group,summarize,FL=mean(forkLength,na.rm=TRUE))
 }
 }
 \author{
-WEST Inc.
+Jared Studyvin, WEST Inc.
 }
 \seealso{
-\code{\link{related routine}}, \code{\link{related routine}}
+\code{\link{assignLSCompare}}, \code{\link{GlobalVars}}
 }
 

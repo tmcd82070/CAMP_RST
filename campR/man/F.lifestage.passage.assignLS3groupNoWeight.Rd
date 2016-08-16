@@ -5,20 +5,33 @@
 \title{F.lifestage.passage.assignLS3groupNoWeight}
 \usage{
 F.lifestage.passage.assignLS3groupNoWeight(site, taxon, min.date, max.date,
-  output.file, ci = TRUE, autoLS = TRUE)
+  output.file, ci = TRUE, autoLS = TRUE, reclassifyFL = FALSE)
 }
 \arguments{
-\item{site}{<describe argument>}
+\item{site}{The identification number of the site for which estimates are 
+required.}
 
-\item{taxon}{<describe argument>}
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{min.date}{<describe argument>}
+\item{min.date}{The start date for data to include. This is a text string in 
+the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{<describe argument>}
+\item{max.date}{The end date for data to include.  Same format as 
+\code{min.date}.}
 
-\item{output.file}{<describe argument>}
+\item{output.file}{A text string indicating a prefix to append to all output.}
 
-\item{ci=TRUE}{<describe argument>}
+\item{ci}{A logical indicating if 95% bootstrapped confidence intervals
+should be estimated along with passage estimates.}
+
+\item{autoLS}{Default is FALSE, no analytical life stage assignment is done. If TRUE, the analytical life stage assignment is done, see details.}
+
+\item{reclassifyFL}{A logical indicating if passage should be estimated via forklength-based class groups.}
+
+\item{nLS}{Number of life stage groups to be estimated. Ignored if autoLS=FALSE, see details.}
+
+\item{weightUse}{Boolean variable indicating if weight should be used for the analytical assignment, default is NULL. Ignored if autoLS=FALSE, see details.}
 }
 \value{
 <describe return value>

@@ -84,6 +84,18 @@ routine.}
 
 \item{seed}{An integer specifying the seed to use in all functions utilizing a random draw.  Currently set 
 equal to 884.}
+
+\item{forkLengthCutPoints}{A dataframe specifying the groups into which fish 
+are to be partitioned via forklength.  The first column containing text 
+strings, which must be named \code{lifeStage}, contains new group names, 
+while the second column containing integers, which must be named 
+\code{cutPoints}, specifies the right end point of the interval of the 
+forklength range corresponding to the group name represented by that row in
+dataframe \code{forkLengthCutPoints}.  Intervals are assumed closed on the
+right. The number of rows in \code{forkLengthCutPoints} should equal the
+number of desired groups. Finally, the last row should have a right-end
+point equal or in excess to the maximum possible forklength, e.g., 999. 
+See Details.}
 }
 \value{
 No return value.
@@ -92,12 +104,24 @@ No return value.
 Function to run at the beginning to define global variables.
 }
 \details{
-One additional global variable is defined. \code{table.names} is a list containing the mapping 
- of table names in Access to table names in R. This was set up 
-	to facilitate painless table name changes in Access.  This should not change unless tables 
-	or table names in Access change.  Because these rarely if ever change, we purposefully left this 
-	variable out of the arguments to \code{GlobalVars}.  To change table names, you must edit the code 
-	of \code{GlobalVars} and recompile the package.
+One additional global variable is defined. \code{table.names} is a list
+containing the mapping of table names in Access to table names in R. This was
+set up to facilitate painless table name changes in Access.  This should not
+change unless tables or table names in Access change.  Because these rarely
+if ever change, we purposefully left this variable out of the arguments to
+\code{GlobalVars}. To change table names, you must edit the code of
+\code{GlobalVars} and recompile the package.
+
+For dataframe \code{forkLengthCutPoints}, provided cut points are assumed to 
+form intervals closed on the right.  For example, if the second column of 
+\code{forkLengthCutPoints} contains the integers 37, 59, and 105, then it is 
+assumed that three forklength intervals are desired.  The first will cover 
+(0,37], the second (37,59], and the third (59,105].  Note that in this 
+example, the code implicitly assumes that the maximum forklength to be 
+included is 105.  It is advisable to set this last number to a large number, 
+e.g., 999, so as to ensure all forklengths are included in the new grouping 
+scheme.
+
  The data base name in use is written to the R log file.
 }
 \examples{

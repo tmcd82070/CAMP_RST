@@ -167,12 +167,6 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   catch.df6 <- F.summarize.fish.visit( catch.df, 'unassignedCatch' )
   catch.df7 <- F.summarize.fish.visit( catch.df, 'modAssignedCatch' )
   catch.df8 <- F.summarize.fish.visit( catch.df, 'modUnassignedCatch' )
-  
-  #   ---- Compute the unique runs we need to do
-  runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    # get all instances over the two df.  jason change 4/17/2015 5/21/2015: don't think we need to worry about catch.df0.
-  runs <- runs[ !is.na(runs) ]
-  cat("\nRuns found between", min.date, "and", max.date, ":\n")
-  print(runs)
 
   #   ---- Compute the unique runs we need to do.
   runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    

@@ -5,7 +5,7 @@
 \title{F.get.catch.data - Retrieve data frame with catch information}
 \usage{
 F.get.catch.data(site, taxon, min.date, max.date, autoLS = FALSE,
-  nLS = NULL, weightUse = NULL)
+  nLS = NULL, weightUse = NULL, reclassifyFL = FALSE)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are

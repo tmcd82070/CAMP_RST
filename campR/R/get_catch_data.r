@@ -155,7 +155,7 @@
 #' # we would need to query.  what do we want to do?
 #' }
 
-F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL,reclassifyFL=FALSE ){
+F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL,reclassifyFL=FALSE){
   
   # site <- 
   # taxon <- 161980
@@ -465,6 +465,8 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
   
   
+
+  
   
   #   ---- STEP 5:  Clean up visits and catch dataframes.  
   
@@ -475,6 +477,10 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   
   #   ---- Reduce catches to just positives.  Toss the 0 catches and non-fishing visits.
   catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
+  
+  
+  
+  #write.csv(catch,"C:/Users/jmitchell/Desktop/checking month/baseTable/catch.csv")
   
   
   #   ---- STEP 6:  Expand for half-cone adjustments, and calculate plus counts.  

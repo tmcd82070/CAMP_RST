@@ -155,6 +155,10 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
   #   ---- Get Julian weeks for this timeframe.  
   if(sum.by == 'week'){
     
+    #   ---- Obtain information from the global environment.  
+    get("min.date",envir=.GlobalEnv)
+    get("max.date",envir=.GlobalEnv)
+    
     #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
     db <- get( "db.file", envir=.GlobalEnv ) 
     ch <- odbcConnectAccess(db)
@@ -168,7 +172,11 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
     theDates <- merge(theDates,JDates[,c('Date','julianWeek','Year','julianWeekLabel')],by=c('Date'))
     names(theDates)[names(theDates) == 'julianWeek'] <- 'JWeek'
     
-    jDates <- subset(JDates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
+    jDates <- JDates[as.Date(JDates$uniqueDate) >= min.date & as.Date(JDates$uniqueDate) <= max.date,]
+    jDates <- jDates[,c('uniqueDate','year','julianWeek','julianWeekLabel')]
+    
+    #jDates <- subset(JDates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(uniqueDate,year,julianWeek,julianWeekLabel))
+    
     attr(grand.df,"JDates") <- jDates
   }
 
