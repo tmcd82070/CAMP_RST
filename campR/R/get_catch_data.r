@@ -18,10 +18,12 @@
 #' @param nLS A numeric communicating the number of new lifestages to assign. 
 #'   Values can be \code{2} or \code{3}.
 #' @param weightUse A logical indicating if weight data are to be incorporated 
-#'   in the assigning of lifestage.  \code{useWeight = NULL}, ignored if
+#'   in the assigning of lifestage.  \code{useWeight = NULL}, ignored if 
 #'   \code{autoLS} is \code{FALSE}, \code{NULL} leads to the program deciding if
-#' weight should be used, \code{FALSE} lead to the program not using weight to 
-#' assign lifestage
+#'   weight should be used, \code{FALSE} lead to the program not using weight to
+#'   assign lifestage.
+#' @param reclassifyFL A logical indicating if passage should be estimated via 
+#'   forklength-based class groups.
 #' 
 #' @return A data frame summarizing catch for the site of interest for all traps
 #'   between the dates indicated.  Data include biologist- or computer-assigned 

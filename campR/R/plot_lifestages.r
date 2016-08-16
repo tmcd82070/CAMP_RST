@@ -3,26 +3,30 @@
 #' @title F.plot.lifestages
 #'   
 #' @description Produce a plot of the passage associated with all distinct 
-#'   combinations of lifestage and run.
+#'   combinations of lifestage (or forklength) and run.
 #'   
-#' @param  df A data frame containing lifestages in the rows and runs across the
-#'   columns.
+#' @param  df A data frame containing runs in the rows and life stages (or
+#'   forklength groups) across the columns.
 #'   
 #' @param  file.root A text string indicating a prefix to append to all output.
 #'   
-#' @param  plot.pies=FALSE If true, a pie chart is produced instead of a bar
+#' @param  plot.pies If \code{TRUE}, a pie chart is produced instead of a bar 
 #'   chart.
 #'   
-#' @details
-#' 
+#' @details Function \code{F.plot.lifestages} works on both life stages and 
+#'   forklength groups, depending on if \code{F.run.passage} or 
+#'   \code{passageWithLifeStageAssign} was called in the case of the former, or 
+#'   if \code{F.lifestage.passage.forkLength} in the case of the latter.
+#'   
 #' @return A graphical png plotting a bar chart showing relative numbers of 
 #'   estimated passage, with lifestages down the rows, and runs across the 
-#'   columns.  Generally, all passage routines utilize the bar-chart option via
+#'   columns.  Generally, all passage routines utilize the bar-chart option via 
 #'   paramter \code{plot.pies};  thus, pie charts are never returned.
 #'   
 #' @author WEST Inc.
 #'   
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{F.run.passage}, \code{passageWithLifeStageAssign},
+#'   \code{F.lifestage.passage.forkLength}
 #'   
 #' @examples
 #' \dontrun{

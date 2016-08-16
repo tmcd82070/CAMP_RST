@@ -1,6 +1,6 @@
-#' @export max.buff.days
+#' @export max_buff_days
 #'   
-#' @title max.buff.days
+#' @title max_buff_days
 #'   
 #' @description df <- df2
 #'   
@@ -9,7 +9,9 @@
 #' @param trap A vector of length one containing the \code{trapPositionID} for
 #'   which buffering is necessary.
 #'   
-#' @details
+#' @details Function \code{max_buff_days} is a helper function utilized in the 
+#'   estimation of catch, and assists to idenitify preceding and antecedent 
+#'   zeros.
 #' 
 #' @return A vector containing three values.  The first contains the row index 
 #'   of the first non-zero / non-\code{NA} in the catch record provided via data
@@ -28,7 +30,7 @@
 #' #   ---- for trap "12345".
 #' vec <- max.buff.days(df,"12345")
 #' }
-max.buff.days <- function(df,trap){
+max_buff_days <- function(df,trap){
   
   # df <- df2
   

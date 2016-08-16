@@ -17,19 +17,16 @@
 #'   saved.  Set to NA to plot to the Plot window.
 #' @param ci A logical indicating if 95% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
-#' @param autoLS Default is \code{FALSE}, in which case, biologically assigned 
-#'   \code{lifeStage} is utilized. When \code{TRUE} \code{lifeStage} is assigned
-#'   analytically.  See Details.
+#' @param autoLS Default of \code{FALSE} leads to no assigning of no analytical
+#'   life stage. If \code{TRUE}, assignment of analytical life stage is done. 
+#'   See Details.
 #' @param nLS Number of life stage groups to estimate. Ignored if 
 #'   \code{autoLS=FALSE}.  See Details.
-#' @param weightUse=NULL A logical indicating if recorded variable \code{weight}
-#'   should be used for analytical lifeStage assignment, i.e., when 
-#'   \code{autoLS=TRUE}.  Otherwise, ignored if \code{autoLS=FALSE}.  See
-#'   Details.
-#' @param reclassifyFL A logical indicating if biological variable 
-#'   \code{lifeStage} containing the life stage recorded at the time of catch
-#'   should be redefined into groups based on increasing forklength.  See
-#'   Details.
+#' @param weightUse A logical indicating if variable weight should be used for
+#'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
+#'   if \code{autoLS=FALSE}.  See Details.
+#' @param reclassifyFL A logical indicating if passage should be estimated via 
+#'   forklength-based class groups.
 #'   
 #' @details The date range difference specified via \code{max.date} and
 #'   \code{min.date} must be less than or equal to 366 days.  Note that this
@@ -114,6 +111,9 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   # output.file <- "here"
   # ci <- TRUE
   
+  #   ---- Obtain necessary variables from the global environment.  
+  get("fishingGapMinutes",envir=.GlobalEnv)
+  
   #   ---- Check that times are less than or equal to 366 days apart.
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
   end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )
@@ -122,7 +122,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
   
   #   ---- Identify the type of passage report we're doing.
-  passReport <<- 'lifeStage'
+  assign("passReport","lifeStage",envir=.GlobalEnv)
   
   #   ---- Start a progress bar.
   progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching efficiency data" )
@@ -196,7 +196,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   out.fn.roots <- NULL
   for( j in 1:length(runs) ){
 
-    run.name <<- runs[j]
+    assign("run.name",runs[j],envir=.GlobalEnv)
     
     #   ---- Assemble catches based on total, unassigned, assigned.
     assd <- catch.df2[catch.df2$Unassd != 'Unassigned' & catch.df2$FinalRun == run.name,c('trapVisitID','lifeStage','n.tot','mean.fl','sd.fl')]
@@ -368,7 +368,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
     write.table( df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
     out.fn.roots <- c(out.fn.roots, out.pass.table)
 
-    ls.pass.df <<- df
+    ls.pass.df <- df
 
     #   ---- Produce pie or bar charts.
     rownames(df) <- df$LifeStage

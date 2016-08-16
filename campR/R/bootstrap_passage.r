@@ -2,7 +2,7 @@
 #' 
 #' @title F.bootstrap.passage
 #'   
-#' @description Bootstrap or Monte-Carlo simulate data sufficient to compute
+#' @description Bootstrap or Monte-Carlo simulate data sufficient to compute 
 #'   confidence intervals for passage.
 #'   
 #' @param grand.df A data frame containing both daily estimated passage and 
@@ -20,7 +20,7 @@
 #' @param eff.fits A list of binomial logistic regression fitted objects used to
 #'   compute efficiency.  One per trap.
 #' @param eff.X NEED TO CHECK. A list containing a numeric vector of days 
-#'   lacking an efficiency trial, and for which efficiency must be estimated,
+#'   lacking an efficiency trial, and for which efficiency must be estimated, 
 #'   for each trap.
 #' @param eff.ind.inside NEED TO CHECK. A list containing the first and last day
 #'   of a sequence of efficiency trials, for each trap.
@@ -34,7 +34,7 @@
 #'   
 #' @return A data frame containing 95\% bias-adjusted confidence intervals for 
 #'   all unique temporal units summarized via specification of \code{sum.by}.
-#'    
+#'   
 #' @details In order to bootstrap the estimated passage for a particular trap, 
 #'   random realizations of passage must be generated.  Variability in passage 
 #'   can originate from two sources:  imputed catch and imputed efficiency. 
@@ -65,12 +65,11 @@
 #'   obtained.
 #'   
 #'   Given the \code{R} replicates for each unique time period, 95\% 
-#'   bias-corrected confidence intervals are obtained.  These confidence
+#'   bias-corrected confidence intervals are obtained.  These confidence 
 #'   intervals correct for non-symmetric passage replicates.
 #'   
-#' @section Variance Matrices: 
-#' Catch models are fit via a Poisson generalized 
-#' linear model.  Often, these models are overdispersed, with a large Pearson 
+#' @section Variance Matrices: Catch models are fit via a Poisson generalized 
+#'   linear model.  Often, these models are overdispersed, with a large Pearson 
 #'   overdispersion parameter, relative to one.  Catch, however, often has a 
 #'   much higher-than-expected variance, due to seasonal fish pulses.  To 
 #'   account for outliers in this case, the largest and smallest 20% of Pearson 
@@ -94,9 +93,8 @@
 #'   overdispersions set to one.  Similar to the variance adjustment applied to 
 #'   catch, this is a modified quasilikelihood approach.
 #'   
-#' @section Random Realizations: 
-#' Catch fit models are utilized to generate random
-#'   realizations of catch for each individual trap.  To do this, the 
+#' @section Random Realizations: Catch fit models are utilized to generate
+#'   random realizations of catch for each individual trap.  To do this, the 
 #'   \code{rmvnorm} function randomly samples from a multivariate normal 
 #'   distribution, with column dimension equal to the number of \eqn{\beta} 
 #'   coefficients utilized in that trap's catch model.  The \code{rmvnorm} uses 
@@ -117,23 +115,37 @@
 #'   how do we capture variability in catch?)
 #'   
 #'   (Also, the dimension utilized in the \code{rmvnorm} function assumes a 
-#'   certain dimensionality of the underlying model, e.g., say a fourth-degree
+#'   certain dimensionality of the underlying model, e.g., say a fourth-degree 
 #'   model was used for days between date A and date B, and maybe a third-degree
-#'   model was used between date B and date C.  Couldn't it be the case that a
-#'   random realization of catch would result in a fifth-degree model bewteen
+#'   model was used between date B and date C.  Couldn't it be the case that a 
+#'   random realization of catch would result in a fifth-degree model bewteen 
 #'   date A and date B, say, and a quadratic between date B and date C?  Are we 
 #'   missing some of the variability in catch by assuming that the dimension of 
 #'   the beta vector from the catch model is non-varying?)
 #'   
 #' @seealso \code{F.est.catch}, \code{F.est.eff}, \code{summarize.passage}
-#' 
+#'   
 #' @author WEST Inc.
-#' 
+#'   
 #' @examples 
 #' \dontrun{
-#' 
+#' grand.df <- grand.df
+#' catch.fits <- catch.and.fits$fits
+#' catch.Xmiss <- catch.and.fits$X.miss
+#' catch.gapLens <- catch.and.fits$gaps
+#' catch.bDates.miss <- catch.and.fits$bDates.miss
+#' eff.fits <- eff.and.fits$fits
+#' eff.X <- eff.and.fits$X
+#' eff.ind.inside <- eff.and.fits$ind.inside
+#' eff.X.dates <- eff.and.fits$X.dates
+#' sum.by <- summarize.by
+#' R <- 100
+#' ci=T <- ci
+#' F.bootstrap.passage(grand.df,catch.fits,catch.Xmiss,catch.gapLens,
+#'   catch.bDates.miss,eff.fits,eff.X,eff.ind.inside,eff.X.dates,
+#'   sum.by,R,ci=T)
 #' }
-F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R, ci=T ){
+F.bootstrap.passage <- function( grand.df, catch.fits=catch.and.fits$fits, catch.Xmiss=catch.an, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R, ci=T ){
 
 #   grand.df <- grand.df
 #   catch.fits <- catch.and.fits$fits

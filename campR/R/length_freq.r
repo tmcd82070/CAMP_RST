@@ -37,12 +37,20 @@
 #'   
 #' @author WEST Inc.
 #'   
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{F.get.indiv.fish.data} 
 #'   
 #' @examples
 #' \dontrun{
-#' <insert examples>
+#' #   ---- Obtain graphical histograms for the American. 
+#' site <- 57000
+#' taxon <- 161980
+#' run <- "Fall"
+#' min.date <- "2014-01-01"
+#' max.date <- "2014-06-06"
+#' output.file <- "American"
+#' by.lifestage <- TRUE
 #' 
+#' F.length.frequency(site,taxon,run,min.date,max.date,output.file,by.lifestage)
 #' }
 F.length.frequency <- function( site, taxon, run, min.date, max.date, output.file, by.lifestage ){
 

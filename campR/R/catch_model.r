@@ -137,7 +137,7 @@
 #' If \code{catch.df} contains no periods of "Not fishing," no imputation is
 #' required.
 #' 
-#' @seealso 
+#' @seealso \code{F.efficiency.model}
 #' 
 #' @author WEST Inc.
 #'

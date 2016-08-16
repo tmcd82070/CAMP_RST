@@ -30,7 +30,7 @@
 #'   Other variables included as part of dataframe \code{df} are not utilized 
 #'   \emph{per se} in the function, but do pass through.
 #'   
-#' @seealso 
+#' @seealso \code{F.est.passage} 
 #' 
 #' @author WEST Inc.
 #'   
@@ -64,6 +64,11 @@ F.plot.passage <- function( df, out.file="passage.png" ){
 
   #   df       <- passby             # df <- example
   #   out.file <- 'passage.png'
+  
+  #    ---- Get global environment variables.
+  get("run.name",envir=.GlobalEnv)
+  get("min.date",envir=.GlobalEnv)
+  get("max.date",envir=.GlobalEnv)
   
   if( !is.na(out.file) ){
     graphics.off()
@@ -104,7 +109,6 @@ F.plot.passage <- function( df, out.file="passage.png" ){
 
   #   --- Add x-axis labels.
   s.by <- capwords(attr(df,"summarized.by"))
-  jason.s.by <<- s.by
 
   #   --- Determine temporal-dependent labels. 
   if( casefold(s.by) == "day" ){
@@ -157,7 +161,8 @@ F.plot.passage <- function( df, out.file="passage.png" ){
       close(ch) 
       
       #   ---- Label weekly (yearly does not get plotted).  
-      jDates <- subset(JDates, as.Date(uniqueDate) >= attr(df,"min.date") & as.Date(uniqueDate) <= attr(df,"max.date"),c(uniqueDate,julianWeek,julianWeekLabel))
+      jDates <- JDates[as.Date(JDates$uniqueDate) >= min.date & as.Date(JDates$uniqueDate) <= max.date,]
+      jDates <- jDates[,c('uniqueDate','year','julianWeek','julianWeekLabel')]
 
       #   ---- Can't figure out how to join on POSIX dates.  So cheating. 
       df$date.alone <- as.Date(df$date,format="%Y-%m-%d")

@@ -4,18 +4,14 @@
 #'   
 #' @description Capitalize each word in a character vector of length one.
 #'   
-#' @param A character vector of length one.
+#' @param s A character vector of length one.
 #' @param strict = FALSE If \code{TRUE}, force all letters of a word to 
 #'   lowercase after the first letter.  Default is \code{FALSE}.
-#'   
-#' @details
 #' 
 #' @return The character vector originally submitted via argument \code{s} with
 #'   the first letter of each word capitalized.
 #'   
 #' @author WEST Inc.
-#'   
-#' @seealso 
 #'   
 #' @examples
 #' #   ---- Capitalize each of hello and there.  

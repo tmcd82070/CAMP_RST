@@ -201,7 +201,7 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   #   ---- Get site label.
   siteLabel <- as.character(droplevels(Site[Site$siteID == site,]$siteName))
   
-  setWinProgressBar( progbar, .7 , label="Creating trap-specific plots." )
+  setWinProgressBar( get("progbar",envir=.GlobalEnv), .7 , label="Creating trap-specific plots." )
   
   # for each trap (and over all traps)
   
@@ -344,7 +344,7 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   }
   cat("\n")
   
-  setWinProgressBar( progbar, 1 , label="SUCCESS" )
+  setWinProgressBar( get("progbar",envir=.GlobalEnv()), 1 , label="SUCCESS" )
   close(progbar)
   
   invisible(eff.df3Print)

@@ -1,25 +1,25 @@
 #' @export
 #' 
-#' @title F.run.passage 
-#' 
-#' @description 
-#' Estimate production by life stage and run for all days within a date range.  
-#' 
+#' @title F.run.passage
+#'   
+#' @description Estimate production by life stage and run for all days within a
+#'   date range.
+#'   
 #' @param site The identification number of the site for which estimates are 
 #'   required.
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
-#' @param run The text seasonal identifier.  This is a one of \code{"Spring"}, \code{"Fall"},
-#' \code{"Late Fall"}, or \code{"Winter"}.
+#' @param run The text seasonal identifier.  This is a one of \code{"Spring"},
+#'   \code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.
 #' @param min.date The start date for data to include. This is a text string in 
-#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.  
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
-#' @param by A text string indicating the temporal unit over which daily
-#'   estimated catch is to be summarized.  Can be one of \code{day},
+#' @param by A text string indicating the temporal unit over which daily 
+#'   estimated catch is to be summarized.  Can be one of \code{day}, 
 #'   \code{week}, \code{month}, \code{year}.
 #' @param output.file A text string indicating a prefix to append to all output.
-#' @param ci A logical indicating if 95% bootstrapped confidence intervals
+#' @param ci A logical indicating if 95% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
 #'   
 #' @return A \code{csv} table of passage estimates over the specified date 
@@ -33,11 +33,11 @@
 #'   efficiency estimates, and accompanying \code{csv} for all traps operating 
 #'   at least one day, and catching at least one fish, for all days within the 
 #'   specified time period.
-#' 
-#' @details Function \code{F.run.passage} is the main workhorse function for estimating
-#'   passage with respect to each of run and life stage.  As such, it calls
-#'   several separate functions, some of which contain queries designed to run 
-#'   against an Access database.
+#'   
+#' @details Function \code{F.run.passage} is the main workhorse function for
+#'   estimating passage with respect to each of run and life stage.  As such, it
+#'   calls several separate functions, some of which contain queries designed to
+#'   run against an Access database.
 #'   
 #'   Generally, queries against a database comprise two main efforts.  The first
 #'   involves a query for efficiency trial data, generally called "release" 
@@ -50,23 +50,24 @@
 #'   estimation, which involves statistical fits of each of catch and efficiency
 #'   over time.
 #'   
-#'   All calls to function \code{F.run.passage} result in daily passage
+#'   All calls to function \code{F.run.passage} result in daily passage 
 #'   estimates, and courser temporal estimates, based on the value specified via
-#'   \code{by}.  Regardless of the temporal partitioning, estimates are always
-#'   additionally summarized by year.  Functions runs with \code{by} specified
+#'   \code{by}.  Regardless of the temporal partitioning, estimates are always 
+#'   additionally summarized by year.  Functions runs with \code{by} specified 
 #'   as \code{year} output only one set of annual estimates.
 #'   
-#'   The difference between the specified \code{max.date} and
-#'   \code{min.date} must be less than or equal to 366 days, as calculated via
-#'   function \code{difftime}.
+#'   The difference between the specified \code{max.date} and \code{min.date}
+#'   must be less than or equal to 366 days, as calculated via function
+#'   \code{difftime}.
 #'   
-#'   Selection of \code{week} for input variable \code{by} results in weeks
-#'   displayed as customized Julian weeks, where weeks number 1-53.  The
-#'   specific mapping of days to weeks can be found within the \code{Dates}
+#'   Selection of \code{week} for input variable \code{by} results in weeks 
+#'   displayed as customized Julian weeks, where weeks number 1-53.  The 
+#'   specific mapping of days to weeks can be found within the \code{Dates} 
 #'   table of any associated Access database.
-#' 
-#' @seealso \code{F.get.release.data}, \code{F.get.catch.data}, \code{F.est.passage}
-#' 
+#'   
+#' @seealso \code{F.get.release.data}, \code{F.get.catch.data},
+#'   \code{F.est.passage}
+#'   
 #' @examples  
 #' \dontrun{
 #' # query mdb?
@@ -81,6 +82,9 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
 #   output.file <- NA
 #   ci <- TRUE
 
+  #   ---- Obtain necessary variables from the global environment.  
+  get("fishingGapMinutes",envir=.GlobalEnv)
+  
   #   Check that times are less than 1 year apart
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
   end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )
@@ -89,7 +93,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
 
   #   ---- Identify the type of passage report we're doing
-  passReport <<- 'ALLRuns'
+  assign("passReport","ALLRuns")
 
   #   ---- Start a progress bar
   progbar <<- winProgressBar( "Production estimate for ALL runs", label="Fetching efficiency data" )
@@ -145,7 +149,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   out.fn.roots <- NULL
   for( j in 1:length(runs) ){
 
-    run.name <<- runs[j]
+    assign("run.name",runs[j],envir=.GlobalEnv)
 
     # jason puts together the catches based on total, unassigned, assigned.
     assd <- catch.df2[catch.df2$Unassd != 'Unassigned' & catch.df2$FinalRun == run.name,c('trapVisitID','lifeStage','n.tot','mean.fl','sd.fl')]
@@ -270,7 +274,9 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
           JDates <- sqlFetch( ch, "Dates" )
           close(ch) 
           
-          the.dates <- subset(JDates, as.Date(uniqueDate) >= min.date & as.Date(uniqueDate) <= max.date,c(year,julianWeek,julianWeekLabel))
+          the.dates <- JDates[as.Date(JDates$uniqueDate) >= min.date & as.Date(JDates$uniqueDate) <= max.date,]
+          
+          the.dates <- the.dates[,c('year','julianWeek','julianWeekLabel')]
           the.dates$week <- paste0(the.dates$year,'-',formatC(the.dates$julianWeek, width=2, flag="0"))
           the.dates <- unique(the.dates)
 
@@ -419,7 +425,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     write.table( df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
     out.fn.roots <- c(out.fn.roots, out.pass.table)
 
-    ls.pass.df <<- df
+    ls.pass.df <- df
 
   }
 
