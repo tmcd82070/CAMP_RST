@@ -145,7 +145,7 @@
 #'   catch.bDates.miss,eff.fits,eff.X,eff.ind.inside,eff.X.dates,
 #'   sum.by,R,ci=T)
 #' }
-F.bootstrap.passage <- function( grand.df, catch.fits=catch.and.fits$fits, catch.Xmiss=catch.an, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R, ci=T ){
+F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R, ci=T ){
 
 #   grand.df <- grand.df
 #   catch.fits <- catch.and.fits$fits
@@ -168,8 +168,8 @@ F.bootstrap.passage <- function( grand.df, catch.fits=catch.and.fits$fits, catch
   if(sum.by == 'week'){
     
     #   ---- Obtain information from the global environment.  
-    get("min.date",envir=.GlobalEnv)
-    get("max.date",envir=.GlobalEnv)
+    min.date <- get("min.date",envir=.GlobalEnv)
+    max.date <- get("max.date",envir=.GlobalEnv)
     
     #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
     db <- get( "db.file", envir=.GlobalEnv ) 

@@ -38,22 +38,22 @@ The input data frame usually has other catch variables, although
   \code{supersmu}, and serves as a reasonable approximation to the actual 
   spline used in the imputation procedure contained in function 
   \code{F.catch.model}.
-  
-  Jason note 4/26/2016 -- I changed this to graph half-cone adjusted catch. 
-  This may not be what Doug wants.
 }
 \examples{
 \dontrun{
 #   ---- Create a data frame.
-batchDates <- as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),by="day",length.out=80),format="\%F"),tz="America/Los_Angeles")
+batchDates <- as.POSIXct(strftime(seq(from=c(ISOdate(2014,1,1)),
+  by="day",length.out=80),format="\%F"),tz="America/Los_Angeles")
 df <- data.frame(trapPositionID=c(rep(12345,80),rep(98765,80)),
                  TrapPosition=c(rep('Left Bank',80),rep('Right Bank',80)),
                  batchDate=batchDates,
                  imputed.catch=rep(0,160),
-                 modAssignedCatch=20*rnorm(length(batchDates))+624.26*exp(-(as.numeric(batchDates)/86400 - 16120)^2/260),
+                 modAssignedCatch=20*rnorm(length(batchDates))+
+                 624.26*exp(-(as.numeric(batchDates)/86400 - 16120)^2/260),
                  imputedCatch=rep(0,160))
 
-df$modAssignedCatch <- ifelse(df$trapPositionID == 98765,15*rnorm(nrow(df))+0.50*df$modAssignedCatch,df$modAssignedCatch)
+df$modAssignedCatch <- ifelse(df$trapPositionID == 98765,
+  15*rnorm(nrow(df))+0.50*df$modAssignedCatch,df$modAssignedCatch)
 df$modAssignedCatch[df$modAssignedCatch < 0] <- 0
 df$imputedCatch[120:124] <- df$modAssignedCatch[120:124]
 df$imputed.catch[120:124] <- rep(1,5)

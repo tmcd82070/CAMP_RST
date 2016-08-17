@@ -60,7 +60,7 @@
 #'   In the case when \code{autoLS=TRUE}, the life stage is assigned 
 #'   analytically.  Note that the only number of groups allowed by argument 
 #'   (\code{nLS}) is two or three. If \code{NULL}, the function 
-#'   \code{\link{assignLifeStage}} determines the number of groups utilized.
+#'   \code{assignLifeStage} determines the number of groups utilized.
 #'   
 #'   If \code{weightUse} is \code{FALSE}, any recorded weight measurements are
 #'   not used in the analytical life stage assignment. If \code{weightUse} is
@@ -93,7 +93,7 @@
 #'   
 #' @author WEST Inc.
 #'   
-#' @seealso \code{\link{F.lifestage.passage}}, \code{\link{assignLifeStage}}, \code{\link{assignLSCompare}}
+#' @seealso \code{assignLifeStage}, \code{assignLSCompare}
 #'
 #' @examples
 #' \dontrun{
@@ -112,7 +112,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   # ci <- TRUE
   
   #   ---- Obtain necessary variables from the global environment.  
-  get("fishingGapMinutes",envir=.GlobalEnv)
+  fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
   
   #   ---- Check that times are less than or equal to 366 days apart.
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
@@ -197,6 +197,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   for( j in 1:length(runs) ){
 
     assign("run.name",runs[j],envir=.GlobalEnv)
+    run.name <- get("run.name",envir=.GlobalEnv)
     
     #   ---- Assemble catches based on total, unassigned, assigned.
     assd <- catch.df2[catch.df2$Unassd != 'Unassigned' & catch.df2$FinalRun == run.name,c('trapVisitID','lifeStage','n.tot','mean.fl','sd.fl')]
@@ -374,7 +375,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
     rownames(df) <- df$LifeStage
     fl <- F.plot.lifestages( df, output.file, plot.pies=F )
     if( fl == "ZEROS" ){
-      cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")
+      cat("FAILURE - F.passageWithLifeStageAssign - ALL ZEROS\nCheck dates and finalRunId's\n")
       cat(paste("Working directory:", getwd(), "\n"))
       cat(paste("R data frames saved in file:", "<none>", "\n\n"))
       nf <- length(out.fn.roots)
@@ -390,7 +391,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   }
 
   #   ---- Write out message.
-  cat("SUCCESS - F.lifestage.passage\n\n")
+  cat("SUCCESS - F.passageWithLifeStageAssign\n\n")
   cat(paste("Working directory:", getwd(), "\n"))
   cat(paste("R data frames saved in file:", "<none>", "\n\n"))
   nf <- length(out.fn.roots)

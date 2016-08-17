@@ -26,12 +26,17 @@
 #'
 #' @author Jared Studyvin WEST Inc.
 #'
-#' @seealso \code{\link{<related routine>}}, \code{\link{<related routine>}}
+#' @seealso \code{assignLifeStage}
 #'
 #' @examples
 #' \dontrun{
-#' <insert examples>
+#' #   ---- Get weight data from the American. 
+#' taxon <- 169180
+#' site <- 570000
+#' min.date <- "2013-01-01"
+#' max.date <- "2013-05-30"
 #'
+#' dfWeight <- getCatchDataWeight(taxon,site,min.date,max.date)
 #' }
 ############################################
 ## Jared Studyvin

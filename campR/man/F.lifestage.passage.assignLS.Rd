@@ -22,19 +22,17 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
 \item{output.file}{A text string indicating a prefix to append to all output.}
 
-\item{ci}{A logical indicating if 95% bootstrapped confidence intervals
+\item{ci}{A logical indicating if 95% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 
-\item{autoLS}{Default is FALSE, no analytical life stage assignment is done. If TRUE, the analytical life stage assignment is done, see details.}
+\item{autoLS}{Default is FALSE, no analytical life stage assignment is done.
+If TRUE, the analytical life stage assignment is done, see details.}
 
-\item{reclassifyFL}{A logical indicating if passage should be estimated via forklength-based class groups.}
-
-\item{nLS}{Number of life stage groups to be estimated. Ignored if autoLS=FALSE, see details.}
-
-\item{weightUse}{Boolean variable indicating if weight should be used for the analytical assignment, default is NULL. Ignored if autoLS=FALSE, see details.}
+\item{reclassifyFL}{A logical indicating if passage should be estimated via
+forklength-based class groups.}
 }
 \value{
-<describe return value
+jared
 }
 \description{
 ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
@@ -49,15 +47,21 @@ ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
  allow the program to decide the number of life stage groups and if weight will be used or not
 }
 \details{
-<other comments found in file
-NA
-NA
-NA
- allow the program to decide the number of life stage groups and if weight will be used or not
+allow the program to decide the number of life stage groups and if weight will be used or not
 }
 \examples{
 \dontrun{
-#insert examples
+#   ---- Calculate specified auto lifestage on the American.
+site <- 57000
+taxon <- 161980
+min.date <- "2013-01-01"
+max.date <- "2013-05-30"
+output.file <- "Testing"
+ci <- TRUE
+autoLS <- TRUE
+reclassifyFL <- FALSE
+
+F.lifestage.passage.assignLS(site,taxon,min.date,max.date,output.file,ci,autoLS,reclassifyFL)
 
 }
 }
@@ -65,6 +69,12 @@ NA
 WEST Inc.
 }
 \seealso{
-\code{\link{related routine}}, \code{\link{related routine}}
+\code{F.run.passage}, \code{passageWithLifeStageAssign},
+  \code{F.lifestage.passage.forkLength},
+  \code{F.lifestage.passage.assignLS2group}, 
+  \code{F.lifestage.passage.assignLS2groupNoWeight},
+  \code{F.lifestage.passage.assignLS3group},
+  \code{F.lifestage.passage.assignLS3groupNoWeight},
+  \code{F.lifestage.passage.assignLSNoWeight}
 }
 

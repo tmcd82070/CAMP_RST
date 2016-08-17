@@ -1,41 +1,49 @@
 #' @export F.get.indiv.fish.data
 #' 
 #' @title F.get.indiv.fish.data
-#' 
-#' @description Fetch the fish data for a single taxon from an Access data base. The resulting data 
-#'    set has one line per group of fish with the same forklength. 
-#'    
+#'   
+#' @description Fetch the fish data for a single taxon from an Access data base.
+#'   The resulting data set has one line per group of fish with the same fork
+#'   length.
+#'   
 #' @param site The identification number of the site for which estimates are 
 #'   required.
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
-#' @param run The text seasonal identifier.  This is a one of \code{"Spring"}, \code{"Fall"},
-#' \code{"Late Fall"}, or \code{"Winter"}.
+#' @param run The text seasonal identifier.  This is a one of \code{"Spring"},
+#'   \code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.
 #' @param min.date The start date for data to include. This is a text string in 
-#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.  
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
-#' @param by A text string indicating the temporal unit over which daily
-#'   estimated catch is to be summarized.  Can be one of \code{day},
-#'   \code{week}, \code{month}, \code{year}.
-#' @param  keep="unmarked"  A text string specifying the type of fish to retain.
+#' @param  keep A text string specifying the type of fish to retain.
 #'   \code{keep="unmarked"} keeps all fish without efficiency trail marks, i.e.,
-#'   all fish not in efficiency trial.  \code{keep="marked"} keeps only fish
-#'   that were involved in an efficiency trial. \code{keep="all"}, i.e.,
+#'   all fish not in efficiency trial.  \code{keep="marked"} keeps only fish 
+#'   that were involved in an efficiency trial. \code{keep="all"}, i.e., 
 #'   anything else, will keep all fish records --- both marked and unmarked.
-#' 
+#'   
 #' @details To be included in the catch data, a record has to be from the site, 
-#'    of the correct taxon, of the correct run, and between min and max date. F.size.by.date
-#' 
-#' @return 
-#' 
+#'   of the correct taxon, of the correct run, and between min and max date.
+#'   F.size.by.date
+#'   
+#' @return A data frame containing information on individual fish, with each
+#'   individual reord corresponding to fish of the same fork length.
+#'   
 #' @author WEST Inc.
 #' 
 #' @seealso \code{F.get.catch.data}, \code{F.sql.error.check}
 #' 
 #' @examples
 #' \dontrun{
-#' <insert examples>
+#' #   ---- Pull individual fish records from the American.
+#' # site <- 57000
+#' # taxon <- 161980
+#' # run <- "Fall"
+#' # min.date <- "2013-01-01"
+#' # max.date <- "2013-05-30"
+#' # keep <- "unmarked"
+#' 
+#' F.get.indiv.fish.data(site,taxon,run,min.date,max.date,keep)
 #' 
 #' }
 F.get.indiv.fish.data <- function( site, taxon, run, min.date, max.date, keep="unmarked" ){

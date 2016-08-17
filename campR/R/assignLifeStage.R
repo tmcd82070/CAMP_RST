@@ -14,16 +14,14 @@
 #' 
 #' 
 #' @param DATA A data frame of the catch data with the weight measurement, as
-#'   returned from \code{\link{getWeightData}}.
+#'   returned from \code{\link{getCatchDataWeight}}.
 #' @param groupN The number of life stage groups to be estimated, see details.
 #' @param USEWeight Indicate whether weight should not (FALSE) be used in the
 #'   analytical assignment or allow (NULL) weight to be used, see details.
 #'   
 #' @param ... Arguments passed to \code{\link{assignLSCompare}}.
 #'   
-#' @details
-#' 
-#' The function expects the data frame DATA to have column names:
+#' @details The function expects the data frame DATA to have column names:
 #' \code{lifeStage, SampleDate, FinalRun, forkLength, weight, Unmarked}. The
 #' \code{lifeStage} column is overwritten with the new analytical life stage
 #' assignment.
@@ -65,7 +63,7 @@
 #' is All.
 #' 
 #' The analytical assignment is done through a call to the
-#' \code{\link[mclust]{Mclust}} function in the \code{\pkg{mclust}} package. The
+#' \code{\link[mclust]{Mclust}} function in the \code{mclust} package. The
 #' \code{Mclust} function is fitting a mixture of multivariate normal
 #' distribution. The number of distribution fit corresponds to the number of
 #' life stage groups. The \code{Mclust} function returns mean vectors and
@@ -85,11 +83,8 @@
 #' The concept is that all fish with a recorded fork length will have a group
 #' assignment.
 #' 
-#' 
 #' The analytical and morphometric life stage assignments are compared with a
 #' call to \code{\link{assignLSCompare}}.
-#' 
-#' 
 #' 
 #' @return The data frame DATA is returned with the \code{lifeStage} column
 #'   being updated by the analytical assignment.
@@ -100,7 +95,7 @@
 #'   
 #' @examples
 #' \dontrun{
-#' # insert examples
+#' assignLifeStage(DATA,groupN,USEWeight)
 #' 
 #' }
 ###############################################

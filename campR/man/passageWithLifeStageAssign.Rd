@@ -30,19 +30,16 @@ should be estimated along with passage estimates.}
 \item{nLS}{Number of life stage groups to estimate. Ignored if 
 \code{autoLS=FALSE}.  See Details.}
 
-\item{autoLS}{Default is \code{FALSE}, in which case, biologically assigned 
-\code{lifeStage} is utilized. When \code{TRUE} \code{lifeStage} is assigned
-analytically.  See Details.}
+\item{weightUse}{A logical indicating if variable weight should be used for
+the analytical life stage assignment;  the default is \code{NULL}. Ignored
+if \code{autoLS=FALSE}.  See Details.}
 
-\item{reclassifyFL}{A logical indicating if biological variable 
-\code{lifeStage} containing the life stage recorded at the time of catch
-should be redefined into groups based on increasing forklength.  See
-Details.}
+\item{autoLS}{Default of \code{FALSE} leads to no assigning of no analytical
+life stage. If \code{TRUE}, assignment of analytical life stage is done. 
+See Details.}
 
-\item{weightUse=NULL}{A logical indicating if recorded variable \code{weight}
-should be used for analytical lifeStage assignment, i.e., when 
-\code{autoLS=TRUE}.  Otherwise, ignored if \code{autoLS=FALSE}.  See
-Details.}
+\item{reclassifyFL}{A logical indicating if passage should be estimated via 
+forklength-based class groups.}
 }
 \value{
 A data frame containing daily passage estimates, corrected for times 
@@ -98,7 +95,7 @@ The date range difference specified via \code{max.date} and
   In the case when \code{autoLS=TRUE}, the life stage is assigned 
   analytically.  Note that the only number of groups allowed by argument 
   (\code{nLS}) is two or three. If \code{NULL}, the function 
-  \code{\link{assignLifeStage}} determines the number of groups utilized.
+  \code{assignLifeStage} determines the number of groups utilized.
   
   If \code{weightUse} is \code{FALSE}, any recorded weight measurements are
   not used in the analytical life stage assignment. If \code{weightUse} is
@@ -123,6 +120,6 @@ The date range difference specified via \code{max.date} and
 WEST Inc.
 }
 \seealso{
-\code{\link{F.lifestage.passage}}, \code{\link{assignLifeStage}}, \code{\link{assignLSCompare}}
+\code{assignLifeStage}, \code{assignLSCompare}
 }
 

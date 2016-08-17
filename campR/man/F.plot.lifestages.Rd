@@ -7,26 +7,29 @@
 F.plot.lifestages(df, file.root, plot.pies = FALSE)
 }
 \arguments{
-\item{df}{A data frame containing lifestages in the rows and runs across the
-columns.}
+\item{df}{A data frame containing runs in the rows and life stages (or
+forklength groups) across the columns.}
 
 \item{file.root}{A text string indicating a prefix to append to all output.}
 
-\item{plot.pies=FALSE}{If true, a pie chart is produced instead of a bar
+\item{plot.pies}{If \code{TRUE}, a pie chart is produced instead of a bar 
 chart.}
 }
 \value{
 A graphical png plotting a bar chart showing relative numbers of 
   estimated passage, with lifestages down the rows, and runs across the 
-  columns.  Generally, all passage routines utilize the bar-chart option via
+  columns.  Generally, all passage routines utilize the bar-chart option via 
   paramter \code{plot.pies};  thus, pie charts are never returned.
 }
 \description{
 Produce a plot of the passage associated with all distinct 
-  combinations of lifestage and run.
+  combinations of lifestage (or forklength) and run.
 }
 \details{
-
+Function \code{F.plot.lifestages} works on both life stages and 
+  forklength groups, depending on if \code{F.run.passage} or 
+  \code{passageWithLifeStageAssign} was called in the case of the former, or 
+  if \code{F.lifestage.passage.forkLength} in the case of the latter.
 }
 \examples{
 \dontrun{
@@ -39,6 +42,7 @@ F.plot.lifestages(df=allCatch,file.root="PassageResults",plot.pies=FALSE)
 WEST Inc.
 }
 \seealso{
-\code{\link{<related routine>}}, \code{\link{<related routine>}}
+\code{F.run.passage}, \code{passageWithLifeStageAssign},
+  \code{F.lifestage.passage.forkLength}
 }
 

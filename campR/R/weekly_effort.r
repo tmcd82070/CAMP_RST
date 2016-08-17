@@ -80,8 +80,8 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
   
   #   ---- Start a progress bar.
-  progbar <<- winProgressBar( "Weekly effort estimate", label=paste0("Reading data and accounting for the ",dt.len.min[1]," minutes your time range specified." ), width=500 )
-  
+  progbar <- winProgressBar( "Weekly effort estimate", label=paste0("Reading data and accounting for the ",dt.len.min[1]," minutes your time range specified." ), width=500 )
+  assign("progbar",envir=.GlobalEnv)
   
   nvisits <- F.buildReportCriteria( site, min.date, max.date )
   
@@ -344,7 +344,7 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   }
   cat("\n")
   
-  setWinProgressBar( get("progbar",envir=.GlobalEnv()), 1 , label="SUCCESS" )
+  setWinProgressBar( get("progbar",envir=.GlobalEnv), 1 , label="SUCCESS" )
   close(progbar)
   
   invisible(eff.df3Print)

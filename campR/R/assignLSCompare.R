@@ -12,13 +12,13 @@
 #' @param Data A data.frame of the catch data with both the morphometric and
 #'   analytical life stage assignments.
 #'   
-#' @param muList A list of matrices. The names of the elements in the list need
+#' @param muLIST A list of matrices. The names of the elements in the list need
 #'   to correspond to the final run names in the catch data. The columns of each
 #'   matrix correspond to the mean vector from the mixture distribution from
 #'   \code{\link{assignLifeStage}}, the row names need to be the variable names
 #'   in Data that were used in the mixture distribution.
 #'   
-#' @param sigmaList A list of 3d arrays. The names of the elements in the list
+#' @param sigmaLIST A list of 3d arrays. The names of the elements in the list
 #'   need to correspond to the final run names in the catch data. The third
 #'   dimension indexes the different life stage groups, for which a matrix of
 #'   the variance covariance exists, from the mixture distribution from

@@ -149,6 +149,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   }
   
   #   ---- If we're running over runs, collapse counts over lifeStage.
+  passReport <- get("passReport",envir=.GlobalEnv)
   if(passReport == 'ALLRuns'){
     v1  <- collapseEm('n.tot')
     v2  <- collapseEm('n.Orig')

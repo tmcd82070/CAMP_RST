@@ -50,6 +50,6 @@ F.plot.passage( df, out.file=NA )
 WEST Inc.
 }
 \seealso{
-
+\code{F.est.passage}
 }
 

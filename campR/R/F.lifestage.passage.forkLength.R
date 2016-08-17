@@ -2,7 +2,7 @@
 #' 
 #' @title F.lifestage.passage.forkLength
 #' 
-#' @description Estimate production by forklength group and run for all days within a
+#' @description Estimate production by forklength group and Fall run for all days within a
 #'   date range.
 #' 
 #' @param site The identification number of the site for which estimates are 
@@ -44,7 +44,7 @@
 #'   over the time period specified via \code{by}.
 #'   
 #' @details Function \code{F.lifestage.passage.forkLength} is the main workhorse function for
-#'   estimating passage with respect to each of run and forklength group.  As such, it
+#'   estimating passage with respect to forklength groups, restricted to Fall run.  As such, it
 #'   calls several separate functions, some of which contain queries designed to
 #'   run against an Access database.
 #'   
@@ -77,7 +77,7 @@
 #'   Forklength groupings are specified via global variable
 #'   \code{forkLengthCutPoints} in \code{GlobalVars}, and by default, include up
 #'   to four distinct groupings.  However, if no fish exist for a particular
-#'   grouping, no output associated with that grouping are created.
+#'   grouping, no output associated with that grouping is created.
 #'   
 #' @seealso \code{F.get.release.data}, \code{F.get.catch.data},
 #'   \code{F.est.passage}
@@ -105,7 +105,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   
   
   #   ---- Obtain necessary variables from the global environment.  
-  get("fishingGapMinutes",envir=.GlobalEnv)
+  fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
   
   #   ---- Check that times are less than or equal to 366 days apart.
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
@@ -164,6 +164,13 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   #   ---- Compute the unique runs we need to do.
   runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    
   runs <- runs[ !is.na(runs) ]
+  
+  #   ---- Set this report up to only run over Fall run. 
+  runs <- runs[ runs == "Fall" ]
+  if( length( runs ) == 0 ){
+    stop("No Fall run records found between the specified time periods.\n")
+  }
+  
   cat("\nRuns found between", min.date, "and", max.date, ":\n")
   print(runs)
   
@@ -191,6 +198,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   for( j in 1:length(runs) ){
     
     assign("run.name",runs[j],envir=.GlobalEnv)
+    run.name <- get("run.name",envir=.GlobalEnv)
     
     #   ---- Assemble catches based on total, unassigned, assigned.
     assd <- catch.df2[catch.df2$Unassd != 'Unassigned' & catch.df2$FinalRun == run.name,c('trapVisitID','lifeStage','n.tot','mean.fl','sd.fl')]
@@ -346,7 +354,8 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
             #   A join on POSIX dates. 
             tmp.df <- merge(tmp.df,the.dates,by=c('week'),all.x=TRUE)
             tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)
-            tmp.df <- subset(tmp.df, select = -c(year,julianWeek,julianWeekLabel) )
+            tmp.df$year <- tmp.df$julianWeek <- tmp.df$julianWeekLabel <- NULL
+            #tmp.df <- subset(tmp.df, select = -c(year,julianWeek,julianWeekLabel) )
           }
           
           tzn <- get("time.zone", .GlobalEnv )

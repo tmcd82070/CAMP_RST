@@ -5,7 +5,8 @@
 \title{F.lifestage.passage.forkLength}
 \usage{
 F.lifestage.passage.forkLength(site, taxon, min.date, max.date, by, output.file,
-  ci = TRUE, autoLS = FALSE, reclassifyFL = TRUE)
+  ci = TRUE, nLS = NULL, weightUse = NULL, autoLS = FALSE,
+  reclassifyFL = TRUE)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -20,40 +21,83 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 \item{max.date}{The end date for data to include.  Same format as 
 \code{min.date}.}
 
-\item{by}{A text string indicating the temporal unit over which daily
-estimated catch is to be summarized.  Can be one of \code{day},
+\item{by}{A text string indicating the temporal unit over which daily 
+estimated catch is to be summarized.  Can be one of \code{day}, 
 \code{week}, \code{month}, \code{year}.}
 
 \item{output.file}{A text string indicating a prefix to append to all output.}
 
-\item{ci}{A logical indicating if 95% bootstrapped confidence intervals
+\item{ci}{A logical indicating if 95% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 
-\item{autoLS}{Default is FALSE, no analytical life stage assignment is done. If TRUE, the analytical life stage assignment is done, see details.}
+\item{nLS}{Number of life stage groups to estimate. Ignored if 
+\code{autoLS=FALSE}.  See Details.}
 
-\item{reclassifyFL}{A logical indicating if passage should be estimated via forklength-based class groups.}
+\item{weightUse}{A logical indicating if variable weight should be used for
+the analytical life stage assignment;  the default is \code{NULL}. Ignored
+if \code{autoLS=FALSE}.  See Details.}
 
-\item{nLS}{Number of life stage groups to be estimated. Ignored if autoLS=FALSE, see details.}
+\item{autoLS}{Default of \code{FALSE} leads to no assigning of no analytical
+life stage. If \code{TRUE}, assignment of analytical life stage is done. 
+See Details.}
 
-\item{weightUse}{Boolean variable indicating if weight should be used for the analytical assignment, default is NULL. Ignored if autoLS=FALSE, see details.}
+\item{reclassifyFL}{A logical indicating if passage should be estimated via 
+forklength-based class groups.}
 }
 \value{
-
+A \code{csv} table of passage estimates over the specified date 
+  range, with forklength groups down the rows, and runs across the columns.  A 
+  \code{png} displaying proportion-of-catch bar charts of run and forklength groups.
+  For each run and forklength-group combination found within the specified data 
+  range, an additional series of output.  A \code{csv} of daily passage 
+  estimates for all traps operating at least one day, and catching at least 
+  one fish, for all days within the specified date range. A \code{png} of 
+  catch versus time, for all inclusive traps.    A \code{png} of daily 
+  efficiency estimates, and accompanying \code{csv} for all traps operating 
+  at least one day, and catching at least one fish, for all days within the 
+  specified time period.  Finally, a bar chart of passage summarizing catch
+  over the time period specified via \code{by}.
 }
 \description{
-ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
-   A table of passage estimates, with lifestages down the rows, and runs across the columns.
-
-   Input:
-   site = site ID of the place we want, trap locaton
-   taxon = taxon number (from luTaxon) to retrieve
-
-
-
- 2 life stage groups are fit and the program will decide if weight will be used or not
+Estimate production by forklength group and Fall run for all days within a
+  date range.
 }
 \details{
-
+Function \code{F.lifestage.passage.forkLength} is the main workhorse function for
+  estimating passage with respect to forklength groups, restricted to Fall run.  As such, it
+  calls several separate functions, some of which contain queries designed to
+  run against an Access database.
+  
+  Generally, queries against a database comprise two main efforts.  The first
+  involves a query for efficiency trial data, generally called "release" 
+  data, and conducted via function \code{F.get.release.data}, while the 
+  second queries for catch data via function \code{F.get.catch.data}.
+  
+  Once catch data are obtained, fish are partitioned as to whether or not 
+  they were assigned and caught during a half-cone operation.  Function 
+  \code{F.est.passage} wraps the functions that conduct the actual passage 
+  estimation, which involves statistical fits of each of catch and efficiency
+  over time.
+  
+  All calls to function \code{F.run.passage} result in daily passage 
+  estimates, and courser temporal estimates, based on the value specified via
+  \code{by}.  Regardless of the temporal partitioning, estimates are always 
+  additionally summarized by year.  Function runs with \code{by} specified 
+  as \code{year} output only one set of annual estimates.
+  
+  The difference between the specified \code{max.date} and \code{min.date}
+  must be less than or equal to 366 days, as calculated via function
+  \code{difftime}.
+  
+  Selection of \code{week} for input variable \code{by} results in weeks 
+  displayed as customized Julian weeks, where weeks number 1-53.  The 
+  specific mapping of days to weeks can be found within the \code{Dates} 
+  table of any associated Access database.
+  
+  Forklength groupings are specified via global variable
+  \code{forkLengthCutPoints} in \code{GlobalVars}, and by default, include up
+  to four distinct groupings.  However, if no fish exist for a particular
+  grouping, no output associated with that grouping is created.
 }
 \examples{
 \dontrun{
@@ -65,6 +109,7 @@ F.lifestage.passage.forkLength
 WEST Inc.
 }
 \seealso{
-\code{\link{related routine}}, \code{\link{related routine}}
+\code{F.get.release.data}, \code{F.get.catch.data},
+  \code{F.est.passage}
 }
 

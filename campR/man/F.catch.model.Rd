@@ -159,6 +159,6 @@ fitCatch <- F.catch.model(catch.df)
 WEST Inc.
 }
 \seealso{
-
+\code{F.efficiency.model}
 }
 

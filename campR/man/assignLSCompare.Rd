@@ -10,24 +10,24 @@ assignLSCompare(Data, muLIST, sigmaLIST, SAVE = TRUE)
 \item{Data}{A data.frame of the catch data with both the morphometric and
 analytical life stage assignments.}
 
-\item{SAVE}{Default is TRUE, a plot (PDF file) and confusion matrix (CSV
-file)  for each final run is saved in the \code{output.dir} location (see
-\code{\link{GlobalVars}}). If FALSE the each plot is displayed in a new R
-plot window. In either case the confusion matrix is print to the R console.}
-
-\item{muList}{A list of matrices. The names of the elements in the list need
+\item{muLIST}{A list of matrices. The names of the elements in the list need
 to correspond to the final run names in the catch data. The columns of each
 matrix correspond to the mean vector from the mixture distribution from
 \code{\link{assignLifeStage}}, the row names need to be the variable names
 in Data that were used in the mixture distribution.}
 
-\item{sigmaList}{A list of 3d arrays. The names of the elements in the list
+\item{sigmaLIST}{A list of 3d arrays. The names of the elements in the list
 need to correspond to the final run names in the catch data. The third
 dimension indexes the different life stage groups, for which a matrix of
 the variance covariance exists, from the mixture distribution from
 \code{\link{assignLifeStage}}. The first and second dimension names need to
 be the same and correspond to the variable names in Data that were used in
 the mixture distribution.}
+
+\item{SAVE}{Default is TRUE, a plot (PDF file) and confusion matrix (CSV
+file)  for each final run is saved in the \code{output.dir} location (see
+\code{\link{GlobalVars}}). If FALSE the each plot is displayed in a new R
+plot window. In either case the confusion matrix is print to the R console.}
 }
 \value{
 NA

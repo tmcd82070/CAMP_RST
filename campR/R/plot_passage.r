@@ -66,9 +66,9 @@ F.plot.passage <- function( df, out.file="passage.png" ){
   #   out.file <- 'passage.png'
   
   #    ---- Get global environment variables.
-  get("run.name",envir=.GlobalEnv)
-  get("min.date",envir=.GlobalEnv)
-  get("max.date",envir=.GlobalEnv)
+  run.name <- get("run.name",envir=.GlobalEnv)
+  min.date <- get("min.date",envir=.GlobalEnv)
+  max.date <- get("max.date",envir=.GlobalEnv)
   
   if( !is.na(out.file) ){
     graphics.off()

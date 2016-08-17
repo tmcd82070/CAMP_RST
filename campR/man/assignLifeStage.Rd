@@ -8,7 +8,7 @@ assignLifeStage(DATA, groupN = NULL, USEWeight = NULL, ...)
 }
 \arguments{
 \item{DATA}{A data frame of the catch data with the weight measurement, as
-returned from \code{\link{getWeightData}}.}
+returned from \code{\link{getCatchDataWeight}}.}
 
 \item{groupN}{The number of life stage groups to be estimated, see details.}
 
@@ -69,7 +69,7 @@ this protocol the number of groups can be one, in which case the group name
 is All.
 
 The analytical assignment is done through a call to the
-\code{\link[mclust]{Mclust}} function in the \code{\pkg{mclust}} package. The
+\code{\link[mclust]{Mclust}} function in the \code{mclust} package. The
 \code{Mclust} function is fitting a mixture of multivariate normal
 distribution. The number of distribution fit corresponds to the number of
 life stage groups. The \code{Mclust} function returns mean vectors and
@@ -89,13 +89,12 @@ The minimum distance indicates which group that fish will be assigned too.
 The concept is that all fish with a recorded fork length will have a group
 assignment.
 
-
 The analytical and morphometric life stage assignments are compared with a
 call to \code{\link{assignLSCompare}}.
 }
 \examples{
 \dontrun{
-# insert examples
+assignLifeStage(DATA,groupN,USEWeight)
 
 }
 }

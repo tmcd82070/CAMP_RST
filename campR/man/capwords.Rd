@@ -7,10 +7,10 @@
 capwords(s, strict = FALSE)
 }
 \arguments{
+\item{s}{A character vector of length one.}
+
 \item{strict}{= FALSE If \code{TRUE}, force all letters of a word to 
 lowercase after the first letter.  Default is \code{FALSE}.}
-
-\item{A}{character vector of length one.}
 }
 \value{
 The character vector originally submitted via argument \code{s} with
@@ -18,9 +18,6 @@ The character vector originally submitted via argument \code{s} with
 }
 \description{
 Capitalize each word in a character vector of length one.
-}
-\details{
-
 }
 \examples{
 #   ---- Capitalize each of hello and there.  
@@ -31,8 +28,5 @@ capwords("CAMP",strict=TRUE)
 }
 \author{
 WEST Inc.
-}
-\seealso{
-
 }
 

@@ -54,8 +54,10 @@ time.zone <- "America/Los_Angeles"
 #   ---- Create a data set of three trapping instances.  
 origDate <- data.frame(trapVisitID=c(1234,1235),
 SampleDate <- strptime(c("2014-01-24","2014-01-24"),"\%F"),
-StartTime <- strptime(c("2014-01-23 14:28:00","2014-01-24 03:59:00"),"\%Y-\%m-\%d \%H:\%M:\%S", tz=time.zone),
-EndTime <- strptime(c("2014-01-24 03:59:00","2014-01-24 04:00:00"),"\%Y-\%m-\%d \%H:\%M:\%S", tz=time.zone))
+StartTime <- strptime(c("2014-01-23 14:28:00","2014-01-24 03:59:00"),
+  "\%Y-\%m-\%d \%H:\%M:\%S", tz=time.zone),
+EndTime <- strptime(c("2014-01-24 03:59:00","2014-01-24 04:00:00"),
+  "\%Y-\%m-\%d \%H:\%M:\%S", tz=time.zone))
 
 #   ---- BatchDate for trapVisitID=1234 is now 1/23, 
 #   ---- since that trap stopped before 4 AM.  
