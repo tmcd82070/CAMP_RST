@@ -5,13 +5,13 @@
 #' @description Summarize trap efficiency for every release.
 #'   
 #' @param  release.df A data frame read by function \code{F.get.release.data}
-#'   containing information on releases, marks, etc.  Run season is a vector of
+#'   containing information on releases.  Run season is a vector of
 #'   dates for the start and end of a run, and is stored as an attribute of the
 #'   data frame.
 #'   
 #' @details The multiplicative expansion of caught fish due to half-cone 
 #'   operations utilizes the value of the global variable \code{halfConeMulti}, 
-#'   set in function \code{GlobalVars}. This value is currently set to 2.
+#'   set in function \code{GlobalVars}. This value is currently set to \code{2}.
 #'   
 #' @return A data frame containing a summary of unique combinations of traps
 #'   (via \code{trapPosition}) and releases (via \code{releaseID}).

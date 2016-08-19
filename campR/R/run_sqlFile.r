@@ -16,20 +16,20 @@
 #'   \code{sqlFile} must be separated by a semicolon ";". Comments, or lines
 #'   starting with "\code{--}", are allowed.
 #'   
-#' @param echo If TRUE, submitted SQL statements echo to the log file. Defaults
-#'   to TRUE.
+#' @param echo If \code{TRUE}, submitted SQL statements echo to the log file. Defaults
+#'   to \code{TRUE}.
 #'   
 #' @param check.drops If TRUE, the routine checks for errors following SQL
 #'   \code{DROP} statements.  This is done since \code{DROP} statements on 
-#'   non-existent tables causes an abort error. The \code{DROP} simply needs
-#'   ensures the non-existence of the table; this way, it can be created later.
+#'   non-existent tables cause an abort error. The \code{DROP} simply needs to
+#'   ensure the non-existence of the table; this way, it can be created later.
 #'   Set this to \code{FALSE} and these \code{DROP} errors will pass through. 
 #'   This behavior of \code{DROP} may be specific to Access, and thus may not
 #'   occur when querying other SQL data bases (e.g., mySQL or MSSQL).
 #'   
 #' @param ... Additional named parameters needed for evaluation of the
 #'   underlying SQL queries contained in \code{sqlFile}. This allows R to pass
-#'   parameters to SQL for incorporation into things like WHERE clauses.  See
+#'   parameters to SQL for incorporation into things like \code{WHERE} clauses.  See
 #'   Details.
 #'   
 #' @return Results of the \bold{LAST} SQL statment in \code{sqlFile}. In many
@@ -79,15 +79,15 @@
 #' strings.  Double quotes force the underlying SQL strings to be
 #' misinterpreted, and thus fail.
 #' 
-#' \item \strong{Variables} Many SQL queries developed for the Platform require
-#' subsetting the data to chinook salmon via SQL \code{WHERE} clauses. However,
+#' \item \strong{Variables} Many developed SQL queries require
+#' subsetting the data to Chinook Salmon via SQL \code{WHERE} clauses. However,
 #' in most cases, if not all, the R code has been developed to allow for
 #' selection of any piscine species. This means that the \code{WHERE} clause is
 #' a variable set by the user. It also means that this variable quantity must be
 #' passed from R to Access. Within the database, chinook salmon have the
-#' character identifier "\code{161980}".
+#' character identifier '\code{161980}'.  Note the single quotes here.  
 #' 
-#' In the \code{campR} package, \code{WHERE} statements for chinook salmon are
+#' In the \code{campR} package, \code{WHERE} statements for Chinook Salmon are
 #' identified via this identifier. However, because the R code has been
 #' developed to allow this value to vary, SQL code has been adapted to take
 #' variable values via \code{RODBC} and variable "\code{R.TAXON}". The 
@@ -199,7 +199,7 @@
 #'   and Sample Period be run first.  The Fishing Gaps series only runs if a
 #'   lengthy gap is found, which is currently defined as any gap in excess of
 #'   10,080 minutes, or 7 days.  This value is set in the \code{GlobalVars}
-#'   \code{R} function via global variable \code{fishingGapMinutes}. Traps
+#'   \code{R} function via global variable \code{fishingGapMinutes}. Trap
 #'   identifiers are modified by appending a decimal to their corresponding 
 #'   \code{trapPositionID}.
 #'   
@@ -208,7 +208,7 @@
 #'   series excludes adult and grilse life stages.
 #'   
 #'   Note that the series only pulls data for non-valid trap visits, where the
-#'   variable \code{includeCatchID} equal \code{2}, and for which there are
+#'   variable \code{includeCatchID} equals \code{2}, and for which there are
 #'   target fish in the catch.
 #'   
 #'  \item{\strong{Not Fishing}} Develops a table that itemizes hours not fishing.  The 
@@ -222,8 +222,8 @@
 #'   and stops of a trapping instance, as itemized via variable
 #'   \code{trapVisitID}.
 #'   
-#'   \item{\strong{Sum Chinook by Trap}} Sums all the chinook caught via trap, i.e., 
-#'   variable \code{trapVisitID}.  Note that species Chinook salmon enters the
+#'   \item{\strong{Sum Chinook by Trap}} Sums all the Chinook caught via trap, i.e., 
+#'   variable \code{trapVisitID}.  Note that species Chinook Salmon enters the
 #'   series via variable \code{R.TAXON}.
 #'   
 #'   \item{\strong{Unmarked by Run and Lifestage}} Displays target species by run.  This 
@@ -242,13 +242,13 @@
 #'   The series pulls catch data from valid trap visits, identified when
 #'   variable \code{includeCatch} equals \code{'yes'} or when 
 #'   \code{includeCatch} is non-valid, or equals \code{'no'}, but variable
-#'   \code{visitTypeID} has a value greater than \code{1}, i.e., \code{Start
-#'   trap & begin trapping}.  This series includes variables \code{weight} and
+#'   \code{visitTypeID} has a value greater than \code{1}, i.e., 
+#'   \code{Start trap & begin trapping}.  This series includes variables \code{weight} and
 #'   \code{finalRunMethod} for use in life stage assignment.
 #'   
 #'   This series is different from that used in production analysis, being
 #'   modified slightly for use in life stage development. This series uses two
-#'   of the same output tables, but the final table name was reset to
+#'   of the same output tables, but the final table name is 
 #'   \code{TempSumUnmarkedByTrap_Run_Final2}.
 #'   
 #'   \item{\strong{Weekly Effort}}  Develops trapping effort data for graphical display. 
@@ -270,7 +270,7 @@
 #' 
 #' @seealso \code{sqlQuery}, \code{sqlFetch}
 #'   
-#' @author WEST Inc.
+#' @author WEST Inc., Connie Shannon
 #' 
 #' @examples
 #' \dontrun{

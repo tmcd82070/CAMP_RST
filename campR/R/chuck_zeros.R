@@ -5,28 +5,30 @@
 #' @description Removes zeros before the first non-zero catch, and the same for
 #'   zeros following the last non-zero catch.
 #'   
-#' @param b An integer of the number of zeros and \code{NA} to keep before the 
-#'   first non-zero and non-\code{NA} catch record. Always set to zero.
-#' @param e An integer of the number of zeros and \code{NA} to keep after the 
-#'   last non-zero and non-\code{NA} catch record. Always set to zero.
-#' @param beg.buff An integer.  The number of zeros and \code{NA} prior to the 
-#'   first non-zero and non-\code{NA} catch record in the original data frame 
-#'   \code{df}.
-#' @param end.buff An integer.  The number of zeros and \code{NA} after the last
-#'   non-zero and non-\code{NA} catch record in the original data frame 
-#'   \code{df}.
-#' @param df A catch data frame containing catch records for one particular 
-#'   trap.
+#' @param b An integer representing the number of zeros and \code{NA} trapping
+#'   instances to keep before the first non-zero and non-\code{NA} catch record.
+#'   Always set to zero.
+#' @param e An integer representing the number of zeros and \code{NA} trapping
+#'   instances to keep after the last non-zero and non-\code{NA} catch record.
+#'   Always set to zero.
+#' @param beg.buff An integer.  The actual number of zeros and \code{NA}
+#'   trapping instances prior to the first non-zero and non-\code{NA} catch
+#' record in the original data frame \code{df}.
+#' @param end.buff An integer.  The actual number of zeros and \code{NA} 
+#'   trapping instances after the last non-zero and non-\code{NA} catch record 
+#'   in the original data frame \code{df}.
+#' @param df A data frame containing catch records for one particular trap's 
+#'   temporal sequence.
 #'   
-#' @details The number of trapping days with preceding and antecedent zeros in 
-#'   the catch record for a trap can be specified via manipulation of the 
-#'   \code{b} and \code{e} variables.  Thus, the number of zero catch records 
-#'   both before the first and after the last caught fish is independently 
-#'   adjustable.
+#' @details Manipulation of the \code{b} and \code{e} variables specifies the 
+#'   number of trapping days with preceding and antecedent zeros to retain. 
+#'   Thus, the number of zero catch records both before the first and after the 
+#'   last caught fish is independently adjustable.
 #'   
-#'   Variable \code{n.tot} identifies zero and \code{NA} catch records.
+#'   Note that variable \code{n.tot} in data frame \code{df} identifies zero and
+#'   \code{NA} catch records.
 #'   
-#' @return A data frame, necessarily a subset of the data frame \code{df}
+#' @return A data frame, necessarily a subset of the data frame \code{df} 
 #'   provided to the function, with all zero and \code{NA} catch records removed
 #'   before the first, and after the last, valid catch record.
 #'   

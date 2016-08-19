@@ -84,8 +84,8 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
     ##sample.size.forkLengthAndWeight <- get('sample.size.forkLengthAndWeight',envir=.mycampREnv)
     ##weight.prop.forkLength <- get('site',envir=.mycampREnv)
     ##forkLength.mean.diff <- get('forkLength.mean.diff',envir=.mycampREnv)
-    output.dir <- get('output.dir',envir=.mycampREnv)
-
+    #output.dir <- get('output.dir',envir=.mycampREnv)  # jason doesn't know what this is. 
+    output.dir <- get("output.file",envir=.GlobalEnv)
 
 
     ## keep only needed columns
@@ -139,13 +139,16 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
 
 
         ## confusion matrix
-        compareDF <- ddply(data,~bioLS+lifeStage,summarize,fish=sum(Unmarked))
-        cvTab <- spread(compareDF,key=lifeStage,value=fish,fill=0)
-
+        compareDF <- ddply(data,~bioLS+lifeStage,plyr::summarize,fish=sum(Unmarked)) # jason replaces Unmarked with data$Unmarked to try
+                                                                                     # and make devtools::check() happy.  
+        cat("we got to here.\n")
+        cvTab <- tidyr::spread(compareDF,key=lifeStage,value=fish,fill=0)  # jason adds in compareDF for each of 
+                                                                                        # lifestage and fish, to make check() happy
+        cat("but did we get here?\n")
         cat('Confusion Matrix \n')
         print(cvTab)
 
-        if(save){
+        if(SAVE){
             write.csv(cvTab,paste0(output.dir,gsub(' ','',fRun),'ConfusionMatrix.csv'),row.names=FALSE)
         }
         ##head(data)
@@ -222,7 +225,7 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
         cat('\n')
         cat('\n')
         cat('Saving comparison figure.\n')
-        if(save){
+        if(SAVE){
             pdf(file=paste0(output.dir,gsub(' ','',fRun),'plotLifeStageAssignComparison.pdf'),width=7)
         }else{
             dev.new(width=7)
@@ -279,7 +282,7 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
         with(legAll,legend('topleft',legend=lifeStage,col=col,pch=pch,ncol=2,bg='white'))
 
 
-        if(save){
+        if(SAVE){
             graphics.off()
         }
 

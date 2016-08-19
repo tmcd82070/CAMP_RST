@@ -22,10 +22,10 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 \item{output.file}{A text string indicating a prefix to append to all output.}
 }
 \value{
-A png graphical display and csv of underlying data, for each unique 
-  trap with fishing data between the specified \code{min.date} and
-  \code{max.date}. An additional png and csv is output summarizing all traps
-  together.
+A \code{png} graphical display and \code{csv} of underlying data, for
+  each unique trap with fishing data between the specified \code{min.date}
+  and \code{max.date}. An additional \code{png} and \code{csv} is output 
+  summarizing all traps together.
 }
 \description{
 Compute weekly effort, in terms of time spent "Fishing" versus
@@ -33,20 +33,21 @@ Compute weekly effort, in terms of time spent "Fishing" versus
 }
 \details{
 Dates provided by variables \code{min.date} and \code{max.date} 
-  cannot span more than 366 days.  Additionally, the code is only set up to
+  cannot span more than 366 days.  Additionally, the code is only set up to 
   calculate fishing with a provided \code{taxon} of \code{161980}, i.e., 
-  Chinook salmon.
+  Chinook Salmon.
   
   Function \code{F.weekly.effort} utilizes the Build Report Criteria Release 
   and Sample Period query series to first identify appropriate fishing 
   instances via variables \code{min.date} and \code{max.date}.  Series Weekly
   Effort then massages the fishing time data into the format necessary for 
-  output.  See \code{F.run.sqlFile} for more information on queries.
+  output.  See section Structured Query Language (SQL) Queries in
+  \code{F.run.sqlFile} for more information on query series.
   
-  Allocation of time spent fishing is to one of either three possibilities.  The first 
-  tabulates time during which a trap was not fishing; i.e., the trap was out 
-  of the water.  The second and third summarize time for which the trap was 
-  deployed but for which fishing was unsuccessful or successful, 
+  Allocation of time spent fishing is to one of either three possibilities. 
+  The first tabulates time during which a trap was not fishing; i.e., the
+  trap was out of the water.  The second and third summarize time for which
+  the trap was deployed but for which fishing was unsuccessful or successful,
   respectively.  Variable \code{includeCatchID} determines whether or not a 
   fishing instance (identifiable via a unique \code{trapVisitID}) is 
   successful or not.
@@ -55,28 +56,33 @@ Dates provided by variables \code{min.date} and \code{max.date}
   days, or 168 hours, with the exception of Julian week 53, which covers 
   December 30th to December 31st in leap years, and December 31st alone in 
   non-leap years. In this case, the "week" spans only 2 or 1 day(s), 
-  respectively.  Gray coloring is used to flush out the remaining 5 or 6 
+  respectively.  Gray coloring is used to flesh out the remaining 5 or 6 
   days, respectively, for this special week.  In this way, all weeks cover a 
   7-day period within the bar-chart graphical output.
   
-  Resulting bar chart pngs and csvs for summary fishing over all unique traps
-  between the provided \code{min.date} and \code{max.date} calculate total 
-  minutes on a per-day basis.  Thus, if three traps fished on one day, but 
-  only two the next, the program utilizes \eqn{1440*3=4320} total minutes for
-  the first day, but only \eqn{1440*2=2880} total minutes for the second. 
-  Note that \eqn{1440 = 24*60} minutes for one day.
+  Resulting bar chart \code{png}s and \code{csv}s for summary fishing over
+  all unique traps between the provided \code{min.date} and \code{max.date}
+  calculate total minutes on a per-day basis.  Thus, if three traps fished on
+  one day, but only two the next, the program utilizes \eqn{1440*3=4320}
+  total minutes for the first day, but only \eqn{1440*2=2880} total minutes
+  for the second. Note that \eqn{1440 = 24*60} minutes for one day.
 }
 \examples{
 \dontrun{
 #   ---- Estimate the weekly effort on the American River for all 
 #   ---- inclusive traps, from Jan. 16, 2013 through June 8, 2013.  
-F.weekly.effort(57000,161980,"2013-01-16","2013-06-08","American River")
+site <- 57000
+taxon <- 161980
+min.date <- "2016-01-16"
+max.date <- "2013-06-08"
+output.file <- "American River"
+F.weekly.effort(site,taxon,min.date,max.date,output.file)
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{\link{F.run.sqlFile}}
+\code{F.run.sqlFile}
 }
 

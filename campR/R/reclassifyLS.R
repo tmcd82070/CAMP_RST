@@ -2,17 +2,18 @@
 #'
 #' @title F.reclassifyLS
 #'  
-#' @description Reclassify lifeStage via forklength into groups specified
-#' via Global Enviornment dataframe \code{forkLengthCutPoints}.
-#' 
-#' @param catch A catch dataframe originating from a catch-query sequence.  See
-#' function \code{F.get.catch.data}.  At the least, \code{catch} must contain
-#' variables entitled \code{forkLength} and \code{lifeStage}.
+#' @description Reclassify lifeStage via forklength into groups specified via
+#'   dataframe \code{forkLengthCutPoints}, as specified in the Global 
+#'   Environment.
+#'   
+#' @param catch A catch dataframe originating from a catch-query sequence.  At
+#'   the least, \code{catch} must contain variables entitled \code{forkLength}
+#'   and \code{lifeStage}.  See function \code{F.get.catch.data}.
 #' 
 #' @return A dataframe with original variable \code{lifeStage} values containing
 #'   "\code{Fry}," "\code{Parr}," and "\code{Smolt}" into the label values
 #'   specified via the Global environment dataframe \code{forkLengthCutPoints}.
-#'   See \code{GlobalVars}.
+#'   See function \code{GlobalVars}.
 #'   
 #' @details Generally speaking, the process by which a new \code{lifeStage}
 #'   variable is constructed is straight-forward.  Care must be taken, however,
@@ -23,7 +24,7 @@
 #'   for records containing valid \code{FinalRun}, but not \code{lifeStage}, or
 #'   \code{forkLength}, as the case may be.
 #'   
-#' @seealso \code{GlobalVars.R}, \code{F.get.catch.data}, \code{F.assign.1dim}
+#' @seealso \code{GlobalVars}, \code{F.get.catch.data}, \code{F.assign.1dim}
 #'   
 #' @examples  
 #' \dontrun{

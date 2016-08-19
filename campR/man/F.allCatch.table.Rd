@@ -20,22 +20,27 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 saved.}
 }
 \value{
-A \code{csv} containing catch information for all species.  A data
-  frame containing the same information is also returned, but invisibly.
+A \code{csv} containing catch information for all caught species.  A
+  data frame containing the same information is also returned, but invisibly.
 }
 \description{
 Lists all catch, regardless of species.
 }
 \details{
-This function utilizes the All-Catch Series query to find and identify
-all pertinent records within a catch.
+This function utilizes the All-Catch Series query to find and
+  identify all pertinent records within a catch.  See the Section Structure
+  Query Language (SQL) Queries in \code{F.run.sqlFile} for more information.
 }
 \examples{
  
 \dontrun{
-
-#requires an mdb.
-
+#   ---- Obtain the catch over the specified period on 
+#   ---- the American.
+site <- 57000
+min.date <- "2013-01-01"
+max.date <- "2013-06-01"
+output.file <- NA
+df <- F.allCatch.table(site,min.date,max.date,output.file)
 }
 }
 \seealso{

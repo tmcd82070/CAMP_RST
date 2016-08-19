@@ -10,19 +10,17 @@
 #'   requiring an estimate.
 #' @param plot A logical indicating if resulting efficiency should be plotted.
 #' @param method A scalar specifying the type of extrapolation to do. 
-#'   \code{method = 1} takes average of entire season. \code{method = 2} uses 
+#'   \code{method = 1} takes the average of entire season. \code{method = 2} uses 
 #'   earliest observed efficiency for each unique interval between distinct
 #'   efficiency trials; i.e., a so called "step-function" constant model. 
 #'   \code{method = 3} is a B-spline model with up to \code{max.df.spline}
 #'   degrees of freedom.
 #' @param max.df.spline The maximum degrees of freedom allowed for splines.
 #' @param plot.file The name of the file prefix under which output is to be 
-#'   saved.  Set to NA to plot to the Plot window.
+#'   saved.  Set to \code{NA} to plot to the plot window.
 #'   
 #' @return A data frame with all observed and imputed \code{efficiency} values, 
 #'   where variable \code{gam.estimated} identifies days with imputed values.
-#' 
-#' 
 #' 
 #' @section Efficiency Methodologies:
 #'
@@ -30,10 +28,10 @@
 #' need.
 #'   
 #'   \itemize{ 
-#'   \item{\code{method=1} : A "Seasonal-mean model".  This means that a
+#'   \item{\code{method=1} : A "Seasonal-mean model."  This means that a
 #'   ratio-of-means bias-corrected global efficiency is calculated, for each 
 #'   trap, where the efficiency is estimated via \deqn{\frac{nCaught
-#'   + 1}{nReleased + 1}}{(nCaught + 1) / (nReleased + 1).}  Values
+#'   + 1}{nReleased + 1}{(nCaught + 1) / (nReleased + 1)}}.  Values
 #'   for variables \code{nCaught} and \code{nReleased} originate via function
 #'   \code{F.get.releases} and the querying of an underlying Access database. 
 #'   The resulting ratio-of-means efficiency is then applied to all trapping
@@ -41,7 +39,7 @@
 #'   
 #'   \item{\code{method=2} : A "Constant model."  This means that this model
 #'   utilizes a step function to estimate efficiency, where here, steps may
-#'   increase or decrease over time.  Each interval of time for which efficiecy
+#'   increase or decrease over time.  Each interval of time for which efficiency
 #'   needs to be estimated utilizes the earliest observed efficiency between
 #'   efficiency trials.  Note that this method has not been fully programmed to
 #'   be compatible with boostrapping in function \code{F.bootstrap.passage}.  This
@@ -181,7 +179,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
 
         #   ---- At least one efficiency trial "inside" for this trap.
         #   ---- Fit a null model.  
-        fit <- glm( nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=nReleased ) 
+        fit <- glm( nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=tmp.df$nReleased ) 
         fit.AIC <- AIC(fit)
     
         cat(paste("df= ", 1, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
@@ -199,7 +197,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
             cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
             tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
         
-            cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=nReleased )   
+            cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
             cur.AIC <- AIC(cur.fit)
                     
             cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))

@@ -24,13 +24,17 @@ A \code{csv} with all non-Chinook records between the two dates
 Retreive all non-Chinook catch data between two dates at a site.
 }
 \details{
-Function \code{F.getByCatch} utilizes query sequence By Catch 
-to obtain all non-Chinook records within a catch.  See \code{F.run.sqlFile}
-for details.
+Function \code{F.getByCatch} utilizes query sequence By Catch to
+  obtain all non-Chinook records within a catch.  See section Structured
+  Query Language (SQL) Queries in function \code{F.run.sqlFile} for details.
 }
 \examples{
 \dontrun{
-df <- F.getByCatch(57000,"2013-01-16","2013-06-08")
+#' #   ---- Fetch all by-catch data from the American.
+site <- 57000
+min.date <- "2013-01-01"
+max.date <- "2013-06-01"
+df <- F.getByCatch(site,min.date,max.date)
 }
 }
 \author{

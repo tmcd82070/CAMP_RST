@@ -14,7 +14,7 @@
 #' @author WEST Inc.
 #'   
 #' @examples
-#' #   ---- Capitalize each of hello and there.  
+#' #   ---- Capitalize each of 'hello' and 'there'.  
 #' capwords("hello there")
 #' 
 #' #   ---- Use the strict argument.  Returns 'Camp'.

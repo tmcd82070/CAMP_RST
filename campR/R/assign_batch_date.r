@@ -2,7 +2,7 @@
 #' 
 #' @title F.assign.batch.date
 #' 
-#' @description Assigns batch dates to all trap visits in a data frame via
+#' @description Assigns batch dates to all trap visits in a data frame via global
 #'   variable \code{samplePeriodCutTime}.
 #'   
 #' @param df The data frame containing trap visit records for which a day must be 
@@ -18,25 +18,25 @@
 #'   forward; this encapsulates the earliest and latest \code{EndTime} dates. 
 #'   Given the unique dates within this resulting range, each of which start at 
 #'   12:00 midnight, it then adds the value of global variable 
-#'   \code{samplePeriodCutTime}, or 4:00 AM.  The time of 4:00 AM was chosen 
-#'    to not prematurely cut-off trapping 
-#'   instances that often continue past midnight. This effectively moves the
-#'   traditional day-separation time of midnight to 4:00 AM.
+#'   \code{samplePeriodCutTime}, or 4:00 AM.  The time of 4:00 AM was chosen so 
+#'   as to not prematurely cut-off trapping instances that often continue past 
+#'   midnight. This effectively moves the traditional day-separation time of 
+#'   midnight to 4:00 AM.
 #'   
 #'   Function \code{F.assign.batch.date} maps trapping records containing 
 #'   trapping-instance variable \code{EndTime}s to particular days, taking into 
 #'   consideration that trapping instances often take place over midnight, i.e.,
-#'   two separate calendar days.  This function also considers multi-day
-#'   trapping instances.  All calculations consider daylight savings time and
-#'   assume that measurements take place within the Pacific Time Zone.  
+#'   two separate calendar days.  This function also considers multi-day 
+#'   trapping instances.  All calculations consider daylight savings time and 
+#'   assume that measurements take place within the Pacific Time Zone.
 #'   
 #'   Generally, the variable created by function \code{F.assign.batch.date}, 
 #'   \code{batchDate}, is the same as variable \code{SampleDate} found in 
 #'   query-derived table \code{TempSumUnmarkedByTrap_Run_Final} in any CAMP 
-#'   Database.  Variable \code{batchDate} replaces variable \code{SampleDate} in
-#'   all dataframes for which function \code{F.assign.batch.date} is called.  To
-#'   avoid confusion, new variable \code{batchDate} replaces old variable 
-#'   \code{SampleDate} after the running of this function.
+#'   Database.  See section Structured Query Language (SQL) Queries in
+#'   \code{F.run.sqlFile}. Variable \code{batchDate} replaces variable
+#'   \code{SampleDate} in all dataframes for which function
+#'   \code{F.assign.batch.date} is called.
 #'
 #' @author WEST Inc.
 #' 

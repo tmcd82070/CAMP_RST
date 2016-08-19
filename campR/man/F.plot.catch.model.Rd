@@ -15,24 +15,24 @@ F.plot.catch.model(df, file = NA)
 Set to \code{NA} to plot to the Plot window.}
 }
 \value{
-A \code{png} graphical display of Daily Raw (un-inflated) catch, per 
+A \code{png} graphical display of Daily Raw (uninflated) catch, per 
   trap, by day.
 }
 \description{
-Plot smoothed, possibly imputed, catch data over days per trap.
+Plot smoothed, and possibly imputed, catch data over days per trap.
 }
 \details{
 The input data frame usually has other catch variables, although 
-  these currently serve no graphical purpose.  Variable \code{trapPositionID} contains 
-  the numeric code of a trap, while variable \code{TrapPosition} contains in 
-  text description.  Variable \code{imputed.catch} holds the proportion of 
-  time, for that day, for which imputed occurred;  as such, its values are 
-  between zero and one, inclusive.  Variable \code{imputedCatch} contains the
-  total number of imputed fish for the day recorded via \code{batchDate}. 
-  Variable \code{modAssignedCatch} contains the total number of caught fish 
-  for that \code{batchDate} and incoporates any extra fish arising from 
-  half-cone operations.  The value of \code{imputedCatch} is necessarily 
-  equal to or less than the value of \code{modAssignedCatch}.
+  these currently serve no graphical purpose.  Variable \code{trapPositionID}
+  contains the numeric code of a trap, while variable \code{TrapPosition}
+  contains its text description.  Variable \code{imputed.catch} holds the
+  proportion of time, for that day, for which imputed occurred;  as such, its
+  values are between zero and one, inclusive.  Variable \code{imputedCatch}
+  contains the total number of imputed fish for the day recorded via
+  \code{batchDate}. Variable \code{modAssignedCatch} contains the total
+  number of caught fish for that \code{batchDate} and incorporates any extra
+  fish arising from half-cone operations.  The value of \code{imputedCatch}
+  is necessarily equal to or less than the value of \code{modAssignedCatch}.
   
   The imputation curve displayed in the graph is obtained via function 
   \code{supersmu}, and serves as a reasonable approximation to the actual 

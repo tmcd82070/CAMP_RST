@@ -13,19 +13,24 @@
 #' @param output.file The name of the file prefix under which output is to be 
 #'   saved. 
 #'   
-#' @return A \code{csv} containing catch information for all species.  A data
-#'   frame containing the same information is also returned, but invisibly.
+#' @return A \code{csv} containing catch information for all caught species.  A
+#'   data frame containing the same information is also returned, but invisibly.
 #'   
-#' @details This function utilizes the All-Catch Series query to find and identify
-#' all pertinent records within a catch.  
+#' @details This function utilizes the All-Catch Series query to find and
+#'   identify all pertinent records within a catch.  See the Section Structure
+#'   Query Language (SQL) Queries in \code{F.run.sqlFile} for more information.
 #'
 #' @seealso \code{F.chinookByDate.table}, \code{F.get.all.fish.data}
 #' 
 #' @examples  
 #' \dontrun{
-#' 
-#' #requires an mdb.
-#'
+#' #   ---- Obtain the catch over the specified period on 
+#' #   ---- the American.
+#' site <- 57000
+#' min.date <- "2013-01-01"
+#' max.date <- "2013-06-01"
+#' output.file <- NA
+#' df <- F.allCatch.table(site,min.date,max.date,output.file)
 #' }
 F.allCatch.table <- function( site, min.date, max.date, output.file ){
 

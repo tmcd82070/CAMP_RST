@@ -22,15 +22,18 @@ A data frame with one line per visit, with catch summarized. Summary
 Summarize fish count and fork lengths over visits.
 }
 \details{
-Results from the catch-query series (see \code{F.sqlFile}) summarize
-  the number of fish per \code{trapVisitID}, \code{lifeStage},
-  \code{FinalRun}, and \code{forkLength}.  Following the initial queries,
-  these need to be summarized, depending on the type of fish, for further
-  processing.  Types of fish summarized by \code{F.summarize.fish.visit}
-  include counts under variables \code{unassigned}, \code{inflated},
-  \code{assigned}, \code{halfConeAssignedCatch},
-  \code{halfConeUnassignedCatch}, \code{assignedCatch},
-  \code{unassignedCatch}, \code{modAssignedCatch}, \code{modUnassignedCatch}.
+Results from the catch-query series summarize the number of fish per
+  \code{trapVisitID}, \code{lifeStage}, \code{FinalRun}, and
+  \code{forkLength}.  See section Structured Query Language (SQL) Queries in
+  \code{F.run.sqlFile} for more information.  Following the initial queries, 
+  these need to be summarized, depending on the type of fish, for further 
+  processing.  Types of fish summarized by \code{F.summarize.fish.visit} 
+  include counts under variables \code{unassigned}, \code{inflated}, 
+  \code{assigned}, \code{halfConeAssignedCatch}, 
+  \code{halfConeUnassignedCatch}, \code{assignedCatch}, 
+  \code{unassignedCatch}, \code{modAssignedCatch}, and \code{modUnassignedCatch}.
+  See section Value under function \code{F.get.catch.data} for more information
+  on these variables.  
   
   An index comprised of variables \code{trapVisitID}, \code{FinalRun}, and 
   \code{Unassd} summarizes assigned fish.  Note that here, assigned fish are 

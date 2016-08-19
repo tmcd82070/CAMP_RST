@@ -33,8 +33,13 @@ Function \code{F.get.all.catch.data} is called from within function
 }
 \examples{
 \dontrun{
+#   ---- Fetch all catch data from the American.
+site <- 57000
+taxon <- 161980
+min.date <- "2013-01-01"
+max.date <- "2013-06-01"
 
-# requires an mdb.
+visit <- F.get.all.catch.data(site,taxon,min.date,max.date)
 }
 }
 \seealso{

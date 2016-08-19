@@ -1,13 +1,14 @@
 #' @export
 #' 
-#' @title F.plot.eff.model 
-#' 
-#' @description Plot per-trap efficiency values over days.
-#' 
-#' @param df A data frame that includes variables \code{TrapPositionID},
-#'   \code{batchDate}, \code{nReleased}, \code{nCaught}, \code{efficiency},
-#'   \code{imputed.eff}, and \code{trapPositionID}.  Currently variables
-#'   \code{TrapPositionID} and \code{trapPositionID} appear to be the same,
+#' @title F.plot.eff.model
+#'   
+#' @description Plot per-trap efficiency values for all days between specified
+#'   dates.
+#'   
+#' @param df A data frame that includes variables \code{TrapPositionID}, 
+#'   \code{batchDate}, \code{nReleased}, \code{nCaught}, \code{efficiency}, 
+#'   \code{imputed.eff}, and \code{trapPositionID}.  Currently variables 
+#'   \code{TrapPositionID} and \code{trapPositionID} appear to be the same, 
 #'   although both are called in subsequent points in the code.
 #' @param file The name of the file prefix under which output is to be saved. 
 #'   Set to \code{NA} to plot to the Plot window.
@@ -15,12 +16,12 @@
 #' @return Output includes a \code{png} graphical display of estimated 
 #'   efficiencies, per trap, by day, as well as a \code{csv} of the data points 
 #'   utilized in making the graph.  The \code{csv} includes both the estimated 
-#'   values from the specified efficiency model fit by function
-#'   \code{F.efficiency.model}, as well as the observed counts of fish deriving
+#'   values from the specified efficiency model fit by function 
+#'   \code{F.efficiency.model}, as well as the observed counts of fish deriving 
 #'   from efficiency trials.
 #'   
 #' @seealso \code{F.efficiency.model}
-#' 
+#'   
 #' @author WEST Inc.
 #'   
 #' @examples 

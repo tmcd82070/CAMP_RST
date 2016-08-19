@@ -11,8 +11,8 @@ F.assign.2dim(catch, var1, var2)
 of variables \code{trapVisitID}, \code{FinalRun}, \code{lifeStage}, and 
 \code{forkLength}. Variable \code{Unmarked} contains the number of fish 
 represented in each record.  Use of this function assumes that at least one
-record in \code{FinalRun} and \code{lifeStage} both equal 
-\code{"Unassigned"}.}
+record in variables \code{FinalRun} and \code{lifeStage} in \code{catch}
+both equals \code{"Unassigned"}.}
 
 \item{var1}{The variable in data frame \code{catch} for which data are 
 recorded.  Function \code{F.assign.2dim}, as utilized in the estimation of 
@@ -48,10 +48,11 @@ Function \code{F.assign.2dim} makes a new variable with joint
   then "cleans up" by breaking out the joint distribution into its
   constituent parts.
   
-  Thus, for example, on completion the joint variable value of
-  \code{"Fall.Smolt"} becomes \code{"Fall"} and \code{"Smolt"} within
-  variables \code{FinalRun} and \code{lifeStage}, respectively, with the
-  appropriate count of plus-count fish recorded in variable \code{Unmarked}.
+  Thus, for example, on completion of \code{F.assign.2dim}, the joint
+  variable value of \code{"Fall.Smolt"} becomes \code{"Fall"} and
+  \code{"Smolt"} within variables \code{FinalRun} and \code{lifeStage},
+  respectively, with the appropriate count of plus-count fish recorded in
+  variable \code{Unmarked}.
 }
 \examples{
 \dontrun{

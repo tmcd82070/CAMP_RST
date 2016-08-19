@@ -1,4 +1,4 @@
-#' @export F.get.indiv.fish.data
+#' @export 
 #' 
 #' @title F.get.indiv.fish.data
 #'   
@@ -23,15 +23,17 @@
 #'   anything else, will keep all fish records --- both marked and unmarked.
 #'   
 #' @details To be included in the catch data, a record has to be from the site, 
-#'   of the correct taxon, of the correct run, and between min and max date.
-#'   F.size.by.date
+#'   of the correct taxon, of the correct run, and between min and max date. 
+#'   Function \code{F.get.indiv.fish.data} is called by function
+#'   \code{F.size.by.date} in order to correctly format fish data for subsequent
+#'   graphical reporting.
 #'   
 #' @return A data frame containing information on individual fish, with each
 #'   individual reord corresponding to fish of the same fork length.
 #'   
 #' @author WEST Inc.
 #' 
-#' @seealso \code{F.get.catch.data}, \code{F.sql.error.check}
+#' @seealso \code{F.size.by.date}
 #' 
 #' @examples
 #' \dontrun{

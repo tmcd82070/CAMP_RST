@@ -7,7 +7,7 @@
 F.byCatch.table(site, min.date, max.date, output.file)
 }
 \arguments{
-\item{site}{The identification number of the site for which estimates are
+\item{site}{The identification number of the site for which estimates are 
 required.}
 
 \item{min.date}{The start date for data to include. This is a text string in 
@@ -20,18 +20,21 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-A csv file containing all non-Chinook catch, along with a png pie 
-chart detailing underlying counts and proportions of caught species.
+A \code{csv} file containing all non-Chinook catch, along with a
+  \code{png} pie chart detailing underlying counts and proportions of caught
+  species.
 }
 \description{
 List all non-Chinook catch.
 }
 \details{
-Query sequence Build Report Criteria builds the appropriate time frame
-of interest.  See \code{F.run.sqlFile} for details.  
-
-Function \code{F.byCatch.table} calls helper function \code{F.getByCatch}
-to obtain the non-Chinook catch.
+Query sequence Build Report Criteria builds the appropriate time
+  frame of interest while query series By Catch intemize the non-Chinook
+  catch.  See section Structured Query Language (SQL) Queries in
+  \code{F.run.sqlFile} for details.
+  
+  Function \code{F.byCatch.table} calls helper function \code{F.getByCatch} 
+  to obtain the non-Chinook catch.
 }
 \examples{
 \dontrun{

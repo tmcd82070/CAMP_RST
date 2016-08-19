@@ -25,7 +25,7 @@
 #'   
 #' @return A data frame containing fishing intervals and associated capture
 #'   efficiency, along with variable \code{gam.estimated}.  Variable
-#'   \code{gam.estimated} is \code{Yes} if efficiency for that interval was
+#'   \code{gam.estimated} is \code{"Yes"} if efficiency for that interval was
 #'   estimated by the GAM model (\code{method=3}), rather than being empirical
 #'   (\code{method=1}).
 #'   

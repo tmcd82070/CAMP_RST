@@ -1,4 +1,4 @@
-#' @export F.get.all.catch.data
+#' @export 
 #' 
 #' @title F.get.all.catch.data 
 #' 
@@ -24,8 +24,13 @@
 #'   
 #' @examples 
 #' \dontrun{
+#' #   ---- Fetch all catch data from the American.
+#' site <- 57000
+#' taxon <- 161980
+#' min.date <- "2013-01-01"
+#' max.date <- "2013-06-01"
 #' 
-#' # requires an mdb.
+#' visit <- F.get.all.catch.data(site,taxon,min.date,max.date)
 #' }
 F.get.all.catch.data <- function( site, taxon, min.date, max.date ){
 

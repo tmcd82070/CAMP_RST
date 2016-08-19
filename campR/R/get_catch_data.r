@@ -1,8 +1,8 @@
 #' @export
 #'
-#' @title F.get.catch.data - Retrieve data frame with catch information
+#' @title F.get.catch.data
 #'  
-#' @description Fetch catch data from an Access database. Do some initial computations, like
+#' @description Fetch catch data from an Access database and perform some initial computations, like
 #' dates.
 #' 
 #' @param site The identification number of the site for which estimates are
@@ -18,7 +18,7 @@
 #' @param nLS A numeric communicating the number of new lifestages to assign. 
 #'   Values can be \code{2} or \code{3}.
 #' @param weightUse A logical indicating if weight data are to be incorporated 
-#'   in the assigning of lifestage.  \code{useWeight = NULL}, ignored if 
+#'   in the assigning of lifestage.  \code{useWeight=NULL}, ignored if 
 #'   \code{autoLS} is \code{FALSE}, \code{NULL} leads to the program deciding if
 #'   weight should be used, \code{FALSE} lead to the program not using weight to
 #'   assign lifestage.
@@ -29,28 +29,48 @@
 #'   between the dates indicated.  Data include biologist- or computer-assigned 
 #'   \code{lifeStage}, \code{FinalRun}, and \code{forkLength}.
 #'   
+#'   Additional variables result from the computaton of catch following expansion
+#'   for half-cone operations.  
+#'   
+#'   Variables \code{modAssignedCatch} and \code{modUnassignedCatch} house the 
+#'   results following half-cone operation manipuation, with each equal to the 
+#'   sum of the originally recorded number of catch of that type, together with 
+#'   the extra fish added due to half-cone operations.  Variables 
+#'   \code{halfConeAssignedCatch} and \code{halfConeUnassignedCatch} contain the
+#'   extra additive fish due to half-cone operations.  Finally, variables 
+#'   \code{assignedCatch} and \code{unassignedCatch} tabulate the number of 
+#'   these type of fish prior to the application of the plus-count routine, 
+#'   where variable \code{Unassd} contains the \code{FinalRun} value prior to 
+#'   its implementation.  Note that non-zero values of \code{unassignedCatch} 
+#'   correspond to values of \code{"Unassigned"} in variable \code{Unassd}. 
+#'   Finally, variable \code{preUnmarked} contains the value of variable 
+#'   \code{Unmarked}, i.e., the number of relevant fish, prior to implementation
+#'   of the plus-count routine. The values contained in \code{Unmarked}, or
+#'   counts of fish, change during the half-cone and plus-count processes, and
+#'   so is retained via \code{preUnmarked} for purposes of fish accounting
+#'   later.
+#'   
 #' @details Function \code{F.get.catch.data} fetches all appropriate catch data 
 #'   from an Access database, and then processes it for further use.  The 
 #'   processing includes several steps. Currently, although variable 
 #'   \code{includeCatchID} is separately queried, it is not used in processing 
 #'   after the initial catch query.
 #'   
-#'   Each record contained in the resulting data frame itemizes fork length,
-#'   lifestage, and final run, via variables \code{forkLength},
-#'   \code{lifeStage}, and \code{FinalRun}, respectively, for each unique combination of 
-#'   \code{trapVisitID} and \code{trapPositionID}.
+#'   Each record contained in the resulting data frame itemizes fork length, 
+#'   lifestage, and final run, via variables \code{forkLength}, 
+#'   \code{lifeStage}, and \code{FinalRun}, respectively, for each unique
+#'   combination of \code{trapVisitID} and \code{trapPositionID}.
 #'   
-#'   Counts of captured fish are recorded via variable \code{Unmarked}, with
+#'   Counts of captured fish are recorded via variable \code{Unmarked}, with 
 #'   zero catch containing a \code{0}.  Zero records additionally have variables
 #'   \code{lifeStage} and \code{FinalRun} equal to \code{Unassigned}.
-#' 
-#' @section Lifestage: 
-#' Users have the options of reassigning lifestage away from 
-#'   the assignments provided by field biologists at the time of capture.
-#'   Options for reassignment number several, and are detailed (here?).
 #'   
-#' @section Gaps in Fishing:  
-#' Sometimes, during the normal course of fishing, a 
+#' @section Lifestage: Users have the options of reassigning lifestage away from
+#'   the assignments provided by field biologists at the time of capture. 
+#'   Options for reassignment number several, and are itemized in the See Also 
+#'   section in function \code{passageWithLifeStageAssign}.
+#'   
+#' @section Gaps in Fishing: Sometimes, during the normal course of fishing, a 
 #'   trap, or \code{trapPositionID}, stops fishing for an extended period of 
 #'   time in the middle of the time frame specified by \code{min.date} and 
 #'   \code{max.date}.  During this so-called "gap in fishing," subsequent catch 
@@ -66,16 +86,15 @@
 #'   variable \code{fishingGapMinutes} for reassignment to occur, which is 
 #'   currently set at 7 days (or 10,080 minutes).
 #'   
-#'   Any one trap, given a \code{min.date} and \code{max.date}, may have more
+#'   Any one trap, given a \code{min.date} and \code{max.date}, may have more 
 #'   than one gap in fishing.  Generally, the number of resulting reassigned 
 #'   \code{trapPositionID}s equals one more than the number of gaps. Reassigned 
 #'   traps can be identified by a decimal appendage after the original 
-#'   \code{trapPositionID}, although the first trapping instance, i.e., before
-#'   the first (and possibly only) gap in fishing, retains its original
+#'   \code{trapPositionID}, although the first trapping instance, i.e., before 
+#'   the first (and possibly only) gap in fishing, retains its original 
 #'   non-decimal \code{trapPositionID}.
 #'   
-#' @section Half-cone Adjustment:  
-#' On some rivers, the use of half-cone 
+#' @section Half-cone Adjustment: On some rivers, the use of half-cone 
 #'   adjustments is commonplace.  Practically, the use of a half-cone involves 
 #'   covering half of a trap opening, so as to reduce the amount of water that 
 #'   flows into it.  This also necessarily reduces the amount of captured fish 
@@ -88,31 +107,30 @@
 #'   is currently set at 2.
 #'   
 #'   Within the process of estimating passage, original catch is paritioned into
-#'   many different groupings.  This eases calculations and provides a 
-#'   check;  see "Fish Accounting" in functon \code{F.est.passage}.  Generally,
-#'   variables check for appropriate tallying of added half-cone fish for each
-#'   of assigned and unassigned catch.  A break-out for tallying counts of fish between assigned and 
-#'   unassigned catch is necessary due to plus-counting.  
+#'   many different groupings.  This eases calculations and provides a check; 
+#'   see "Fish Accounting" in functon \code{F.est.passage}.  Generally, 
+#'   variables check for appropriate tallying of added half-cone fish for each 
+#'   of assigned and unassigned catch.  A break-out for tallying counts of fish
+#'   between assigned and unassigned catch is necessary due to plus-counting.
 #'   
-#'   The check for assigned fish sums the counts of assigned fish and the added
-#'   count of half-cone fish, following plus-counting.  Practically, variable
-#'   \code{halfConeAssignedCatch} is summed with variable \code{assignedCatch}
-#'   to form variable \code{modAssignedCatch}, with all three variables
-#'   containing integer counts of fish.  The plus-count algorithm applies
+#'   The check for assigned fish sums the counts of assigned fish and the added 
+#'   count of half-cone fish, following plus-counting.  Practically, variable 
+#'   \code{halfConeAssignedCatch} is summed with variable \code{assignedCatch} 
+#'   to form variable \code{modAssignedCatch}, with all three variables 
+#'   containing integer counts of fish.  The plus-count algorithm applies 
 #'   proportions of observed fish to unassigned fish, often resulting in 
-#'   fractional fish.  Due to rounding, this means that sometimes, the numbers
-#'   of half-cone fish does not exactly equal the number of assigned fish.  See
+#'   fractional fish.  Due to rounding, this means that sometimes, the numbers 
+#'   of half-cone fish does not exactly equal the number of assigned fish.  See 
 #'   \code{F.assign.1dim}.
 #'   
-#'   A similar calculation sums variables \code{halfConeUnassignedCatch} and
-#'   \code{unassignedCatch} of integer fish to create variable
+#'   A similar calculation sums variables \code{halfConeUnassignedCatch} and 
+#'   \code{unassignedCatch} of integer fish to create variable 
 #'   \code{modUnassignedCatch}.
 #'   
-#' @section Half-cone Operations \& Plus Counts:  
-#' Generally, during a trapping
-#'   instance, a small sample is selected from what may be many thousands of
-#'   fish.  The resulting sampling distribution, in terms of lifestage and run,
-#'   is then applied to the remaining fish not randomly sampled.  The resulting
+#' @section Half-cone Operations & Plus Counts: Generally, during a trapping 
+#'   instance, a small sample is selected from what may be many thousands of 
+#'   fish.  The resulting sampling distribution, in terms of lifestage and run, 
+#'   is then applied to the remaining fish not randomly sampled.  The resulting 
 #'   assigned proportions of unsampled fish form "plus counts."  Functions 
 #'   \code{expand.plus.counts}, \code{assign.1dim}, and \code{assign.2dim} 
 #'   detail the plus-count algorithm.  Plus-counting requires special 
@@ -124,39 +142,51 @@
 #'   of fish from trapping instances temporally neighboring that of the trapping
 #'   instance of interest.  Inevitably, a before and/or after trapping instance 
 #'   may have been a full-cone operation, in contrast to the half-cone operation
-#'   of the trapping instance of focus, or vice versa.  Thus, resulting 
-#'   sampling distributions can become skewed, i.e., the amount by which a
-#'   half-cone trapping instance must have its fish counts expanded is not
-#'   necessarily an exact multiple of 2.
+#'   of the trapping instance of focus, or vice versa.  Thus, resulting sampling
+#'   distributions can become skewed, i.e., the amount by which a half-cone
+#'   trapping instance must have its fish counts expanded is not necessarily an
+#'   exact multiple of 2.
 #'   
-#'   To combat this phenonmenon, trapping instances with half-cone operations
+#'   To combat this phenonmenon, trapping instances with half-cone operations 
 #'   are not simply multiplied by the value of the global variable 
-#'   \code{halfConeMulti}.  Instead, the plus-count routine is applied twice,
-#'   both with and without the \code{halfConeMulti} adjustment applied.  Then,
-#'   for each trapping instance, the difference in the count of fish is then
+#'   \code{halfConeMulti}.  Instead, the plus-count routine is applied twice, 
+#'   both with and without the \code{halfConeMulti} adjustment applied.  Then, 
+#'   for each trapping instance, the difference in the count of fish is then 
 #'   recorded as the "half-cone adjustment" for that particular lifestage, final
-#'   run, and forklength combination.  In this way, half-cone adjustments are obtained,
-#'   while taking into consideration the possibility that in some instances,
-#'   simple application of the \code{halfConeMulti} variables is not advised.
+#'   run, and forklength combination.  In this way, half-cone adjustments are
+#'   obtained, while taking into consideration the possibility that in some
+#'   instances, simple application of the \code{halfConeMulti} variables is not
+#'   advised.
 #'   
-#' @section Not Fishing:  
-#' Similar to "gaps in fishing" are periods of "Not 
-#'   fishing."  An instance of Not fishing is a period during which a trap does 
+#' @section Not Fishing: Similar to "gaps in fishing" are periods of "Not 
+#'   fishing."  An instance of "Not fishing" is a period during which a trap does 
 #'   not operate for more than 30 minutes, but less than 7 days.  Instances of 
-#'   Not fishing are included as records within the data frame returned by 
-#'   function \code{F.get.catch.data}, and can be identified by variable
-#'   \code{TrapStatus}, which is set equal to \code{Not fishing}.  Equivalently,
-#'   variable \code{trapVisitID} is missing.  (does connie add in sampling less than 30 minutes to a trapping period of good fishing?)
+#'   "Not fishing" are included as records within the data frame returned by 
+#'   function \code{F.get.catch.data}, and can be identified by variable 
+#'   \code{TrapStatus}, which is set equal to \code{"Not fishing"}.  Equivalently,
+#'   variable \code{trapVisitID} is missing.
 #'   
-#' @seealso \code{getCatchDataWeight.R}, \code{expand.plus.counts}, \code{assign.1dim}, and \code{assign.2dim} these also: \code{assignLifeStage.R},
-#'   \code{assignLSCompare.R}? 
+#' @seealso \code{expand.plus.counts}, \code{assign.1dim}, and
+#'   \code{assign.2dim} for plus-counts.  Also \code{getCatchDataWeight.R}, 
+#'   \code{assignLifeStage.R}, \code{assignLSCompare.R} for life stage
+#'   reassignment.
 #'   
 #' @examples  
 #' \dontrun{
+#' #  ---- Fetch catch data on the American. 
+#' site <- 57000
+#' taxon <- 161980
+#' min.date <- "2013-01-01"
+#' max.date <- "2013-06-01"
+#' autoLS <- FALSE
+#' nLS <- NULL
+#' weightUse <- NULL
+#' reclassifyFL <- FALSE
 #' 
-#' # we would need to query.  what do we want to do?
+#' catch <- F.get.catch.data(site,taxon,min.date,max.date,
+#'   autoLS,nLS,weightUse,reclassifyFL)
 #' }
-
+#'
 F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL,reclassifyFL=FALSE){
   
   # site <- 
@@ -366,6 +396,10 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     cat('\n')
     cat('\n')
     cat('\n')
+    
+    #   ---- Put the output location in the global environment for use in Jared's functions.
+    assign("output.file",output.file,envir=.GlobalEnv)
+    output.file <- get("output.file",output.file,envir=.GlobalEnv)
     
     #   ---- Swap out the old catch with the new catch.
     catchFishing <- catch[catch$TrapStatus == "Fishing",]

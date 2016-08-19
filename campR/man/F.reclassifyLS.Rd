@@ -7,19 +7,20 @@
 F.reclassifyLS(catch)
 }
 \arguments{
-\item{catch}{A catch dataframe originating from a catch-query sequence.  See
-function \code{F.get.catch.data}.  At the least, \code{catch} must contain
-variables entitled \code{forkLength} and \code{lifeStage}.}
+\item{catch}{A catch dataframe originating from a catch-query sequence.  At
+the least, \code{catch} must contain variables entitled \code{forkLength}
+and \code{lifeStage}.  See function \code{F.get.catch.data}.}
 }
 \value{
 A dataframe with original variable \code{lifeStage} values containing
   "\code{Fry}," "\code{Parr}," and "\code{Smolt}" into the label values
   specified via the Global environment dataframe \code{forkLengthCutPoints}.
-  See \code{GlobalVars}.
+  See function \code{GlobalVars}.
 }
 \description{
-Reclassify lifeStage via forklength into groups specified
-via Global Enviornment dataframe \code{forkLengthCutPoints}.
+Reclassify lifeStage via forklength into groups specified via
+  dataframe \code{forkLengthCutPoints}, as specified in the Global 
+  Environment.
 }
 \details{
 Generally speaking, the process by which a new \code{lifeStage}
@@ -38,6 +39,6 @@ catchWithNewLifeStageCats <- reclassifyLS(catch)
 }
 }
 \seealso{
-\code{GlobalVars.R}, \code{F.get.catch.data}, \code{F.assign.1dim}
+\code{GlobalVars}, \code{F.get.catch.data}, \code{F.assign.1dim}
 }
 

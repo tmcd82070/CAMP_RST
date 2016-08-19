@@ -7,11 +7,11 @@
 F.est.catch.trapN(catch.df, plot = TRUE, plot.file = "raw_catch.pdf")
 }
 \arguments{
-\item{catch.df}{A data frame, possibly restricted to one \code{lifeStage},
-resulting from a call to \code{F.get.catch.data}.  Run season is an
-attribute of this data frame.}
+\item{catch.df}{A data frame restricted to a single \code{FinalRun}, and 
+possibly one \code{lifeStage} as well, resulting from a call to 
+\code{F.get.catch.data}.  Run season is an attribute of this data frame.}
 
-\item{plot}{A logical indicating if catch is to be plotted over time, per
+\item{plot}{A logical indicating if catch is to be plotted over time, per 
 trap.}
 
 \item{plot.file}{The name to which a graph of catch is to be output, if 
@@ -37,7 +37,7 @@ Function \code{F.est.catch.trapN} performs exactly the same
 \dontrun{
 #   ---- Estimate catch for each unique trap in data 
 #   ---- frame catch.df.  Also output a plot.  
-F.est.catch.trapN(catch.df, plot=TRUE, plot.file="raw_catch.pdf")
+ans <- F.est.catch.trapN(catch.df, plot=TRUE, plot.file="raw_catch.pdf")
 }
 }
 \author{

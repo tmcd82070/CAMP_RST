@@ -2,7 +2,7 @@
 % Please edit documentation in R/chinook_by_date.r
 \name{F.chinookByDate.table}
 \alias{F.chinookByDate.table}
-\title{F.chinookByDate.table - Retrieve data frame of chinnook catches}
+\title{F.chinookByDate.table}
 \usage{
 F.chinookByDate.table(site, min.date, max.date, output.file)
 }
@@ -29,19 +29,25 @@ Summarize chinook salmon by date between two dates.
 \details{
 As its name implies, function \code{F.chinookByDate.table} retrieves
   only Chinook salmon records, as specified by setting variable 
-  \code{taxon=161980}.  The function utilizes helper function 
-  \code{F.get.all.catch.data} to handle the sum-chinook-by-trap query series.
-  Note that function \code{F.get.catch.data}, utilized in the estimation of 
-  passage, differs from \code{F.get.all.catch.data}.
+  \code{taxon=161980} within the appropriate query series.  The function
+  utilizes helper function \code{F.get.all.catch.data} to handle the Sum
+  Chinook by Trap query series.  See section Structured Query Language (SQL)
+  Queries in function \code{F.run.sqlFile} for more information. Note that
+  function \code{F.get.catch.data}, utilized in the estimation of passage,
+  differs from \code{F.get.all.catch.data}.
 }
 \examples{
 \dontrun{
+#   ---- Get all Chinook on the American.
+# site <- 57000
+# min.date <- "2013-01-01"
+# max.date <- "2013-06-01"
+# output.file <- NA
 
-# requires an mdb.
-
+F.chinookByDate.table(site,min.date,max.date,output.file)
 }
 }
 \seealso{
-F.get.catch.data.
+\code{F.get.catch.data}
 }
 

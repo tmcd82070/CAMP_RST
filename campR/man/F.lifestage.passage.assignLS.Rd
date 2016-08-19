@@ -22,7 +22,7 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
 \item{output.file}{A text string indicating a prefix to append to all output.}
 
-\item{ci}{A logical indicating if 95% bootstrapped confidence intervals 
+\item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 
 \item{autoLS}{Default is FALSE, no analytical life stage assignment is done.

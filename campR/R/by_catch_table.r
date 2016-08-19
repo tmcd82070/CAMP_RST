@@ -1,10 +1,10 @@
-#' @export F.byCatch.table
+#' @export
 #' 
 #' @title F.byCatch.table
 #' 
 #' @description List all non-Chinook catch.
 #'    
-#' @param site The identification number of the site for which estimates are
+#' @param site The identification number of the site for which estimates are 
 #'   required.
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
@@ -13,15 +13,18 @@
 #' @param output.file The name of the file prefix under which output is to be 
 #'   saved.  Set to NA to plot to the Plot window.
 #'   
-#' @return A csv file containing all non-Chinook catch, along with a png pie 
-#' chart detailing underlying counts and proportions of caught species.  
-#' 
-#' @details Query sequence Build Report Criteria builds the appropriate time frame
-#' of interest.  See \code{F.run.sqlFile} for details.  
-#' 
-#' Function \code{F.byCatch.table} calls helper function \code{F.getByCatch}
-#' to obtain the non-Chinook catch.  
-#' 
+#' @return A \code{csv} file containing all non-Chinook catch, along with a
+#'   \code{png} pie chart detailing underlying counts and proportions of caught
+#'   species.
+#'   
+#' @details Query sequence Build Report Criteria builds the appropriate time
+#'   frame of interest while query series By Catch intemize the non-Chinook
+#'   catch.  See section Structured Query Language (SQL) Queries in
+#'   \code{F.run.sqlFile} for details.
+#'   
+#'   Function \code{F.byCatch.table} calls helper function \code{F.getByCatch} 
+#'   to obtain the non-Chinook catch.
+#'   
 #' @seealso \code{F.run.sqlFile}, \code{F.getByCatch}
 #' 
 #' @author WEST Inc.

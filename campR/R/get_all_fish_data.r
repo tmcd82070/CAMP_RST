@@ -14,7 +14,9 @@
 #'   
 #' @details This is a generalization of \code{F.get.indiv.fish.data} which
 #'   returns records for a single taxon.  Function \code{F.get.all.fish.data}
-#'   utilizes the all-catch query series in order to obtain the proper data.
+#'   utilizes the All Catch query series in order to obtain the proper data.
+#'   See section Structured Query Language (SQL) Queries in function 
+#'   \code{F.run.sqlFile}.  
 #'   
 #' @return A data frame containing all catch, regardless of taxon, between the 
 #'   specified dates.
@@ -25,8 +27,11 @@
 #'   
 #' @examples
 #' \dontrun{
-#' # Obtain all catch on the American between the specified dates.  
-#' F.get.all.fish.data(57000,"2014-01-01","2014-06-30")
+#' #   ---- Obtain all fish on the American between the specified dates. 
+#' site <- 57000
+#' min.date <- "2013-01-01"
+#' max.date <- "2013-06-01" 
+#' F.get.all.fish.data(site,min.date,max.date)
 #' }
 F.get.all.fish.data <- function( site, min.date, max.date ){
   

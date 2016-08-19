@@ -10,8 +10,8 @@
 #' @param release.df A data frame resulting from a call to function 
 #'   \code{F.get.release.data}.  Contains efficiency data.
 #' @param summarize.by A text string indicating the temporal unit over which 
-#'   daily estimated catch is to be summarized.  Can be one of \code{day}, 
-#'   \code{week}, \code{month}, or \code{year}.
+#'   daily estimated catch is to be summarized.  Can be one of \code{"day"}, 
+#'   \code{"week"}, \code{"month"}, or \code{"year"}.
 #' @param file.root  A text string indicating a prefix to append to all output.
 #' @param ci A logical indicating if bootstrapped confidence intervals should be
 #'   estimated along with passage estimates.  The default is 95\%, although
@@ -33,13 +33,12 @@
 #'   Called the "grand merge," resulting data frame \code{grand.df} forms the 
 #'   basis of all passage estimation.  Merging takes places on unique 
 #'   combinations of \code{trapPositionID} and \code{batchDate}.  Trap matches 
-#'   respect decimal suffixes appended due to gaps in fishing.  See the 
-#'   "Fishing Gaps" SQL series in \code{F.sqlFile}.
+#'   respect decimal suffixes appended due to gaps in fishing.  See the section
+#'   Fishing Gaps under the Structured Query Language (SQL) header in \code{F.sqlFile}.
 #'   
 #'   In processing prior to the creation of the \code{grand.df}, the dates 
 #'   outside the first and last date of valid fishing are dropped from each
-#'   trap. In reality however, the season for each trap is identified as non
-#'   missing catch.  In other words, the grand merge inserts every date for all
+#'   trap. In reality however, the season for each trap is identified as non-missing catch.  In other words, the grand merge inserts every date for all
 #'   traps because the underlying efficiency data frame has all dates.  For those
 #'   dates for which a trap was not fishing, the resulting catch (and thus passage)
 #'   is essentially considered zero.  

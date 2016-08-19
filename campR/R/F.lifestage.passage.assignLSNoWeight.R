@@ -13,7 +13,7 @@
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
 #' @param output.file A text string indicating a prefix to append to all output.
-#' @param ci A logical indicating if 95% bootstrapped confidence intervals 
+#' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
 #' @param autoLS Default is FALSE, no analytical life stage assignment is done.
 #'   If TRUE, the analytical life stage assignment is done, see details.

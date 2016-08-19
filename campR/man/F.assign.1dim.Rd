@@ -16,7 +16,7 @@ represented in each record.}
 recorded.  This should be one of \code{FinalRun} or \code{lifeStage}.}
 
 \item{absent.var}{The variable in the data frame \code{catch} for which data 
-are not recorded.  This should be either of \code{FinalRun} or 
+are not recorded.  This should be the other of \code{FinalRun} or 
 \code{lifeStage} not utilized in \code{present.var}.}
 }
 \value{
@@ -25,17 +25,19 @@ A data frame \code{catch} with any \code{"Unassigned"} counts of fish
   levels present in the \code{present.var} variable.  See Details.
 }
 \description{
-Assign the missing counts of either \code{FinalRun} or \code{lifeStage},
-based on frequency dist of the other.
+Assign the missing counts of either variable \code{FinalRun} or
+  \code{lifeStage}, based on the frequency distribution of the other.
 }
 \details{
-Values in one dimension of the basic \code{FinalRun}-by- 
-  \code{lifeStage} table is present, but the other is missing.
+Function \code{F.assign.1dim} should only be utilized when the value
+  of only one of \code{FinalRun} or \code{lifeStage} is missing, i.e., one of
+  these variables contains values of \code{"Unassigned"}.  If both are
+  \code{"Unassigned"}, utilize function \code{F.assign.2dim}.
   
-  Except in rare cases, only fish for which variable \code{RandomSelection = 
-  "Yes"} contribute to sampling proportions.  Thus, fish for which either or 
-  both of \code{FinalRun} and \code{lifeStage} are recorded, but for which 
-  \code{RandomSelection = "No"}, are excluded.
+  Except in rare cases, only fish for which variable \code{RandomSelection="Yes"} 
+  contribute to sampling proportions.  Thus, fish for which either or 
+  both of \code{FinalRun} and \code{lifeStage} are recorded, but for which variable 
+  \code{RandomSelection} equals \code{"No"}, are excluded.
   
   Function \code{F.assign.1dim} loops individually over each unique level found in 
   the \code{present.var} variable. Within each level, trap occasions, as 
@@ -56,24 +58,29 @@ Values in one dimension of the basic \code{FinalRun}-by-
   
   \enumerate{ \item ...the levels of \code{absent.var} with the same
   \code{trapVisitID} and level of \code{present.var}, where
-  \code{RandomSelection = 'yes'}. \item ...the levels of \code{absent.var}
-  with the same \code{trapVisitID} and level of \code{present.var}. \item
+  \code{RandomSelection="Yes"}. 
+  \item ...the levels of \code{absent.var}
+  with the same \code{trapVisitID} and level of \code{present.var}. 
+  \item
   ...the levels of \code{absent.var} with the same \code{SampleDate} and
-  level of \code{present.var}, where \code{RandomSelection = 'yes'}. \item
+  level of \code{present.var}, where \code{RandomSelection="Yes"}. 
+  \item
   ...the levels of \code{absent.var} with the same \code{SampleDate} and
-  level of \code{present.var}. \item ...the levels of \code{absent.var} with
+  level of \code{present.var}. 
+  \item ...the levels of \code{absent.var} with
   the same \code{SampleDate}, plus or minus one day, and level of
-  \code{present.var}, where \code{RandomSelection = 'yes'}. \item ...the
+  \code{present.var}, where \code{RandomSelection="Yes"}. 
+  \item ...the
   levels of \code{absent.var} with the same \code{SampleDate}, plus or minus
   one day, and level of \code{present.var}. }
   
   Relaxation of the randomly selected condition via the lack of consideration
   of variable \code{RandomSelection} in strategies 2, 4, and 6 takes place 
   only within a \code{trapVisitID} for which the preceding strategy contained
-  no \code{RandomSelection = 'yes'} records.  The relaxation allows for the 
+  no \code{RandomSelection="Yes"} records.  The relaxation allows for the 
   possibility that with a small number of caught fish, all are measured.  In 
   this case, the entire catch forms the sample and sometimes, variable 
-  \code{RandomSelection} is set to \code{"no"}.
+  \code{RandomSelection} is set to \code{"No"}.
   
   When one of strategies 3, 4, 5, 6 is used, the resulting relative frequency
   of counts found in other \code{trapVisitID}s or neighboring days may not 

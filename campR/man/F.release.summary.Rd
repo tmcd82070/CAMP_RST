@@ -37,13 +37,19 @@ Summarize efficiency trials, or releases, for a site, run, and
 Function \code{F.release.summary} calls helper functions \code{F.get.release.data}
 and \code{F.summarize.releases} to fetch, and then process, recorded releases.  
 The results returned from \code{F.summarize.releases} are then cleaned up for 
-output via a csv.
+output via a \code{csv}.
 }
 \examples{
 \dontrun{
 #   ---- Summarize releases for all efficiency trials involving Chinook
 #   ---- salmon on the American River between Jan 16, 2013 and June 8, 2013.
-df <- F.release.summary(57000,161980,"2013-01-16","2013-06-08","American River")
+site <- 57000
+taxon <- 161980
+min.date <- "2013-01-16"
+max.date <- "2013-06-08"
+output.file <- "American River"
+
+df <- F.release.summary(site,taxon,min.date,max.date,output.file)
 }
 }
 \seealso{

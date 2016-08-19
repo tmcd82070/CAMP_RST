@@ -2,9 +2,10 @@
 #' 
 #' @title F.buildReportCriteriaRelease
 #' 
-#' @description Update a table in the underlying Access database to contain release
-#' \code{trapVisitID}s and count the number of efficiency trials.
-#' 
+#' @description Update Access database table \code{TempReport_Criteria_Release} 
+#'   to contain release \code{trapVisitID}s for the site and inclusive calendar 
+#'   dates specified by the user.
+#'   
 #' @param site The identification number of the site for which estimates are 
 #'   required.
 #' @param min.date The start date for data to include. This is a text string in 
@@ -12,14 +13,18 @@
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
 #'   
-#' @return Within R, the total integer count of efficiency trials.  Within
-#'   Access, table \code{TempReportCriteria_Release} is created, itemizing the releases.
+#' @return Within R, the total integer count of efficiency trials.  Within 
+#'   Access, table \code{TempReportCriteria_Release} is created, itemizing the
+#'   releases.
 #'   
 #' @details Unique efficiency trials are identified by unique \code{releaseIDs} 
-#'   falling within the specified \code{min.date} and \code{max.date}.
+#'   falling within the specified \code{min.date} and \code{max.date}.  See
+#'   section Structured Query Language (SQL) Queries in function
+#'   \code{F.run.sqlFile} for more details on query series.
 #'   
 #'   Note that the difference between this and the \code{buildReportCriteria} 
-#'   query series is this one's focus on releases and subsequent recaptures.
+#'   query series is this one's focus on releases and subsequent recaptures
+#'   related to efficiency trials.
 #'   
 #' @examples
 #' \dontrun{

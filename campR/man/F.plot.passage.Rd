@@ -28,13 +28,13 @@ It is assumed that data frame \code{df} contains at the least
   variables \code{<temporal time frame>}, \code{passage}, \code{date}, and 
   \code{pct.imputed.catch}. Variable \code{<temporal time frame>} is either 
   one of "\code{year}," "\code{month}," "\code{week}," or "\code{day}." Weeks
-  are reported in a modified Julian fashion as recorded in the "Dates" table
-  in any associated Access database.  Passage estimates for
-  each reported time period are rounded to the nearest whole fish.  Variable
-  \code{date} is a POSIX date, with data formatted as \code{\%Y-\%m-\%d},
-  i.e., the ISO 8601 date format.  Variable \code{pct.imputed.catch} contains
-  the estimated imputed proportion, and so takes on values between zero and
-  one, inclusive.
+  are reported in a modified Julian fashion as recorded in the "\code{Dates}"
+  table in any associated CAMP Access database.  Passage estimates for each
+  reported time period are rounded to the nearest whole fish.  Variable 
+  \code{date} is a POSIX date, with data formatted as \code{\%Y-\%m-\%d}, 
+  i.e., the ISO 8601 date format, with a 4-digit year.  Variable
+  \code{pct.imputed.catch} contains the estimated imputed proportion, and so
+  takes on values between zero and one, inclusive.
   
   Other variables included as part of dataframe \code{df} are not utilized 
   \emph{per se} in the function, but do pass through.

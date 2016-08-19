@@ -3,7 +3,10 @@ Type: Package
 Title: CAMP RST R Routines
 Version: 1.0.0
 Date: 2016-08-19
-Author: Trent McDonald
+Author: Trent McDonald [aut, cre],
+  Jason Mitchell [aut],
+  Jared Studyvin [aut],
+  Connie Shannon [ctb]
 Maintainer: Trent McDonald <tmcdonald@west-inc.com>
 Description: R routines for the CAMP R platform. 
 License: GNU General Public License
@@ -19,12 +22,12 @@ Imports:
  car,
  tools,
  grDevices,
- tidyr,
  dplyr,
  DBI,
  assertthat,
  R6,
  magrittr,
  Rcpp,
- ellipse
+ ellipse,
+ tidyr
 

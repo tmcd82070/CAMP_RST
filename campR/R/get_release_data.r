@@ -1,8 +1,8 @@
-#' @export F.get.release.data
+#' @export
 #' 
 #' @title F.get.release.data 
 #' 
-#' @description Fetch data on efficiency trials from the Access database. 
+#' @description Fetch data on efficiency trials from an Access database. 
 #' 
 #' @param site The identification number of the site for which estimates are
 #'   required.
@@ -19,7 +19,8 @@
 #'   
 #' @details Function \code{F.get.release.data} utilizes query sequences Build 
 #'   Report Criteria and Build Report Criteria Release to obtain all results 
-#'   within the specified \code{min.date} and \code{max.date}.  See
+#'   within the specified \code{min.date} and \code{max.date}.  See section
+#'   Structured Query Language (SQL) Queries in function 
 #'   \code{F.run.sqlFile} for more details.
 #'   
 #'   Query results include one record for every trap visit within a 
@@ -37,11 +38,11 @@
 #'   and \code{trapPositionID}.
 #'   
 #'   Release records need to have both variables \code{IncludeTest} and 
-#'   \code{IncludeCatch} flagged as \code{Yes} for inclusion in efficiency 
+#'   \code{IncludeCatch} flagged as \code{"Yes"} for inclusion in efficiency 
 #'   estimation. Recaptures that took place during half-cone operations are 
-#'   multiplied by the value of the halfConeMulti global variable, which is set 
+#'   multiplied by the value of the \code{halfConeMulti} global variable, which is set 
 #'   at 2. Half cone operations are identified by variable \code{HalfCone} 
-#'   having a value of \code{Yes}.
+#'   having a value of \code{"Yes"}.
 #'   
 #'   Variables \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} are 
 #'   used in function \code{F.est.efficiency} as helper variables to derive a 
@@ -67,7 +68,11 @@
 #' \dontrun{
 #' #   ---- Fetch all Chinook salmon efficiency data on the American River 
 #' #   ---- between Jan. 16, 2013 and June 8th, 2013.  
-#' df <- F.get.release.data(57000,161980,"2013-01-16","2013-06-08")
+#' site <- 57000
+#' taxon <- 161980
+#' min.date <- "2013-01-01"
+#' max.date <- "2013-06-01"
+#' df <- F.get.release.data(site,taxon,min.date,max.date)
 #' }
 F.get.release.data <- function( site, taxon, min.date, max.date ){
 

@@ -37,7 +37,6 @@ taxon <- 169180
 site <- 570000
 min.date <- "2013-01-01"
 max.date <- "2013-05-30"
-
 dfWeight <- getCatchDataWeight(taxon,site,min.date,max.date)
 }
 }

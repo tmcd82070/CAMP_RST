@@ -17,19 +17,24 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 \code{min.date}.}
 }
 \value{
-Within R, the total integer count of efficiency trials.  Within
-  Access, table \code{TempReportCriteria_Release} is created, itemizing the releases.
+Within R, the total integer count of efficiency trials.  Within 
+  Access, table \code{TempReportCriteria_Release} is created, itemizing the
+  releases.
 }
 \description{
-Update a table in the underlying Access database to contain release
-\code{trapVisitID}s and count the number of efficiency trials.
+Update Access database table \code{TempReport_Criteria_Release} 
+  to contain release \code{trapVisitID}s for the site and inclusive calendar 
+  dates specified by the user.
 }
 \details{
 Unique efficiency trials are identified by unique \code{releaseIDs} 
-  falling within the specified \code{min.date} and \code{max.date}.
+  falling within the specified \code{min.date} and \code{max.date}.  See
+  section Structured Query Language (SQL) Queries in function
+  \code{F.run.sqlFile} for more details on query series.
   
   Note that the difference between this and the \code{buildReportCriteria} 
-  query series is this one's focus on releases and subsequent recaptures.
+  query series is this one's focus on releases and subsequent recaptures
+  related to efficiency trials.
 }
 \examples{
 \dontrun{

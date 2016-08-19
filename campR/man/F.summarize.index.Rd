@@ -23,19 +23,19 @@ Summarize a POSIX-formatted vector of dates to one of either
 \details{
 The vector fed to function \code{F.summarize.passage} must have a 
   day-fished POSIX column, formatted via the ISO 8601 date format 
-  (\code{\%F}).
+  (\code{\%F}) of \code{\%Y-\%m-\%d}, with year formatted via four characters.
   
   Function \code{F.summarize.index} formats each of day, week, month, and 
   year separately.  When \code{summarize.by="day"}, function 
   \code{F.summarize.index} simply places the provided POSIX vector \code{dt} 
   into a list.  When \code{summarize.by="week"}, table \code{the.dates}, 
-  containing Julian weeks and stored in the Global environment, is used to 
-  map provided dates to the specialized Julian Week.  When 
-  \code{summarize.by="month"}, the provided dates are formatted via 
-  \code{"\%Y-\%m"}.  Finally, when \code{summarize.by="year"}, provided dates
-  are set to the mean year spanning the range of dates provided.  This is 
-  necessary because dates could span up to 365 days, which almost always
-  includes two distinct years.
+  containing Julian weeks and originating from table "\code{Dates}" in the 
+  underlying Access database, is used to map provided dates to the
+  specialized Julian Week.  When \code{summarize.by="month"}, the provided
+  dates are formatted via \code{"\%Y-\%m"}.  Finally, when
+  \code{summarize.by="year"}, provided dates are set to the mean year
+  spanning the range of dates provided.  This is necessary because dates
+  could span up to 365 days, which almost always includes two distinct years.
 }
 \examples{
 \dontrun{

@@ -24,13 +24,13 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 \item{output.file}{The name of the file prefix under which output is to be 
 saved.  Set to NA to plot to the Plot window.}
 
-\item{ci}{A logical indicating if 95% bootstrapped confidence intervals 
+\item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 
 \item{nLS}{Number of life stage groups to estimate. Ignored if 
 \code{autoLS=FALSE}.  See Details.}
 
-\item{weightUse}{A logical indicating if variable weight should be used for
+\item{weightUse}{A logical indicating if variable \code{weight} should be used for
 the analytical life stage assignment;  the default is \code{NULL}. Ignored
 if \code{autoLS=FALSE}.  See Details.}
 
@@ -39,7 +39,7 @@ life stage. If \code{TRUE}, assignment of analytical life stage is done.
 See Details.}
 
 \item{reclassifyFL}{A logical indicating if passage should be estimated via 
-forklength-based class groups.}
+fork-length-based class groups.}
 }
 \value{
 A data frame containing daily passage estimates, corrected for times 
@@ -86,40 +86,60 @@ The date range difference specified via \code{max.date} and
   to reduce flow, and thus captured fish.  Generally, all fish captured 
   during half-cone operations are multiplied by the value of the global 
   \code{halfConeMulti} variable, which serves as a multiplier to correct for 
-  fish missed.  Variable \code{halfConeMulti} is set to 2.
+  fish missed.  Variable \code{halfConeMulti} is set to \code{2}.
   
   The unique combinations of run and life stage in the catch data dictate the
   reports generated. Thus, reports spanning different time periods and sites
   may report different run and life stage passage combinations.  
   
   In the case when \code{autoLS=TRUE}, the life stage is assigned 
-  analytically.  Note that the only number of groups allowed by argument 
-  (\code{nLS}) is two or three. If \code{NULL}, the function 
+  analytically.  Note that the only numbers of groups allowed by argument 
+  (\code{nLS}) is \code{two} or \code{three}. If \code{NULL}, the function 
   \code{assignLifeStage} determines the number of groups utilized.
   
   If \code{weightUse} is \code{FALSE}, any recorded weight measurements are
   not used in the analytical life stage assignment. If \code{weightUse} is
-  \code{NULL}, the function \code{\link{assignLifeStage}} will determine if
-  weight will be used or not.
+  \code{NULL}, the function \code{assignLifeStage} will determine if variable
+  \code{weight} will be used or not.
   
   When \code{reclassify=TRUE}, the biologically recorded \code{lifeStage} is 
   redefined via groups specifed in data frame \code{forkLengthCutPoints}, as 
   defined in \code{GlobalVars}.  Default behavior leads to four separate 
   fork-length-based groups.  Similar to reports that break out totals by
   biologically assigned \code{lifeStage}s, reports utilizing breakout by
-  forklength may not report totals for all four groups, if the river and date
+  fork length may not report totals for all four groups, if the river and date
   range specified caught no fish with that particular range of fork lengths.
+  The remapping of \code{lifeStage} to reflect fork-length-based groupings
+  is performed by function \code{reclassifyLS}.
 }
 \examples{
 \dontrun{
-<insert examples>
-
+#   ---- Estimate passage on the American by life stage and run.
+site <- 57000
+taxon <- 161980
+min.date <- "2013-01-01"
+max.date <- "2013-06-01"
+output.file <- "American"
+ci <- TRUE
+nLS <- NULL
+weightUse <- NULL
+autoLS <- FALSE
+reclassifyFL <- FALSE
+passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci,
+  weightUse,autoLS,reclassifyFL)
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{assignLifeStage}, \code{assignLSCompare}
+\code{assignLifeStage}, \code{assignLSCompare}, \code{F.run.passage}, \code{F.lifestage.passage.assignLS},
+  \code{F.lifestage.passage.forkLength},
+  \code{F.lifestage.passage.assignLS2group}, 
+  \code{F.lifestage.passage.assignLS2groupNoWeight},
+  \code{F.lifestage.passage.assignLS3group},
+  \code{F.lifestage.passage.assignLS3groupNoWeight},
+  \code{F.lifestage.passage.assignLSNoWeight},
+  \code{reclassiyLS}
 }
 

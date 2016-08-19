@@ -26,8 +26,8 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-A graphical png entitled via parameter \code{output.file}, displyaing 
-fork length in millimeters as a function of time.  Also, an accompanying csv
+A graphical \code{png} entitled via parameter \code{output.file}, displyaing 
+fork length in millimeters as a function of time.  Also, an accompanying \code{csv}
 containing the data used in plotting.
 }
 \description{
@@ -46,18 +46,25 @@ Function \code{F.size.by.date} first compiles fish data via function
   any one particular date and fork length combination can be visualized.  
   
   In the case when no valid catch records are found, and hence no fish can 
-  contribute to the analysis, a blank png stating as such is returned.
+  contribute to the analysis, a blank \code{png} stating as such is returned.
 }
 \examples{
 \dontrun{
 # Create a plot of fork length by data for the American.
-F.size.by.date(57000,161980,"Fall","2014-01-01","2014-6-30","AmericanRiver")
+site <- 57000
+taxon <- 161980
+run <- "Fall"
+min.date <- "2014-01-01"
+max.date <- "2014-06-01"
+output.file <- "American"
+
+F.size.by.date(site,taxon,run,min.date,max.date,output.file)
 }
 }
 \author{
 WEST Inc.
 }
 \seealso{
-\code{F.size.by.date}
+\code{F.get.indiv.fish.data}
 }
 

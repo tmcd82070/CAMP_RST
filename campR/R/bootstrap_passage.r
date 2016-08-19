@@ -7,16 +7,17 @@
 #'   
 #' @param grand.df A data frame containing both daily estimated passage and 
 #'   efficiency, for each trap.
-#' @param catch.fits A list of Poisson fitted objects, possibly with basis 
-#'   spline covariates, used to imput missing catches, for each trap.
+#' @param catch.fits A list of Poisson fitted \code{glm} objects for each trap, possibly with basis 
+#'   spline covariates, used to impute missing catches.
 #' @param catch.Xmiss A list containing a spline basis matrix of imputed days 
 #'   where catch is missing for each trap.
-#' @param catch.gapLens A list containing a numeric vector of hours of "Not 
-#'   fishing" for "Not fishing" days, necessarily with all entries less than 24,
-#'   for each trap.
-#' @param catch.bDates.miss A list containing a POSIX vector of "Not fishing" 
+#' @param catch.gapLens A list, for each trap, containing a numeric vector of
+#'   hours of time spent \code{"Not fishing"}, originating from variable
+#'   \code{TrapStatus} in original catch data queries.  All values necessarily
+#'   have entries less than 24.
+#' @param catch.bDates.miss A list containing a POSIX vector of \code{"Not fishing"} 
 #'   \code{batchDate}s for missing catches, for each trap.  Necessary because 
-#'   one \code{batchDate} may have two (or more) gaps.
+#'   one \code{batchDate} may have two (or more) periods with no fishing.
 #' @param eff.fits A list of binomial logistic regression fitted objects used to
 #'   compute efficiency.  One per trap.
 #' @param eff.X NEED TO CHECK. A list containing a numeric vector of days 
@@ -38,7 +39,7 @@
 #' @details In order to bootstrap the estimated passage for a particular trap, 
 #'   random realizations of passage must be generated.  Variability in passage 
 #'   can originate from two sources:  imputed catch and imputed efficiency. 
-#'   Imputed catch originates from periods of 'Not fishing' in excess of two 
+#'   Imputed catch originates from periods of \code{"Not fishing"} in excess of two 
 #'   hours, while imputed efficiency results from days between the first and 
 #'   last day of a recorded efficiency trial.  Any one day may lead to several 
 #'   instances of imputed catch, but at most, only one instance of imputed 
@@ -46,7 +47,7 @@
 #'   imputation periods vary as well.
 #'   
 #'   Bootstrapping of each of catch and efficiency is organized via matrices of 
-#'   dimension \eqn{\code{nrow(grand.df)} \times R}, where rows hold unique 
+#'   dimension \eqn{\code{nrow(grand.df)} \times \code{R}}, where rows hold unique 
 #'   trapping instances, and the columns the bootstrapping replicates. Because 
 #'   efficiency is only estimated on a per-day basis, but multiple trapping 
 #'   instances can take place on any one day, catch data are summarized per day 
@@ -105,23 +106,14 @@
 #'   link, betas and variances are on the log scale.
 #'   
 #'   Each of the \code{R} multivariate-normal samples is then utilized to create
-#'   a new prediction for missing catches, with each modified (word choice?) by 
-#'   the log of the trap down-time, i.e., trap down-time is an offset. (i'm 
-#'   specifically avoiding the word 'gap,' since that has a different definition
-#'   now.)  Resulting predictions for imputed catch are then exponentiated, and 
-#'   then combined with the observed catch to create a full day-based temporal 
-#'   fishing record for each trap.  (In the case that no imputation was required
-#'   for catch, I don't think that the numbers vary.  How is this correct, i.e.,
-#'   how do we capture variability in catch?)
+#'   a new prediction for missing catches, with each expanded by the log of the
+#'   trap down-time, i.e., trap down-time is an offset. Resulting predictions
+#'   for imputed catch are then exponentiated, and then combined with the
+#'   observed catch to create a full day-based temporal fishing record for each
+#'   trap.
 #'   
-#'   (Also, the dimension utilized in the \code{rmvnorm} function assumes a 
-#'   certain dimensionality of the underlying model, e.g., say a fourth-degree 
-#'   model was used for days between date A and date B, and maybe a third-degree
-#'   model was used between date B and date C.  Couldn't it be the case that a 
-#'   random realization of catch would result in a fifth-degree model bewteen 
-#'   date A and date B, say, and a quadratic between date B and date C?  Are we 
-#'   missing some of the variability in catch by assuming that the dimension of 
-#'   the beta vector from the catch model is non-varying?)
+#' @references Manly, B. F. J.  Randomization, Bootstrap and Monte Carlo Methods
+#' in Biology, Third Edition, 2006.  Chapman and Hall/CRC.  
 #'   
 #' @seealso \code{F.est.catch}, \code{F.est.eff}, \code{summarize.passage}
 #'   
@@ -141,7 +133,7 @@
 #' sum.by <- summarize.by
 #' R <- 100
 #' ci=T <- ci
-#' F.bootstrap.passage(grand.df,catch.fits,catch.Xmiss,catch.gapLens,
+#' df <- F.bootstrap.passage(grand.df,catch.fits,catch.Xmiss,catch.gapLens,
 #'   catch.bDates.miss,eff.fits,eff.X,eff.ind.inside,eff.X.dates,
 #'   sum.by,R,ci=T)
 #' }

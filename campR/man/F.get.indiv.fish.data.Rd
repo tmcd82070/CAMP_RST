@@ -39,8 +39,10 @@ Fetch the fish data for a single taxon from an Access data base.
 }
 \details{
 To be included in the catch data, a record has to be from the site, 
-  of the correct taxon, of the correct run, and between min and max date.
-  F.size.by.date
+  of the correct taxon, of the correct run, and between min and max date. 
+  Function \code{F.get.indiv.fish.data} is called by function
+  \code{F.size.by.date} in order to correctly format fish data for subsequent
+  graphical reporting.
 }
 \examples{
 \dontrun{
@@ -60,6 +62,6 @@ F.get.indiv.fish.data(site,taxon,run,min.date,max.date,keep)
 WEST Inc.
 }
 \seealso{
-\code{F.get.catch.data}, \code{F.sql.error.check}
+\code{F.size.by.date}
 }
 

@@ -7,10 +7,10 @@
 max_buff_days(df, trap)
 }
 \arguments{
-\item{df}{A data frame containing catch records for one
+\item{df}{A data frame containing catch records for one 
 \code{trapPositionID}, with catch counts contained in \code{n.tot}.}
 
-\item{trap}{A vector of length one containing the \code{trapPositionID} for
+\item{trap}{A vector of length one containing the \code{trapPositionID} for 
 which buffering is necessary.}
 }
 \value{
@@ -22,12 +22,13 @@ A vector containing three values.  The first contains the row index
   \code{trapVisitID}-specific fish counts (vector \code{n.tot}).
 }
 \description{
-df <- df2
+Identify the number of preceding and antecdedent zeros in the 
+  catch record for an individual trap catch sequence.
 }
 \details{
 Function \code{max_buff_days} is a helper function utilized in the 
-  estimation of catch, and assists to idenitify preceding and antecedent 
-  zeros.
+  estimation of catch, and assists to identify preceding and antecedent 
+  zeros.  It works in conjunction with function \code{F.chuck.zeros}.
 }
 \examples{
 \dontrun{

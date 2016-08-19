@@ -20,7 +20,7 @@ The character vector originally submitted via argument \code{s} with
 Capitalize each word in a character vector of length one.
 }
 \examples{
-#   ---- Capitalize each of hello and there.  
+#   ---- Capitalize each of 'hello' and 'there'.  
 capwords("hello there")
 
 #   ---- Use the strict argument.  Returns 'Camp'.

@@ -20,19 +20,21 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 Within R, function \code{build_Report_Criteria} returns a data frame 
   containing one row and row column of the total number of visits at a site 
   between the specified \code{min.date} and \code{max.date}.  Within Access, 
-  via the \code{RODBC} package, it creates table \code{TempReportCriteria_Trapvisit}, via query series  
-  Build Report Criteria.
+  via the \code{RODBC} package, it creates table
+  \code{TempReportCriteria_Trapvisit}, via query series Build Report
+  Criteria.
 }
 \description{
 Update Access database table \code{TempReportCriteria_Trapvisit}
-  to contain all unique trapping instances for the site and inclusive
+  to contain all unique trapping instances for the site and inclusive 
   calendar dates specified by the user.
 }
 \details{
-Function \code{build_Report_Criteria} is the
-workhorse function associated with many query series, and sets up data
-within the Access CAMP database for further processing.  See function 
-\code{F.run.sqlFile} for more details on query series.
+Function \code{build_Report_Criteria} is the workhorse function
+  associated with many query series, and sets up data within the Access CAMP
+  database for further processing.  See section Structured Query Language
+  (SQL) Queries in function \code{F.run.sqlFile} for more details on query
+  series.
 }
 \examples{
 \dontrun{
@@ -41,7 +43,8 @@ site <- 57000
 min.date <- "2013-01-16"
 max.date <- "2013-06-08" 
 
-#   ---- Obtain inclusive trap visits.  
+#   ---- Obtain inclusive trap visits in Access and total 
+#   ---- number of visits in 'nvisits'.  
 nvisits <- F.buildReportCriteria( site, min.date, max.date )
 }
 }

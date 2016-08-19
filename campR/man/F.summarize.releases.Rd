@@ -8,7 +8,7 @@ F.summarize.releases(release.df)
 }
 \arguments{
 \item{release.df}{A data frame read by function \code{F.get.release.data}
-containing information on releases, marks, etc.  Run season is a vector of
+containing information on releases.  Run season is a vector of
 dates for the start and end of a run, and is stored as an attribute of the
 data frame.}
 }
@@ -22,7 +22,7 @@ Summarize trap efficiency for every release.
 \details{
 The multiplicative expansion of caught fish due to half-cone 
   operations utilizes the value of the global variable \code{halfConeMulti}, 
-  set in function \code{GlobalVars}. This value is currently set to 2.
+  set in function \code{GlobalVars}. This value is currently set to \code{2}.
 }
 \examples{
 \dontrun{

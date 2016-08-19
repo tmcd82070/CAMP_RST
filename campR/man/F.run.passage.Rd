@@ -25,7 +25,7 @@ estimated catch is to be summarized.  Can be one of \code{day},
 
 \item{output.file}{A text string indicating a prefix to append to all output.}
 
-\item{ci}{A logical indicating if 95% bootstrapped confidence intervals 
+\item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 
 \item{run}{The text seasonal identifier.  This is a one of \code{"Spring"},
@@ -33,23 +33,25 @@ should be estimated along with passage estimates.}
 }
 \value{
 A \code{csv} table of passage estimates over the specified date 
-  range, with lifestages down the rows, and runs across the columns.  A 
-  \code{png} displaying proportion-of-catch bar charts of run and life stage.
-  For each run and life stage combination found within the specified data 
-  range, an additional series of output.  A \code{csv} of daily passage 
+  range, with life stages down the rows, and runs across the columns.  A 
+  \code{png} displaying proportion-of-catch bar charts of run and life stage
+  groups. For each run and life-stage combination found within the specified
+  data range, an additional series of output.  A \code{csv} of daily passage 
   estimates for all traps operating at least one day, and catching at least 
-  one fish, for all days within the specified date range. A \code{png} of 
-  catch versus time, for all inclusive traps.    A \code{png} of daily 
-  efficiency estimates, and accompanying \code{csv} for all traps operating 
-  at least one day, and catching at least one fish, for all days within the 
-  specified time period.
+  one fish, for all days within the specified date range. An additional
+  \code{csv} summarizing passage via the temporal unit specified via
+  \code{by}.  A \code{png} of catch versus time, for all inclusive traps.   
+  A \code{png} of daily efficiency estimates, and accompanying \code{csv} for
+  all traps operating at least one day, and catching at least one fish, for
+  all days within the specified time period.  Finally, a bar chart of passage
+  summarizing catch over the time period specified via \code{by}.
 }
 \description{
 Estimate production by life stage and run for all days within a
   date range.
 }
 \details{
-Function \code{F.run.passage} is the main workhorse function for
+Function \code{F.run.passage} is the main workhorse function for 
   estimating passage with respect to each of run and life stage.  As such, it
   calls several separate functions, some of which contain queries designed to
   run against an Access database.
@@ -68,7 +70,7 @@ Function \code{F.run.passage} is the main workhorse function for
   All calls to function \code{F.run.passage} result in daily passage 
   estimates, and courser temporal estimates, based on the value specified via
   \code{by}.  Regardless of the temporal partitioning, estimates are always 
-  additionally summarized by year.  Functions runs with \code{by} specified 
+  additionally summarized by year.  Function runs with \code{by} specified 
   as \code{year} output only one set of annual estimates.
   
   The difference between the specified \code{max.date} and \code{min.date}
@@ -77,17 +79,23 @@ Function \code{F.run.passage} is the main workhorse function for
   
   Selection of \code{week} for input variable \code{by} results in weeks 
   displayed as customized Julian weeks, where weeks number 1-53.  The 
-  specific mapping of days to weeks can be found within the \code{Dates} 
+  specific mapping of days to weeks can be found within the "\code{Dates}" 
   table of any associated Access database.
 }
 \examples{
  
 \dontrun{
-# query mdb?
+#   ---- Estimate passage on the American for the Fall run.
+site <- 57000
+taxon <- 161980
+min.date <- "2013-01-01"
+max.date <- "2013-06-01"
+by <- "week"
+output.file <- "American"
+ci <- TRUE
 }
 }
 \seealso{
-\code{F.get.release.data}, \code{F.get.catch.data},
-  \code{F.est.passage}
+\code{F.get.release.data}, \code{F.get.catch.data}
 }
 

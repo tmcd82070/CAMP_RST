@@ -1,8 +1,8 @@
-#' @export F.lifestage.passage.forkLength
+#' @export
 #' 
 #' @title F.lifestage.passage.forkLength
 #' 
-#' @description Estimate production by forklength group and Fall run for all days within a
+#' @description Estimate production by fork-length group and Fall run for all days within a
 #'   date range.
 #' 
 #' @param site The identification number of the site for which estimates are 
@@ -14,26 +14,26 @@
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
 #' @param by A text string indicating the temporal unit over which daily 
-#'   estimated catch is to be summarized.  Can be one of \code{day}, 
-#'   \code{week}, \code{month}, \code{year}.
+#'   estimated catch is to be summarized.  Can be one of \code{"day"}, 
+#'   \code{"week"}, \code{"month"}, \code{"year"}.
 #' @param output.file A text string indicating a prefix to append to all output.
-#' @param ci A logical indicating if 95% bootstrapped confidence intervals 
+#' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
 #' @param autoLS Default of \code{FALSE} leads to no assigning of no analytical
-#'   life stage. If \code{TRUE}, assignment of analytical life stage is done. 
+#'   life stage. If \code{TRUE}, assignment of analytical life stage is performed. 
 #'   See Details.
 #' @param nLS Number of life stage groups to estimate. Ignored if 
 #'   \code{autoLS=FALSE}.  See Details.
-#' @param weightUse A logical indicating if variable weight should be used for
+#' @param weightUse A logical indicating if variable \code{weight} should be used for
 #'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
 #'   if \code{autoLS=FALSE}.  See Details.
 #' @param reclassifyFL A logical indicating if passage should be estimated via 
 #'   forklength-based class groups.
 #' 
 #' @return A \code{csv} table of passage estimates over the specified date 
-#'   range, with forklength groups down the rows, and runs across the columns.  A 
-#'   \code{png} displaying proportion-of-catch bar charts of run and forklength groups.
-#'   For each run and forklength-group combination found within the specified data 
+#'   range, with fork-length groups down the rows, and Fall run across the columns.  A 
+#'   \code{png} displaying proportion-of-catch bar charts of Fall run and fork-length groups.
+#'   For each run and fork-length-group combination found within the specified data 
 #'   range, an additional series of output.  A \code{csv} of daily passage 
 #'   estimates for all traps operating at least one day, and catching at least 
 #'   one fish, for all days within the specified date range. A \code{png} of 
@@ -63,16 +63,16 @@
 #'   estimates, and courser temporal estimates, based on the value specified via
 #'   \code{by}.  Regardless of the temporal partitioning, estimates are always 
 #'   additionally summarized by year.  Function runs with \code{by} specified 
-#'   as \code{year} output only one set of annual estimates.
+#'   as \code{"year"} output only one set of annual estimates.
 #'   
 #'   The difference between the specified \code{max.date} and \code{min.date}
 #'   must be less than or equal to 366 days, as calculated via function
 #'   \code{difftime}.
 #'   
-#'   Selection of \code{week} for input variable \code{by} results in weeks 
+#'   Selection of \code{"week"} for input variable \code{by} results in weeks 
 #'   displayed as customized Julian weeks, where weeks number 1-53.  The 
 #'   specific mapping of days to weeks can be found within the \code{Dates} 
-#'   table of any associated Access database.
+#'   table of any associated CAMP Access database.
 #'   
 #'   Forklength groupings are specified via global variable
 #'   \code{forkLengthCutPoints} in \code{GlobalVars}, and by default, include up
@@ -86,8 +86,22 @@
 #' 
 #' @examples
 #' \dontrun{
-#' F.lifestage.passage.forkLength
+#' #   ---- Estimate passage of Fall run based on fork-length groups
+#' #   ---- on the American.
+#' site <- 57000
+#' taxon <- 161980
+#' min.date <- "2013-01-01"
+#' max.date <- "2013-06-01"
+#' by <- "week"
+#' output.file <- NA
+#' ci <- TRUE
+#' nLS <- NULL
+#' weightUse <- NULL
+#' autoLS <- FALSE
+#' reclassifyFL <- TRUE
 #' 
+#' F.lifestage.passage.forkLength(site,taxon,min.date,max.date,by,
+#'   output.file,ci,nLS,weightUse,autoLS,reclassify)
 #' }
 F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,nLS=NULL,weightUse=NULL,autoLS=FALSE,reclassifyFL=TRUE){
 
@@ -116,6 +130,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   
   #   ---- Identify the type of passage report we're doing.
   assign("passReport","lifeStage",envir=.GlobalEnv)
+  passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Start a progress bar.
   progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching efficiency data" )
@@ -351,7 +366,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
             the.dates$week <- paste0(the.dates$year,'-',formatC(the.dates$julianWeek, width=2, flag="0"))
             the.dates <- unique(the.dates)
             
-            #   A join on POSIX dates. 
+            #   ---- A join on POSIX dates. 
             tmp.df <- merge(tmp.df,the.dates,by=c('week'),all.x=TRUE)
             tmp.df$week <- paste0(strftime(tmp.df$date,"%Y"),"-",tmp.df$julianWeek,": ",tmp.df$julianWeekLabel)
             tmp.df$year <- tmp.df$julianWeek <- tmp.df$julianWeekLabel <- NULL

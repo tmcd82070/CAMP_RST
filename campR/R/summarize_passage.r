@@ -17,7 +17,8 @@
 #'   day-fished POSIX column \code{batchDate}, formatted via the ISO 8601 date
 #'   format (\code{\%F}), and a column \code{imputed.catch}, containing the
 #'   percentage of the total count of the Total Estimated Catch obtained via
-#'   imputation.  Additionally, the dataframe must contain estimated passage 
+#'   imputation.  Note that this date format requires a four-digit year.  
+#'   Additionally, the dataframe must contain estimated passage 
 #'   via variable \code{passage}.
 #'   
 #'   Function \code{F.summarize.passage} first averages the passage on a per-day

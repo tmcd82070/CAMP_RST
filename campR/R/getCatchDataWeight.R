@@ -35,7 +35,6 @@
 #' site <- 570000
 #' min.date <- "2013-01-01"
 #' max.date <- "2013-05-30"
-#'
 #' dfWeight <- getCatchDataWeight(taxon,site,min.date,max.date)
 #' }
 ############################################
@@ -54,14 +53,16 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
     ## the string must be 'db.file', or else f'n 'build_Report_Criteria.r' won't work.
     ##db.file <<- paste0(pathData,"/CAMP.mdb")
 
-    if(!file.exists(db.file)){
-        print('file does not exist:')
-        print(db.file)
-        stop()
-    }
+  #   ---- Jason comments out.  Program would have erred long before this if 
+  #   ---- we couldn't get to the database.  Probably an artifact from testing.
+#     if(!file.exists(db.file)){
+#         print('file does not exist:')
+#         print(db.file)
+#         stop()
+#     }
 
     ## ---- build the other queries connie mentions in her new sql query ----
-    nvisits <<- F.buildReportCriteria( site, min.date, max.date )      # trent f'n to build first report in a query sequence
+    nvisits <- F.buildReportCriteria( site, min.date, max.date )      # trent f'n to build first report in a query sequence
 
     if( nvisits == 0 ){
         warning("Your criteria returned no trapVisit table records.")
