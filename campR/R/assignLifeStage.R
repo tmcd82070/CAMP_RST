@@ -1,6 +1,4 @@
-#' @export assignLifeStage
-#'
-#' @import plyr mclust
+#' @export 
 #'
 #' @title assignLifeStage
 #'

@@ -1,6 +1,4 @@
-#' @export assignLSCompare
-#'   
-#' @import ellipse plyr
+#' @export 
 #'   
 #' @title assignLSCompare
 #'   
@@ -143,7 +141,7 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
                                                                                      # and make devtools::check() happy.  
         cat("we got to here.\n")
         cvTab <- tidyr::spread(compareDF,key=lifeStage,value=fish,fill=0)  # jason adds in compareDF for each of 
-                                                                                        # lifestage and fish, to make check() happy
+                                                                           # lifestage and fish, to make check() happy
         cat("but did we get here?\n")
         cat('Confusion Matrix \n')
         print(cvTab)

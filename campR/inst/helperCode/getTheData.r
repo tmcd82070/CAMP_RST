@@ -1,7 +1,6 @@
-getTheData <- function(openThese,thePlatform,theRiver,stem,before){
+getTheData <- function(openThese,theRiver,stem,before){
 
 #   openThese <- openTheseB
-#   thePlatform <- thePlatform
 #   theRiver <- theRiver
 #   stem <- stemB
 #   before <- TRUE
@@ -14,8 +13,14 @@ getTheData <- function(openThese,thePlatform,theRiver,stem,before){
       theCSVs[[i]] <- read.csv(paste0(stem,'/',openThese$file[i]),skip=5)
       CBs <- NULL
       desc <- data.frame(t(strsplit(openThese$file[i],"_",fixed=TRUE)[[1]]),stringsAsFactors=FALSE)[,1:6]
+      desc[1,5] <- substr(desc[1,5],1,10)
       names(desc) <- c('by','river','siteName','min.date','max.date','file')
-      J <- nrow(theCSVs[[i]])                             # could possibly not have all lifestages
+      
+      if( grepl("FL",openThese$file[i],fixed=TRUE) == TRUE ){
+        desc$file <- "forklength"
+      }
+      
+      J <- nrow(theCSVs[[i]])                              # could possibly not have all lifestages
       K <- (dim(theCSVs[[i]])[2] - 1) / 4                  # could possibly not have all runs
       for(j in 1:J){  # j is for LifeStages
         for(k in 1:K){  # k is for Runs
@@ -70,7 +75,15 @@ getTheData <- function(openThese,thePlatform,theRiver,stem,before){
       desc$Run <- temp2
       names(desc) <- c('by','river','siteName','min.date','max.date','file','run')
       
-      lifeStage <- NA
+      if(substr(desc$run[1],1,2) == "FL"){
+        temp <- desc[1,]$run
+        desc[1,]$run <- strsplit(temp,"mm",fixed=TRUE)[[1]][2]
+        lifeStage <- paste0(substr(strsplit(temp,"mm",fixed=TRUE)[[1]][1],3,nchar(strsplit(temp,"mm",fixed=TRUE)[[1]][1])),"mm")
+        desc[1,]$file <- 'forklength'
+      } else {
+        lifeStage <- NA
+      }
+      
       time <- theCSVs[[i]][,1]
       bEst <- theCSVs[[i]]$passage
       bLCL <- theCSVs[[i]]$lower95pctCI

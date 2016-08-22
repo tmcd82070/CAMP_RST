@@ -1,4 +1,4 @@
-#' @export F.weekly.effort
+#' @export
 #'   
 #' @title F.weekly.effort
 #'   
@@ -72,11 +72,11 @@
 #' }
 F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   
-  # site <- 57000
-  # taxon <- 161980
-  # min.date <- "2013-01-16"
-  # max.date <- "2013-06-08"
-  # output.file <- 
+#   site <- 57000
+#   taxon <- 161980
+#   min.date <- "2013-01-16"
+#   max.date <- "2013-06-08"
+#   output.file <- "American"
 
   #   ---- Check that times are less than 1 year apart.
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
@@ -87,7 +87,7 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   
   #   ---- Start a progress bar.
   progbar <- winProgressBar( "Weekly effort estimate", label=paste0("Reading data and accounting for the ",dt.len.min[1]," minutes your time range specified." ), width=500 )
-  assign("progbar",envir=.GlobalEnv)
+  assign("progbar",progbar,envir=.GlobalEnv)
   
   nvisits <- F.buildReportCriteria( site, min.date, max.date )
   

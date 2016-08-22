@@ -14,7 +14,9 @@
 #'   \code{min.date}.
 #'   
 #' @details Function \code{F.get.all.catch.data} is called from within function
-#' \code{F.all.catch.table}, and helps 
+#' \code{F.chinookByDate.table}, and helps to obtain all records pertaining 
+#' to a particular taxon.  Generally, it is expected this value is always 
+#' 161980, i.e., Chinook Salmon.  
 #'   
 #' @return A data frame entitled \code{visit}.  To be included, a record has to
 #'   be from the correct \code{site} and \code{taxon}, and be between the values

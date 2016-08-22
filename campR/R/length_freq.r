@@ -1,17 +1,10 @@
-#' @export F.length.frequency
-#'   
+#' @export
+#' 
 #' @title F.length.frequency
 #'   
-#' @description Plot frequency distribution of fork lengths.
-#'   
-#'   Input: db = full path and name of the Access data base to retrieve data
-#'   from site = site ID of the place we want, trap locaton taxon = taxon number
-#'   (from luTaxon) to retrieve run = run ID of fish we want to do estimates
-#'   for. by.lifestage = if TRUE, produce histograms by lifestage, otherwise,
-#'   lump all fish.
-#'   
-#'   Output: A graph, in "file".
- 
+#' @description Plot frequency distribution of fork lengths over all inclusive
+#'   data, or by individual life stage,
+#' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
 #' @param taxon The species identifier indicating the type of fish of interest. 
@@ -28,8 +21,13 @@
 #'   individual life stages.  Otherwise, they are collapsed and reported for all
 #'   fish.
 #'   
-#' @details Function \code{F.length.freq} utilizes function \code{F.get.indiv.fish.data} 
-#' to obtain individual fish fork length data.  
+#' @details Function \code{F.length.freq} utilizes function
+#'   \code{F.get.indiv.fish.data} to obtain individual fish fork length data. 
+#'   Trapping instances include both valid and invalid catch, as determined via
+#'   variable \code{includeCatchID}.  Thus, resulting graphs may display both
+#'   valid and invalid fishing instances, if both trappining instances took
+#'   place within the time period specified via \code{min.date} and
+#'   \code{max.date.}
 #'   
 #' @return Either a single histogram, if variable \code{by.lifestage} is set to
 #'   \code{FALSE}. Otherwise, a histogram for each individual life stage present

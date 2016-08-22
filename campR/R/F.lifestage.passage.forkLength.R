@@ -336,13 +336,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
         lci[ i, j ] <- pass$lower.95
         uci[ i, j ] <- pass$upper.95
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
-        
-        
-        
-        
-        
-        
-        
+
         output.fn <- output.file
         
         #   ---- Write passage table to a file, if called for.
@@ -444,15 +438,8 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
           write.table( tmp.df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
           
         } 
-        
-        
-        
-        
-        
-        
       }
     }
-    
     
     #   ---- Plot the final passage estimates.
     if( by != "year" ){
@@ -469,11 +456,6 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
       out.f <- F.plot.passage( passby, out.file=output.fn )
       out.fn.roots <- c(out.fn.roots, out.f)
     }
-    
-    
-    
-    
-    
     
     close(progbar)
   }
@@ -530,26 +512,26 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     
     assign("ls.pass.df",df,envir=.GlobalEnv)
     
-    #   ---- Produce pie or bar charts.
-    rownames(df) <- df$LifeStage
-    fl <- F.plot.lifestages( df, output.file, plot.pies=F )
-    if( fl == "ZEROS" ){
-      cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")
-      cat(paste("Working directory:", getwd(), "\n"))
-      cat(paste("R data frames saved in file:", "<none>", "\n\n"))
-      nf <- length(out.fn.roots)
-      cat(paste("Number of files created in working directory = ", nf, "\n"))
-      for(i in 1:length(out.fn.roots)){
-        cat(paste(out.fn.roots[i], "\n", sep=""))
-      }
-      cat("\n")
-      return(0)
-    } else {
-      out.fn.roots <- c(out.fn.roots, fl)
-    }
+#     #   ---- Produce pie or bar charts.
+#     rownames(df) <- df$LifeStage
+#     fl <- F.plot.lifestages( df, output.file, plot.pies=F )
+#     if( fl == "ZEROS" ){
+#       cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")
+#       cat(paste("Working directory:", getwd(), "\n"))
+#       cat(paste("R data frames saved in file:", "<none>", "\n\n"))
+#       nf <- length(out.fn.roots)
+#       cat(paste("Number of files created in working directory = ", nf, "\n"))
+#       for(i in 1:length(out.fn.roots)){
+#         cat(paste(out.fn.roots[i], "\n", sep=""))
+#       }
+#       cat("\n")
+#       return(0)
+#     } else {
+#       out.fn.roots <- c(out.fn.roots, fl)
+#     }
+    
+    
   }
-  
-  
   
   #   ---- Write out message.
   cat("SUCCESS - F.lifestage.passage\n\n")

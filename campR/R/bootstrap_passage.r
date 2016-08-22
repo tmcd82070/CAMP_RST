@@ -20,12 +20,13 @@
 #'   one \code{batchDate} may have two (or more) periods with no fishing.
 #' @param eff.fits A list of binomial logistic regression fitted objects used to
 #'   compute efficiency.  One per trap.
-#' @param eff.X NEED TO CHECK. A list containing a numeric vector of days 
-#'   lacking an efficiency trial, and for which efficiency must be estimated, 
+#' @param eff.X A list containing the basis matrix associated with each 
+#'   efficiency-spline model for each trap.  These matrices originate from use
+#'   of function \code{bs} in function \code{F.efficiency.model}.
+#' @param eff.ind.inside A list containing the first and last day of trapping 
 #'   for each trap.
-#' @param eff.ind.inside NEED TO CHECK. A list containing the first and last day
-#'   of a sequence of efficiency trials, for each trap.
-#' @param eff.X.dates NEED TO CHECK. A list xxxx, for each trap.
+#' @param eff.X.dates A list containing the dates for which missing efficiency 
+#'   must be estimated, for each trap.
 #' @param sum.by A text string indicating the temporal unit over which daily 
 #'   estimated catch is to be summarized.  Can be one of \code{day}, 
 #'   \code{week}, \code{month}, \code{year}.
@@ -115,7 +116,7 @@
 #' @references Manly, B. F. J.  Randomization, Bootstrap and Monte Carlo Methods
 #' in Biology, Third Edition, 2006.  Chapman and Hall/CRC.  
 #'   
-#' @seealso \code{F.est.catch}, \code{F.est.eff}, \code{summarize.passage}
+#' @seealso \code{F.est.catch}, \code{F.est.eff}, \code{F.summarize.passage}, \code{F.efficiency.model}
 #'   
 #' @author WEST Inc.
 #'   

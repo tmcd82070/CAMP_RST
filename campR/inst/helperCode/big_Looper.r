@@ -14,8 +14,10 @@ rownames(theExcel) <- NULL
 mdbStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/Data/TestingDBs/")
 outStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/Outputs")
 
+theExcel <- theExcel[rownames(theExcel) != '48',]
+
 #   ---- User variable testi to specify the range of river combos to test.  
-for(testi in 6:70){   
+for(testi in 1:76){   
   
   by <- 'All'
   river <- as.character(droplevels(theExcel[testi,]$streamName))
@@ -76,77 +78,77 @@ for(testi in 6:70){
   #end0 <- Sys.time()
   #diff.time0 <- as.numeric(end0 - beg0,units="hours")
   
-  
-  
-  # ----- automatic lifestage assignment functions --- added 4/4/2016 based on jared's work -----
-  
-   # Start writing to an output file
-  
-  #sink(paste0(output.file,'J1.txt')); 
-  output.fileJ1 <- output.file
-  output.file <- paste0(output.fileJ1,"_",'J1')
-  #beg1 <- Sys.time(); 
-  F.lifestage.passage.assignLS2group(site,taxon,min.date,max.date, output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)         
-  #end1 <- Sys.time(); 
-  #diff.time1 <- as.numeric(end1 - beg1,units="hours"); 
-  output.file <- output.fileJ1
-  #sink(); # lifestage to 2 groups, use weight var
-  
-  #sink(paste0(output.file,'J2.txt')); 
-  output.fileJ2 <- output.file
-  output.file <- paste0(output.file,"_",'J2')
-  #beg2 <- Sys.time(); 
-  F.lifestage.passage.assignLS2groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
-  #end2 <- Sys.time(); 
-  #diff.time2 <- as.numeric(end2 - beg2,units="hours"); 
-  output.file <- output.fileJ2
-  #sink(); # lifestage to 2 groups, don't use weight var
-  
-  #sink(paste0(output.file,'J3.txt')); 
-  output.fileJ3 <- output.file   
-  output.file <- paste0(output.file,"_",'J3')
-  #beg3 <- Sys.time(); 
-  F.lifestage.passage.assignLS3group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
-  #end3 <- Sys.time(); 
-  #diff.time3 <- as.numeric(end3 - beg3,units="hours"); 
-  output.file <- output.fileJ3
-  #sink(); # lifestage to 3 groups, use weight var
-  
-  #sink(paste0(output.file,'J4.txt')); 
-  output.fileJ4 <- output.file    
-  output.file <- paste0(output.file,"_",'J4')
-  #beg4 <- Sys.time(); 
-  F.lifestage.passage.assignLS3groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
-  #end4 <- Sys.time(); 
-  #diff.time4 <- as.numeric(end4 - beg4,units="hours"); 
-  output.file <- output.fileJ4
-  #sink(); # lifestage to 3 groups, don't use weight var
-  
-  #sink(paste0(output.file,'J5.txt')); 
-  output.fileJ5 <- output.file    
-  output.file <- paste0(output.file,"_",'J5')
-  #beg5 <- Sys.time(); 
-  F.lifestage.passage.assignLS(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)            
-  #end5 <- Sys.time(); 
-  #diff.time5 <- as.numeric(end5 - beg5,units="hours"); 
-  output.file <- output.fileJ5
-  #sink(); # let program decide 2/3 groups, use/don't use weight var
-  
-  #sink(paste0(output.file,'J6.txt'));
-  output.fileJ6 <- output.file    
-  output.file <- paste0(output.file,"_",'J6')
-  #beg6 <- Sys.time();
-  F.lifestage.passage.assignLSNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
-  #end6 <- Sys.time(); 
-  #diff.time6 <- as.numeric(end6 - beg6,units="hours"); 
-  output.file <- output.fileJ6
-  #sink(); # let program decide 2/3 groups, don't use weight var
-  
-  # output time stats
-  testi.time <- data.frame(testi=rep(paste0("Run ",testi),7),file=c('J0','J1','J2','J3','J4','J5','J6'),times=c(diff.time0,diff.time1,diff.time2,diff.time3, diff.time4, diff.time5, diff.time6))
-  write.csv(testi.time,paste0(output.file,'JStuffTime.csv'))
-  
-  
+#   
+#   
+#   # ----- automatic lifestage assignment functions --- added 4/4/2016 based on jared's work -----
+#   
+#    # Start writing to an output file
+#   
+#   #sink(paste0(output.file,'J1.txt')); 
+#   output.fileJ1 <- output.file
+#   output.file <- paste0(output.fileJ1,"_",'J1')
+#   #beg1 <- Sys.time(); 
+#   F.lifestage.passage.assignLS2group(site,taxon,min.date,max.date, output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)         
+#   #end1 <- Sys.time(); 
+#   #diff.time1 <- as.numeric(end1 - beg1,units="hours"); 
+#   output.file <- output.fileJ1
+#   #sink(); # lifestage to 2 groups, use weight var
+#   
+#   #sink(paste0(output.file,'J2.txt')); 
+#   output.fileJ2 <- output.file
+#   output.file <- paste0(output.file,"_",'J2')
+#   #beg2 <- Sys.time(); 
+#   F.lifestage.passage.assignLS2groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
+#   #end2 <- Sys.time(); 
+#   #diff.time2 <- as.numeric(end2 - beg2,units="hours"); 
+#   output.file <- output.fileJ2
+#   #sink(); # lifestage to 2 groups, don't use weight var
+#   
+#   #sink(paste0(output.file,'J3.txt')); 
+#   output.fileJ3 <- output.file   
+#   output.file <- paste0(output.file,"_",'J3')
+#   #beg3 <- Sys.time(); 
+#   F.lifestage.passage.assignLS3group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
+#   #end3 <- Sys.time(); 
+#   #diff.time3 <- as.numeric(end3 - beg3,units="hours"); 
+#   output.file <- output.fileJ3
+#   #sink(); # lifestage to 3 groups, use weight var
+#   
+#   #sink(paste0(output.file,'J4.txt')); 
+#   output.fileJ4 <- output.file    
+#   output.file <- paste0(output.file,"_",'J4')
+#   #beg4 <- Sys.time(); 
+#   F.lifestage.passage.assignLS3groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
+#   #end4 <- Sys.time(); 
+#   #diff.time4 <- as.numeric(end4 - beg4,units="hours"); 
+#   output.file <- output.fileJ4
+#   #sink(); # lifestage to 3 groups, don't use weight var
+#   
+#   #sink(paste0(output.file,'J5.txt')); 
+#   output.fileJ5 <- output.file    
+#   output.file <- paste0(output.file,"_",'J5')
+#   #beg5 <- Sys.time(); 
+#   F.lifestage.passage.assignLS(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)            
+#   #end5 <- Sys.time(); 
+#   #diff.time5 <- as.numeric(end5 - beg5,units="hours"); 
+#   output.file <- output.fileJ5
+#   #sink(); # let program decide 2/3 groups, use/don't use weight var
+#   
+#   #sink(paste0(output.file,'J6.txt'));
+#   output.fileJ6 <- output.file    
+#   output.file <- paste0(output.file,"_",'J6')
+#   #beg6 <- Sys.time();
+#   F.lifestage.passage.assignLSNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
+#   #end6 <- Sys.time(); 
+#   #diff.time6 <- as.numeric(end6 - beg6,units="hours"); 
+#   output.file <- output.fileJ6
+#   #sink(); # let program decide 2/3 groups, don't use weight var
+#   
+# #   # output time stats
+# #   testi.time <- data.frame(testi=rep(paste0("Run ",testi),7),file=c('J0','J1','J2','J3','J4','J5','J6'),times=c(diff.time0,diff.time1,diff.time2,diff.time3, diff.time4, diff.time5, diff.time6))
+# #   write.csv(testi.time,paste0(output.file,'JStuffTime.csv'))
+#   
+#   
 #   F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
 #   F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
 #   F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )

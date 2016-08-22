@@ -1,5 +1,6 @@
-#' @import  quantreg splines MASS mvtnorm RODBC Rcpp plyr mclust car tools utils grDevices graphics stats
-#' 
+#' @import  quantreg splines MASS mvtnorm RODBC Rcpp plyr mclust car tools grDevices graphics stats DBI R6 assertthat magrittr
+#' @importFrom utils packageVersion memory.limit
+#' @importFrom ellipse ellipse
 #' 
 .onAttach <- function(libname, pkgname){
 	
