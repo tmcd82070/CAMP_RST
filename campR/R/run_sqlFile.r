@@ -303,9 +303,9 @@ F.run.sqlFile <- function( ch, sqlFile, echo=TRUE, check.drops=FALSE, ... ){
   #   ---- Figure out what additional parameters there are, if any.
   param <- list(...)
   
-  #	  ---- Get the sql.code.directory. Look in current directory if sql.code.dir 
+  #   ---- Get the sql.code.directory. Look in current directory if sql.code.dir 
   #   ---- is not found in the global environment.
-  sql.dir <- get0( "sql.code.dir", envir=.GlobalEnv, ifnotfound="." )
+  sql.dir <- get( "sql.code.dir", envir=.GlobalEnv )
   
   #   ---- Read the SQL statement.  Note that this is a vector of strings, with 
   #   ---- one for each line.

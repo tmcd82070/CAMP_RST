@@ -1,43 +1,53 @@
-source('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/R-Interface/Helper/getTheData.R')
+source('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/getTheData.R')
 
-getRiverPassage <- function(thePlatform,theRiver,stemB){
+getRiverPassage <- function(theRiver,stemB){
 
-#   thePlatform <- 'CAMP_RST20160201'
-#   theRiver <- 'Feather River'
-#   stemB <- '//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs'
+#   theRiver <- 'American River'
+#   stemB <- '//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160715-campR1.0.0/Outputs'
   
-  stemB <- paste0(stemB,"/",theRiver,"/doug hold")
+  stemB <- paste0(stemB,"/",theRiver)
   
+  #   ---- Identify the different type of passage runs.  
   filesB <- list.files(stemB)
-  ls_passageB <- filesB[grep('lifestage_passage_table.csv',filesB)]
-  passageB <- filesB[grep('passage_table.csv',filesB)]
+  # pre_ls_passage <- filesB[grep('lifestage_passage_table.csv',filesB)]
   
+  ls_passageB <- filesB[grep('lifestage_passage_table.csv',filesB)]
+  
+#   ls_passageB <- pre_ls_passage[grep('All',pre_ls_passage)]     # regular lifestage
+#   ls_passageFL <- pre_ls_passage[grep('FL',pre_ls_passage)]     # forklength lifestage
+  
+  passageB <- filesB[grep('passage_table.csv',filesB)]          # run alone
+  
+  #   ---- Open up the files one-by-one, and suck out the passage results.  
   openTheseB <- unique(data.frame(file=c(ls_passageB,passageB),stringsAsFactors=FALSE))
+  rownames(openTheseB) <- NULL
   for(i in 1:nrow(openTheseB)){
     if(substr(openTheseB$file[i],nchar(openTheseB$file[i]) - 26,nchar(openTheseB$file[i]) - 26 + 3) == 'life'){
       openTheseB$type[i] <- 'life'
     } else if(substr(openTheseB$file[i],nchar(openTheseB$file[i]) - 20,nchar(openTheseB$file[i]) - 20 + 2) == 'run'){
       openTheseB$type[i] <- 'run'
+#     } else if(grepl("FL",openTheseB$file[i],fixed=TRUE) == TRUE){
+#       openTheseB$type[i] <- 'forklength'
     } else {
       openTheseB$type[i] <- 'summary'
     }
   }
-  
-  bigDFB <- getTheData(openThese=openTheseB,thePlatform=thePlatform,theRiver=theRiver,stem=stemB,before=TRUE)  
+
+  bigDFB <- getTheData(openThese=openTheseB,theRiver=theRiver,stem=stemB,before=TRUE)  
   testByB <- unlist(strsplit(bigDFB$by,"--",fixed=TRUE))
   bigDFB$testi <- testByB[c(TRUE,FALSE)]
   bigDFB$by <- testByB[c(FALSE,TRUE)]
   bigDFB
 }
 
-sac <- getRiverPassage('CAMP_RST20160201','Sacramento River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-ame <- getRiverPassage('CAMP_RST20160201','American River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-fea <- getRiverPassage('CAMP_RST20160201','Feather River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-mok <- getRiverPassage('CAMP_RST20160201','Mokelumne River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-sta <- getRiverPassage('CAMP_RST20160201','Stanislaus River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
-kni <- getRiverPassage('CAMP_RST20160201',"Knight's Landing",'//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160201/Outputs')
+sac <- getRiverPassage('Sacramento River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160715-campR1.0.0/Outputs')
+ame <- getRiverPassage('American River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160715-campR1.0.0/Outputs')
+fea <- getRiverPassage('Feather River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160715-campR1.0.0/Outputs')
+mok <- getRiverPassage('Mokelumne River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160715-campR1.0.0/Outputs')
+sta <- getRiverPassage('Stanislaus River','//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160715-campR1.0.0/Outputs')
+kni <- getRiverPassage("Knight's Landing",'//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160715-campR1.0.0/Outputs')
 
-all <- rbind(sac,ame,fea,mok,sta,kni)
+all <- rbind(sac,ame,fea,mok,sta)#,kni)
 nrow(all)
 all <- all[!is.na(all$bEst),]
 all <- all[all$bEst > 0,] 

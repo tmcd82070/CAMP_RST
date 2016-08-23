@@ -33,18 +33,16 @@ should be estimated along with passage estimates.}
 }
 \value{
 A \code{csv} table of passage estimates over the specified date 
-  range, with life stages down the rows, and runs across the columns.  A 
-  \code{png} displaying proportion-of-catch bar charts of run and life stage
-  groups. For each run and life-stage combination found within the specified
-  data range, an additional series of output.  A \code{csv} of daily passage 
+  range, with runs across the columns.  A \code{csv} of daily passage 
   estimates for all traps operating at least one day, and catching at least 
-  one fish, for all days within the specified date range. An additional
-  \code{csv} summarizing passage via the temporal unit specified via
-  \code{by}.  A \code{png} of catch versus time, for all inclusive traps.   
-  A \code{png} of daily efficiency estimates, and accompanying \code{csv} for
-  all traps operating at least one day, and catching at least one fish, for
-  all days within the specified time period.  Finally, a bar chart of passage
-  summarizing catch over the time period specified via \code{by}.
+  one fish, for all days within the specified date range. An additional 
+  \code{csv} summarizing passage via the temporal unit specified via 
+  \code{by}.  A \code{png} of catch versus time, for all inclusive traps. A
+  \code{png} of daily efficiency estimates, and accompanying \code{csv} for 
+  all traps operating at least one day, and catching at least one fish, for 
+  all days within the specified time period.  Finally, for each run, a bar
+  chart of passage summarizing catch over the time period specified via
+  \code{by}.
 }
 \description{
 Estimate production by life stage and run for all days within a

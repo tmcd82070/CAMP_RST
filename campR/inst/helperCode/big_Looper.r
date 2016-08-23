@@ -52,29 +52,29 @@ for(testi in 1:76){
   return.addr  <- "FISH AND WILDLIFE SERVICE!USFWS Caswell State Park Office!1234 Abbey Rd.!Caswell, California  96080!(530) 527-3043, FAX (530) 529-0292"
   
   #   ---- Run function run.passage over the four possible temporal periods.  
-  for(byj in 1:4){
-    if(byj == 1){
-      by <- 'day'
-    } else if(byj == 2){
-      by <- 'week'
-    } else if(byj == 3){
-      by <- 'month'
-    } else if(byj == 4){
-      by <- 'year'
-    }
-    output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
-    F.run.passage(site,taxon,min.date,max.date,by=by,output.file=output.file,ci=TRUE)
-    
-    #   ---- Reclassify lifeStage by forklength. 
-    output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"FL")
-    F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file,ci=TRUE,autoLS=FALSE,reclassifyFL=TRUE)
-  }
+#   for(byj in 1:4){
+#     if(byj == 1){
+#       by <- 'day'
+#     } else if(byj == 2){
+#       by <- 'week'
+#     } else if(byj == 3){
+#       by <- 'month'
+#     } else if(byj == 4){
+#       by <- 'year'
+#     }
+#     output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
+#     F.run.passage(site,taxon,min.date,max.date,by=by,output.file=output.file,ci=TRUE)
+#     
+#     #   ---- Reclassify lifeStage by forklength. 
+#     output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date,"FL")
+#     F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file,ci=TRUE,autoLS=FALSE,reclassifyFL=TRUE)
+#   }
   by <- 'All'
   output.file  <- paste0(outStem,"/",river,"/Run ",testi,"--",by,"_",river,"_",siteText,"_",min.date,"_",max.date)
   
   #beg0 <- Sys.time()
   #F.lifestage.passage(site, taxon, min.date, max.date, output.file, ci=TRUE)
-  passageWithLifeStageAssign(site, taxon, min.date, max.date,output.file,ci=TRUE,autoLS=FALSE,reclassifyFL=FALSE)
+  #passageWithLifeStageAssign(site, taxon, min.date, max.date,output.file,ci=TRUE,autoLS=FALSE,reclassifyFL=FALSE)
   #end0 <- Sys.time()
   #diff.time0 <- as.numeric(end0 - beg0,units="hours")
   
@@ -151,7 +151,7 @@ for(testi in 1:76){
 #   
 #   F.byCatch.table      ( site,             min.date, max.date,            output.file                                         )
 #   F.release.summary    ( site, taxon, run, min.date, max.date,            output.file                                         )
-#   F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
+    F.weekly.effort      ( site, taxon,      min.date, max.date,            output.file                                         )
 #   F.allCatch.table     ( site,             min.date, max.date,            output.file                                         )
 #   F.chinookByDate.table( site,             min.date, max.date,            output.file                                         )
 #   
