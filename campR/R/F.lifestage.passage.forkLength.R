@@ -442,20 +442,20 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     }
     
     #   ---- Plot the final passage estimates.
-    if( by != "year" ){
-      attr(passby,"summarized.by") <- by
-      attr(passby, "species.name") <- "Chinook Salmon"
-      attr(passby, "site.name") <- catch.df$siteName[1]
-      attr(passby, "run.name" ) <- run.name#catch.df$FinalRun[1]
-      attr(passby, "lifestage.name" ) <- "All lifestages"
-      attr(passby, "min.date" ) <- min.date
-      attr(passby, "max.date" ) <- max.date
-      
-      #   ---- Make the passage csv and barplot passage png agree on integer fish.
-      passby$passage <- round(passby$passage,0) 
-      out.f <- F.plot.passage( passby, out.file=output.fn )
-      out.fn.roots <- c(out.fn.roots, out.f)
-    }
+#     if( by != "year" ){
+#       attr(passby,"summarized.by") <- by
+#       attr(passby, "species.name") <- "Chinook Salmon"
+#       attr(passby, "site.name") <- catch.df$siteName[1]
+#       attr(passby, "run.name" ) <- run.name#catch.df$FinalRun[1]
+#       attr(passby, "lifestage.name" ) <- "All lifestages"
+#       attr(passby, "min.date" ) <- min.date
+#       attr(passby, "max.date" ) <- max.date
+#       
+#       #   ---- Make the passage csv and barplot passage png agree on integer fish.
+#       passby$passage <- round(passby$passage,0) 
+#       out.f <- F.plot.passage( passby, out.file=output.fn )
+#       out.fn.roots <- c(out.fn.roots, out.f)
+#     }
     
     close(progbar)
   }
@@ -512,23 +512,23 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     
     assign("ls.pass.df",df,envir=.GlobalEnv)
     
-#     #   ---- Produce pie or bar charts.
-#     rownames(df) <- df$LifeStage
-#     fl <- F.plot.lifestages( df, output.file, plot.pies=F )
-#     if( fl == "ZEROS" ){
-#       cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")
-#       cat(paste("Working directory:", getwd(), "\n"))
-#       cat(paste("R data frames saved in file:", "<none>", "\n\n"))
-#       nf <- length(out.fn.roots)
-#       cat(paste("Number of files created in working directory = ", nf, "\n"))
-#       for(i in 1:length(out.fn.roots)){
-#         cat(paste(out.fn.roots[i], "\n", sep=""))
-#       }
-#       cat("\n")
-#       return(0)
-#     } else {
-#       out.fn.roots <- c(out.fn.roots, fl)
-#     }
+    #   ---- Produce pie or bar charts.
+    rownames(df) <- df$LifeStage
+    fl <- F.plot.lifestages( df, output.file, plot.pies=F )
+    if( fl == "ZEROS" ){
+      cat("FAILURE - F.lifestage.passage - ALL ZEROS\nCheck dates and finalRunId's\n")
+      cat(paste("Working directory:", getwd(), "\n"))
+      cat(paste("R data frames saved in file:", "<none>", "\n\n"))
+      nf <- length(out.fn.roots)
+      cat(paste("Number of files created in working directory = ", nf, "\n"))
+      for(i in 1:length(out.fn.roots)){
+        cat(paste(out.fn.roots[i], "\n", sep=""))
+      }
+      cat("\n")
+      return(0)
+    } else {
+      out.fn.roots <- c(out.fn.roots, fl)
+    }
     
     
   }

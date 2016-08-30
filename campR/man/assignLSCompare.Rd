@@ -26,8 +26,8 @@ the mixture distribution.}
 
 \item{SAVE}{Default is TRUE, a plot (PDF file) and confusion matrix (CSV
 file)  for each final run is saved in the \code{output.dir} location (see
-\code{\link{GlobalVars}}). If FALSE the each plot is displayed in a new R
-plot window. In either case the confusion matrix is print to the R console.}
+\code{\link{GlobalVars}}). If FALSE each plot is displayed in a new R
+plot window. In either case the confusion matrix is printed to the R console.}
 }
 \value{
 NA
@@ -45,7 +45,7 @@ The confusion matrix's rows correspond to the morphometric life stage
 assignment (labeled \code{bioLS}) and the columns the analytical life stage
 assignment. The cells of the confusion matrix present the number of fish.
 
-The plot has date on the horizontal axis and fish fork length on the vertical
+The plot symbols are circle on the horizontal axis and fish fork length on the vertical
 axis, the color of the symbol refers to the analytical assignment and the
 symbol type indicated the morphometic assignment. The colors are red (Small),
 green (Medium), blue (Large), and orange (All). The circle (Fry), triangle

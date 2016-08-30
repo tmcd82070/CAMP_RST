@@ -7,28 +7,31 @@
 getCatchDataWeight(taxon, site, min.date, max.date)
 }
 \arguments{
-\item{taxon}{The species identifier indicating the type of fish of interest.
+\item{taxon}{The species identifier indicating the type of fish of interest. 
 This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{site}{The identification number of the site for which estimates are
+\item{site}{The identification number of the site for which estimates are 
 required.}
 
-\item{min.date}{The start date for data to include. This is a text string in
+\item{min.date}{The start date for data to include. This is a text string in 
 the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
-\item{max.date}{The end date for data to include.  Same format as
+\item{max.date}{The end date for data to include.  Same format as 
 \code{min.date}.}
 }
 \value{
 Data.frame of the catch data with the weight measurements.
 }
 \description{
-Get the catch data from the database file with the weight measurement.
+Get the catch data from the database file with the weight
+  measurement.
 }
 \details{
-When the passage estimation routine is called with the analytical life stage assignment, this function is called.
-The default queries that retrieve the catch data do not include the weight. This function is need to retrieve the weight information.
-This function is intended for internal use only.
+When the passage estimation routine is called with the analytical
+life stage assignment, this function is called. The default queries that
+retrieve the catch data do not include the weight measurement. This function
+is needed to retrieve the weight information. This function is intended for
+internal use only.
 }
 \examples{
 \dontrun{

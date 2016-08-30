@@ -1,8 +1,8 @@
-#' @export F.lifestage.passage.assignLS3group
+#' @export
 #' 
 #' @title F.lifestage.passage.assignLS3group
 #' 
-#' @description 3 life stage groups are fit and the program will decide if weight will be used or not
+#' @description  Fit three life-stage groups and decide if \code{weight} will be used.
 #' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
@@ -20,9 +20,10 @@
 #' @param reclassifyFL A logical indicating if passage should be estimated via
 #'   forklength-based class groups.
 #' 
-#' @details 3 life stage groups are fit and the program will decide if weight will be used or not
+#' @details A wrapper for function \code{passageWithLifeStageAssign} with 
+#' necessary variables for completion preset.  
 #' 
-#' @return jared
+#' @return See \code{passageWithLifeStageAssign}.
 #' 
 #' @author WEST Inc.
 #' 

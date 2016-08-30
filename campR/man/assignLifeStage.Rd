@@ -28,7 +28,7 @@ clustering routine.
 }
 \details{
 The function expects the data frame DATA to have column names:
-\code{lifeStage, SampleDate, FinalRun, forkLength, weight, Unmarked}. The
+\code{lifeStage}, \code{SampleDate}, \code{FinalRun}, \code{forkLength}, \code{weight}, \code{Unmarked}. The
 \code{lifeStage} column is overwritten with the new analytical life stage
 assignment.
 
@@ -37,9 +37,9 @@ column. If the final run is unassigned, no estimation is done and the life
 stage is set to Unassigned.
 
 This function relies on several global variables as set by
-\code{\link{GlobalVars}}: \code{sample.size.forkLength,
-sample.size.forkLengthAndWeight, weight.prop.forkLength,
-forkLength.mean.diff}, see \code{\link{GlobalVars}} for default values.
+\code{\link{GlobalVars}}: \code{sample.size.forkLength},
+\code{sample.size.forkLengthAndWeight}, \code{weight.prop.forkLength},
+\code{forkLength.mean.diff}, see \code{\link{GlobalVars}} for default values.
 
 If the number of fish with a fork length value is less than
 \code{sample.size.forkLength} the life stage is set to Unassigned, else the
@@ -55,7 +55,7 @@ It is not recommend for the user to specify \code{USEWeight=TRUE}, if done,
 weight is only used if the number of fish with a weight measurement is
 greater than \code{sample.size.forkLengthAndWeight} else weight is not used.
 In all cases fork length and date are used in the life stage assignment and
-based on user input and these condition weight might also be used to assign
+based on user input and these conditions weight might also be used to assign
 life stage.
 
 \code{groupN} may take the values 2, 3, or NULL. If 2 or 3 the analytical
@@ -71,7 +71,7 @@ is All.
 The analytical assignment is done through a call to the
 \code{\link[mclust]{Mclust}} function in the \code{mclust} package. The
 \code{Mclust} function is fitting a mixture of multivariate normal
-distribution. The number of distribution fit corresponds to the number of
+distributions. The number of distribution fit corresponds to the number of
 life stage groups. The \code{Mclust} function returns mean vectors and
 variance covariance matrices for each group and the group member ship for
 each fish used in the mixture distribution estimation. The group names are

@@ -20,7 +20,7 @@
 #' @param ... Arguments passed to \code{\link{assignLSCompare}}.
 #'   
 #' @details The function expects the data frame DATA to have column names:
-#' \code{lifeStage, SampleDate, FinalRun, forkLength, weight, Unmarked}. The
+#' \code{lifeStage}, \code{SampleDate}, \code{FinalRun}, \code{forkLength}, \code{weight}, \code{Unmarked}. The
 #' \code{lifeStage} column is overwritten with the new analytical life stage
 #' assignment.
 #' 
@@ -29,9 +29,9 @@
 #' stage is set to Unassigned.
 #' 
 #' This function relies on several global variables as set by
-#' \code{\link{GlobalVars}}: \code{sample.size.forkLength,
-#' sample.size.forkLengthAndWeight, weight.prop.forkLength,
-#' forkLength.mean.diff}, see \code{\link{GlobalVars}} for default values.
+#' \code{\link{GlobalVars}}: \code{sample.size.forkLength},
+#' \code{sample.size.forkLengthAndWeight}, \code{weight.prop.forkLength},
+#' \code{forkLength.mean.diff}, see \code{\link{GlobalVars}} for default values.
 #' 
 #' If the number of fish with a fork length value is less than
 #' \code{sample.size.forkLength} the life stage is set to Unassigned, else the
@@ -47,7 +47,7 @@
 #' weight is only used if the number of fish with a weight measurement is
 #' greater than \code{sample.size.forkLengthAndWeight} else weight is not used.
 #' In all cases fork length and date are used in the life stage assignment and
-#' based on user input and these condition weight might also be used to assign
+#' based on user input and these conditions weight might also be used to assign
 #' life stage.
 #' 
 #' \code{groupN} may take the values 2, 3, or NULL. If 2 or 3 the analytical
@@ -63,7 +63,7 @@
 #' The analytical assignment is done through a call to the
 #' \code{\link[mclust]{Mclust}} function in the \code{mclust} package. The
 #' \code{Mclust} function is fitting a mixture of multivariate normal
-#' distribution. The number of distribution fit corresponds to the number of
+#' distributions. The number of distribution fit corresponds to the number of
 #' life stage groups. The \code{Mclust} function returns mean vectors and
 #' variance covariance matrices for each group and the group member ship for
 #' each fish used in the mixture distribution estimation. The group names are
@@ -195,7 +195,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
         sample.size.forkLengthAndWeight <- get('sample.size.forkLengthAndWeight',envir=.mycampREnv)
         weight.prop.forkLength <- get('site',envir=.mycampREnv)
         forkLength.mean.diff <- get('forkLength.mean.diff',envir=.mycampREnv)
-        output.dir <- get('output.dir',envir=.mycampREnv)
+        output.dir <- get("output.file",envir=.GlobalEnv)  # jason changes this.  don't know what output.dir was.
 
 
 	## keep only needed columns
@@ -642,7 +642,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
     ## save data after assignment
     ## JARED: WHY THIS SAVE?
     ## This is for debugging and should be removed right before the next release
-    save(DATA,output.dir,muList,sigmaList,file=paste0(output.dir,'newLS.Rdata'))
+    #save(DATA,output.dir,muList,sigmaList,file=paste0(output.dir,'newLS.Rdata'))
 
 
     assignLSCompare(DATA,muLIST=muList,sigmaLIST=sigmaList,...)

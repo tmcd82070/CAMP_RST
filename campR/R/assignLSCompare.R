@@ -6,7 +6,6 @@
 #'   analytical life stage assignment. The comparison is presented through both
 #'   a confusion matrix and a plot.
 #'   
-#'   
 #' @param Data A data.frame of the catch data with both the morphometric and
 #'   analytical life stage assignments.
 #'   
@@ -26,9 +25,8 @@
 #'   
 #' @param SAVE Default is TRUE, a plot (PDF file) and confusion matrix (CSV
 #'   file)  for each final run is saved in the \code{output.dir} location (see
-#'   \code{\link{GlobalVars}}). If FALSE the each plot is displayed in a new R
-#'   plot window. In either case the confusion matrix is print to the R console.
-#'   
+#'   \code{\link{GlobalVars}}). If FALSE each plot is displayed in a new R
+#'   plot window. In either case the confusion matrix is printed to the R console.
 #'   
 #' @details
 #' 
@@ -39,15 +37,13 @@
 #' assignment (labeled \code{bioLS}) and the columns the analytical life stage
 #' assignment. The cells of the confusion matrix present the number of fish.
 #' 
-#' The plot has date on the horizontal axis and fish fork length on the vertical
+#' The plot symbols are circle on the horizontal axis and fish fork length on the vertical
 #' axis, the color of the symbol refers to the analytical assignment and the
 #' symbol type indicated the morphometic assignment. The colors are red (Small),
 #' green (Medium), blue (Large), and orange (All). The circle (Fry), triangle
 #' (Parr), and plus sign (Smolt). For example if a fish was morphometrically
 #' assigned as a Parr and analytically assigned as a Large the plot symbol would
 #' be a blue triangle.
-#' 
-#' 
 #' 
 #' @return NA
 #'
@@ -60,17 +56,11 @@
 #' #insert examples
 #'
 #' }
-###################################################
-## Jared Studyvin
-## 8 March 2016
-## output comparison table and figure between biologist life stage assignment and mixture distribution results
-###################################################
+
 
 
 
 assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
-
-
 
     ## This is the environment for the global variables
     .mycampREnv <- .GlobalEnv
@@ -85,11 +75,9 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
     #output.dir <- get('output.dir',envir=.mycampREnv)  # jason doesn't know what this is. 
     output.dir <- get("output.file",envir=.GlobalEnv)
 
-
     ## keep only needed columns
     Data <- Data[,c('days','lifeStage','SampleDate','FinalRun','forkLength','weight','Unmarked','bioLS')]
-
-
+    
     ## get needed packages
     ##getPackages(c('plyr','ellipse','tidyr'))
 
@@ -137,11 +125,9 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
 
 
         ## confusion matrix
-        compareDF <- ddply(data,~bioLS+lifeStage,plyr::summarize,fish=sum(Unmarked)) # jason replaces Unmarked with data$Unmarked to try
-                                                                                     # and make devtools::check() happy.  
+        compareDF <- ddply(data,~bioLS+lifeStage,plyr::summarize,fish=sum(suppressBindingNotes(c(".->Unmarked","Unmarked")))) 
         cat("we got to here.\n")
-        cvTab <- tidyr::spread(compareDF,key=lifeStage,value=fish,fill=0)  # jason adds in compareDF for each of 
-                                                                           # lifestage and fish, to make check() happy
+        cvTab <- tidyr::spread(compareDF,key=lifeStage,value=fish,fill=0)                                                                           
         cat("but did we get here?\n")
         cat('Confusion Matrix \n')
         print(cvTab)

@@ -32,13 +32,14 @@ If TRUE, the analytical life stage assignment is done, see details.}
 forklength-based class groups.}
 }
 \value{
-jared
+See \code{passageWithLifeStageAssign}.
 }
 \description{
-2 life stage groups are fit and weight will not be used for assigning lifestage
+Fit two life-stage groups without consideration of \code{weight}.
 }
 \details{
-2 life stage groups are fit and weight will not be used for assigning lifestage
+A wrapper for function \code{passageWithLifeStageAssign} with 
+necessary variables for completion preset.
 }
 \examples{
 \dontrun{

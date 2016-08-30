@@ -1,19 +1,8 @@
-#' @export F.lifestage.passage.assignLS
+#' @export
 #' 
 #' @title F.lifestage.passage.assignLS
 #' 
-#' @description
-#' 
-#'    ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
-#'    A table of passage estimates, with lifestages down the rows, and runs across the columns.
-#' 
-#'    Input:
-#'    site = site ID of the place we want, trap locaton
-#'    taxon = taxon number (from luTaxon) to retrieve
-#' 
-#' 
-#' 
-#'  allow the program to decide the number of life stage groups and if weight will be used or not
+#' @description Decide the number of life stage groups and if \code{weight} will be used.
 #' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
@@ -26,14 +15,15 @@
 #' @param output.file A text string indicating a prefix to append to all output.
 #' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
-#' @param autoLS Default is FALSE, no analytical life stage assignment is done.
-#'   If TRUE, the analytical life stage assignment is done, see details.
-#' @param reclassifyFL A logical indicating if passage should be estimated via
+#' @param autoLS A logical indicating if analytical life stage assignment should
+#'   be performed.  Default is \code{FALSE}. See Details.
+#' @param reclassifyFL A logical indicating if passage should be estimated via 
 #'   forklength-based class groups.
 #' 
-#' @details  allow the program to decide the number of life stage groups and if weight will be used or not
+#' @details A wrapper for function \code{passageWithLifeStageAssign} with 
+#' necessary variables for completion preset.  
 #' 
-#' @return jared
+#' @return See \code{passageWithLifeStageAssign}.
 #' 
 #' @author WEST Inc.
 #' 

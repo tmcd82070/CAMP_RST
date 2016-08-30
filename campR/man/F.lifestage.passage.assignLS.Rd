@@ -25,29 +25,21 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 \item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 
-\item{autoLS}{Default is FALSE, no analytical life stage assignment is done.
-If TRUE, the analytical life stage assignment is done, see details.}
+\item{autoLS}{A logical indicating if analytical life stage assignment should
+be performed.  Default is \code{FALSE}. See Details.}
 
-\item{reclassifyFL}{A logical indicating if passage should be estimated via
+\item{reclassifyFL}{A logical indicating if passage should be estimated via 
 forklength-based class groups.}
 }
 \value{
-jared
+See \code{passageWithLifeStageAssign}.
 }
 \description{
-ANNUAL PRODUCTION ESTIMATES BY LIFE STAGE AND RUN ? TABULAR SUMMARY
-   A table of passage estimates, with lifestages down the rows, and runs across the columns.
-
-   Input:
-   site = site ID of the place we want, trap locaton
-   taxon = taxon number (from luTaxon) to retrieve
-
-
-
- allow the program to decide the number of life stage groups and if weight will be used or not
+Decide the number of life stage groups and if \code{weight} will be used.
 }
 \details{
-allow the program to decide the number of life stage groups and if weight will be used or not
+A wrapper for function \code{passageWithLifeStageAssign} with 
+necessary variables for completion preset.
 }
 \examples{
 \dontrun{

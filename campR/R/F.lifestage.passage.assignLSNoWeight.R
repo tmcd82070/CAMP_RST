@@ -1,8 +1,8 @@
-#' @export F.lifestage.passage.assignLSNoWeight
+#' @export
 #' 
 #' @title F.lifestage.passage.assignLSNoWeight
 #' 
-#' @description allow the program to decide the number of life stage groups but weight will not be used to assign lifestage
+#' @description Decide the number of life stage groups and do not use \code{weight}.
 #' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
@@ -20,9 +20,10 @@
 #' @param reclassifyFL A logical indicating if passage should be estimated via
 #'   forklength-based class groups.
 #' 
-#' @details  allow the program to decide the number of life stage groups but weight will not be used to assign lifestage
+#' @details A wrapper for function \code{passageWithLifeStageAssign} with 
+#' necessary variables for completion preset.  
 #' 
-#' @return jared
+#' @return See \code{passageWithLifeStageAssign}.
 #' 
 #' @author WEST Inc.
 #' 

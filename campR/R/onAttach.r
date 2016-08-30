@@ -1,4 +1,4 @@
-#' @import  quantreg splines MASS mvtnorm RODBC Rcpp plyr mclust car tools grDevices graphics stats DBI R6 assertthat magrittr
+#' @import  quantreg splines MASS mvtnorm RODBC Rcpp plyr mclust tools grDevices graphics stats DBI R6 assertthat magrittr
 #' @importFrom utils packageVersion memory.limit
 #' @importFrom ellipse ellipse
 #' 

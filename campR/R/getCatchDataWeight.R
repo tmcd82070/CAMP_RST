@@ -1,33 +1,31 @@
-#' @export getCatchDataWeight
-#'
+#' @export
+#' 
 #' @title getCatchDataWeight
-#'
-#' @description
-#' Get the catch data from the database file with the weight measurement.
-#'
-#'
-#' @param site The identification number of the site for which estimates are
+#'   
+#' @description Get the catch data from the database file with the weight
+#'   measurement.
+#'   
+#' @param site The identification number of the site for which estimates are 
 #'   required.
-#' @param taxon The species identifier indicating the type of fish of interest.
+#' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
-#' @param min.date The start date for data to include. This is a text string in
+#' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
-#' @param max.date The end date for data to include.  Same format as
+#' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
-#'
-#' @details
-#' When the passage estimation routine is called with the analytical life stage assignment, this function is called.
-#' The default queries that retrieve the catch data do not include the weight. This function is need to retrieve the weight information.
-#' This function is intended for internal use only.
-#'
-#'
-#'
+#'   
+#' @details When the passage estimation routine is called with the analytical
+#' life stage assignment, this function is called. The default queries that
+#' retrieve the catch data do not include the weight measurement. This function
+#' is needed to retrieve the weight information. This function is intended for
+#' internal use only.
+#' 
 #' @return Data.frame of the catch data with the weight measurements.
-#'
+#'   
 #' @author Jared Studyvin WEST Inc.
-#'
+#'   
 #' @seealso \code{assignLifeStage}
-#'
+#'   
 #' @examples
 #' \dontrun{
 #' #   ---- Get weight data from the American. 
@@ -37,18 +35,8 @@
 #' max.date <- "2013-05-30"
 #' dfWeight <- getCatchDataWeight(taxon,site,min.date,max.date)
 #' }
-############################################
-## Jared Studyvin
-## 14 Jan 2016
-## get the data for the life stage assignment
-############################################
-
-
 
 getCatchDataWeight <- function(taxon,site,min.date,max.date){
-
-
-
 
     ## the string must be 'db.file', or else f'n 'build_Report_Criteria.r' won't work.
     ##db.file <<- paste0(pathData,"/CAMP.mdb")
@@ -70,7 +58,6 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
         return()
     }
 
-
     db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
 
@@ -78,7 +65,6 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
     ## ---- end building ----
 
     F.run.sqlFile(ch, "QryNotFishing.sql", R.TAXON=taxon )
-
 
     ## ---- finally, the new query ----
     F.run.sqlFile(ch,'QryUnmarkedChinookLifeStages.sql',TRUE,FALSE,R.TAXON=taxon)
@@ -89,9 +75,7 @@ getCatchDataWeight <- function(taxon,site,min.date,max.date){
     close(ch) # disconnect
     ## ---- end new query -----
 
-
     ## return the data
     return(catch)
-
 
 } ##end getCatchDataWeight function

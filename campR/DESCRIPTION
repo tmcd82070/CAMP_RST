@@ -19,7 +19,6 @@ Imports:
  mvtnorm,
  plyr,
  mclust,
- car,
  tools,
  grDevices,
  dplyr,
