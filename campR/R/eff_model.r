@@ -2,13 +2,14 @@
 #' 
 #' @title F.efficiency.model
 #'   
-#' @description Compute and estimate efficiency for all missing combinations of
-#'   traps and days;  i.e., "impute" a value for efficiency when missing.
+#' @description Estimate the efficiency model from a data frame containing 
+#' efficiency trials.
 #'   
 #' @param obs.eff.df A data frame with at least variables \code{batchDate} and 
 #'   \code{efficiency}, where \code{efficiency} is \code{NA} for all days 
 #'   requiring an estimate.
-#' @param plot A logical indicating if resulting efficiency should be plotted.
+#' @param plot A logical indicating if raw efficiencies and the model(s)
+#' should be plotted.
 #' @param method A scalar specifying the type of extrapolation to do. 
 #'   \code{method = 1} takes the average of entire season. \code{method = 2} uses 
 #'   earliest observed efficiency for each unique interval between distinct
@@ -24,20 +25,20 @@
 #' 
 #' @section Efficiency Methodologies:
 #'
-#' Selection of \code{method} allows for efficiency estimation to vary, based on
-#' need.
+#' Parameter \code{method} selects one of the following 
+#' efficiency estimation methods:
 #'   
 #'   \itemize{ 
-#'   \item{\code{method=1} : A "Seasonal-mean model."  This means that a
+#'   \item{\code{method=1} : A "weighted average constant model."  This means that a
 #'   ratio-of-means bias-corrected global efficiency is calculated, for each 
 #'   trap, where the efficiency is estimated via \deqn{\frac{nCaught
 #'   + 1}{nReleased + 1}{(nCaught + 1) / (nReleased + 1)}}.  Values
-#'   for variables \code{nCaught} and \code{nReleased} originate via function
-#'   \code{F.get.releases} and the querying of an underlying Access database. 
+#'   for variables \code{nCaught} and \code{nReleased} come from function
+#'   \code{F.get.releases}. 
 #'   The resulting ratio-of-means efficiency is then applied to all trapping
 #'   days, regardless if data were missing or not.}
 #'   
-#'   \item{\code{method=2} : A "Constant model."  This means that this model
+#'   \item{\code{method=2} : A "step model."  This means that this model
 #'   utilizes a step function to estimate efficiency, where here, steps may
 #'   increase or decrease over time.  Each interval of time for which efficiency
 #'   needs to be estimated utilizes the earliest observed efficiency between
@@ -126,7 +127,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
     ind <- !is.na(df$efficiency)
     obs <- df$efficiency[ ind ]
     
-    #   ---- Take simple average of efficiency trials:  Seasonal-mean model.
+    #   ---- Take simple average of efficiency trials:  constant over season.
     if( method == 1 ){
       
       #   ---- This is MOR, or mean of ratios.  
@@ -145,7 +146,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
         
       fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
         
-    #   ---- Use earliest observed efficiency between efficiency trials:  Constant model.  
+    #   ---- Use earliest observed efficiency between efficiency trials:  Step model.  
     } else if( method == 2 ) {   
       
       #   ---- WARNING: method 2 is not fully programmed to be compatible with bootstrapping.  
@@ -237,7 +238,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
         #   ---- "Pred" is all efficiencies for dates between min and max of trials.
         pred <- 1 / (1 + exp(-pred))  
             
-        #   ---- If you want to use observed efficiency on days when efficiency trials were turn, uncomment.
+        #   ---- If you want to use observed efficiency on days when efficiency trials were run, uncomment.
         #miss.eff.inside <- ind.inside & !ind  # missing efficiencies inside first and last trials, sized same as df
         #miss.eff <- miss.eff.inside[ind.inside]      # missing efficiencies inside first and last trials, sized same as pred
         #df$efficiency[miss.eff.inside] <- pred[miss.eff]
