@@ -73,11 +73,11 @@
 
 F.est.efficiency <- function( release.df, batchDate, method=3, df.spline=3, plot=TRUE, plot.file=NA ){
   
-  # release.df <- release.df
-  # batchDate <- bd
-  # method <- 3
-  # df.spline <- 3
-  # plot.file <- file.root
+#   release.df <- release.df
+#   batchDate <- bd
+#   method <- 3
+#   df.spline <- 3
+#   plot.file <- file.root
 
   #   ---- Check that we actually caught released fish.  If not, cannot do estimate;
   #   ---- denom of passage estimate will be zero.

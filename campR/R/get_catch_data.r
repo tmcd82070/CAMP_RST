@@ -554,6 +554,22 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     names(preCatch2)[names(preCatch2) == 'Unmarked'] <- 'preUnmarked'    # Put this variable back to preUnmarked, to prepare for merge.
     test <- merge(catch2,preCatch2[,c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','Unassd','preUnmarked')],by=c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','Unassd'),all.x=TRUE)
     
+    
+    #preCatch2[is.na(preCatch2$forkLength),]$forkLength <- -99
+    #catch2[is.na(catch2$forkLength),]$forkLength <- -99
+    
+#     preCatch8494 <- preCatch2[preCatch2$trapVisitID == 8494,]
+#     catch8494 <- catch2[catch2$trapVisitID == 8494,]    
+#     test8494 <- merge(catch8494,preCatch8494[,c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','Unassd','preUnmarked')],by=c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','Unassd'),all.x=TRUE)
+#     
+#     
+#     write.csv(catch2[catch2$trapVisitID == 8494,],"C:/Users/jmitchell/Desktop/newError/the8494.afterTimes2.csv")
+#     write.csv(preCatch2[preCatch2$trapVisitID == 8494,],"C:/Users/jmitchell/Desktop/newError/the8494.beforeTimes2.csv")
+#     write.csv(test[test$trapVisitID == 8494,],"C:/Users/jmitchell/Desktop/newError/the8494.test.csv")
+#     
+    
+    
+    
     #   ---- Identify the problem records.  
     possiblyOff <- test[is.na(test$preUnmarked),]    # Possible trouble spots.
     test$preUnmarked[is.na(test$preUnmarked)] <- 0   # Unassigned fish that were not assigned to a certain category before, 

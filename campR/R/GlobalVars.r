@@ -101,6 +101,15 @@
 #'   point equal or in excess to the maximum possible forklength, e.g., 999. See
 #'   Details.
 #'   
+#' @param plusCountDec An integer specifying the number of decimal places to 
+#' which plus-count fish should be rounded.  For example, when \code{plusCountDec=1},
+#' plus-count fish are rounded to the nearest tenth.  Setting \code{plusCountDec=0}
+#' rounds to the nearest whole fish.  
+#' 
+#' @param passageRounder An integer specifying the place to which final passage 
+#'   estimates and confidence intervals should be rounded.  For example, a value
+#'   of \code{4} rounds results to the nearest 1,000.
+#'   
 #' @details One additional global variable is defined. \code{table.names} is a
 #' list containing the mapping of table names in Access to table names in R.
 #' This was set up to facilitate painless table name changes in Access.  This
@@ -120,6 +129,16 @@
 #' scheme.
 #' 
 #' The data base name in use is written to the R log file.
+#' 
+#' Global variable \code{plusCountDec} allows for more robust estimation of fish
+#' captured with lesser frequencies, e.g., endangered fish for which estimation
+#' of passage is deemed useful.  Often, underlying non-randomly-sampled fish are
+#' caught in insufficient quantities to allow for the estimation of at least one
+#' of these special fish types, when rounded to the nearest fish following the
+#' application of underlying frequency distributions resulting from randomly
+#' sampled fish.  Manipulation of the decimal place following the allocation of
+#' these unassigned fish leads to non-zero estimates for rare categories
+#' represented in the random sample.
 #' 
 #' @return No return value.
 #'   
@@ -152,7 +171,9 @@ GlobalVars <- function(
 	Yes.code = 1,
 	No.code = 2,
 	seed = 884,
-	forkLengthCutPoints = data.frame(lifeStage=c("FL1 leq 41mm","FL2 42-72mm","FL3 73-110mm","FL4 geq 111mm"),cutPoints=c(41,72,110,9999))
+	forkLengthCutPoints = data.frame(lifeStage=c("FL1 leq 41mm","FL2 42-72mm","FL3 73-110mm","FL4 geq 111mm"),cutPoints=c(41,72,110,9999)),
+	plusCountDec = 1,
+	passageRounder = 4
 	){
 
 	  # DB file -------
@@ -207,6 +228,12 @@ GlobalVars <- function(
 	  
 	  # Set dataframe forkLengthCutPoints
 	  assign("forkLengthCutPoints",forkLengthCutPoints,pos=.GlobalEnv)
+	  
+	  # Set the number of decimals to use for plus-count fish.
+	  assign("plusCountDec", plusCountDec, pos=.GlobalEnv)
+	  
+	  # Set the number of significant digits by which we want to round final passage. 
+	  assign("passageRounder", passageRounder, pos=.GlobalEnv)
     
     # Table names is a special global variable that we intentionally make harder ----
     # to change.  I.e., must change code here and re-compile. 
