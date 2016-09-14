@@ -83,6 +83,29 @@ F.reclassifyLS <- function(catch){
     stop("The creation of a new lifeStage variable based on forklength has resulted in error in function F.reclassify, line 75.  Investigate.\n")
   }
   
+  #   ---- Summarize to get unique combinations of FinalRun, lifeStage, and forkLength.
+  catchNames <- names(catch)
+  catchF <- catch[catch$TrapStatus == "Fishing",]
+  catchF$forkLength <- ifelse(is.na(catchF$forkLength),-99,catchF$forkLength)
+  catch$forkLength <- ifelse(is.na(catch$forkLength),-99,catch$forkLength)
+  
+  catchFsummary <- aggregate(catchF$Unmarked,by=list(catchF$trapVisitID,catchF$FinalRun,catchF$lifeStage,catchF$forkLength,catchF$RandomSelection),sum)
+  names(catchFsummary) <- c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection','newUnmarked')
+  catchNewUnmarked <- merge(catch,catchFsummary,by=c('trapVisitID','FinalRun','lifeStage','forkLength','RandomSelection'),all.x=TRUE)
+  catchNewUnmarked$Unmarked <- NULL
+  names(catchNewUnmarked)[names(catchNewUnmarked) == "newUnmarked"] <- "Unmarked"
+  catchNewUnmarkedUnique <- unique(catchNewUnmarked)
+  catchN <- catchNewUnmarkedUnique
+  
+  #   ---- Now, put forklength back to NA.  At this point, it still has a -99, which isn't good.
+  catchN$forkLength <- ifelse(catchN$forkLength == -99,NA,catchN$forkLength)
+  
+  #   ---- Re-order the columns to reflect their traditional format.
+  catchN <- catchN[,catchNames]
+  
+  #   ---- And finally, place back to the data frame we need.
+  catch <- catchN
+  
   #   ---- Take a look at the remapping, so as to ensure correctness.  Eventually delete. 
   # table(catch$forkLength,catch$lifeStage,exclude=NULL)
   # table(catch[catch$TrapStatus == "Fishing" & catch$FinalRun != "Unassigned",]$forkLength,catch[catch$TrapStatus == "Fishing" & catch$FinalRun != "Unassigned",]$lifeStage,exclude=NULL)

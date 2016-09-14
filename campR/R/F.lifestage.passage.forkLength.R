@@ -105,10 +105,10 @@
 #' }
 F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,nLS=NULL,weightUse=NULL,autoLS=FALSE,reclassifyFL=TRUE){
 
-  # site <- 12345
+  # site <- 1000
   # taxon <- 161980
-  # min.date <- "2013-01-16"
-  # max.date <- "2013-06-30"
+  # min.date <- "2005-12-01"
+  # max.date <- "2006-08-31"
   # by <- "week"
   # output.file <- "here"
   # ci <- TRUE

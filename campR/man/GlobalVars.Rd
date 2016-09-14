@@ -13,7 +13,7 @@ GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb", output.dir = "..\\\\outputs",
   time.zone = "America/Los_Angeles", Yes.code = 1, No.code = 2,
   seed = 884, forkLengthCutPoints = data.frame(lifeStage = c("FL1 leq 41mm",
   "FL2 42-72mm", "FL3 73-110mm", "FL4 geq 111mm"), cutPoints = c(41, 72, 110,
-  9999)))
+  9999)), plusCountDec = 1, passageRounder = 4)
 }
 \arguments{
 \item{db.file}{Character string giving the full path and name of the CAMP
@@ -112,6 +112,15 @@ right. The number of rows in \code{forkLengthCutPoints} should equal the
 number of desired groups. Finally, the last row should have a right-end 
 point equal or in excess to the maximum possible forklength, e.g., 999. See
 Details.}
+
+\item{plusCountDec}{An integer specifying the number of decimal places to 
+which plus-count fish should be rounded.  For example, when \code{plusCountDec=1},
+plus-count fish are rounded to the nearest tenth.  Setting \code{plusCountDec=0}
+rounds to the nearest whole fish.}
+
+\item{passageRounder}{An integer specifying the place to which final passage 
+estimates and confidence intervals should be rounded.  For example, a value
+of \code{4} rounds results to the nearest 1,000.}
 }
 \value{
 No return value.
@@ -139,6 +148,16 @@ e.g., 999, so as to ensure all forklengths are included in the new grouping
 scheme.
 
 The data base name in use is written to the R log file.
+
+Global variable \code{plusCountDec} allows for more robust estimation of fish
+captured with lesser frequencies, e.g., endangered fish for which estimation
+of passage is deemed useful.  Often, underlying non-randomly-sampled fish are
+caught in insufficient quantities to allow for the estimation of at least one
+of these special fish types, when rounded to the nearest fish following the
+application of underlying frequency distributions resulting from randomly
+sampled fish.  Manipulation of the decimal place following the allocation of
+these unassigned fish leads to non-zero estimates for rare categories
+represented in the random sample.
 }
 \examples{
 \dontrun{
