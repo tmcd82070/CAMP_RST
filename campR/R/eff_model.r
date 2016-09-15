@@ -112,6 +112,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
   # plot.file <- plot.file
 
   ans <- NULL
+  method <- 1
   traps <- sort( unique(obs.eff.df$TrapPositionID))
 
   fits <- all.X <- all.ind.inside <- all.dts <- vector("list", length(traps))
