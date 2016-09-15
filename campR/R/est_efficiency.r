@@ -11,11 +11,8 @@
 #'   
 #' @param batchDate A POSIX-formatted vector of dates.
 #'   
-#' @param method The method by which efficiency is estimated.  By default always
-#'   equal to 3. See Details.
-#'   
 #' @param df.spline The default degrees of freedom to use in the estimation of
-#'   splines. By default always equal to 3. Only works when \code{method=3}.
+#'   splines. Default is 4 (1 internal knot). 
 #'   
 #' @param plot A logical indicating if efficiencies are to be plotted over time,
 #'   per trap.
@@ -29,30 +26,22 @@
 #'   estimated by the GAM model (\code{method=3}), rather than being empirical
 #'   (\code{method=1}).
 #'   
-#' @details Function \code{F.est.efficiency} first checks to ensure that at 
-#'   least one fish, out of what could be many efficiency trials, was caught. 
-#'   The lack of any caught fish prevents any estimation of total passage, given
-#'   the role that efficiency plays as a denominator quantity.
-#'   
+#' @details    
 #'   Generally, fish released as part of an efficiency trial arrive in traps 
-#'   over the course of several days.  Function \code{F.est.efficiency} 
-#'   condenses what may be a large temporal spread by calculating the mean 
-#'   recapture time of all caught fish.  In the case that a release trial 
-#'   resulted in no caught fish, the recorded \code{releaseTime}, plus the mean 
-#'   of the recorded \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter},
-#'   ensures the subsequent assigning of a \code{batchDate}.  Note that 
-#'   variables \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} are 
-#'   used as helper variables to derive a batch date when the \code{meanEndTime}
-#'   variable is \code{NA}.
+#'   over the course of several days.  \code{F.est.efficiency} 
+#'   calculates the mean 
+#'   recapture time of all re-captured fish.  When a release trial 
+#'   resulted in no recaptures, the mean recapture time is 
+#'   half way between the first and last visit of the trial (i.e., after release).
 #'   
-#'   Function \code{F.assign.batch.date} collapses mean recapture time, which is
-#'   mesured to the nearest minute, to \code{batchDate}, a simple calendar date.
+#'   Function \code{F.assign.batch.date} assigns mean recapture time, which is
+#'   mesured to the nearest minute, to a \code{batchDate}.  Batch date a simple calendar date.
 #'   
-#'   Fishing instances during which traps utilized half-cones are recorded via 
+#'   Fishing instances during which traps utilized half-cones are recorded in 
 #'   variable \code{HalfCone}.  During these instances, the number of captured 
-#'   fish, variable \code{Recaps}, is multiplied by 2, where the value 2 is
-#'   specified via use of the \code{halfConeMulti} variable in function
-#'   \code{GlobalVars}.  The expansion by two happens on the raw catch, and not
+#'   fish, variable \code{Recaps}, is multiplied by the value of \code{halfConeMulti}.
+#'   The value of \code{halfConeMulti} is set in \code{GlobalVars}
+#'   and defaults to 2.  The expansion by \code{halfConeMulti} happens on the raw catch, and not
 #'   the mean recapture.  In this way, the number recorded in variable
 #'   \code{Recaps} may not be twice the number recorded in variable
 #'   \code{oldRecaps}.
@@ -68,28 +57,17 @@
 #' @examples
 #' \dontrun{
 #' #   ---- Estimate the efficiency.  
-#' theEff <- F.est.efficiency(release.df,batchDate,method=3,df.spline=3,plot=TRUE,plots.file=NA)
+#' theEff <- F.est.efficiency(release.df,batchDate,df.spline=4,plot=TRUE,plots.file=NA)
 #' }
 
-F.est.efficiency <- function( release.df, batchDate, method=3, df.spline=3, plot=TRUE, plot.file=NA ){
+F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plot.file=NA ){
   
-#   release.df <- release.df
-#   batchDate <- bd
-#   method <- 3
-#   df.spline <- 3
-#   plot.file <- file.root
-
-  #   ---- Check that we actually caught released fish.  If not, cannot do estimate;
-  #   ---- denom of passage estimate will be zero.
-  if( sum(release.df$Recaps, na.rm=T) <= 0 ){
-    warning("NO RELEASE FISH CAUGHT.  Zero efficiency.")
-    return(data.frame(no.fish=NA))
-  }
 
   time.zone <- get("time.zone", envir=.GlobalEnv)
 
   #   ---- Fix up the data frame.
-  rel.df <- release.df[,c("releaseID","ReleaseDate","nReleased","HrsToFirstVisitAfter","HrsToLastVisitAfter","trapPositionID","meanRecapTime","Recaps",'beg.date','end.date')]
+  rel.df <- release.df[,c("releaseID","ReleaseDate","nReleased","HrsToFirstVisitAfter",
+  												"HrsToLastVisitAfter","trapPositionID","meanRecapTime","Recaps",'beg.date','end.date')]
   rel.df$batchDate <- rep(NA, nrow(rel.df))
   names(rel.df)[ names(rel.df) == "meanRecapTime" ] <- "EndTime"
 
@@ -116,7 +94,8 @@ F.est.efficiency <- function( release.df, batchDate, method=3, df.spline=3, plot
 
   #   ================== done with data manipulations ===========================
   #   ---- Compute efficiency.
-  eff.est$efficiency <- (eff.est$nCaught + 1)/(eff.est$nReleased + 1)
+  eff.est$nReleased[ eff.est$nReleased <= 0] <- NA  # don't think this can happen, but just in case.
+  eff.est$efficiency <- (eff.est$nCaught)/(eff.est$nReleased)  # eff$efficiency not used in computation, but is plotted. 
   eff.est <- eff.est[ !is.na(eff.est$efficiency), ]
 
   #   ---- Figure out which days have efficiency data.
@@ -132,7 +111,7 @@ F.est.efficiency <- function( release.df, batchDate, method=3, df.spline=3, plot
   #   ---- If there are missing days, impute them.  
   missing.days <- is.na(eff$efficiency)
   if( any(missing.days) ){
-    eff.and.fits <- suppressWarnings(F.efficiency.model( eff, plot=plot, method=method, max.df.spline=df.spline, plot.file=plot.file ))
+    eff.and.fits <- suppressWarnings(F.efficiency.model( eff, plot=plot, max.df.spline=df.spline, plot.file=plot.file ))
   } else {
     eff.and.fits <- list(eff=eff, fits=NULL, X=NULL)
     attr(eff.and.fits, "out.fn.list") <- NULL

@@ -38,7 +38,8 @@
 #'   
 #'   In processing prior to the creation of the \code{grand.df}, the dates 
 #'   outside the first and last date of valid fishing are dropped from each
-#'   trap. In reality however, the season for each trap is identified as non-missing catch.  In other words, the grand merge inserts every date for all
+#'   trap. In reality however, the season for each trap is identified as non-missing 
+#'   catch.  In other words, the grand merge inserts every date for all
 #'   traps because the underlying efficiency data frame has all dates.  For those
 #'   dates for which a trap was not fishing, the resulting catch (and thus passage)
 #'   is essentially considered zero.  
@@ -259,7 +260,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   bd <- strptime(sort( seq(as.Date(min(na.omit(release.df$ReleaseDate),na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$ReleaseDate),na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
 
   #   ---- Estimate capture for every day of season.  
-  eff.and.fits <- F.est.efficiency( release.df, bd, method=3, df.spline=3, plot=TRUE, plot.file=file.root )
+  eff.and.fits <- F.est.efficiency( release.df, bd, df.spline=4, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)
     setWinProgressBar(progbar, (2*tmp + 1)/3 )

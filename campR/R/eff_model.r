@@ -89,12 +89,6 @@
 #' }
 F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA ){
 
-  # obs.eff.df <- eff
-  # plot <- plot
-  # method <- method
-  # max.df.spline <- df.spline
-  # plot.file <- plot.file
-
   ans <- NULL
   traps <- sort( unique(obs.eff.df$TrapPositionID))
 
