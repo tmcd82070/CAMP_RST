@@ -110,6 +110,15 @@
 #'   estimates and confidence intervals should be rounded.  For example, a value
 #'   of \code{4} rounds results to the nearest 1,000.
 #'   
+#' @param eff.min.spline.samp.size An integer specifying the number of efficiency
+#'   trials required to fit a spline efficiency model.  If fewer than 
+#'   this number of efficiency trials target a particular subsite, 
+#'   the Platform estimates constant efficiency for that subsite 
+#'   using the ROM method 
+#'   (see \link{\code{F.efficiency.model}}). If this number or more are available,
+#'   the Platform fits increasingly complex spline-based logistic regressions
+#'   and uses the one with lowest AIC. 
+#'   
 #' @details One additional global variable is defined. \code{table.names} is a
 #' list containing the mapping of table names in Access to table names in R.
 #' This was set up to facilitate painless table name changes in Access.  This
@@ -118,17 +127,20 @@
 #' arguments to \code{GlobalVars}. To change table names, edit the code
 #' of \code{GlobalVars} and recompile the package.
 #' 
-#' For dataframe \code{forkLengthCutPoints}, provided cut points are assumed to 
-#' form intervals closed on the right.  For example, if the second column of 
+#' In dataframe \code{forkLengthCutPoints}, cut point intervals 
+#' are closed on the right.  For example, if the second column of 
 #' \code{forkLengthCutPoints} contains the integers 37, 59, and 105, then it is 
 #' assumed that three forklength intervals are desired.  The first will cover 
-#' (0,37], the second (37,59], and the third (59,105].  Note that in this 
-#' example, the code implicitly assumes that the maximum forklength to be 
-#' included is 105.  It is advisable to set this last number to a large number, 
-#' e.g., 999, so as to ensure all forklengths are included in the new grouping 
+#' (0,37], the second (37,59], and the third (59,105].  
+#' The code assumes maximum forklength to be 
+#' included is the maximum number given (i.e., 105 in the example).  
+#' Cut points must be set so that the last (and greatest) number 
+#' is larger than the maximum forklength to include.  It is acceptable 
+#' to set the last cut point to a large number, 
+#' e.g., Inf or 999, to ensure all forklengths are included in the new grouping 
 #' scheme.
 #' 
-#' The data base name in use is written to the R log file.
+#' The Access data base name in use is written to the R log file.
 #' 
 #' Global variable \code{plusCountDec} allows for more robust estimation of fish
 #' captured with lesser frequencies, e.g., endangered fish for which estimation
@@ -173,7 +185,8 @@ GlobalVars <- function(
 	seed = 884,
 	forkLengthCutPoints = data.frame(lifeStage=c("FL1 leq 41mm","FL2 42-72mm","FL3 73-110mm","FL4 geq 111mm"),cutPoints=c(41,72,110,9999)),
 	plusCountDec = 1,
-	passageRounder = 4
+	passageRounder = 4,
+	eff.min.spline.samp.size = 10
 	){
 
 	  # DB file -------
