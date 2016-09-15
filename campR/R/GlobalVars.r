@@ -273,8 +273,7 @@ GlobalVars <- function(
     #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then,
     #  *************** Set the efficiency model to use.
     #
-    #   Specify the capture efficiency model
-    #eff.model.method <- 3
+    #   Can specify the capture efficiency model here.
 
 }
 
