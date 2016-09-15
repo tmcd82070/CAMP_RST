@@ -10,12 +10,6 @@
 #'   requiring an estimate.
 #' @param plot A logical indicating if raw efficiencies and the model(s)
 #' should be plotted.
-#' @param method A scalar specifying the type of extrapolation to do. 
-#'   \code{method = 1} takes the average of entire season. \code{method = 2} uses 
-#'   earliest observed efficiency for each unique interval between distinct
-#'   efficiency trials; i.e., a so called "step-function" constant model. 
-#'   \code{method = 3} is a B-spline model with up to \code{max.df.spline}
-#'   degrees of freedom.
 #' @param max.df.spline The maximum degrees of freedom allowed for splines.
 #' @param plot.file The name of the file prefix under which output is to be 
 #'   saved.  Set to \code{NA} to plot to the plot window.
@@ -23,73 +17,63 @@
 #' @return A data frame with all observed and imputed \code{efficiency} values, 
 #'   where variable \code{gam.estimated} identifies days with imputed values.
 #' 
-#' @section Efficiency Methodologies:
+#' @section Efficiency model method:
 #'
-#' Parameter \code{method} selects one of the following 
-#' efficiency estimation methods:
 #'   
 #'   \itemize{ 
-#'   \item{\code{method=1} : A "weighted average constant model."  This means that a
-#'   ratio-of-means bias-corrected global efficiency is calculated, for each 
-#'   trap, where the efficiency is estimated via \deqn{\frac{nCaught
-#'   + 1}{nReleased + 1}{(nCaught + 1) / (nReleased + 1)}}.  Values
-#'   for variables \code{nCaught} and \code{nReleased} come from function
-#'   \code{F.get.releases}. 
-#'   The resulting ratio-of-means efficiency is then applied to all trapping
-#'   days, regardless if data were missing or not.}
+#'   \item{Less than \code{eff.min.spline.samp.size} trials : 
+#'   A "weighted average constant model with bias correction."  This model 
+#'   uses constant efficiency over the season, and estimates it 
+#'   using a ratio-of-means bias-corrected ("ROM+1") average. For each 
+#'   trap, estimated efficiency is \deqn{\frac{(\sum nCaught)
+#'   + 1}{(\sum nReleased) + 1}{(sum(nCaught) + 1) / (sum(nReleased) + 1)}}.  Values
+#'   for \code{nCaught} and \code{nReleased} come from function
+#'   \code{F.get.releases}. }
 #'   
-#'   \item{\code{method=2} : A "step model."  This means that this model
-#'   utilizes a step function to estimate efficiency, where here, steps may
-#'   increase or decrease over time.  Each interval of time for which efficiency
-#'   needs to be estimated utilizes the earliest observed efficiency between
-#'   efficiency trials.  Note that this method has not been fully programmed to
-#'   be compatible with boostrapping in function \code{F.bootstrap.passage}.  This
-#'   option should not be used until \code{F.bootstrap.passage} can handle its
-#'   results.}
 #'   
-#'   \item{\code{method=3} : A "B-spline model."  This efficiency estimation 
-#'   methodology chops up the date range into small temporal bits.  For each,
-#'   possibly different degree polynomials are fit, with each individual
-#'   polynomial fitting the data locally.  Each individual polynomial is then
-#'   fit together into one final curve, with several conditions ensuring its
-#'   smoothness. One condition includes matching the polynomial estimate at the
-#'   end of one time point with the connecting starting time point of the next
-#'   polynomial.  Others include ensuring that the first derivatives (local
-#'   slopes) and second derivatives (local convexity) at these connecting time
-#'   points are equal.  
+#'   \item{\code{eff.min.spline.samp.size} trials or more : 
+#'   A "B-spline model."  This model starts by estimating 
+#'   a constant logistic regression where recaptures (i.e., \code{nCaught}) is 
+#'   the number of "successes" and releases (i.e.,  \code{nReleased}) is
+#'   number of "trials". Assuming this constant model is successful, the method 
+#'   estimates a series of increasingly complex b-spline logistic regression 
+#'   models until AIC is minimized or model estimation fails (failure to 
+#'   converge or estimates at boundary). B-spline models, in general, divide 
+#'   the date range into intervals by adding 'knots'.  Between 'knots', 
+#'   b-spline models fit cubic polynomials in a way that  
+#'   connects smoothly at knots (refer to b-spline methods for details). 
 #'   
-#'   Estimation requires at least one trapping instance to occur within the 
-#'   earliest and latest date with an efficiency trial.  All three can occur on 
-#'   the same one day.  Generalized additive models, or GAMs, first fit the
-#'   observed efficiency-trial data as
-#'   \deqn{\frac{nCaught}{nReleased}}{nCaught / nReleased} outcome
-#'   proportions against a null model with a binomial link.  This leads to a
-#'   constant, or intercept-only model, where the intercept is the weighted 
-#'   avearge of caught fish over all efficiency trials.
+#'   The first (lowest order) b-spline model fitted contains 
+#'   zero knots and therefore estimates a cubic model. Assuming that 
+#'   model was successful and that AIC improved relative to the 
+#'   constant model, the method adds one knot at the median date
+#'   and re-estimates. If that model was successful and AIC improved 
+#'   relative to the previous model, the method adds another knot at 
+#'   the (1/(knots+1))-th quantiles of date and re-estimates.  The method
+#'   containues to add knots until one or more of the following 
+#'   conditions happen: (1) AIC does not improve, (2) estimation 
+#'   fails somehow, or (3) the maximum number of knots 
+#'   (i.e., \code{max.df.spline-3}) is fitted. 
 #'   
-#'   Assuming at least ten efficiency trials, higher-order polynomial models are
-#'   considered.  Akaike Information Criterion (AIC), rounded to four decimal
-#'   places, determines winning models. Models with lower AICs trump all others,
-#'   with the winning model having to be at least two AIC points less than its
-#'   nearest competitor.  Function \code{bs} identifies the B-spline basis to
-#'   use in higher-order models.  
+#'   Using the default value of \code{max.df.spline}, the efficiency model
+#'   is either constant (intercept-only), cubic, or b-spline with one 
+#'   interval knot.  
 #'   
-#'   In generalized additive models, consideration of higher-order polynomials 
-#'   often starts with cubic polynomials partitioned in a temporal piecewise
-#'   fashion, chopped at the time values at which observed efficiencies were
-#'   recorded. Currently, however, no polynomials of degree greater than three
-#'   are considered in efficiency models;  thus, models could either be 
-#'   intercept-only, or cubic.
+#'   When the best logistic regression model is constant (intercept-only), 
+#'   estimated efficiency is the ratio-of-means estimator WITHOUT the "+1" 
+#'   bias correction.  With many efficiency trial, the "+1" bias correction 
+#'   is tiny and inconsequential. The exact efficiency model used at each subsite
+#'   is listed in the campR log file.  
 #'   
-#'   The \eqn{\beta}s from the final selected GAM are saved for use in
-#'   bootstrapping via function \code{F.boostrap.passage}.  They are also 
-#'   utilized to form predictions over the entire efficiency trial season, for
-#'   each trap.  Model efficiency values are used for all days, i.e., in lieu of
-#'   observed data.  All dates outside the efficiency trial season use an
-#'   estimated mean spline calculated over all dates.}
+#'   The \eqn{\beta}s from the final logistic regression are saved for use in
+#'   bootstrapping by function \code{F.boostrap.passage}.  Modeled efficiencies 
+#'   are used for all days, even if a particular day contained an 
+#'   efficiency trial. 
 #'   
-#'   \item{\code{method=4} : An "Enhanced Efficiency model."  To be developed
-#'   at a later date.}
+#'   All dates outside the efficiency trial season use the 
+#'   mean of estimates within the season.  This means the efficiency 
+#'   model can vary within a season, but is always constant before 
+#'   the first and after the last efficiency trial.}
 #'   
 #'   }
 #'   
@@ -101,9 +85,9 @@
 #' \dontrun{
 #' #   ---- Fit an efficiency model for each unique trapPositionID 
 #' #   ---- in data frame obs.eff.df.  
-#' F.efficiency.model( obs.eff.df, plot=T, method=1, max.df.spline=4, plot.file=NA)
+#' F.efficiency.model( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA)
 #' }
-F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, plot.file=NA ){
+F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA ){
 
   # obs.eff.df <- eff
   # plot <- plot
@@ -112,7 +96,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
   # plot.file <- plot.file
 
   ans <- NULL
-  method <- 1
   traps <- sort( unique(obs.eff.df$TrapPositionID))
 
   fits <- all.X <- all.ind.inside <- all.dts <- vector("list", length(traps))
@@ -120,24 +103,47 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
   names(all.X) <- traps
   names(all.dts) <- traps
   names(all.ind.inside) <- traps
-
+  
+  # 	---- If number of trials at a trap less than this number, 
+  #        assume constant and use ROM+1 estimator
+  eff.min.spline.samp.size <- get("	eff.min.spline.samp.size", pos=.GlobalEnv)
+  
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
   for( trap in traps ){
 
     df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
     ind <- !is.na(df$efficiency)
-    obs <- df$efficiency[ ind ]
+
+    #  ---- Find the "season", which is between first and last trials
+    strt.dt <- min( df$batchDate[ind], na.rm=T )  # Earliest date with an efficiency trial
+    end.dt  <- max( df$batchDate[ind], na.rm=T )  # Latest date with efficiency trial
+    ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
+    inside.dates <- c(strt.dt, end.dt)
+    all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
     
-    #   ---- Take simple average of efficiency trials:  constant over season.
-    if( method == 1 ){
-      
+		#  ---- The fitting data frame
+    tmp.df <- df[ind & ind.inside,]
+    m.i <- sum(ind & ind.inside)
+    
+    if( m.i == 0 ){
+    	#   ---- No efficiency trials at this trap.
+    	cat( paste("NO EFFICIENCY TRIALS FOR TRAP", trap, "\n") )
+    	cat( paste("Catches at this trap will not be included in production estimates.\n"))
+    	fits[[trap]] <- NA
+    	all.X[[trap]] <- NA
+    	df$efficiency <- NA
+    	
+    } else if( (m.i < eff.min.spline.samp.size) | (sum(tmp.df$nCaught) == 0) ){
+    	#   ---- Take simple average of efficiency trials:  constant over season.
+    	cat("Fewer than 10 trials found or no recaptures.  'ROM+1' estimator used.\n")
+    	
       #   ---- This is MOR, or mean of ratios.  
-      obs.mean <- mean(obs)  
-      cat(paste("MOR efficiency= ", obs.mean, "\n"))
+      #obs.mean <- mean(obs)  
+      #cat(paste("MOR efficiency= ", obs.mean, "\n"))
         
       #   ---- This is ROM = Ratio of means, with bias correction.  
-      obs.mean <- (sum(df$nCaught[ind])+1) / (sum(df$nReleased[ind])+1)   
-      cat(paste("ROM efficiency= ", obs.mean, " (ROM will be used)\n"))
+      obs.mean <- (sum(tmp.df$nCaught)+1) / (sum(tmp.df$nReleased)+1)   
+      cat(paste("'ROM+1' efficiency= ", obs.mean, "\n"))
         
       #   ---- If want to use ROM for missing efficiencies only, uncomment the next line.  
       #df$efficiency[!ind] <- obs.mean
@@ -147,110 +153,99 @@ F.efficiency.model <- function( obs.eff.df, plot=T, method=1, max.df.spline=4, p
         
       fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
         
-    #   ---- Use earliest observed efficiency between efficiency trials:  Step model.  
-    } else if( method == 2 ) {   
-      
-      #   ---- WARNING: method 2 is not fully programmed to be compatible with bootstrapping.  
-      #   ---- Don't use unless you program the bootstrapping to accept it.
-      fit <- approx( df$batchDate[ind], df$efficiency[ind], xout=df$batchDate, method="constant", rule=2 )
-      df$efficiency <- fit$y
-        
-    #   ---- B-spline model.
-    } else if( method == 3 ) {    
-
-      #   ---- Fit glm model, increasing degress of freedom, until something goes wrong.  
-      strt.dt <- min( df$batchDate[ind], na.rm=T )  # Earliest date with an efficiency trial
-      end.dt  <- max( df$batchDate[ind], na.rm=T )  # Latest date with efficiency trial
-      ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
-      inside.dates <- c(strt.dt, end.dt)
-
-      tmp.df <- df[ind & ind.inside,]
-      cat(paste("\n\n++++++Efficiency model fitting for trap:", trap, "\n"))
+    } else {    
+    	#   ---- There are enough observations to estimate B-spline model.
+    	
+    	#   ---- Fit glm model, increasing degress of freedom, until minimize AIC or something goes wrong.  
+    	cat(paste("\n\n++++++Spline model fitting for trap:", trap, "\n Trials are:"))
       print(tmp.df)
         
-      #   ---- Check that there are adequate trials at this trap.  
-      if( sum(ind & ind.inside) == 0  ){
-        
-        #   ---- No efficiency trials at this trap.
-        cat( paste("NO EFFICIENCY TRIALS FOR TRAP", trap, "\n") )
-        cat( paste("Catches at this trap will not be included in production estimates.\n"))
-        fits[[trap]] <- NA
-        all.X[[trap]] <- NA
-        df$efficiency <- NA
-      } else if( sum(ind & ind.inside) >= 1 ){
-
-        #   ---- At least one efficiency trial "inside" for this trap.
-        #   ---- Fit a null model.  
-        fit <- glm( nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=tmp.df$nReleased ) 
-        fit.AIC <- AIC(fit)
+      #   ---- At least one efficiency trial "inside" for this trap.
+      #   ---- Fit a null model.  
+      fit <- glm( nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=tmp.df$nReleased ) 
+      fit.AIC <- AIC(fit)
+  
+      cat(paste("df= ", 1, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
     
-        cat(paste("df= ", 1, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
-    
-        #   ---- Consider higher polynomial models.  
-        if( nrow(tmp.df) < 10 ){
-          
-          #   ---- Go with the mean model.  
-          cat("Fewer than 10 trials found.  Mean efficiency model used\n")
-        } else {
+      if( !fit$converged | fit$boundary ){
+				#   ---- Something went wrong with the constant model. 
+      	#				 I don't think this can actually happen because m.i > 10 and sum(nCaught) > 0, 
+      	#        but I'm adding this clause just in case (maybe something is missing).
+      	#				 In this case, use ROM+1 estimator.
+      	cat("Constant (intercept-only) logistic model for efficiency failed. Using 'ROM+1' estimator. ")
+      	obs.mean <- (sum(tmp.df$nCaught)+1) / (sum(tmp.df$nReleased)+1)   
+      	cat(paste("'ROM+1' efficiency= ", obs.mean, "\n"))
+      	
+      	df$efficiency <- obs.mean
+      	
+      	fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
+      	
+      } else {
+	      #		---- Fit increasingly complex models. 
+	      #				 Note, we skip the quadratic:
+	      #					df = 3 means cubic model (no internal knots)
+	      #				  df = 4 means cubic spline w/ 1 internal knot at median
+	      #					df = 5 means cubic spline w/ 2 internal knots at 0.33 and 0.66 of range
+	      #					etc.
+	      #				 Subtract 3 from df to get number of internal knots.
+	      
+	      cur.df <- 3
+	      repeat{
+	             
+	        cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
+	        tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
+	    
+	        cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
+	        cur.AIC <- AIC(cur.fit)
+	                
+	        cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
+	    
+	        if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC - 2) ){
+	          break
+	        } else {
+	          fit <- cur.fit
+	          fit.AIC <- cur.AIC
+	          bspl <- cur.bspl
+	          cur.df <- cur.df + 1
+	        }
+	      }
+      
 
-          cur.df <- 3
-          repeat{
-                 
-            cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
-            tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
-        
-            cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
-            cur.AIC <- AIC(cur.fit)
-                    
-            cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
-        
-            if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC - 2) ){
-              break
-            } else {
-              fit <- cur.fit
-              fit.AIC <- cur.AIC
-              bspl <- cur.bspl
-              cur.df <- cur.df + 1
-            }
-          }
-        }
-            
-        cat("\nEfficiency model:\n")
-        print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
-            
-        #   ---- Save fit and season's dates for bootstrapping.
-        fits[[trap]] <- fit     
-        all.ind.inside[[trap]] <- inside.dates   
-    
-        #   ---- Make a design matrix for ease in calculating predictions.
-        if( length(coef(fit)) <= 1 ){
-          pred <- matrix( coef(fit), sum(ind.inside), 1 )
-          X <- matrix( 1, sum(ind.inside), 1)
-        } else {
-          X <- cbind( 1, bspl )
-          pred <- X %*% coef(fit)
-        }
-            
-        #   ---- Save X, and the dates at which we predict, for bootstrapping.
-        all.X[[trap]] <- X   
-        all.dts[[trap]] <- df$batchDate[ind.inside]   
-            
-        #   ---- Standard logistic prediction equation.  
-        #   ---- "Pred" is all efficiencies for dates between min and max of trials.
-        pred <- 1 / (1 + exp(-pred))  
-            
-        #   ---- If you want to use observed efficiency on days when efficiency trials were run, uncomment.
-        #miss.eff.inside <- ind.inside & !ind  # missing efficiencies inside first and last trials, sized same as df
-        #miss.eff <- miss.eff.inside[ind.inside]      # missing efficiencies inside first and last trials, sized same as pred
-        #df$efficiency[miss.eff.inside] <- pred[miss.eff]
-            
-        #   ---- If, however, you want to use the modeled efficiency for all days, even when a trial was done, use these. 
-        df$efficiency[ind.inside] <- pred
-
-        #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
-        mean.p <- mean(pred, na.rm=T)
-        df$efficiency[!ind.inside] <- mean.p
-      }
+	      cat("\nFinal Efficiency model for trap: ", trap, "\n")
+	      print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
+	          
+	      #   ---- Make a design matrix for ease in calculating predictions.
+	      if( length(coef(fit)) <= 1 ){
+	        pred <- matrix( coef(fit), sum(ind.inside), 1 )
+	        X <- matrix( 1, sum(ind.inside), 1)
+	      } else {
+	        X <- cbind( 1, bspl )
+	        pred <- X %*% coef(fit)
+	      }
+	            
+	      #   ---- Save X, and the dates at which we predict, for bootstrapping.
+	      all.X[[trap]] <- X   
+	      all.dts[[trap]] <- df$batchDate[ind.inside]   
+	          
+	      #   ---- Standard logistic prediction equation.  
+	      #   ---- "Pred" is all efficiencies for dates between min and max of trials.
+	      pred <- 1 / (1 + exp(-pred))  
+	          
+	      #   ---- If you want to use observed efficiency on days when efficiency trials were run, uncomment.
+	      #miss.eff.inside <- ind.inside & !ind  # missing efficiencies inside first and last trials, sized same as df
+	      #miss.eff <- miss.eff.inside[ind.inside]      # missing efficiencies inside first and last trials, sized same as pred
+	      #df$efficiency[miss.eff.inside] <- pred[miss.eff]
+	          
+	      #   ---- If, however, you want to use the modeled efficiency for all days, even when a trial was done, use these. 
+	      df$efficiency[ind.inside] <- pred
+	
+	      #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
+	      mean.p <- mean(pred, na.rm=T)
+	      df$efficiency[!ind.inside] <- mean.p
+	
+	      #   ---- Save the fit for bootstrapping.
+	      fits[[trap]] <- fit     
+	    }      
     }
     
     #   ---- Uncomment the following line if using imputed value for all days.  Otherwise, comment it out, 
