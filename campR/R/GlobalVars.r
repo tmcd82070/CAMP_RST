@@ -247,6 +247,9 @@ GlobalVars <- function(
 	  
 	  # Set the number of significant digits by which we want to round final passage. 
 	  assign("passageRounder", passageRounder, pos=.GlobalEnv)
+	  
+	  #	Set number of efficiencey trials for spline model
+	  assign("eff.min.spline.samp.size", 	eff.min.spline.samp.size, pos=.GlobalEnv)
     
     # Table names is a special global variable that we intentionally make harder ----
     # to change.  I.e., must change code here and re-compile. 
