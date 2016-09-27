@@ -75,7 +75,7 @@
 #' min.date <- "2013-01-01"
 #' max.date <- "2013-06-01"
 #' by <- "week"
-#' output.file <- "American"
+#' output.file <- "Feather"
 #' ci <- TRUE
 #' }
 F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE ){

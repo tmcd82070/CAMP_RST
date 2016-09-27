@@ -318,7 +318,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 
           #   ---- Variance matrix,
           #   ---- Check if only one efficiency trial at this trap.
-          if( e.fit$df.residual == 0 ){
+          if( nrow(e.fit) == 1 ){ #e.fit$df.residual == 0 ){
             disp <- 1
           } else {
             resids <- residuals(e.fit, type="pearson")

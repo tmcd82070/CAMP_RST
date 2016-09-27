@@ -213,7 +213,7 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
 
             #   ---- Multiply proportions that day by number of missings - the 'plus' count.  
             N.j <- catch$Unmarked[j]
-            n.j <- c(round( props * N.j ))
+            n.j <- c(round( props * N.j,1))  # Change the decimal of unassigned.
                 
             #   ---- Make sure the plus counts sum to the original. They won't always due to rounding.  
             #   ---- This fixes the rounding error.

@@ -87,7 +87,7 @@
 #' }
 
 F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
-
+# 
 #   catch.df <- catch.df.ls
 #   release.df <- release.df
 #   summarize.by <- by
@@ -338,15 +338,20 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- Check and make sure that assignedCatch + unassignedCatch + imputedCatch = totalCatch.
   #   ---- Check and make sure that assignedCatch + unassignedCatch = inflatedCatch.
   #   ---- Check and make sure that inflatedCatch + imputedCatch = totalCatch.
-  grand.df$sum1 <- grand.df$modAssignedCatch + grand.df$modUnassignedCatch + grand.df$imputedCatch
-  grand.df$sum2 <- grand.df$modAssignedCatch + grand.df$modUnassignedCatch
-  grand.df$sum3 <- grand.df$halfConeAssignedCatch + grand.df$halfConeUnassignedCatch + grand.df$assignedCatch + grand.df$unassignedCatch + grand.df$imputedCatch
+  
+  #   ---- Note the rounding.  In a rare instance on the Feather, 2012-01-25, trapPositionID 5002, what are displayed
+  #   ---- as 3 modUnassignedCatch leaves to a non-zero number when modUnassigned - 3 is calculated.  This causes 
+  #   ---- fish accounting to fail.  Round all these values (seen to play a role) to the nearest tenth, which should 
+  #   ---- take care of this mysterious issue.  
+  grand.df$sum1 <- round(grand.df$modAssignedCatch + grand.df$modUnassignedCatch + grand.df$imputedCatch,1)
+  grand.df$sum2 <- round(grand.df$modAssignedCatch + grand.df$modUnassignedCatch,1)
+  grand.df$sum3 <- round(grand.df$halfConeAssignedCatch + grand.df$halfConeUnassignedCatch + grand.df$assignedCatch + grand.df$unassignedCatch + grand.df$imputedCatch,1)
   grand.df$check1 <- ifelse(grand.df$sum1 == grand.df$totalEstimatedCatch,TRUE,FALSE)
-  grand.df$check2 <- ifelse(grand.df$sum2 == grand.df$n.tot,TRUE,FALSE)
+  grand.df$check2 <- ifelse(grand.df$sum2 == round(grand.df$n.tot,1),TRUE,FALSE)
   grand.df$check3 <- ifelse(grand.df$sum3 == grand.df$totalEstimatedCatch,TRUE,FALSE)
 
   if(sum(grand.df$check1 + grand.df$check2 + grand.df$check3) != nrow(grand.df)*3){
-    stop('Issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Investigate est_passage.R, around line 176.')
+    stop('Issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Investigate est_passage.R, around line 349.')
   } else {
     cat('No issue with summation of halfConeAssignedCatch, halfConeUnassignedCatch, assignedCatch, unassignedCatch, modAssignedCatch, modUnassignedCatch, imputedCatch, and/or totalEstimatedCatch.  Continuing...\n')
   }

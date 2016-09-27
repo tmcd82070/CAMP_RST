@@ -4,8 +4,9 @@
 
 #   ---- Set variables necessary for Big Looper completion.  
 platform <- "CAMP_RST20161015-campR1.0.1"    
-excelName <- "FeatherExcel"
-reportRun <- c("B","C","J")
+#excelName <- "FeatherExcel"
+#excelName <- "AmericanExcel"
+reportRun <- c("B")#c("B","C","J")
 
 #   ---- Get necessary packages in order.  
 install.packages(c("RODBC","mvtnorm"))
@@ -25,7 +26,7 @@ theExcel <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_
 rownames(theExcel) <- NULL
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-#theExcel <- theExcel[13,]
+theExcel <- theExcel[1:2,]
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform)
@@ -45,15 +46,12 @@ h <- c("H","SizeByDate"            ,"later"                       ,"F.size.by.da
 i <- c("I","LengthFreq"            ,"later"                       ,"F.length.frequency")
 j <- c("J","WeeklyEffortReport"    ,"weekly.effort"               ,"F.weekly.effort")
 
+
 #   ---- Clean up our requested report list for use in making folders. 
 masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j),stringsAsFactors=FALSE)
 names(masterReports) <- nn
 rownames(masterReports) <- NULL
 masterReports <- masterReports[masterReports$label %in% reportRun,]
-
-
-
-
 
 #   ---- Build up the request folder structure.  
 streamNames <- unique(theExcel$streamName)
@@ -90,7 +88,7 @@ for(i in 1:nStreamNames){
     makeTheDir(paste0(outStem,"/",theStreamName,"/",theSeason))
     
     #   ---- Given the Season, loop over the desired reports.  
-    for(k in 2:nReports){
+    for(k in 1:nReports){
       
       theReportLabel <- reportLabels[k]
       theReportFolder <- reportFolders[k]
@@ -117,7 +115,7 @@ for(i in 1:nStreamNames){
       } else if(theStreamName == 'American River'){
         db.file <- paste0(theStem,"/Data/TestingDBs/CAMPAmerican2013_2015Database_23June2015/CAMP.mdb")
       } else if(theStreamName == 'Feather River'){
-        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPFeather_17Nov2015/CAMP.mdb")
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMP_Feather_8July2016/CAMP.mdb")
       } else if(theStreamName == 'Stanislaus River'){
         db.file <- paste0(theStem,"/Data/TestingDBs/CAMPStanislaus_08Oct2015/CAMP.mdb")
       } else if(theStreamName == 'Mokelumne River'){
@@ -138,7 +136,7 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "B" ){
         
         #   ---- Run function run.passage over the four possible temporal periods.  
-        for(byj in 4:4){
+        for(byj in 3:3){
                if(byj == 1){by <- 'day'  } 
           else if(byj == 2){by <- 'week' } 
           else if(byj == 3){by <- 'month'} 
@@ -170,7 +168,7 @@ for(i in 1:nStreamNames){
       }
       
       #   ---- Create the weekly effort report.  
-      if(  theReportLabel == "J"  ){
+      if(  theReportLabel == "J" ){
         by <- "All"
         outAll <- paste0(outFileStem,"/",outFile,"-")
         F.weekly.effort(site,taxon,min.date,max.date,outAll)
