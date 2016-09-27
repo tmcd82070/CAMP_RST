@@ -5,14 +5,14 @@
 #' @description Estimate trap efficiency for every sample period, per trap.
 #'   
 #' @param release.df A data frame produced by \code{F.get.release.data}. 
-#'   Contains information on releases and recaptures.  This data frame has one
-#'   line per release trial per trap, with trap identified via variable
+#'   Contains information on releases and recaptures.  This data frame has one 
+#'   line per release trial per trap, with trap identified via variable 
 #'   \code{TrapPositionID}.
 #'   
 #' @param batchDate A POSIX-formatted vector of dates.
 #'   
-#' @param df.spline The default degrees of freedom to use in the estimation of
-#'   splines. Default is 4 (1 internal knot). 
+#' @param df.spline The default degrees of freedom to use in the estimation of 
+#'   splines. Default is 4 (1 internal knot).
 #'   
 #' @param plot A logical indicating if efficiencies are to be plotted over time,
 #'   per trap.
@@ -20,35 +20,34 @@
 #' @param plot.file The name to which a graph of efficiency is to be output, if 
 #'   \code{plot=TRUE}.
 #'   
-#' @return A data frame containing fishing intervals and associated capture
-#'   efficiency, along with variable \code{gam.estimated}.  Variable
-#'   \code{gam.estimated} is \code{"Yes"} if efficiency for that interval was
-#'   estimated by the GAM model (\code{method=3}), rather than being empirical
+#' @return A data frame containing fishing intervals and associated capture 
+#'   efficiency, along with variable \code{gam.estimated}.  Variable 
+#'   \code{gam.estimated} is \code{"Yes"} if efficiency for that interval was 
+#'   estimated by the GAM model (\code{method=3}), rather than being empirical 
 #'   (\code{method=1}).
 #'   
-#' @details    
-#'   Generally, fish released as part of an efficiency trial arrive in traps 
-#'   over the course of several days.  \code{F.est.efficiency} 
-#'   calculates the mean 
-#'   recapture time of all re-captured fish.  When a release trial 
-#'   resulted in no recaptures, the mean recapture time is 
-#'   half way between the first and last visit of the trial (i.e., after release).
-#'   
-#'   Function \code{F.assign.batch.date} assigns mean recapture time, which is
-#'   mesured to the nearest minute, to a \code{batchDate}.  Batch date a simple calendar date.
-#'   
-#'   Fishing instances during which traps utilized half-cones are recorded in 
-#'   variable \code{HalfCone}.  During these instances, the number of captured 
-#'   fish, variable \code{Recaps}, is multiplied by the value of \code{halfConeMulti}.
-#'   The value of \code{halfConeMulti} is set in \code{GlobalVars}
-#'   and defaults to 2.  The expansion by \code{halfConeMulti} happens on the raw catch, and not
-#'   the mean recapture.  In this way, the number recorded in variable
-#'   \code{Recaps} may not be twice the number recorded in variable
-#'   \code{oldRecaps}.
-#'   
-#'   Note that the run season sample period is a vector of length 2 of dates, 
-#'   housing the beginning and ending of the run.  These are stored as an 
-#'   attribute of the \code{release.df} data frame.
+#' @details Generally, fish released as part of an efficiency trial arrive in
+#' traps over the course of several days.  \code{F.est.efficiency} calculates
+#' the mean recapture time of all re-captured fish.  When a release trial 
+#' resulted in no recaptures, the mean recapture time is half way between the
+#' first and last visit of the trial (i.e., after release).
+#' 
+#' Function \code{F.assign.batch.date} assigns mean recapture time, which is 
+#' mesured to the nearest minute, to a \code{batchDate}.  Batch date a simple
+#' calendar date.
+#' 
+#' Fishing instances during which traps utilized half-cones are recorded in 
+#' variable \code{HalfCone}.  During these instances, the number of captured 
+#' fish, variable \code{Recaps}, is multiplied by the value of
+#' \code{halfConeMulti}. The value of \code{halfConeMulti} is set in
+#' \code{GlobalVars} and defaults to 2.  The expansion by \code{halfConeMulti}
+#' happens on the raw catch, and not the mean recapture.  In this way, the
+#' number recorded in variable \code{Recaps} may not be twice the number
+#' recorded in variable \code{oldRecaps}.
+#' 
+#' Note that the run season sample period is a vector of length 2 of dates, 
+#' housing the beginning and ending of the run.  These are stored as an 
+#' attribute of the \code{release.df} data frame.
 #' 
 #' @seealso \code{F.get.release.data}, \code{F.assign.batch.date}
 #'   
@@ -62,7 +61,12 @@
 
 F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plot.file=NA ){
   
-
+  # release.df <- release.df
+  # batchDate <- bd
+  # df.spline <- 4
+  # plot <- TRUE
+  # plot.file <- file.root
+  
   time.zone <- get("time.zone", envir=.GlobalEnv)
 
   #   ---- Fix up the data frame.
