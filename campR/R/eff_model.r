@@ -88,6 +88,12 @@
 #' F.efficiency.model( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA)
 #' }
 F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA ){
+  
+  # obs.eff.df <- eff
+  # plot <- plot
+  # method <- method
+  # max.df.spline <- df.spline
+  # plot.file <- plot.file
 
   ans <- NULL
   traps <- sort( unique(obs.eff.df$TrapPositionID))
@@ -100,7 +106,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   
   # 	---- If number of trials at a trap less than this number, 
   #        assume constant and use ROM+1 estimator
-  eff.min.spline.samp.size <- get("	eff.min.spline.samp.size", pos=.GlobalEnv)
+  eff.min.spline.samp.size <- get("eff.min.spline.samp.size", pos=.GlobalEnv)
   
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
   for( trap in traps ){
@@ -120,7 +126,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     m.i <- sum(ind & ind.inside)
     
     if( m.i == 0 ){
-    	#   ---- No efficiency trials at this trap.
+    	
+      #   ---- No efficiency trials at this trap.
     	cat( paste("NO EFFICIENCY TRIALS FOR TRAP", trap, "\n") )
     	cat( paste("Catches at this trap will not be included in production estimates.\n"))
     	fits[[trap]] <- NA
@@ -128,7 +135,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     	df$efficiency <- NA
     	
     } else if( (m.i < eff.min.spline.samp.size) | (sum(tmp.df$nCaught) == 0) ){
-    	#   ---- Take simple average of efficiency trials:  constant over season.
+    	
+      #   ---- Take simple average of efficiency trials:  constant over season.
     	cat("Fewer than 10 trials found or no recaptures.  'ROM+1' estimator used.\n")
     	
       #   ---- This is MOR, or mean of ratios.  
@@ -148,7 +156,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
         
     } else {    
-    	#   ---- There are enough observations to estimate B-spline model.
+    	
+      #   ---- There are enough observations to estimate B-spline model.
     	
     	#   ---- Fit glm model, increasing degress of freedom, until minimize AIC or something goes wrong.  
     	cat(paste("\n\n++++++Spline model fitting for trap:", trap, "\n Trials are:"))
@@ -162,10 +171,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       cat(paste("df= ", 1, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
     
       if( !fit$converged | fit$boundary ){
-				#   ---- Something went wrong with the constant model. 
-      	#				 I don't think this can actually happen because m.i > 10 and sum(nCaught) > 0, 
-      	#        but I'm adding this clause just in case (maybe something is missing).
-      	#				 In this case, use ROM+1 estimator.
+				
+        #   ---- Something went wrong with the constant model. 
+      	#		---- I don't think this can actually happen because m.i > 10 and sum(nCaught) > 0, 
+      	#   ---- but I'm adding this clause just in case (maybe something is missing).
+      	#		---- In this case, use ROM+1 estimator.
       	cat("Constant (intercept-only) logistic model for efficiency failed. Using 'ROM+1' estimator. ")
       	obs.mean <- (sum(tmp.df$nCaught)+1) / (sum(tmp.df$nReleased)+1)   
       	cat(paste("'ROM+1' efficiency= ", obs.mean, "\n"))
@@ -175,6 +185,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       	fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
       	
       } else {
+        
 	      #		---- Fit increasingly complex models. 
 	      #				 Note, we skip the quadratic:
 	      #					df = 3 means cubic model (no internal knots)
@@ -204,7 +215,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
 	        }
 	      }
       
-
 	      cat("\nFinal Efficiency model for trap: ", trap, "\n")
 	      print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
 	          

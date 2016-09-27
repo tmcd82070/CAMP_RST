@@ -1,35 +1,38 @@
 
 
 
-# install RODBC
-# install mvtnorm
+
+#   ---- Set variables necessary for Big Looper completion.  
+platform <- "CAMP_RST20161015-campR1.0.1"    
+excelName <- "FeatherExcel"
+reportRun <- c("B","C","J")
+
+#   ---- Get necessary packages in order.  
 install.packages(c("RODBC","mvtnorm"))
 require("RODBC")
 require("mvtnorm")
 
+#   ---- Install the working version of campR.  
+#   ---- Prior to running this step, make sure you install the zip folder.
+require(campR)
+
 library(RODBC)
 
-testing <- TRUE                   # points to different output folders.
-platform <- "CAMP_RST20160823-4.5 - Gamma"    # points to different platforms
-excelName <- "FeatherExcel"
-reportRun <- c("B","C","J")
 
-paste(cat('testing == TRUE\n'))
-setwd(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/"))
-source(paste0("\\\\LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/",platform,"/R-Interface/source_all_testing.R"))
-
-#   ---- Read in the desired Excel scheme.  
-theExcel <- read.csv(paste0(excelName,".csv"))
+#   ---- Read in the desired Excel scheme.  This is kept in the helperCode folder of the inst folder
+#   ---- in the campR package development folder in CAMP_RST20160601.  
+theExcel <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/",excelName,".csv"))
 rownames(theExcel) <- NULL
 
+#   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
+#theExcel <- theExcel[13,]
 
-outStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform,"/Outputs")
-
-
-
-
+#   ---- Tell the Big Looper where to put all the output.  
+theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform)
+outStem <- paste0(theStem,"/Outputs")
 
 #   ---- Identify the possible reports we can run, and folder stems we can create.  
+#   ---- This section should not be ameliorated.  
 nn <- c("label","folder","report","function")
 a <- c("A","EstProdAllRunsLSReport","later"                       ,"passageWithLifeStageAssign")
 b <- c("B","EstProdAllRunsReport"  ,"run.passage"                 ,"F.run.passage")
@@ -52,8 +55,6 @@ masterReports <- masterReports[masterReports$label %in% reportRun,]
 
 
 
-
-
 #   ---- Build up the request folder structure.  
 streamNames <- unique(theExcel$streamName)
 nStreamNames <- length(streamNames)
@@ -69,7 +70,7 @@ for(i in 1:nStreamNames){
   #   ---- Reduce the master 'theExcel' to one stream.  
   theStreamName <- as.character(droplevels(streamNames[i]))
   the1stExcel <- theExcel[theExcel$streamName == theStreamName,]
-  seasons <- unique(theFirstExcel$Season)
+  seasons <- unique(the1stExcel$Season)
   nSeasons <- length(seasons)
   
   #   ---- Make individual folder for the stream.
@@ -96,7 +97,7 @@ for(i in 1:nStreamNames){
       theReportTitle <- reportTitles[k]
       
       #   ---- Make individual folder for a report
-      makeTheDir(paste0(outStem,"/",theStreamName,"/",theSeason,"/",theReport))
+      makeTheDir(paste0(outStem,"/",theStreamName,"/",theSeason,"/",theReportFolder))
       
       #   ---- At this point, we're ready to create reports for this row in 'theExcel.'
       taxon       <- 161980
@@ -111,29 +112,27 @@ for(i in 1:nStreamNames){
       outAll      <- paste0(outFileStem,"/",outFile,"-")
       
       #   ---- Set up the db.file text string, so R knows where to find the database.
-      if(theStreamName == ''){
-        db.file <- db.file1
-      } else if(theStreamName == 'Sacramento River'){
-        db.file <- db.file2
+      if(theStreamName == 'Sacramento River'){
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMP_RBDD_19June20151/CAMP.mdb")
       } else if(theStreamName == 'American River'){
-        db.file <- db.file3
-      } else if(theStreamName == ''){
-        db.file <- db.file4
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPAmerican2013_2015Database_23June2015/CAMP.mdb")
       } else if(theStreamName == 'Feather River'){
-        db.file <- db.file5
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPFeather_17Nov2015/CAMP.mdb")
       } else if(theStreamName == 'Stanislaus River'){
-        db.file <- db.file6
-      } else if(theStreamName == 'Old American Test'){
-        db.file <- db.file7
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPStanislaus_08Oct2015/CAMP.mdb")
       } else if(theStreamName == 'Mokelumne River'){
-        db.file <- db.file8
-        #   } else if(theStreamName == "Knight's Landing"){
-        #     db.file <- db.file9
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPMokelumne23Sept2015/CAMP.mdb")
       } else if(theStreamName == "Knight's Landing"){
-        db.file <- db.fileA
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPKnightsTinsdaleNEW_04Feb2016/CAMP.mdb")
       } else if(theStreamName == "Battle Clear"){
-        db.file <- db.file1
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMP_BattleClear_13Jan2016/CAMP.mdb")
       }
+      
+      #   ---- Given the appropriate text string, connect to the database.  
+      cat(paste("DB file:", db.file, "\n"))
+      ch <- odbcConnectAccess(db.file)
+      close(ch)
+      
       
       #   ---- Create the ALL runs report.  
       if( theReportLabel == "B" ){
@@ -184,86 +183,8 @@ for(i in 1:nStreamNames){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #   ---- Helper function to make directories, if they don't already exist.  
 makeTheDir <- function(theDir){
   ifelse(!dir.exists(file.path(theDir)), dir.create(file.path(theDir),showWarnings=TRUE,recursive=TRUE), FALSE)
   theDir <- NULL
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-for(i in 1:nCellsDigi){
-  #   ---- Make individual folders.
-  nightDir <- paste0("//LAR-FILE-SRV/Data/BTPD_2016/Analysis/Overnights/Results/Nightly/",cellsWithData[i])
-  ifelse(!dir.exists(file.path(nightDir)), dir.create(file.path(nightDir),showWarnings=TRUE,recursive=TRUE), FALSE)
-  #   ---- Make individual folders: FMP with ...
-  FMP1Dir <- paste0("//LAR-FILE-SRV/Data/BTPD_2016/Analysis/Overnights/Results/Nightly/",cellsWithData[i],"/FMP1")
-  ifelse(!dir.exists(file.path(FMP1Dir)), dir.create(file.path(FMP1Dir),showWarnings=TRUE,recursive=TRUE), FALSE)
-  #   ---- Make individual folders: FMP with ...
-  FMP2Dir <- paste0("//LAR-FILE-SRV/Data/BTPD_2016/Analysis/Overnights/Results/Nightly/",cellsWithData[i],"/FMP2")
-  ifelse(!dir.exists(file.path(FMP2Dir)), dir.create(file.path(FMP2Dir),showWarnings=TRUE,recursive=TRUE), FALSE)
-  #   ---- Make individual folders: FMP with ...
-  FMP3Dir <- paste0("//LAR-FILE-SRV/Data/BTPD_2016/Analysis/Overnights/Results/Nightly/",cellsWithData[i],"/FMP3")
-  ifelse(!dir.exists(file.path(FMP3Dir)), dir.create(file.path(FMP3Dir),showWarnings=TRUE,recursive=TRUE), FALSE)
-  #   ---- Make individual folders:  Doublies for Centroids.
-  Dbl1Dir <- paste0("//LAR-FILE-SRV/Data/BTPD_2016/Analysis/Overnights/Results/Nightly/",cellsWithData[i],"/Dbl1")
-  ifelse(!dir.exists(file.path(Dbl1Dir)), dir.create(file.path(Dbl1Dir),showWarnings=TRUE,recursive=TRUE), FALSE)
-  #   ---- Make individual folders:  Doublies for Clippings.
-  Dbl2Dir <- paste0("//LAR-FILE-SRV/Data/BTPD_2016/Analysis/Overnights/Results/Nightly/",cellsWithData[i],"/Dbl2")
-  ifelse(!dir.exists(file.path(Dbl2Dir)), dir.create(file.path(Dbl2Dir),showWarnings=TRUE,recursive=TRUE), FALSE)
 }
