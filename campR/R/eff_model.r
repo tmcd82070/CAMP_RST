@@ -89,20 +89,20 @@
 #' }
 F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA ){
   
-  # obs.eff.df <- eff
-  # plot <- plot
-  # method <- method
-  # max.df.spline <- df.spline
-  # plot.file <- plot.file
+#   obs.eff.df <- eff
+#   plot <- plot
+#   max.df.spline <- 4
+#   plot.file <- plot.file
 
   ans <- NULL
   traps <- sort( unique(obs.eff.df$TrapPositionID))
 
-  fits <- all.X <- all.ind.inside <- all.dts <- vector("list", length(traps))
+  fits <- all.X <- all.ind.inside <- all.dts <- obs.data <- vector("list", length(traps))
   names(fits) <- traps
   names(all.X) <- traps
   names(all.dts) <- traps
   names(all.ind.inside) <- traps
+  names(obs.data) <- traps
   
   # 	---- If number of trials at a trap less than this number, 
   #        assume constant and use ROM+1 estimator
@@ -133,6 +133,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     	fits[[trap]] <- NA
     	all.X[[trap]] <- NA
     	df$efficiency <- NA
+    	obs.data[[trap]] <- NA
     	
     } else if( (m.i < eff.min.spline.samp.size) | (sum(tmp.df$nCaught) == 0) ){
     	
@@ -150,10 +151,23 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #   ---- If want to use ROM for missing efficiencies only, uncomment the next line.  
       #df$efficiency[!ind] <- obs.mean
         
-      #   ---- If, however, you want to use ROM for all days, missing or not, uncomment the next line.  
+      #   ---- If, however, you want to use ROM for all days, missing or not, uncomment the next line. 
+      #   ---- Fit a model here so we have dispersion statistic, beta, and covar matrix for use in
+      #   ---- bootstrapping later.  
+      fits[[trap]] <- glm(nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=tmp.df$nReleased )
       df$efficiency <- obs.mean
-        
-      fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
+      obs.data[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
+      
+      #   ---- Make a design matrix for ease in calculating predictions.  Used in bootstrapping.
+      #   ---- Very simple design matrix in this case, since we're only fitting an intercept.  
+      if( length(coef(fits[[trap]])) == 1 ){
+        #pred <- matrix( coef(fit), sum(ind.inside), 1 )
+        X <- matrix( 1, sum(ind.inside), 1)
+      }
+      
+      #   ---- Save X, and the dates at which we predict, for bootstrapping.
+      all.X[[trap]] <- X   
+      #all.dts[[trap]] <- df$batchDate[ind.inside] 
         
     } else {    
     	
@@ -248,7 +262,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
 	      df$efficiency[!ind.inside] <- mean.p
 	
 	      #   ---- Save the fit for bootstrapping.
-	      fits[[trap]] <- fit     
+	      fits[[trap]] <- fit  
+	      
+	      #   ---- Save the raw efficiency data.  
+	      obs.data[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
 	    }      
     }
     
@@ -273,7 +290,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     out.fn <- NULL
   }
 
-  ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts)
+  ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts, obs.data=obs.data)
   attr(ans, "out.fn.list") <- out.fn
 
   ans
