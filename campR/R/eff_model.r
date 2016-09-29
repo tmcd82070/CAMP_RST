@@ -291,15 +291,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     out.fn <- NULL
   }
   
-  #   ---- Write out information pertaining to the fitting of efficiency models.
-  if( !is.na(file) & sum(grepl("_effTable.csv",dir(dirname(file)),fixed=TRUE)) == 0){
-    out.pass.graphs.eff <- paste(file3, "_effTable.csv", sep="")
-    df2 <- df[!is.na(df$nReleased),]
-    sink(paste0(file3,'_effTable.csv'))
-    write.table( df2, file=paste0(file3,'_effTable.csv'), sep=",", append=FALSE, row.names=FALSE, col.names=TRUE)
-    sink()
-  }
-  
   cat("Observed efficiency data used in efficiency models.\n")
   print(obs.data)
   cat("\n")
