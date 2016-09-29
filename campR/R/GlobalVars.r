@@ -121,6 +121,12 @@
 #'   the Platform fits increasingly complex spline-based logistic regressions 
 #'   and uses the one with lowest AIC.
 #'   
+#' @param unassd.sig.digit A positive integer specifiying the number of 
+#'   significant digits to which unassigned fish should be estimated during the 
+#'   plus-count algorithm.  Values other than zero allow for fractional
+#'   representation of less common fish types (e.g., Winter or Smolt) during
+#'   passage estimation.
+#'   
 #' @details One additional global variable is defined. \code{table.names} is a 
 #'   list containing the mapping of table names in Access to table names in R. 
 #'   This was set up to facilitate painless table name changes in Access.  This 
@@ -185,9 +191,9 @@ GlobalVars <- function(
 	No.code = 2,
 	seed = 884,
 	forkLengthCutPoints = data.frame(lifeStage=c("FL1 leq 41mm","FL2 42-72mm","FL3 73-110mm","FL4 geq 111mm"),cutPoints=c(41,72,110,9999)),
-	plusCountDec = 1,
 	passageRounder = 4,
-	eff.min.spline.samp.size = 10
+	eff.min.spline.samp.size = 10,
+	unassd.sig.digit = 1
 	){
 
 	  # DB file -------
@@ -243,14 +249,14 @@ GlobalVars <- function(
 	  # Set dataframe forkLengthCutPoints
 	  assign("forkLengthCutPoints",forkLengthCutPoints,pos=.GlobalEnv)
 	  
-	  # Set the number of decimals to use for plus-count fish.
-	  assign("plusCountDec", plusCountDec, pos=.GlobalEnv)
-	  
 	  # Set the number of significant digits by which we want to round final passage. 
 	  assign("passageRounder", passageRounder, pos=.GlobalEnv)
 	  
-	  #	Set number of efficiencey trials for spline model
+	  #	Set number of efficiency trials for spline model
 	  assign("eff.min.spline.samp.size", 	eff.min.spline.samp.size, pos=.GlobalEnv)
+	  
+	  # Set number of significant digits for unassigned fish during plus counting.
+	  assign("unassd.sig.digit", unassd.sig.digit, pos=.GlobalEnv)
     
     # Table names is a special global variable that we intentionally make harder ----
     # to change.  I.e., must change code here and re-compile. 

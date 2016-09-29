@@ -54,20 +54,6 @@ F.plot.eff.model <- function( df, file ){
   #   ---- Get global environment information. 
   db.file <- get("db.file",envir=.GlobalEnv)
   
-  #   ---- Prepare for plotting.  
-  if( !is.na(file) ){
-    
-    #   ---- Shut down all graphics devices.
-    for(i in dev.list()) dev.off(i)
-    
-    #   ---- Open PNG device.
-    out.pass.graphs <- paste(file, "_eff.png", sep="")
-    if(file.exists(out.pass.graphs)){
-      file.remove(out.pass.graphs)
-    }
-    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})
-  }
-  
   #   ---- Compute results from efficiency trials.  
   imputed <- df$imputed.eff == "Yes"
   pts <- !is.na(df$nReleased)
@@ -93,86 +79,115 @@ F.plot.eff.model <- function( df, file ){
   attr(df,"site.name") <- attrB
   
   #   ---- Write out estimates.
-  out.pass.graphs.eff <- paste(file, "_effTable.csv", sep="")
-  sink(paste0(file,'_effTable.csv'))
-  write.table( df, file=paste0(file,'_effTable.csv'), sep=",", append=FALSE, row.names=FALSE, col.names=TRUE)
-  sink()
+  if( !is.na(file) & sum(grepl("_effTable.csv",dir(dirname(file)),fixed=TRUE)) == 0){
+    out.pass.graphs.eff <- paste(file3, "_effTable.csv", sep="")
+    df2 <- df[!is.na(df$nReleased),]
+    sink(paste0(file3,'_effTable.csv'))
+    write.table( df2, file=paste0(file3,'_effTable.csv'), sep=",", append=FALSE, row.names=FALSE, col.names=TRUE)
+    sink()
+  }
   
   #   ---- Start making the plot.
-  plot( range(df$batchDate,na.rm=T), range(eff,na.rm=T), type="n", xlab="Date", 
-        ylab="Efficiency proportion", xaxt="n" )
-  lab.x.at <- pretty(df$batchDate)
-  axis( side=1, at=lab.x.at, labels=format(lab.x.at, "%d%b%y"))
+  #   ---- Prepare for plotting, but only if the plot doesn't already exist.
+  if( !is.na(file) & sum(grepl("_eff.png",dir(dirname(file)),fixed=TRUE)) == 0){
+    
+    #   ---- Shut down all graphics devices.
+    for(i in dev.list()) dev.off(i)
+    
+    #   ---- Open PNG device.
+    out.pass.graphs <- paste(file, "_eff.png", sep="")
+    if(file.exists(out.pass.graphs)){
+      file.remove(out.pass.graphs)
+    }
+    
+    #   ---- We want to reduce the output.  "file" up to this point already has season name 
+    #   ---- incorporated.  Find which options ends up with the shortest new file (file2),
+    #   ---- and take that as the new file name.  
+    s <- c("-Spring","-Fall","-Late fall","-Winter")
+    file2 <- sapply(seq_along(s), function(x) gsub(s[x], "", file,fixed=TRUE))
+    file3 <- file2[nchar(file2) == min(nchar(file2))]
+    out.pass.graphs <- paste0(file3,"_eff.png")
+    
+    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})
+
+    plot( range(df$batchDate,na.rm=T), range(eff,na.rm=T), type="n", xlab="Date", 
+          ylab="Efficiency proportion", xaxt="n" )
+    lab.x.at <- pretty(df$batchDate)
+    axis( side=1, at=lab.x.at, labels=format(lab.x.at, "%d%b%y"))
   
-  #   ---- Set up points and lines.
-  traps <- sort(unique(df$trapPositionID))
-  if( length(traps) == 1 ){
-    my.colors <- "red"
-  } else if (length(traps) == 2){
-    my.colors <- c("red","blue")
-  } else {
-    my.colors <- rainbow(length(traps))
+    #   ---- Set up points and lines.
+    traps <- sort(unique(df$trapPositionID))
+    if( length(traps) == 1 ){
+      my.colors <- "red"
+    } else if (length(traps) == 2){
+      my.colors <- c("red","blue")
+    } else {
+      my.colors <- rainbow(length(traps))
+    }
+    if( length(traps) > 10){
+      my.pch <- c(15 + 1:10,seq(1,length(traps) - 10))
+    } else {
+      my.pch <- 15 + 1:length(traps)
+    }
+    
+    #  ---- Draw points and lines, based on run, etc.
+    for( i in 1:length(traps) ){
+      
+      #   ---- Indicators for season and such.
+      ind.pts <- df$trapPositionID == traps[i] & pts
+      ind.line <- df$trapPositionID == traps[i] & imputed
+      
+      #   ---- The following plots period between trial.
+      strt.pts <- min(df$batchDate[ind.pts])
+      end.pts <- max(df$batchDate[ind.pts])
+      
+      pre.season <-  df$batchDate[ind.line] < strt.pts
+      post.season <- end.pts < df$batchDate[ind.line]
+      during.season <- (strt.pts <= df$batchDate[ind.line]) & (df$batchDate[ind.line] <= end.pts)
+      
+      #   ---- The following plots all time.  
+      strt <- min(df$batchDate)
+      end <- max(df$batchDate)
+      
+      trials.season <- (strt <= df$batchDate[ind.line]) & (df$batchDate[ind.line] <= end)
+      
+      #   ---- Draw lines.
+      lines( df$batchDate[ ind.line ][trials.season & pre.season], df$efficiency[ ind.line ][trials.season & pre.season], lwd=3, col=my.colors[i] )
+      lines( df$batchDate[ ind.line ][trials.season & during.season], df$efficiency[ ind.line ][trials.season & during.season], lwd=3, col=my.colors[i] )
+      lines( df$batchDate[ ind.line ][trials.season & post.season], df$efficiency[ ind.line ][trials.season & post.season], lwd=3, col=my.colors[i] )
+    
+      #   ---- Draw points.
+      eff <- df$nCaught[ind.pts] / df$nReleased[ ind.pts ] 
+      points( df$batchDate[ ind.pts ], eff, pch=my.pch[i], col=my.colors[i] )
+      
+    }
+    
+    #   ---- Draw legend.
+    subsite.name <- attr(df, "subsites")
+    mx.len.name <- which.max( nchar(subsite.name$subSiteName) )
+    tmp <- legend( "topleft", title=subsite.name$subSiteName[mx.len.name], legend=c("Observed","Predicted"), pch=rep(my.pch[1],2), cex=.85, pt.cex=1.25, lty=c(NA,1), plot=FALSE ) # don't plot, need the left coordinate here
+    tmp$rect$top <- tmp$rect$top + tmp$rect$h  # + goes up, - goes down
+    
+    #   ---- Add a legend block / entry for each included trap.
+    traps <- as.numeric(traps)
+    for( i in 1:length(traps)){
+      trap.name <- subsite.name$subSiteName[ subsite.name$subSiteID == traps[i] ]
+      tmp <- legend( c(tmp$rect$left,tmp$rect$left + tmp$rect$w), c(tmp$rect$top - tmp$rect$h, tmp$rect$top - 2*tmp$rect$h) , title=trap.name, 
+                     legend=c("Observed","Predicted"), 
+                     pch=c(my.pch[i],NA), col=c(my.colors[i], my.colors[i]), lty=c(NA,1), cex=.85, pt.cex=1.25 )
+    }
+  
+    #   ---- Add title.
+    mtext( side=3, at=max(df$batchDate), text=attr(df,"site.name"), adj=1, cex=1.5, line=2 )
+    mtext( side=3, at=max(df$batchDate), text= "Efficiency Trials", adj=1, cex=.75, line=1 )
+    
+    #   ---- Output file with programmatically set name. 
+    if( !is.na(file) ){
+      dev.off(dev.cur())
+    } 
   }
-  if( length(traps) > 10){
-    my.pch <- c(15 + 1:10,seq(1,length(traps) - 10))
-  } else {
-    my.pch <- 15 + 1:length(traps)
-  }
   
-  #  ---- Draw points and lines, based on run, etc.
-  for( i in 1:length(traps) ){
-    
-    #   ---- Indicators for season and such.
-    ind.pts <- df$trapPositionID == traps[i] & pts
-    ind.line <- df$trapPositionID == traps[i] & imputed
-    
-    #   ---- The following plots period between trial.
-    strt.pts <- min(df$batchDate[ind.pts])
-    end.pts <- max(df$batchDate[ind.pts])
-    
-    pre.season <-  df$batchDate[ind.line] < strt.pts
-    post.season <- end.pts < df$batchDate[ind.line]
-    during.season <- (strt.pts <= df$batchDate[ind.line]) & (df$batchDate[ind.line] <= end.pts)
-    
-    #   ---- The following plots all time.  
-    strt <- min(df$batchDate)
-    end <- max(df$batchDate)
-    
-    trials.season <- (strt <= df$batchDate[ind.line]) & (df$batchDate[ind.line] <= end)
-    
-    #   ---- Draw lines.
-    lines( df$batchDate[ ind.line ][trials.season & pre.season], df$efficiency[ ind.line ][trials.season & pre.season], lwd=3, col=my.colors[i] )
-    lines( df$batchDate[ ind.line ][trials.season & during.season], df$efficiency[ ind.line ][trials.season & during.season], lwd=3, col=my.colors[i] )
-    lines( df$batchDate[ ind.line ][trials.season & post.season], df$efficiency[ ind.line ][trials.season & post.season], lwd=3, col=my.colors[i] )
-    
-    #   ---- Draw points.
-    eff <- df$nCaught[ind.pts] / df$nReleased[ ind.pts ] 
-    points( df$batchDate[ ind.pts ], eff, pch=my.pch[i], col=my.colors[i] )
-    
-  }
-  
-  #   ---- Draw legend.
-  subsite.name <- attr(df, "subsites")
-  mx.len.name <- which.max( nchar(subsite.name$subSiteName) )
-  tmp <- legend( "topleft", title=subsite.name$subSiteName[mx.len.name], legend=c("Observed","Predicted"), pch=rep(my.pch[1],2), cex=.85, pt.cex=1.25, lty=c(NA,1), plot=FALSE ) # don't plot, need the left coordinate here
-  tmp$rect$top <- tmp$rect$top + tmp$rect$h  # + goes up, - goes down
-  
-  #   ---- Add a legend block / entry for each included trap.
-  traps <- as.numeric(traps)
-  for( i in 1:length(traps)){
-    trap.name <- subsite.name$subSiteName[ subsite.name$subSiteID == traps[i] ]
-    tmp <- legend( c(tmp$rect$left,tmp$rect$left + tmp$rect$w), c(tmp$rect$top - tmp$rect$h, tmp$rect$top - 2*tmp$rect$h) , title=trap.name, 
-                   legend=c("Observed","Predicted"), 
-                   pch=c(my.pch[i],NA), col=c(my.colors[i], my.colors[i]), lty=c(NA,1), cex=.85, pt.cex=1.25 )
-  }
-  
-  #   ---- Add title.
-  mtext( side=3, at=max(df$batchDate), text=attr(df,"site.name"), adj=1, cex=1.5, line=2 )
-  mtext( side=3, at=max(df$batchDate), text= "Efficiency Trials", adj=1, cex=.75, line=1 )
-  
-  #   ---- Output file with programmatically set name. 
   if( !is.na(file) ){
-    dev.off(dev.cur())
     ans <- c(out.pass.graphs,out.pass.graphs.eff)
   } else {
     ans <- NULL

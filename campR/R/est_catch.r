@@ -101,9 +101,9 @@
 #' }
 F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 
-  # catch.df <- catch.df
-  # plot <- TRUE
-  # plot.file <- file.root
+#   catch.df <- catch.df
+#   plot <- TRUE
+#   plot.file <- file.root
 
   #   ---- Get stuff from the global environment.
   run.name <- get("run.name", envir=.GlobalEnv)
@@ -126,6 +126,9 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
   origBeg.date <- origEnd.date <- as.character("1990-01-01")   # need some fake dates.  these will be replaced.
   dateFramer <- data.frame(trapPositionID=u.traps,origBeg.date=rep(as.POSIXct( origBeg.date,"%Y-%m-%d",tz=time.zone)),origEnd.date=rep(as.POSIXct(origBeg.date,"%Y-%m-%d",tz=time.zone)))
 
+  #   ---- Set up an object to collect model results over all traps. 
+  model.info <- NULL
+  
   #   ---- Loop over each trap and estimate and impute.
   for( trap in u.traps ){
     cat(paste("==== Catch model for trapPositionID", trap, "========\n" ))
@@ -195,7 +198,10 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
       df2 <- df2[order(df2$batchDate),]
       
       #jBaseTable <- tryCatch(plot_spline(trap,df2,thisTrap[[1]],file="spline.pdf",df3), error=function(e) e)
-      df.and.fit <- thisTrap[[1]]   
+      df.and.fit <- thisTrap[[1]]
+      
+      #   ---- Compile a record of the different fits we tried.
+      model.info <- rbind(model.info,thisTrap[[1]]$catch.fit.all)
     } else {
       
       #   ---- All records are thrown out, due to zeros and NA.  
@@ -222,6 +228,9 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
     allWinners <- rbind(allWinners,winner)
   }
 
+  #   ---- If desired, output resulting model information for comparison across data. 
+  write.csv(model.info,paste0(plot.file,"_model_Info.csv"))
+  
   cat("in est_catch.r  DF")
   print( tapply(df$batchDate, df$trapPositionID, range) )
   cat("-------\n")

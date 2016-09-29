@@ -117,7 +117,7 @@ F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plo
   if( any(missing.days) ){
     eff.and.fits <- suppressWarnings(F.efficiency.model( eff, plot=plot, max.df.spline=df.spline, plot.file=plot.file ))
   } else {
-    eff.and.fits <- list(eff=eff, fits=NULL, X=NULL)
+    eff.and.fits <- list(eff=eff, fits=NULL, X=NULL, obs.data=eff.est)
     attr(eff.and.fits, "out.fn.list") <- NULL
   }
 

@@ -156,7 +156,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #   ---- bootstrapping later.  
       fits[[trap]] <- glm(nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=tmp.df$nReleased )
       df$efficiency <- obs.mean
-      obs.data[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
+      obs.data[[trap]] <- tmp.df
       
       #   ---- Make a design matrix for ease in calculating predictions.  Used in bootstrapping.
       #   ---- Very simple design matrix in this case, since we're only fitting an intercept.  
@@ -264,9 +264,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
 	      #   ---- Save the fit for bootstrapping.
 	      fits[[trap]] <- fit  
 	      
-	      #   ---- Save the raw efficiency data.  
-	      obs.data[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
-	    }      
+      } 
+      
+      #   ---- Save the raw efficiency data.  
+      obs.data[[trap]] <- tmp.df
     }
     
     #   ---- Uncomment the following line if using imputed value for all days.  Otherwise, comment it out, 
@@ -289,7 +290,20 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   } else {
     out.fn <- NULL
   }
-
+  
+  #   ---- Write out information pertaining to the fitting of efficiency models.
+  if( !is.na(file) & sum(grepl("_effTable.csv",dir(dirname(file)),fixed=TRUE)) == 0){
+    out.pass.graphs.eff <- paste(file3, "_effTable.csv", sep="")
+    df2 <- df[!is.na(df$nReleased),]
+    sink(paste0(file3,'_effTable.csv'))
+    write.table( df2, file=paste0(file3,'_effTable.csv'), sep=",", append=FALSE, row.names=FALSE, col.names=TRUE)
+    sink()
+  }
+  
+  cat("Observed efficiency data used in efficiency models.\n")
+  print(obs.data)
+  cat("\n")
+  
   ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts, obs.data=obs.data)
   attr(ans, "out.fn.list") <- out.fn
 

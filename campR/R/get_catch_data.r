@@ -189,14 +189,14 @@
 #'
 F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL,reclassifyFL=FALSE){
   
-  # site <- 
-  # taxon <- 161980
-  # min.date <- "2010-01-01"
-  # max.date <- "2010-06-30"
-  # autoLS <- FALSE
-  # nLS <- NULL
-  # weightUse <- NULL
-  # reclassifyFL <- FALSE
+#   site <- 
+#   taxon <- 161980
+#   min.date <- "2010-01-01"
+#   max.date <- "2010-06-30"
+#   autoLS <- FALSE
+#   nLS <- NULL
+#   weightUse <- NULL
+#   reclassifyFL <- FALSE
   
   #   ---- Get stuff we need from the global environment.
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)

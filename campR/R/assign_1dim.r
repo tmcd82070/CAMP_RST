@@ -104,13 +104,16 @@
 F.assign.1dim <- function(catch, present.var, absent.var ){
 
   # catch <- catch
-  # present.var <- "FinalRun"
-  # absent.var <- "lifeStage"
+  # present.var <- "FinalRun"     # present.var <- "JointDist"
+  # absent.var <- "lifeStage"     # absent.var <- "jointLevs"
+  
+  #   ---- Obtain global variables values.
+  unassd.sig.digit <- get("unassd.sig.digit",envir=.GlobalEnv)
 
   #   ---- Find the levels of the present variable.  
   u <- levels( catch[,present.var] )
   u <- u[ u!="Unassigned" ]
-
+  
   nonMissTrapVisit <- !is.na(catch$trapVisitID)
   nonMissAbsent <- !is.na(catch[,absent.var])
   RandomlySelected <- (catch$RandomSelection == "Yes") & !(is.na(catch$RandomSelection))
@@ -123,6 +126,7 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
 
     #   ---- See if any of this level are present, but unassigned in the other
     #   ---- variable. If none, just skip to the end -- there's nothing to do.  
+    
     if(any(UnassignedAbsent & thisPresent)) {
       
       #   ---- We need to assign a run based on frequencies in the present var.  
@@ -213,19 +217,30 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
 
             #   ---- Multiply proportions that day by number of missings - the 'plus' count.  
             N.j <- catch$Unmarked[j]
-            n.j <- c(round( props * N.j,1))  # Change the decimal of unassigned.
+            n.j <- c(round( props * N.j, unassd.sig.digit ))  
                 
             #   ---- Make sure the plus counts sum to the original. They won't always due to rounding.  
             #   ---- This fixes the rounding error.
             N.more <- N.j - sum(n.j)
 
             #   ---- Randomly allocate the rounding error to classes.
+            #   ---- If we select global variable unassd.sig.digit to be an integer greater than zero,
+            #   ---- then we have to get fancy with function rmultinom, as we can only allocated 
+            #   ---- integers via argument size;  however, when unassd.sig.digit is say, 1, we just need
+            #   ---- to allocate some fraction, e.g., 0.1.  We must expand by orders of magnitude, 
+            #   ---- assign the n.extra, and then drop back down by that same order of magnitude.
+            #   ---- Note that the round is needed to ensure a perfect integer...sometimes it seems 
+            #   ---- that even though an integer is displayed, it's off by a very small decimal. 
+            
+            #   ---- We have under-allocated.  
             if( N.more > 0 ){
-              n.extra <- c(rmultinom( 1, N.more, props ))
-              n.j <- n.j + n.extra   
-            } else if( N.more < 0 ){
-              n.extra <- c(rmultinom( 1, abs(N.more), props ))
-              n.j <- n.j - n.extra                
+              n.extra <- c(rmultinom( 1, abs(round((10^unassd.sig.digit)*N.more,0)), props ))*10^(-1*unassd.sig.digit)
+              n.j <- n.j + n.extra
+              
+            #    ---- We have over-allocated.
+            } else if( N.more < 0 ){  
+              n.extra <- c(rmultinom( 1, abs(round((10^unassd.sig.digit)*N.more,0)), props ))*10^(-1*unassd.sig.digit)
+              n.j <- n.j - n.extra             
             }
             
             #   ---- Replace line j with length(props) lines.  These new lines have $n equal to n.j, 

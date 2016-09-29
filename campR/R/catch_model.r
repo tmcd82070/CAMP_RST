@@ -183,6 +183,9 @@ F.catch.model <- function( catch.df ){
   #   ---- linear, quadratic, cubic (spline with no internal knots),
   #   ---- cubic (spline with one internal knot), and so on.
   
+  #   ---- Set up data-fitting sequence data frame.  
+  catch.fit.all <- NULL
+  
   #   ---- Check to see if we have at least 10 good trapping visits.
   if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
     
@@ -218,10 +221,12 @@ F.catch.model <- function( catch.df ){
       if(class(cur.fit)[1] == 'simpleError'){
         cur.AIC <- NA
         cat(paste0("Model fell apart;  tryCatch caught the output.  You may wish to investigate for trap ",catch.df$trapPositionID,".\n"))
+
       } else {
         cur.AIC <- AIC( cur.fit )
         cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
       }
+
       
       #   ---- If AIC is NA, we have a problem;  otherwise, compare the 
       #   ---- new fit with the previous fit.  Do we keep going or stop?
@@ -230,17 +235,31 @@ F.catch.model <- function( catch.df ){
       } else if( !cur.fit$converged | cur.fit$boundary | cur.df > 15 | cur.AIC > (fit.AIC - 2) ){
         break
       } else {
+        catch.fit <- data.frame(trapPositionID=catch.df$trapPositionID[1], df=cur.df, conv=cur.fit$converged, bound=cur.fit$boundary, AIC= round(cur.AIC,4), nGoodData=nGoodData)
         fit <- cur.fit
         fit.AIC <- cur.AIC
         bs.sampleEnd <- bs.sEnd
         cur.df <- cur.df + 1
       }
+      catch.fit.all <- rbind(catch.fit.all,catch.fit)
       
     }
+  } else {
+    
+    #   ---- Get the number of good data points we have to work with, for this trap.
+    nGoodData <- length(!is.na(catch.df$n.tot))  
+    
+    #   ---- When not enough data are present, just summarize the null model.  
+    catch.fit <- data.frame(trapPositionID=catch.df$trapPositionID[1], df=1, conv=TRUE, bound=FALSE, AIC= round(fit.AIC,4), nGoodData=nGoodData)
+    catch.fit.all <- rbind(catch.fit.all,catch.fit)
   }
   
   #   ---- Done fitting model.
   print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
+  
+
+  
+
   
   
   #   ===============================================================================================================================
@@ -463,5 +482,5 @@ F.catch.model <- function( catch.df ){
   
   #   ---- Reduce scope to only those variables needed.  
   jason.new <- jason.new[,c('batchDate','trapVisitID','trapPositionID','n.tot')]   
-  list(df2=catch.df, fit=fit, X.for.missings=all.new.dat, gaps=all.gaplens, batchDate.for.missings=all.bdates, true.imp=jason.new)
+  list(df2=catch.df, fit=fit, X.for.missings=all.new.dat, gaps=all.gaplens, batchDate.for.missings=all.bdates, true.imp=jason.new, catch.fit.all=catch.fit.all)
 }
