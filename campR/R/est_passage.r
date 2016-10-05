@@ -165,7 +165,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   
     df3b <- vv
     df3b$trapVisitID <- rownames(df3b)
-    df3c <- unique(catch.df[,c("trapVisitID","trapPositionID","EndTime","ProjID","batchDate","StartTime","SampleMinutes","TrapStatus","siteID","siteName","oldtrapPositionID","TrapPosition","sampleGearID","sampleGear","halfConeID","HalfCone","includeCatchID","FinalRun","lifeStage")])
+    df3c <- unique(catch.df[,c("trapVisitID","trapPositionID","EndTime","ProjID","batchDate","StartTime","SampleMinutes","TrapStatus","siteID","siteName","oldtrapPositionID","TrapPosition","sampleGearID","sampleGear","halfConeID","HalfCone","FinalRun","lifeStage")])
     df3d <- merge(df3c,df3b,by=c('trapVisitID'),all.x=TRUE)
     df3d <- df3d[order(df3d$EndTime),]
   
