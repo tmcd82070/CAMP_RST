@@ -60,39 +60,22 @@
 
 F.assign.batch.date <- function( df ){
   
-  # df <- times 
+  # df <- df.test
   
+  #   ---- Get quantities from the global environment.  
   cuttime <- get( "samplePeriodCutTime", envir=.GlobalEnv )
-  
-  #   ---- This is the time of day assigned to batchDates.  Could be halfway between cut times or (cuttime - 12*60*60).
-  midtime <- "00:00:00"   
   time.zone <- get( "time.zone", envir=.GlobalEnv )
   
-  #   ---- A sequence of dates at cuttime every day.
-  min.day <- min(df$EndTime) - 24*60*60
-  max.day <- max(df$EndTime) + 2*24*60*60
-  cut.seq <- seq( min.day, max.day, by=24*60*60 )
-  cut.day <- format( cut.seq, "%Y-%m-%d" )
-  cut.seq <- unique(as.POSIXct( paste( cut.day, cuttime ), format="%Y-%m-%d %H:%M:%S", tz=time.zone))
-  
-  #   ---- Bin the sampleEnds to cut.seq.
-  ind <- cut( df$EndTime, cut.seq, labels=FALSE )
-  
-  #   ---- Establish when the cut time "wraps" to the next day.  At some point, as cut time increases from 0, you
-  #   ---- stop calling the sample from the night before, and attribute it to the current night.  This time is set in 
-  #   ---- wrap.POSIX.    
-  cut.POSIX <- as.POSIXct( paste("1970-1-1", cuttime, format="%Y-%m-%d %H:%M:%S" ))
-  wrap.POSIX <- as.POSIXct("1970-1-1 06:00:00", format="%Y-%m-%d %H:%M:%S" )
-  
-  if( cut.POSIX < wrap.POSIX ){
-    add.day <- 0
-  } else {
-    add.day <- 1
-  }
-  
-  #   ---- Compute batchDate.    
-  bDate <- as.POSIXct( paste( format(cut.seq[ind] + add.day*24*60*60, "%Y-%m-%d"), midtime), format="%Y-%m-%d %H:%M:%S", tz=time.zone)
-  
+  #   ---- if-else loses the POSIX formatting.  Get an if-else function that prevents this annoying behavior.
+  #   ---- http://stackoverflow.com/questions/6668963/how-to-prevent-ifelse-from-turning-date-objects-into-numeric-objects
+  #   ---- Accessed October 5, 2016. 
+  safe.ifelse <- function(cond, yes, no) structure(ifelse(cond, yes, no), class = class(yes)) 
+
+  #   ---- Remap EndTime dates to respect the "redefined midnight," i.e., the cuttime. 
+  bDate <- as.POSIXct(safe.ifelse(strftime(df$EndTime, format="%H:%M:%S") <= cuttime,
+                      format(df$EndTime - 24*60*60, "%Y-%m-%d"),
+                      format(df$EndTime, "%Y-%m-%d")), format="%Y-%m-%d", tz=time.zone)
+
   #   ---- Add batch date to data frame.
   if( "SampleDate" %in% names(df) ){
     
