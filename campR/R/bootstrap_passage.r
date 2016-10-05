@@ -150,8 +150,8 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 #   eff.ind.inside <- eff.and.fits$ind.inside
 #   eff.X.dates <- eff.and.fits$X.dates
 #   sum.by <- summarize.by
-#   R <- 100
-#   ci=T <- ci
+#   R <- 500
+#   ci <- T
 
 
   #   ---- Set the confidence level of the intervals.
@@ -265,8 +265,8 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
           #   ---- Not sure the trapped scenario can still happen, given that we now get rid of 
           #   ---- precedent and antecedent zeros.  We specifically exclude zero-catch traps from 
           #   ---- being estimated.  
-          if( (length(beta) == 1) & (beta[1] < -2)){
-            rbeta <- matrix( -2, nrow=R, ncol=1 )
+          if( (length(beta) == 1) & (beta[1] < -10)){
+            rbeta <- matrix( -10, nrow=R, ncol=1 )
           } else {
             #   ---- Generate random coefficients.
             rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector. rbeta is R X (n coef)
@@ -414,7 +414,9 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
     #   ---- Internal function to summarize catch by s.by by applying
     #   ---- F.summarize to every column of pass.
     f.sumize.pass <- function(p, s.by, bd){#}, imp.catch){
-      df <- data.frame( batchDate=bd, passage=p, imputed.catch=1 )  
+      
+      #   p <- c.pred
+      df <- data.frame( batchDate=bd, passage=p, imputed.catch=1 )
 
       #   ---- Attach JDates if we need to bootstrap by week.  
       attr(df,"JDates") <- JDates

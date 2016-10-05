@@ -165,13 +165,46 @@ F.catch.model <- function( catch.df ){
   #   ---- Sort the data appropriately.  
   catch.df <- catch.df[ order(catch.df$trapPositionID, catch.df$EndTime), ]
   
-  #   ---- Calculate an offset in terms of log hours.
-  catch.df$log.sampleLengthHrs <- log(as.numeric( catch.df$SampleMinutes/60 ))
+  #   ---- Define an offset in terms of hours.
+  log.sampleLengthHrs <-  log(as.numeric( catch.df$SampleMinutes/60 ))
   
   #   ---- Fit null model.  The gap catches are NA here, so they
   #   ---- are dropped from the fit.  Later, they are replaced.
   fit <- glm( n.tot ~ offset(log.sampleLengthHrs) , family=poisson, data=catch.df )
-  fit.AIC <- AIC(fit)
+  
+  #   ---- If we allow decimal fish to enter the Poisson catch model, we cannot readily
+  #   ---- calculate AIC, which requires a likelihood.  This is because the AIC function
+  #   ---- in the Poisson family in R utilizes the gamma function to calculate log(n!),
+  #   ---- i.e., the cumulant.  This function breaks down if n is not an integer.  To 
+  #   ---- remedy this, explicitly calculate the likelihood in the case when 
+  #   ---- unassd.sig.digit is a positive integer other than zero. 
+  
+  #   ---- Nemes, Gergő (2010), "New asymptotic expansion for the Gamma function", 
+  #   ---- Archiv der Mathematik, 95 (2): 161–169.
+  nemes2007 <- function(vec){
+    ans <- 0.5*(log(2*pi) - log(vec+1)) + (vec+1)*(log(vec+1+(1/ ( 12*(vec+1) - (1/(10*(vec+1))) ) ))-1)
+    return(ans)
+  }
+  
+  #   ---- Get the AIC, depending on how we want the decimals to work out.  
+  if(unassd.sig.digit == 0){
+    fit.AIC <- AIC(fit)
+  } else {
+    poissonCumulant <- nemes2007(fit$y)
+    loglikelihood <- sum(fit$y*fit$linear.predictors - fit$fitted.values - poissonCumulant)
+    fit.AIC <- -2*loglikelihood + 2*length(coefficients(fit))
+    fit$aic <- fit.AIC
+  }
+  
+  #   ---- Assemble the beta coefficients to output. 
+  coefs <- data.frame(t(rep(NA,50)))
+  coefs[1,1:length(coefficients(fit))] <- coefficients(fit)
+  colnames(coefs) <- seq(1,50,1)
+  
+  #   ---- Record the model information for model info output, and get the number 
+  #   ---- of good data points we have to work with, for this trap.
+  nGoodData <- length(!is.na(catch.df$n.tot))  
+  catch.fit.all <- cbind(data.frame(trapPositionID=catch.df$trapPositionID[1], df=0, conv=fit$converged, bound=fit$boundary, AIC=round(fit.AIC,4), nGoodData=nGoodData),coefs)
   
   #   ---- Fit glm model, increasing df, until the model goes bad.  
   cat(paste("Number of non-zero catches : ", sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)), "\n"))
@@ -183,17 +216,11 @@ F.catch.model <- function( catch.df ){
   #   ---- linear, quadratic, cubic (spline with no internal knots),
   #   ---- cubic (spline with one internal knot), and so on.
   
-  #   ---- Set up data-fitting sequence data frame.  
-  catch.fit.all <- NULL
-  
   #   ---- Check to see if we have at least 10 good trapping visits.
   if( sum(!is.na(catch.df$n.tot) & (catch.df$n.tot > 0)) > 10 ){
     
     #   ---- This is the degrees of freedom in the smoother part, excluding intercept.
     cur.df <- 1   
-    
-    #   ---- Get the number of good data points we have to work with, for this trap.
-    nGoodData <- length(!is.na(catch.df$n.tot))    
     
     #   ---- Build model complexity sequentially.  
     repeat{
@@ -217,16 +244,22 @@ F.catch.model <- function( catch.df ){
       #   ---- Hold in memory the current fit.  
       cur.fit <- tryCatch(glm( n.tot ~ offset(log.sampleLengthHrs) + bs.sEnd, family=poisson, data=catch.df ),error=function(e) e )
       
+      #   ---- Make sure that the AIC in cur.fit is a number.
+      if(unassd.sig.digit > 0){
+        poissonCumulant <- nemes2007(cur.fit$y)
+        loglikelihood <- sum(cur.fit$y*cur.fit$linear.predictors - cur.fit$fitted.values) - sum(poissonCumulant)
+        cur.fit.AIC <- -2*loglikelihood + 2*length(coefficients(cur.fit))
+        cur.fit$aic <- cur.fit.AIC
+      }
+      
       #   ---- Ensure current fit is statistically interpretable.  
       if(class(cur.fit)[1] == 'simpleError'){
         cur.AIC <- NA
         cat(paste0("Model fell apart;  tryCatch caught the output.  You may wish to investigate for trap ",catch.df$trapPositionID,".\n"))
-
       } else {
         cur.AIC <- AIC( cur.fit )
         cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
       }
-
       
       #   ---- If AIC is NA, we have a problem;  otherwise, compare the 
       #   ---- new fit with the previous fit.  Do we keep going or stop?
@@ -235,32 +268,28 @@ F.catch.model <- function( catch.df ){
       } else if( !cur.fit$converged | cur.fit$boundary | cur.df > 15 | cur.AIC > (fit.AIC - 2) ){
         break
       } else {
-        catch.fit <- data.frame(trapPositionID=catch.df$trapPositionID[1], df=cur.df, conv=cur.fit$converged, bound=cur.fit$boundary, AIC= round(cur.AIC,4), nGoodData=nGoodData)
+        
+        #   ---- Assemble the beta coefficients. 
+        coefs <- data.frame(t(rep(NA,50)))
+        coefs[1,1:length(coefficients(cur.fit))] <- coefficients(cur.fit)
+        colnames(coefs) <- seq(1,50,1)
+
+        catch.fit <- cbind(data.frame(trapPositionID=catch.df$trapPositionID[1], df=cur.df, conv=cur.fit$converged, bound=cur.fit$boundary, AIC=round(cur.AIC,4), nGoodData=nGoodData),coefs)
+        
         fit <- cur.fit
         fit.AIC <- cur.AIC
         bs.sampleEnd <- bs.sEnd
         cur.df <- cur.df + 1
       }
       catch.fit.all <- rbind(catch.fit.all,catch.fit)
-      
     }
-  } else {
-    
-    #   ---- Get the number of good data points we have to work with, for this trap.
-    nGoodData <- length(!is.na(catch.df$n.tot))  
-    
-    #   ---- When not enough data are present, just summarize the null model.  
-    catch.fit <- data.frame(trapPositionID=catch.df$trapPositionID[1], df=1, conv=TRUE, bound=FALSE, AIC= round(fit.AIC,4), nGoodData=nGoodData)
-    catch.fit.all <- rbind(catch.fit.all,catch.fit)
-  }
+  } 
   
   #   ---- Done fitting model.
   print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
   
 
-  
 
-  
   
   #   ===============================================================================================================================
   #   ---- Loop over gaps one at a time, predicting catch for a maximum of 24-hour periods.  

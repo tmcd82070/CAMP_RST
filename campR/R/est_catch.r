@@ -228,7 +228,16 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
     allWinners <- rbind(allWinners,winner)
   }
 
-  #   ---- If desired, output resulting model information for comparison across data. 
+  #   ---- If desired, output resulting model information for comparison across data.
+  check <- 1
+  repeat{
+    if(sum(is.na(model.info[,check + 6])) != length(model.info[,check + 6])){
+      check <- check + 1
+    } else {
+      model.info[,(check + 6):(50 + 6)] <- list(NULL)
+      break
+    }
+  }
   write.csv(model.info,paste0(plot.file,"_model_Info.csv"))
   
   cat("in est_catch.r  DF")

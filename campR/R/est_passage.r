@@ -93,7 +93,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 #   summarize.by <- by
 #   file.root <- out.fn.root
 #   ci <- ci
-  
+   
   
   #   ---- Data frame catch.df gets manipulated along the way.  Preserve the min.date and
   #   ---- max.date entered as attribute variables.  
@@ -400,7 +400,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- present) and summarizes by 'summarize.by'.
   n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
                 catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside,
-                eff.and.fits$X.dates, summarize.by, 100, ci )
+                eff.and.fits$X.dates, summarize.by, 500, ci )
   
   if(usepb){
     tmp <- getWinProgressBar(progbar)
