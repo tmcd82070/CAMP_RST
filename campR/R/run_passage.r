@@ -90,6 +90,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
+  passageRounder <- get("passageRounder",envir=.GlobalEnv)
   
   #   Check that times are less than 1 year apart
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
@@ -121,7 +122,6 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
   
   catch.dfX <- catch.df      # save for a small step below.  several dfs get named catch.df, so need to call this something else.
-  catch.dfX <<- catch.df
   
   if( nrow(catch.df) == 0 ){
     stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
@@ -261,9 +261,9 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
       
       #   ---- Save
-      ans[ 1, j ] <- pass$passage
-      lci[ 1, j ] <- pass$lower.95
-      uci[ 1, j ] <- pass$upper.95
+      ans[ 1, j ] <- signif(pass$passage,passageRounder)
+      lci[ 1, j ] <- signif(pass$lower.95,passageRounder)
+      uci[ 1, j ] <- signif(pass$upper.95,passageRounder)
       setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
       
       output.fn <- output.file

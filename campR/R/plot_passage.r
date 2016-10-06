@@ -69,6 +69,7 @@ F.plot.passage <- function( df, out.file="passage.png" ){
   run.name <- get("run.name",envir=.GlobalEnv)
   min.date <- get("min.date",envir=.GlobalEnv)
   max.date <- get("max.date",envir=.GlobalEnv)
+  passageRounder <- get("passageRounder",envir=.GlobalEnv)
   
   if( !is.na(out.file) ){
     graphics.off()
@@ -186,7 +187,7 @@ F.plot.passage <- function( df, out.file="passage.png" ){
   axis( side=2, at=lab.y.at, labels=lab.y.lab )
 
   #   ---- Add total passage.
-  N <- round(sum( df$passage ))
+  N <- signif(round(sum( df$passage )),passageRounder)
   mtext( side=3, at=max(mp),  text=paste("N =", format(N, scientific=F, big.mark="," )), adj=1, cex=1 )
 
   #   ---- Add title.
