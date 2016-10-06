@@ -137,6 +137,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
+  passageRounder <- get("passageRounder",envir=.GlobalEnv)
   
   #   ---- Check that times are less than or equal to 366 days apart.
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
@@ -335,9 +336,9 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
         out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
         
         #   ---- Save.
-        ans[ i, j ] <- pass$passage
-        lci[ i, j ] <- pass$lower.95
-        uci[ i, j ] <- pass$upper.95
+        ans[ i, j ] <- signif(pass$passage,passageRounder)
+        lci[ i, j ] <- signif(pass$lower.95,passageRounder)
+        uci[ i, j ] <- signif(pass$upper.95,passageRounder)
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
       }
     }
