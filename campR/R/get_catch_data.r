@@ -479,28 +479,27 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   #   ----          included, but unknown behavior if it were to 
   #   ----          be removed.  So, this section stays for now. 
   
-#   #   ---- Fetch variable includeCatchID.  
-#   db <- get( "db.file", envir=.GlobalEnv )
-#   ch <- odbcConnectAccess(db)
-#   includecatchID <- sqlFetch(ch, "TempSamplingSummary")             
-#   F.sql.error.check(catch)
-#   close(ch)
-#   
-#   #   ---- Assign time zone (probably does not matter).
-#   time.zone <- get( "time.zone", envir=.GlobalEnv )
-#   attr(catch$StartTime, "tzone") <- time.zone
-#   attr(catch$EndTime, "tzone") <- time.zone
-#   
-#   #   ---- Add in includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST).
-#   time.zone <- get( "time.zone", envir=.GlobalEnv )
-#   includecatchID$EndTime <- includecatchID$timeSampleEnded
-#   includecatchID$ProjID <- includecatchID$projectDescriptionID
-#   includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$trapVisitID <- includecatchID$sampleGearID <- NULL
-#   attr(includecatchID$EndTime, "tzone") <- time.zone
-#   includecatchID <- includecatchID[,c('trapPositionID','EndTime','ProjID','includeCatchID')]
-#   catch <- merge(catch,includecatchID,by=c('trapPositionID','EndTime','ProjID'),all.x=TRUE)
+  #   ---- Fetch variable includeCatchID.  
+  db <- get( "db.file", envir=.GlobalEnv )
+  ch <- odbcConnectAccess(db)
+  includecatchID <- sqlFetch(ch, "TempSamplingSummary")             
+  F.sql.error.check(catch)
+  close(ch)
   
+  #   ---- Assign time zone (probably does not matter).
+  time.zone <- get( "time.zone", envir=.GlobalEnv )
+
+  #   ---- Add in includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST).
+  time.zone <- get( "time.zone", envir=.GlobalEnv )
+  includecatchID$EndTime <- as.POSIXct(includecatchID$timeSampleEnded,tz=time.zone)
+  includecatchID$ProjID <- includecatchID$projectDescriptionID
+  includecatchID$timeSampleStarted <- includecatchID$timeSampleEnded <- includecatchID$projectDescriptionID <- includecatchID$sampleGearID <- NULL
+  attr(includecatchID$EndTime, "tzone") <- time.zone
+  includecatchID <- includecatchID[,c('trapPositionID','trapVisitID','includeCatchID')]  
+  catch <- merge(catch,includecatchID,by.x=c('oldtrapPositionID','trapVisitID'),by.y=c('trapPositionID','trapVisitID'),all.x=TRUE)
   
+  attr(catch$StartTime, "tzone") <- time.zone
+  attr(catch$EndTime, "tzone") <- time.zone
 
   
   
