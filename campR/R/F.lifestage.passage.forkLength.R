@@ -303,9 +303,9 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
         
 #         #   ---- Deal with traps with all zero fish.  Have to deal with this here 
 #         #   ---- since we now get rid of antecedent and precedent zeros.  
-#         theSums <- tapply(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$n.Orig,list(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$trapPositionID),FUN=sum)
-#         theZeros <- names(theSums[theSums == 0])
-#         catch.df.ls <- catch.df.ls[!(catch.df.ls$trapPositionID %in% theZeros),]
+        theSums <- tapply(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$n.Orig,list(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$trapPositionID),FUN=sum)
+        theZeros <- names(theSums[theSums == 0])
+        catch.df.ls <- catch.df.ls[!(catch.df.ls$trapPositionID %in% theZeros),]
         
         #   ---- Set these attributes so they can be passed along.
         attr(catch.df.ls,"min.date") <- min.date
@@ -333,9 +333,9 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
         out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
         
         #   ---- Save.
-        ans[ i, j ] <- signif(pass$passage,passageRounder)
-        lci[ i, j ] <- signif(pass$lower.95,passageRounder)
-        uci[ i, j ] <- signif(pass$upper.95,passageRounder)
+        ans[ i, j ] <- signif(round(pass$passage,0),passageRounder)
+        lci[ i, j ] <- signif(round(pass$lower.95,0),passageRounder)
+        uci[ i, j ] <- signif(round(pass$upper.95,),passageRounder)
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
 
         output.fn <- output.file

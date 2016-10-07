@@ -261,9 +261,9 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
       
       #   ---- Save
-      ans[ 1, j ] <- signif(pass$passage,passageRounder)
-      lci[ 1, j ] <- signif(pass$lower.95,passageRounder)
-      uci[ 1, j ] <- signif(pass$upper.95,passageRounder)
+      ans[ 1, j ] <- signif(round(pass$passage,x),passageRounder)
+      lci[ 1, j ] <- signif(round(pass$lower.95,x),passageRounder)
+      uci[ 1, j ] <- signif(round(pass$upper.95,x),passageRounder)
       setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
       
       output.fn <- output.file

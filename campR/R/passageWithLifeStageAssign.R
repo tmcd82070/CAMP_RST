@@ -336,9 +336,9 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
         out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
         
         #   ---- Save.
-        ans[ i, j ] <- signif(pass$passage,passageRounder)
-        lci[ i, j ] <- signif(pass$lower.95,passageRounder)
-        uci[ i, j ] <- signif(pass$upper.95,passageRounder)
+        ans[ i, j ] <- signif(round(pass$passage,x),passageRounder)
+        lci[ i, j ] <- signif(round(pass$lower.95,x),passageRounder)
+        uci[ i, j ] <- signif(round(pass$upper.95,x),passageRounder)
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
       }
     }
