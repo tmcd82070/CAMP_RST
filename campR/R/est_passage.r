@@ -87,7 +87,7 @@
 #' }
 
 F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
-# 
+ 
 #   catch.df <- catch.df.ls
 #   release.df <- release.df
 #   summarize.by <- by

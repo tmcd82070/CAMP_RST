@@ -81,7 +81,7 @@ F.plot.eff.model <- function( df, file ){
   #   ---- We want to reduce the output.  "file" up to this point already has season name 
   #   ---- incorporated.  Find which options ends up with the shortest new file (file2),
   #   ---- and take that as the new file name.  
-  s <- c("-Spring","-Fall","-Late fall","-Winter")
+  s <- c("-Spring","-Fall","-Late fall","-Winter",paste0(forkLengthCutPoints$lifeStage,rep("Fall",4)))
   file2 <- sapply(seq_along(s), function(x) gsub(s[x], "", file,fixed=TRUE))
   file3 <- file2[nchar(file2) == min(nchar(file2))]
   

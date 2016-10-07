@@ -214,6 +214,10 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
       winner$origBeg.date <- origBeg.date
       winner$origEnd.date <- origEnd.date
       
+      #   ---- Compile a record of the different fits we tried, making sure NGoodData is recorded as a zero.
+      df.and.fit$catch.fit.all$nGoodData <- 0
+      model.info <- rbind(model.info,df.and.fit$catch.fit.all)
+      
       #jBaseTable <- tryCatch(plot_spline(trap,df2,df.and.fit,file="spline.pdf",df3), error=function(e) e)
     }
 

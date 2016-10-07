@@ -301,11 +301,11 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
         out.fn.root <- paste0(output.file, ls, run.name )
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
         
-        #   ---- Deal with traps with all zero fish.  Have to deal with this here 
-        #   ---- since we now get rid of antecedent and precedent zeros.  
-        theSums <- tapply(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$n.Orig,list(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$trapPositionID),FUN=sum)
-        theZeros <- names(theSums[theSums == 0])
-        catch.df.ls <- catch.df.ls[!(catch.df.ls$trapPositionID %in% theZeros),]
+#         #   ---- Deal with traps with all zero fish.  Have to deal with this here 
+#         #   ---- since we now get rid of antecedent and precedent zeros.  
+#         theSums <- tapply(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$n.Orig,list(catch.df.ls[!is.na(catch.df.ls$n.Orig),]$trapPositionID),FUN=sum)
+#         theZeros <- names(theSums[theSums == 0])
+#         catch.df.ls <- catch.df.ls[!(catch.df.ls$trapPositionID %in% theZeros),]
         
         #   ---- Set these attributes so they can be passed along.
         attr(catch.df.ls,"min.date") <- min.date
