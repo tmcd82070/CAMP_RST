@@ -330,7 +330,6 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
           pass <- data.frame(passage=0,lower.95=0,upper.95=0)  
         }
 
-        
         #   ---- Update progress bar.
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
         out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
