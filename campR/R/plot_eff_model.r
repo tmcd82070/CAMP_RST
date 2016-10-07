@@ -78,6 +78,17 @@ F.plot.eff.model <- function( df, file ){
   attr(df,"subsites") <- attrA     # ...so now, put them back in
   attr(df,"site.name") <- attrB
   
+  #   ---- We want to reduce the output.  "file" up to this point already has season name 
+  #   ---- incorporated.  Find which options ends up with the shortest new file (file2),
+  #   ---- and take that as the new file name.  
+  s <- c("-Spring","-Fall","-Late fall","-Winter")
+  file2 <- sapply(seq_along(s), function(x) gsub(s[x], "", file,fixed=TRUE))
+  file3 <- file2[nchar(file2) == min(nchar(file2))]
+  
+  #   ---- If efficiency files exist, remove them for overwriting.
+  if(file.exists(paste0(file3,"_eff.png"))){file.remove(paste0(file3,"_eff.png"))}
+  if(file.exists(paste0(file3,"_effTable.csv"))){file.remove(paste0(file3,"_effTable.csv"))}
+  
   #   ---- Write out estimates.
   if( !is.na(file) & sum(grepl("_effTable.csv",dir(dirname(file)),fixed=TRUE)) == 0){
     out.pass.graphs.eff <- paste(file3, "_effTable.csv", sep="")
@@ -100,12 +111,6 @@ F.plot.eff.model <- function( df, file ){
       file.remove(out.pass.graphs)
     }
     
-    #   ---- We want to reduce the output.  "file" up to this point already has season name 
-    #   ---- incorporated.  Find which options ends up with the shortest new file (file2),
-    #   ---- and take that as the new file name.  
-    s <- c("-Spring","-Fall","-Late fall","-Winter")
-    file2 <- sapply(seq_along(s), function(x) gsub(s[x], "", file,fixed=TRUE))
-    file3 <- file2[nchar(file2) == min(nchar(file2))]
     out.pass.graphs <- paste0(file3,"_eff.png")
     
     tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})

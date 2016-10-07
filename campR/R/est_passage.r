@@ -249,10 +249,62 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- Data frame release.df has info on adjusted beginning
   #   ---- and end fishing days, for each trap.  Note that 
   #   ---- release.df doesn't have decimal expansion, due to 
-  #   ---- incorporation of gap in fishing.  
+  #   ---- incorporation of gap in fishing.  Note that this for each 
+  #   ---- gap-in-fishing trap, which is not what we want here.
   allDates <- catch.and.fits$allDates
-  allDates$trap <- round(allDates$trap,0)     
-  release.df <- merge(release.df,allDates,by.x=c('trapPositionID'),by.y=c('trap'),all.x=TRUE)
+  allDates$trap <- round(allDates$trap,0)   
+  
+  #   ---- Gaps in fishing lead to traps with the same 5-digit prefix potentially having different
+  #   ---- beg.date and end.date.  This leads to a sloppy join, where the data expand unnecessarily.
+  #   ---- For each unique 5-digit trap, summarize the beg.date and end.date over its duration.
+  #   ---- We want to collapse efficiency to the 5-digit trap, and not keep the decimal suffix.
+
+  #   ---- A helper function. 
+  fix.dates <- function(var){
+    ans <- aggregate(allDates[,c(var)],by=list(trapPositionID=allDates$trap),function(x) max(strftime(x,format="%Y-%m-%d")))
+    ans$x <- as.POSIXlt(ans$x,format="%Y-%m-%d",tz=time.zone)
+    ans <- list(data.frame(trapPositionID=ans[,1]),data.frame(ans[,2]))
+    names(ans[[2]])[names(ans[[2]]) == "ans...2."] <- var
+    return(ans)
+  }
+  
+  #   ---- Get the value for each variable, over all decimal traps, and assemble.
+  a <- fix.dates("beg.date")
+  b <- fix.dates("end.date")
+  c <- fix.dates("origBeg.date")
+  d <- fix.dates("origEnd.date")
+  newAllDates <- cbind(a[[1]],a[[2]],b[[2]],c[[2]],d[[2]])
+  
+  
+  
+  
+  
+  
+#   #   ---- old -- testing.
+#   release.df.keep <- release.df
+#   release.df <- merge(release.df,allDates,by.x=c('trapPositionID'),by.y=c('trap'),all.x=TRUE)
+#   
+#   f.banner("Efficiency estimation ")
+#   
+#   #   ---- Get all the batchDates for use in efficiency.
+#   bd.old <- strptime(sort( seq(as.Date(min(na.omit(release.df$ReleaseDate),na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$ReleaseDate),na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
+#   
+#   release.df <- release.df.keep
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #   ---- Replace allDates with the data that actually matter here.  
+  allDates <- newAllDates
+  
+  #   ---- Now, bring in the min and max dates to release.df for use in constructing bd.  
+  release.df <- merge(release.df,allDates,by=c('trapPositionID'),all.x=TRUE)
   
   f.banner("Efficiency estimation ")
   
