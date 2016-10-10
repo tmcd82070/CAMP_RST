@@ -452,7 +452,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- present) and summarizes by 'summarize.by'.
   n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
                 catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside,
-                eff.and.fits$X.dates, summarize.by, 500, ci )
+                eff.and.fits$X.dates, summarize.by, 100, ci )
   
   if(usepb){
     tmp <- getWinProgressBar(progbar)
@@ -560,7 +560,15 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- Merge 'n' and 'aux' information together. 
   n <- merge(n,aux, by="s.by", all.x=T)
   n$sampleLengthDays <- n$sampleLengthHrs / 24
-
+  
+  #   ---- For catch periods in which no fish were caught, the underlying boring intercept-
+  #   ---- only model has a relatively large negative beta.  During bootstrapping, this beta
+  #   ---- is randomly sampled;  apparently, this can lead to small decimal confidence 
+  #   ---- intervals that are non-zero.  For zero-passage periods, force the confidence 
+  #   ---- intervals to also be zero. 
+  n$lower.95 <- ifelse(n$passage == 0,0,n$lower.95)
+  n$upper.95 <- ifelse(n$passage == 0,0,n$lower.95)
+  
   #   ---- Possibly only works west of GMT (North America).  East of GMT, 
   #   ---- it may be 12 hours off.  Untested east of GMT.  
   tz.offset <- as.numeric(as.POSIXct(0, origin="1970-01-01", tz=time.zone))

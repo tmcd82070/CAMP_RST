@@ -82,8 +82,8 @@ F.plot.eff.model <- function( df, file ){
   #   ---- incorporated.  Find which options ends up with the shortest new file (file2),
   #   ---- and take that as the new file name.  
   s <- c("-Spring","-Fall","-Late fall","-Winter",paste0(rep("-",4),forkLengthCutPoints$lifeStage,rep("Fall",4)),
-         "-FryFall","-SmoltFall","-ParrFall","-FryLate fall","-SmoltLate fall","-ParrLate fall",
-         "-FryWinter","-SmoltWinter","-ParrWinter","-FrySpring","-SmoltSpring","-ParrSpring")
+         "-FryFall","-SmoltFall","-ParrFall","-YearlingFall","-FryLate fall","-SmoltLate fall","-ParrLate fall","-YearlingLate fall",
+         "-FryWinter","-SmoltWinter","-ParrWinter","-YearlingWinter","-FrySpring","-SmoltSpring","-ParrSpring","-YearlingSpring")
   file2 <- sapply(seq_along(s), function(x) gsub(s[x], "", file,fixed=TRUE))
   file3 <- file2[nchar(file2) == min(nchar(file2))]
   
