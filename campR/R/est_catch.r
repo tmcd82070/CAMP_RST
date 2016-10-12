@@ -209,7 +209,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
       
       beg.date <- min(df2$batchDate)
       end.date <- max(df2$batchDate)
-      winner <- data.frame(bZerosRem=buffs[1] - 1,eZerosRem=buffs[2] - 1,bZerosKept=bb,eZerosKept=eb,nrow=nrow(df2),Nrow=nrow(df2[df2$trapPositionID == trap,]),beg.date=beg.date,end.date=end.date)
+      winner <- data.frame(bZerosRem=buffs[1] - 1,eZerosRem=buffs[2] - 1,bZerosKept=0,eZerosKept=0,nrow=nrow(df2),Nrow=nrow(df2[df2$trapPositionID == trap,]),beg.date=beg.date,end.date=end.date)
       winner$trap <- trap
       winner$origBeg.date <- origBeg.date
       winner$origEnd.date <- origEnd.date

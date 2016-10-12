@@ -150,7 +150,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 #   eff.ind.inside <- eff.and.fits$ind.inside
 #   eff.X.dates <- eff.and.fits$X.dates
 #   sum.by <- summarize.by
-#   R <- 500
+#   R <- 100
 #   ci <- T
 
 

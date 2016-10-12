@@ -148,7 +148,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
   
   #   ---- Fetch the catch and visit data.  
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,autoLS=FALSE,nLS=nLS,weightUse=weightUse,reclassifyFL=TRUE)
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.all,autoLS=FALSE,nLS=nLS,weightUse=weightUse,reclassifyFL=TRUE)
   
   #   ---- All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   catch.df <- tmp.df$catch   
@@ -312,7 +312,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
         attr(catch.df.ls,"max.date") <- max.date
         
         #   ---- Compute passage.
-        if(nrow(catch.df.ls) > 0 & sum(as.numeric(theSums)) > 0){
+        if(nrow(catch.df.ls) > 0){# & sum(as.numeric(theSums)) > 0){
           
           if(by == 'year'){
             pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
@@ -335,7 +335,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
         #   ---- Save.
         ans[ i, j ] <- signif(round(pass$passage,0),passageRounder)
         lci[ i, j ] <- signif(round(pass$lower.95,0),passageRounder)
-        uci[ i, j ] <- signif(round(pass$upper.95,),passageRounder)
+        uci[ i, j ] <- signif(round(pass$upper.95,0),passageRounder)
         setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
 
         output.fn <- output.file

@@ -54,6 +54,9 @@ F.plot.eff.model <- function( df, file ){
   #   ---- Get global environment information. 
   db.file <- get("db.file",envir=.GlobalEnv)
   
+  #   ---- Report filename string at this point.  Helps with checking.
+  cat(paste0(file,"\n"))
+  
   #   ---- Compute results from efficiency trials.  
   imputed <- df$imputed.eff == "Yes"
   pts <- !is.na(df$nReleased)
@@ -83,7 +86,10 @@ F.plot.eff.model <- function( df, file ){
   #   ---- and take that as the new file name.  
   s <- c("-Spring","-Fall","-Late fall","-Winter",paste0(rep("-",4),forkLengthCutPoints$lifeStage,rep("Fall",4)),
          "-FryFall","-SmoltFall","-ParrFall","-YearlingFall","-FryLate fall","-SmoltLate fall","-ParrLate fall","-YearlingLate fall",
-         "-FryWinter","-SmoltWinter","-ParrWinter","-YearlingWinter","-FrySpring","-SmoltSpring","-ParrSpring","-YearlingSpring")
+         "-FryWinter","-SmoltWinter","-ParrWinter","-YearlingWinter","-FrySpring","-SmoltSpring","-ParrSpring","-YearlingSpring",
+         "-SmallFall","-SmallLate fall","-SmallWinter","-SmallSpring",
+         "-MediumFall","-MediumLate fall","-MediumWinter","-MediumSpring",
+         "-LargeFall","-LargeLate fall","-LargeWinter","-LargeSpring")
   file2 <- sapply(seq_along(s), function(x) gsub(s[x], "", file,fixed=TRUE))
   file3 <- file2[nchar(file2) == min(nchar(file2))]
   

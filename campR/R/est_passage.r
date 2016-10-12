@@ -567,7 +567,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- intervals that are non-zero.  For zero-passage periods, force the confidence 
   #   ---- intervals to also be zero. 
   n$lower.95 <- ifelse(n$passage == 0,0,n$lower.95)
-  n$upper.95 <- ifelse(n$passage == 0,0,n$lower.95)
+  n$upper.95 <- ifelse(n$passage == 0,0,n$upper.95)
   
   #   ---- Possibly only works west of GMT (North America).  East of GMT, 
   #   ---- it may be 12 hours off.  Untested east of GMT.  

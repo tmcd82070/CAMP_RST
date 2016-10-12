@@ -116,7 +116,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
   
   #   ---- Fetch the catch and visit data
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date  )
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date, output.file  )
   
   catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
@@ -261,9 +261,9 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       out.fn.roots <- c(out.fn.roots, attr(pass, "out.fn.list"))
       
       #   ---- Save
-      ans[ 1, j ] <- signif(round(pass$passage,x),passageRounder)
-      lci[ 1, j ] <- signif(round(pass$lower.95,x),passageRounder)
-      uci[ 1, j ] <- signif(round(pass$upper.95,x),passageRounder)
+      ans[ 1, j ] <- signif(round(pass$passage,0),passageRounder)
+      lci[ 1, j ] <- signif(round(pass$lower.95,0),passageRounder)
+      uci[ 1, j ] <- signif(round(pass$upper.95,0),passageRounder)
       setWinProgressBar( progbar, getWinProgressBar(progbar)+barinc )
       
       output.fn <- output.file

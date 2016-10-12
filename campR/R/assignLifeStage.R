@@ -16,6 +16,7 @@
 #' @param groupN The number of life stage groups to be estimated, see details.
 #' @param USEWeight Indicate whether weight should not (FALSE) be used in the
 #'   analytical assignment or allow (NULL) weight to be used, see details.
+#' @param output.file A text string indicating a prefix to append to all output.
 #'   
 #' @param ... Arguments passed to \code{\link{assignLSCompare}}.
 #'   
@@ -107,7 +108,7 @@
 
 
 
-assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
+assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,output.file=output.file,...){
 ### DATA = the catch data
 ### groupN = the number of life stage groups to fit, NULL allows the program to decide
 ### USEWeight = should weight be used in the mixture distribution, NULL allows the program to decide
@@ -124,7 +125,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
     sample.size.forkLengthAndWeight <- get('sample.size.forkLengthAndWeight',envir=.mycampREnv)
     weight.prop.forkLength <- get('site',envir=.mycampREnv)
     forkLength.mean.diff <- get('forkLength.mean.diff',envir=.mycampREnv)
-    output.dir <- get('output.dir',envir=.mycampREnv)
+    #output.dir <- get('output.dir',envir=.mycampREnv)
 
 
     ##	JARED:  WHY IS THIS SAVE HERE?  IS IT NECESSARY?
@@ -134,9 +135,10 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 
 
 
-  # Data <- DATA
-  # groupN <- xxx
+  # DATA <- catchFishing
+  # groupN <- nLS
   # USEWeight <- NULL
+  # output.file <- output.file
 
   if(!is.null(groupN)){
     if(!(groupN%in%c(2,3))){
@@ -195,7 +197,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
         sample.size.forkLengthAndWeight <- get('sample.size.forkLengthAndWeight',envir=.mycampREnv)
         weight.prop.forkLength <- get('site',envir=.mycampREnv)
         forkLength.mean.diff <- get('forkLength.mean.diff',envir=.mycampREnv)
-        output.dir <- get("output.file",envir=.GlobalEnv)  # jason changes this.  don't know what output.dir was.
+
 
 
 	## keep only needed columns
@@ -222,7 +224,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
             runDat$lifeStage <- 'Unassigned'
 
             assignCheck$assignment <- 'low sample size/unassigned run'
-            write.csv(assignCheck,paste0(output.dir,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+            #write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
             cat('\n')
             cat('Final run is either unassigned or there is not enough fish with a forklength. Life stage is being written as unassigned. \n')
             return(list(runDat=runDat,mu=NA,Sigma=NA,run=fRun))
@@ -408,7 +410,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
 
         ########################
         ## This might not be needed when we get to the next release, but it is nice for testing.
-	write.csv(assignCheck,paste0(output.dir,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+	write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
 
 
 
@@ -610,7 +612,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
                             cat(as.character(cond),'\n')
                             assignCheck <- data.frame(site=site,minDate=min.date,maxDate=max.date,run=fRun,assignment=as.character(cond),stringsAsFactors=FALSE)
 
-                            write.csv(assignCheck,paste0(output.dir,site,fRun,'AssignCheck.csv'),row.names=FALSE)
+                            write.csv(assignCheck,paste0(output.file,site,fRun,'AssignCheck.csv'),row.names=FALSE)
 
 
                             cat('\n')
@@ -642,10 +644,10 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,...){
     ## save data after assignment
     ## JARED: WHY THIS SAVE?
     ## This is for debugging and should be removed right before the next release
-    #save(DATA,output.dir,muList,sigmaList,file=paste0(output.dir,'newLS.Rdata'))
+    #save(DATA,output.file,muList,sigmaList,file=paste0(output.file,'newLS.Rdata'))
 
 
-    assignLSCompare(DATA,muLIST=muList,sigmaLIST=sigmaList,...)
+    assignLSCompare(DATA,muLIST=muList,sigmaLIST=sigmaList,output.file=output.file,...)
 
 
     return(DATA)

@@ -23,10 +23,12 @@
 #'   be the same and correspond to the variable names in Data that were used in
 #'   the mixture distribution.
 #'   
-#' @param SAVE Default is TRUE, a plot (PDF file) and confusion matrix (CSV
-#'   file)  for each final run is saved in the \code{output.dir} location (see
-#'   \code{\link{GlobalVars}}). If FALSE each plot is displayed in a new R
-#'   plot window. In either case the confusion matrix is printed to the R console.
+#' @param SAVE Default is TRUE, a plot (PDF file) and confusion matrix (CSV 
+#'   file)  for each final run is saved in the \code{output.file} location. If
+#'   FALSE each plot is displayed in a new R plot window. In either case the
+#'   confusion matrix is printed to the R console.
+#'   
+#' @param output.file A text string indicating a prefix to append to all output.
 #'   
 #' @details
 #' 
@@ -60,8 +62,13 @@
 
 
 
-assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
+assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE,output.file=output.file){
 
+#   Data <- DATA
+#   muLIST <- muList
+#   sigmaLIST <- sigmaList
+#   SAVE <- TRUE
+  
     ## This is the environment for the global variables
     .mycampREnv <- .GlobalEnv
     ## get the global variables
@@ -72,8 +79,6 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
     ##sample.size.forkLengthAndWeight <- get('sample.size.forkLengthAndWeight',envir=.mycampREnv)
     ##weight.prop.forkLength <- get('site',envir=.mycampREnv)
     ##forkLength.mean.diff <- get('forkLength.mean.diff',envir=.mycampREnv)
-    #output.dir <- get('output.dir',envir=.mycampREnv)  # jason doesn't know what this is. 
-    output.dir <- get("output.file",envir=.GlobalEnv)
 
     ## keep only needed columns
     Data <- Data[,c('days','lifeStage','SampleDate','FinalRun','forkLength','weight','Unmarked','bioLS')]
@@ -125,15 +130,23 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
 
 
         ## confusion matrix
-        compareDF <- ddply(data,~bioLS+lifeStage,plyr::summarize,fish=sum(suppressBindingNotes(c(".->Unmarked","Unmarked")))) 
-        cat("we got to here.\n")
-        cvTab <- tidyr::spread(compareDF,key=lifeStage,value=fish,fill=0)                                                                           
-        cat("but did we get here?\n")
+        #compareDF <- ddply(data,~bioLS+lifeStage,plyr::summarize,fish=sum(suppressBindingNotes(c(".->Unmarked","Unmarked")))) 
+        
+        #cat("we got to here.\n")
+        #cvTab <- tidyr::spread(compareDF,key=lifeStage,value=fish,fill=0)                                                                           
+        #cat("but did we get here?\n")
+        
+        #   ---- Jason:  10/10/2016.  Confusion matrix spitting out all zeros.  Remake
+        #   ---- in a different way.
+        #cvTab <- tapply(data$Unmarked,list(data$bioLS,data$lifeStage),sum)
+        cvTab <- tapply(Data$Unmarked,list(Data$bioLS,Data$lifeStage),sum)
+        cvTab[is.na(cvTab)] <- 0
+        
         cat('Confusion Matrix \n')
         print(cvTab)
 
         if(SAVE){
-            write.csv(cvTab,paste0(output.dir,gsub(' ','',fRun),'ConfusionMatrix.csv'),row.names=FALSE)
+            write.csv(cvTab,paste0(output.file,gsub(' ','',fRun),'ConfusionMatrix.csv'),row.names=TRUE)
         }
         ##head(data)
 
@@ -210,7 +223,7 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE){
         cat('\n')
         cat('Saving comparison figure.\n')
         if(SAVE){
-            pdf(file=paste0(output.dir,gsub(' ','',fRun),'plotLifeStageAssignComparison.pdf'),width=7)
+            pdf(file=paste0(output.file,gsub(' ','',fRun),'plotLifeStageAssignComparison.pdf'),width=7)
         }else{
             dev.new(width=7)
         }

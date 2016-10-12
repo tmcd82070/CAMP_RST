@@ -13,6 +13,7 @@
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
+#' @param output.file A text string indicating a prefix to append to all output.
 #' @param autoLS A logical indicating whether or not lifestage assignment should
 #'   be decided by the computer via a mixture distribution/clustering analysis.
 #' @param nLS A numeric communicating the number of new lifestages to assign. 
@@ -187,7 +188,7 @@
 #'   autoLS,nLS,weightUse,reclassifyFL)
 #' }
 #'
-F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=NULL,weightUse=NULL,reclassifyFL=FALSE){
+F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, autoLS=FALSE,nLS=NULL,weightUse=NULL,reclassifyFL=FALSE){
   
 #   site <- 
 #   taxon <- 161980
@@ -398,13 +399,12 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
     cat('\n')
     
     #   ---- Put the output location in the global environment for use in Jared's functions.
-    assign("output.file",output.file,envir=.GlobalEnv)
     output.file <- get("output.file",output.file,envir=.GlobalEnv)
     
     #   ---- Swap out the old catch with the new catch.
     catchFishing <- catch[catch$TrapStatus == "Fishing",]
     catchNotFishing <- catch[catch$TrapStatus == "Not fishing",]
-    catchFishing <- assignLifeStage(DATA=catchFishing,groupN=nLS,USEWeight=weightUse)  
+    catchFishing <- assignLifeStage(DATA=catchFishing,groupN=nLS,USEWeight=weightUse,output.file=output.file)  
     
     # for debugging
     #jCatch <<- catchFishing
@@ -436,8 +436,8 @@ F.get.catch.data <- function( site, taxon, min.date, max.date,autoLS=FALSE,nLS=N
   
   
   
-  
-  
+  cat("Jason Printing.\n")
+  print(head(catch))
   
   
   
