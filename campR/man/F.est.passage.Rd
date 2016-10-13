@@ -50,7 +50,8 @@ Two main steps comprise the estimation of passage.  The first
   
   In processing prior to the creation of the \code{grand.df}, the dates 
   outside the first and last date of valid fishing are dropped from each
-  trap. In reality however, the season for each trap is identified as non-missing catch.  In other words, the grand merge inserts every date for all
+  trap. In reality however, the season for each trap is identified as non-missing 
+  catch.  In other words, the grand merge inserts every date for all
   traps because the underlying efficiency data frame has all dates.  For those
   dates for which a trap was not fishing, the resulting catch (and thus passage)
   is essentially considered zero.  

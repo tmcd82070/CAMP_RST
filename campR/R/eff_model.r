@@ -97,12 +97,13 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   ans <- NULL
   traps <- sort( unique(obs.eff.df$TrapPositionID))
 
-  fits <- all.X <- all.ind.inside <- all.dts <- obs.data <- vector("list", length(traps))
+  fits <- all.X <- all.ind.inside <- all.dts <- obs.data <- eff.type <- vector("list", length(traps))
   names(fits) <- traps
   names(all.X) <- traps
   names(all.dts) <- traps
   names(all.ind.inside) <- traps
   names(obs.data) <- traps
+  names(eff.type) <- traps
   
   # 	---- If number of trials at a trap less than this number, 
   #        assume constant and use ROM+1 estimator
@@ -134,6 +135,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     	all.X[[trap]] <- NA
     	df$efficiency <- NA
     	obs.data[[trap]] <- NA
+    	eff.type[[trap]] <- 1
     	
     } else if( (m.i < eff.min.spline.samp.size) | (sum(tmp.df$nCaught) == 0) ){
     	
@@ -157,6 +159,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       fits[[trap]] <- glm(nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=tmp.df$nReleased )
       df$efficiency <- obs.mean
       obs.data[[trap]] <- tmp.df
+      eff.type[[trap]] <- 2
       
       #   ---- Make a design matrix for ease in calculating predictions.  Used in bootstrapping.
       #   ---- Very simple design matrix in this case, since we're only fitting an intercept.  
@@ -197,6 +200,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       	df$efficiency <- obs.mean
       	
       	fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
+      	eff.type[[trap]] <- 3
       	
       } else {
         
@@ -268,6 +272,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       #   ---- Save the raw efficiency data.  
       obs.data[[trap]] <- tmp.df
+      eff.type[[trap]] <- 4
     }
     
     #   ---- Uncomment the following line if using imputed value for all days.  Otherwise, comment it out, 
@@ -295,7 +300,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   print(obs.data)
   cat("\n")
   
-  ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts, obs.data=obs.data)
+  ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts, obs.data=obs.data, eff.type=eff.type)
   attr(ans, "out.fn.list") <- out.fn
 
   ans

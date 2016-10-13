@@ -7,8 +7,8 @@
 #'   
 #' @param grand.df A data frame containing both daily estimated passage and 
 #'   efficiency, for each trap.
-#' @param catch.fits A list of Poisson fitted \code{glm} objects for each trap, possibly with basis 
-#'   spline covariates, used to impute missing catches.
+#' @param catch.fits A list of Poisson fitted \code{glm} objects for each trap,
+#'   possibly with basis spline covariates, used to impute missing catches.
 #' @param catch.Xmiss A list containing a spline basis matrix of imputed days 
 #'   where catch is missing for each trap.
 #' @param catch.gapLens A list, for each trap, containing a numeric vector of
@@ -27,6 +27,8 @@
 #'   for each trap.
 #' @param eff.X.dates A list containing the dates for which missing efficiency 
 #'   must be estimated, for each trap.
+#' @param eff.X.obs.data A list containing the raw observed efficiency data used
+#'   to fit efficiency models and estimate bias-corrected efficiencies.
 #' @param sum.by A text string indicating the temporal unit over which daily 
 #'   estimated catch is to be summarized.  Can be one of \code{day}, 
 #'   \code{week}, \code{month}, \code{year}.
@@ -93,7 +95,7 @@
 #'   binomial fit.  The resulting dispersion statistic is set to one in case it 
 #'   calculates as less than one.  Traps with one efficiency trial also have 
 #'   overdispersions set to one.  Similar to the variance adjustment applied to 
-#'   catch, this is a modified quasilikelihood approach.
+#'   catch, this is a modified quasilikelihood approach.  
 #'   
 #' @section Random Realizations: Catch fit models are utilized to generate
 #'   random realizations of catch for each individual trap.  To do this, the 
@@ -138,7 +140,7 @@
 #'   catch.bDates.miss,eff.fits,eff.X,eff.ind.inside,eff.X.dates,
 #'   sum.by,R,ci=T)
 #' }
-F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R, ci=T ){
+F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, eff.X.obs.data, sum.by, R, ci=T ){
 
 #   grand.df <- grand.df
 #   catch.fits <- catch.and.fits$fits
@@ -149,6 +151,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 #   eff.X <- eff.and.fits$X
 #   eff.ind.inside <- eff.and.fits$ind.inside
 #   eff.X.dates <- eff.and.fits$X.dates
+#   eff.X.obs.data <- eff.and.fits$obs.data
 #   sum.by <- summarize.by
 #   R <- 100
 #   ci <- T
@@ -300,6 +303,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 
         e.fit <- eff.fits[[ind]]
         e.X <- eff.X[[ind]]
+        eff.obs.data <- eff.X.obs.data[[ind]]
             
         #   ---- This is a 2-vector of the first and last efficiency trials.
         e.ind <- eff.ind.inside[[ind]]  
@@ -347,10 +351,32 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 
           #   ---- Coefficients.
           beta <- coef( e.fit )
-
+         
           #   ---- Generate R random coefficients of the beta vector. 
-          rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  
-
+          #   ---- Addition of bias-corrected efficiency complicates things. 
+          if( length(coef(e.fit)) == 1 ){
+            
+            #   ---- Reproduce the variance with our bias-corrected estimate of the mean efficiency. 
+            #   ---- Construct, via the general expression for a generalized linear model's variance,
+            #   ---- the number needed, assuming a logit link.  McCulloch, C.E. & Searle, S. R. 
+            #   ---- Generalized, Linear, and Mixed Models, p. 147.  Note we also use an adjusted
+            #   ---- mean that incorporates the bias.  
+            X <- sum(eff.obs.data$nReleased)
+            p <- (sum(eff.obs.data$nCaught) + 1) / (sum(eff.obs.data$nReleased) + 1)
+            w <- p*(1 - p)
+            
+            diagonal <- matrix(rep(0,length(X)*length(X)),length(X),length(X))
+            for(i in 1:length(X)){
+              diagonal[i,i] <- w[i]
+            }
+            
+            #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
+            sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
+            rbeta <- rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
+          } else {
+            rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  
+          }
+          
           #   ---- Predict efficiency using random coefficients
           #   ---- When computed, pred is a matrix where each column is a random realization of model predictions
           #   ---- for missing catches. There are R columns (sets of predictions).

@@ -104,11 +104,6 @@
 #'   point equal or in excess to the maximum possible forklength, e.g., 999. See
 #'   Details.
 #'   
-#' @param plusCountDec An integer specifying the number of decimal places to 
-#'   which plus-count fish should be rounded.  For example, when
-#'   \code{plusCountDec=1}, plus-count fish are rounded to the nearest tenth. 
-#'   Setting \code{plusCountDec=0} rounds to the nearest whole fish.
-#'   
 #' @param passageRounder An integer specifying the place to which final passage 
 #'   estimates and confidence intervals should be rounded.  For example, a value
 #'   of \code{4} rounds results to the nearest 1,000.
@@ -117,7 +112,7 @@
 #'   efficiency trials required to fit a spline efficiency model.  If fewer than
 #'   this number of efficiency trials target a particular subsite, the Platform
 #'   estimates constant efficiency for that subsite using the ROM method (see
-#'   \link{\code{F.efficiency.model}}). If this number or more are available, 
+#'   \code{F.efficiency.model}). If this number or more are available, 
 #'   the Platform fits increasingly complex spline-based logistic regressions 
 #'   and uses the one with lowest AIC.
 #'   
@@ -125,7 +120,9 @@
 #'   significant digits to which unassigned fish should be estimated during the 
 #'   plus-count algorithm.  Values other than zero allow for fractional
 #'   representation of less common fish types (e.g., Winter or Smolt) during
-#'   passage estimation.
+#'   passage estimation.  For example, when
+#'   \code{unassd.sig.digit=1}, plus-count fish are rounded to the nearest tenth. 
+#'   Setting \code{unassd.sig.digit=0} rounds to the nearest whole fish.
 #'   
 #' @details One additional global variable is defined. \code{table.names} is a 
 #'   list containing the mapping of table names in Access to table names in R. 
@@ -148,7 +145,7 @@
 #'   
 #'   The Access data base name in use is written to the R log file.
 #'   
-#'   Global variable \code{plusCountDec} allows for more robust estimation of
+#'   Global variable \code{unassd.sig.digit} allows for more robust estimation of
 #'   fish captured with lesser frequencies, e.g., endangered fish for which
 #'   estimation of passage is deemed useful.  Often, underlying
 #'   non-randomly-sampled fish are caught in insufficient quantities to allow

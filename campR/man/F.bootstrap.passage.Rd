@@ -5,8 +5,8 @@
 \title{F.bootstrap.passage}
 \usage{
 F.bootstrap.passage(grand.df, catch.fits, catch.Xmiss, catch.gapLens,
-  catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, sum.by, R,
-  ci = T)
+  catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates,
+  eff.X.obs.data, sum.by, R, ci = T)
 }
 \arguments{
 \item{grand.df}{A data frame containing both daily estimated passage and 
@@ -39,6 +39,9 @@ for each trap.}
 
 \item{eff.X.dates}{A list containing the dates for which missing efficiency 
 must be estimated, for each trap.}
+
+\item{eff.X.obs.data}{A list containing the raw observed efficiency data used
+to fit efficiency models and estimate bias-corrected efficiencies.}
 
 \item{sum.by}{A text string indicating the temporal unit over which daily 
 estimated catch is to be summarized.  Can be one of \code{day}, 

@@ -4,7 +4,8 @@
 \alias{assignLSCompare}
 \title{assignLSCompare}
 \usage{
-assignLSCompare(Data, muLIST, sigmaLIST, SAVE = TRUE)
+assignLSCompare(Data, muLIST, sigmaLIST, SAVE = TRUE,
+  output.file = output.file)
 }
 \arguments{
 \item{Data}{A data.frame of the catch data with both the morphometric and
@@ -24,10 +25,12 @@ the variance covariance exists, from the mixture distribution from
 be the same and correspond to the variable names in Data that were used in
 the mixture distribution.}
 
-\item{SAVE}{Default is TRUE, a plot (PDF file) and confusion matrix (CSV
-file)  for each final run is saved in the \code{output.dir} location (see
-\code{\link{GlobalVars}}). If FALSE each plot is displayed in a new R
-plot window. In either case the confusion matrix is printed to the R console.}
+\item{SAVE}{Default is TRUE, a plot (PDF file) and confusion matrix (CSV 
+file)  for each final run is saved in the \code{output.file} location. If
+FALSE each plot is displayed in a new R plot window. In either case the
+confusion matrix is printed to the R console.}
+
+\item{output.file}{A text string indicating a prefix to append to all output.}
 }
 \value{
 NA

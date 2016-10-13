@@ -4,7 +4,8 @@
 \alias{assignLifeStage}
 \title{assignLifeStage}
 \usage{
-assignLifeStage(DATA, groupN = NULL, USEWeight = NULL, ...)
+assignLifeStage(DATA, groupN = NULL, USEWeight = NULL,
+  output.file = output.file, ...)
 }
 \arguments{
 \item{DATA}{A data frame of the catch data with the weight measurement, as
@@ -14,6 +15,8 @@ returned from \code{\link{getCatchDataWeight}}.}
 
 \item{USEWeight}{Indicate whether weight should not (FALSE) be used in the
 analytical assignment or allow (NULL) weight to be used, see details.}
+
+\item{output.file}{A text string indicating a prefix to append to all output.}
 
 \item{...}{Arguments passed to \code{\link{assignLSCompare}}.}
 }

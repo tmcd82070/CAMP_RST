@@ -4,7 +4,7 @@
 \alias{F.efficiency.model}
 \title{F.efficiency.model}
 \usage{
-F.efficiency.model(obs.eff.df, plot = T, method = 1, max.df.spline = 4,
+F.efficiency.model(obs.eff.df, plot = T, max.df.spline = 4,
   plot.file = NA)
 }
 \arguments{
@@ -12,14 +12,8 @@ F.efficiency.model(obs.eff.df, plot = T, method = 1, max.df.spline = 4,
 \code{efficiency}, where \code{efficiency} is \code{NA} for all days 
 requiring an estimate.}
 
-\item{plot}{A logical indicating if resulting efficiency should be plotted.}
-
-\item{method}{A scalar specifying the type of extrapolation to do. 
-\code{method = 1} takes the average of entire season. \code{method = 2} uses 
-earliest observed efficiency for each unique interval between distinct
-efficiency trials; i.e., a so called "step-function" constant model. 
-\code{method = 3} is a B-spline model with up to \code{max.df.spline}
-degrees of freedom.}
+\item{plot}{A logical indicating if raw efficiencies and the model(s)
+should be plotted.}
 
 \item{max.df.spline}{The maximum degrees of freedom allowed for splines.}
 
@@ -31,77 +25,67 @@ A data frame with all observed and imputed \code{efficiency} values,
   where variable \code{gam.estimated} identifies days with imputed values.
 }
 \description{
-Compute and estimate efficiency for all missing combinations of
-  traps and days;  i.e., "impute" a value for efficiency when missing.
+Estimate the efficiency model from a data frame containing 
+efficiency trials.
 }
-\section{Efficiency Methodologies}{
+\section{Efficiency model method}{
 
 
-Selection of \code{method} allows for efficiency estimation to vary, based on
-need.
   
   \itemize{ 
-  \item{\code{method=1} : A "Seasonal-mean model."  This means that a
-  ratio-of-means bias-corrected global efficiency is calculated, for each 
-  trap, where the efficiency is estimated via \deqn{\frac{nCaught
-  + 1}{nReleased + 1}{(nCaught + 1) / (nReleased + 1)}}.  Values
-  for variables \code{nCaught} and \code{nReleased} originate via function
-  \code{F.get.releases} and the querying of an underlying Access database. 
-  The resulting ratio-of-means efficiency is then applied to all trapping
-  days, regardless if data were missing or not.}
+  \item{Less than \code{eff.min.spline.samp.size} trials : 
+  A "weighted average constant model with bias correction."  This model 
+  uses constant efficiency over the season, and estimates it 
+  using a ratio-of-means bias-corrected ("ROM+1") average. For each 
+  trap, estimated efficiency is \deqn{\frac{(\sum nCaught)
+  + 1}{(\sum nReleased) + 1}{(sum(nCaught) + 1) / (sum(nReleased) + 1)}}.  Values
+  for \code{nCaught} and \code{nReleased} come from function
+  \code{F.get.releases}. }
   
-  \item{\code{method=2} : A "Constant model."  This means that this model
-  utilizes a step function to estimate efficiency, where here, steps may
-  increase or decrease over time.  Each interval of time for which efficiency
-  needs to be estimated utilizes the earliest observed efficiency between
-  efficiency trials.  Note that this method has not been fully programmed to
-  be compatible with boostrapping in function \code{F.bootstrap.passage}.  This
-  option should not be used until \code{F.bootstrap.passage} can handle its
-  results.}
   
-  \item{\code{method=3} : A "B-spline model."  This efficiency estimation 
-  methodology chops up the date range into small temporal bits.  For each,
-  possibly different degree polynomials are fit, with each individual
-  polynomial fitting the data locally.  Each individual polynomial is then
-  fit together into one final curve, with several conditions ensuring its
-  smoothness. One condition includes matching the polynomial estimate at the
-  end of one time point with the connecting starting time point of the next
-  polynomial.  Others include ensuring that the first derivatives (local
-  slopes) and second derivatives (local convexity) at these connecting time
-  points are equal.  
+  \item{\code{eff.min.spline.samp.size} trials or more : 
+  A "B-spline model."  This model starts by estimating 
+  a constant logistic regression where recaptures (i.e., \code{nCaught}) is 
+  the number of "successes" and releases (i.e.,  \code{nReleased}) is
+  number of "trials". Assuming this constant model is successful, the method 
+  estimates a series of increasingly complex b-spline logistic regression 
+  models until AIC is minimized or model estimation fails (failure to 
+  converge or estimates at boundary). B-spline models, in general, divide 
+  the date range into intervals by adding 'knots'.  Between 'knots', 
+  b-spline models fit cubic polynomials in a way that  
+  connects smoothly at knots (refer to b-spline methods for details). 
   
-  Estimation requires at least one trapping instance to occur within the 
-  earliest and latest date with an efficiency trial.  All three can occur on 
-  the same one day.  Generalized additive models, or GAMs, first fit the
-  observed efficiency-trial data as
-  \deqn{\frac{nCaught}{nReleased}}{nCaught / nReleased} outcome
-  proportions against a null model with a binomial link.  This leads to a
-  constant, or intercept-only model, where the intercept is the weighted 
-  avearge of caught fish over all efficiency trials.
+  The first (lowest order) b-spline model fitted contains 
+  zero knots and therefore estimates a cubic model. Assuming that 
+  model was successful and that AIC improved relative to the 
+  constant model, the method adds one knot at the median date
+  and re-estimates. If that model was successful and AIC improved 
+  relative to the previous model, the method adds another knot at 
+  the (1/(knots+1))-th quantiles of date and re-estimates.  The method
+  containues to add knots until one or more of the following 
+  conditions happen: (1) AIC does not improve, (2) estimation 
+  fails somehow, or (3) the maximum number of knots 
+  (i.e., \code{max.df.spline-3}) is fitted. 
   
-  Assuming at least ten efficiency trials, higher-order polynomial models are
-  considered.  Akaike Information Criterion (AIC), rounded to four decimal
-  places, determines winning models. Models with lower AICs trump all others,
-  with the winning model having to be at least two AIC points less than its
-  nearest competitor.  Function \code{bs} identifies the B-spline basis to
-  use in higher-order models.  
+  Using the default value of \code{max.df.spline}, the efficiency model
+  is either constant (intercept-only), cubic, or b-spline with one 
+  interval knot.  
   
-  In generalized additive models, consideration of higher-order polynomials 
-  often starts with cubic polynomials partitioned in a temporal piecewise
-  fashion, chopped at the time values at which observed efficiencies were
-  recorded. Currently, however, no polynomials of degree greater than three
-  are considered in efficiency models;  thus, models could either be 
-  intercept-only, or cubic.
+  When the best logistic regression model is constant (intercept-only), 
+  estimated efficiency is the ratio-of-means estimator WITHOUT the "+1" 
+  bias correction.  With many efficiency trial, the "+1" bias correction 
+  is tiny and inconsequential. The exact efficiency model used at each subsite
+  is listed in the campR log file.  
   
-  The \eqn{\beta}s from the final selected GAM are saved for use in
-  bootstrapping via function \code{F.boostrap.passage}.  They are also 
-  utilized to form predictions over the entire efficiency trial season, for
-  each trap.  Model efficiency values are used for all days, i.e., in lieu of
-  observed data.  All dates outside the efficiency trial season use an
-  estimated mean spline calculated over all dates.}
+  The \eqn{\beta}s from the final logistic regression are saved for use in
+  bootstrapping by function \code{F.boostrap.passage}.  Modeled efficiencies 
+  are used for all days, even if a particular day contained an 
+  efficiency trial. 
   
-  \item{\code{method=4} : An "Enhanced Efficiency model."  To be developed
-  at a later date.}
+  All dates outside the efficiency trial season use the 
+  mean of estimates within the season.  This means the efficiency 
+  model can vary within a season, but is always constant before 
+  the first and after the last efficiency trial.}
   
   }
 }
@@ -109,7 +93,7 @@ need.
 \dontrun{
 #   ---- Fit an efficiency model for each unique trapPositionID 
 #   ---- in data frame obs.eff.df.  
-F.efficiency.model( obs.eff.df, plot=T, method=1, max.df.spline=4, plot.file=NA)
+F.efficiency.model( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA)
 }
 }
 \author{

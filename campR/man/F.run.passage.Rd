@@ -89,7 +89,7 @@ taxon <- 161980
 min.date <- "2013-01-01"
 max.date <- "2013-06-01"
 by <- "week"
-output.file <- "American"
+output.file <- "Feather"
 ci <- TRUE
 }
 }

@@ -452,7 +452,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- present) and summarizes by 'summarize.by'.
   n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
                 catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside,
-                eff.and.fits$X.dates, summarize.by, 100, ci )
+                eff.and.fits$X.dates, eff.and.fits$obs.data, summarize.by, 100, ci )
   
   if(usepb){
     tmp <- getWinProgressBar(progbar)
@@ -566,8 +566,8 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- is randomly sampled;  apparently, this can lead to small decimal confidence 
   #   ---- intervals that are non-zero.  For zero-passage periods, force the confidence 
   #   ---- intervals to also be zero. 
-  n$lower.95 <- ifelse(n$passage == 0,0,n$lower.95)
-  n$upper.95 <- ifelse(n$passage == 0,0,n$upper.95)
+  #n$lower.95 <- ifelse(n$passage == 0,0,n$lower.95)
+  #n$upper.95 <- ifelse(n$passage == 0,0,n$upper.95)
   
   #   ---- Possibly only works west of GMT (North America).  East of GMT, 
   #   ---- it may be 12 hours off.  Untested east of GMT.  

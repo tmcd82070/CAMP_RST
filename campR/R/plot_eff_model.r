@@ -53,6 +53,7 @@ F.plot.eff.model <- function( df, file ){
   
   #   ---- Get global environment information. 
   db.file <- get("db.file",envir=.GlobalEnv)
+  forkLengthCutPoints <- get("forkLengthCutPoints",envir=.GlobalEnv)
   
   #   ---- Report filename string at this point.  Helps with checking.
   cat(paste0(file,"\n"))
@@ -89,16 +90,20 @@ F.plot.eff.model <- function( df, file ){
          "-FryWinter","-SmoltWinter","-ParrWinter","-YearlingWinter","-FrySpring","-SmoltSpring","-ParrSpring","-YearlingSpring",
          "-SmallFall","-SmallLate fall","-SmallWinter","-SmallSpring",
          "-MediumFall","-MediumLate fall","-MediumWinter","-MediumSpring",
-         "-LargeFall","-LargeLate fall","-LargeWinter","-LargeSpring")
+         "-LargeFall","-LargeLate fall","-LargeWinter","-LargeSpring",
+         "-FL1 leq 41mmFall","-FL1 leq 41mmLate fall","-FL1 leq 41mmWinter","-FL1 leq 41mmSpring",
+         "-FL2 42-72mmFall","-FL2 42-72mmLate fall","-FL2 42-72mmWinter","-FL2 42-72mmSpring",
+         "-FL3 73-110mmFall","-FL3 73-110mmLate fall","-FL3 73-110mmWinter","-FL3 73-110mmSpring",
+         "-FL4 geq 111mmFall","-FL4 geq 111mmLate fall","-FL4 geq 111mmWinter","-FL4 geq 111mmSpring")
   file2 <- sapply(seq_along(s), function(x) gsub(s[x], "", file,fixed=TRUE))
-  file3 <- file2[nchar(file2) == min(nchar(file2))]
+  file3 <- file2[nchar(file2) == min(nchar(file2))][1]
   
   #   ---- If efficiency files exist, remove them for overwriting.
   if(file.exists(paste0(file3,"_eff.png"))){file.remove(paste0(file3,"_eff.png"))}
   if(file.exists(paste0(file3,"_effTable.csv"))){file.remove(paste0(file3,"_effTable.csv"))}
   
   #   ---- Write out estimates.
-  if( !is.na(file) & sum(grepl("_effTable.csv",dir(dirname(file)),fixed=TRUE)) == 0){
+  if( !is.na(file) & sum(grepl(paste(file3,"_effTable.csv"),dir(dirname(file)),fixed=TRUE)) == 0){
     out.pass.graphs.eff <- paste(file3, "_effTable.csv", sep="")
     df2 <- df[!is.na(df$nReleased),]
     sink(paste0(file3,'_effTable.csv'))
@@ -108,13 +113,13 @@ F.plot.eff.model <- function( df, file ){
   
   #   ---- Start making the plot.
   #   ---- Prepare for plotting, but only if the plot doesn't already exist.
-  if( !is.na(file) & sum(grepl("_eff.png",dir(dirname(file)),fixed=TRUE)) == 0){
+  if( !is.na(file) & sum(grepl(paste0(file3,"_eff.png"),dir(dirname(file)),fixed=TRUE)) == 0 ){
     
     #   ---- Shut down all graphics devices.
     for(i in dev.list()) dev.off(i)
     
     #   ---- Open PNG device.
-    out.pass.graphs <- paste(file, "_eff.png", sep="")
+    out.pass.graphs <- paste(file3, "_eff.png", sep="")
     if(file.exists(out.pass.graphs)){
       file.remove(out.pass.graphs)
     }

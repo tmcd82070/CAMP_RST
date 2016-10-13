@@ -13,92 +13,96 @@ GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb", output.dir = "..\\\\outputs",
   time.zone = "America/Los_Angeles", Yes.code = 1, No.code = 2,
   seed = 884, forkLengthCutPoints = data.frame(lifeStage = c("FL1 leq 41mm",
   "FL2 42-72mm", "FL3 73-110mm", "FL4 geq 111mm"), cutPoints = c(41, 72, 110,
-  9999)), plusCountDec = 1, passageRounder = 4)
+  9999)), passageRounder = 4, eff.min.spline.samp.size = 10,
+  unassd.sig.digit = 1)
 }
 \arguments{
-\item{db.file}{Character string giving the full path and name of the CAMP
+\item{db.file}{Character string giving the full path and name of the CAMP 
 Access data base file. Path relative to \code{getwd()} can be used.}
 
 \item{output.dir}{Directory for all output.}
 
-\item{sql.code.dir}{Directory containing all the SQL code required by
-\code{campR}. Defaults to the \code{sql} directory of the \emph{installed}
-\code{campR} package. By default, all SQL code should be placed in the
+\item{sql.code.dir}{Directory containing all the SQL code required by 
+\code{campR}. Defaults to the \code{sql} directory of the \emph{installed} 
+\code{campR} package. By default, all SQL code should be placed in the 
 \code{inst/sql} directory in the \code{campR} code repository.}
 
-\item{samplePeriodCutTime}{String giving the sample period cut off for batch
-date assignment, in military time. Default value is \code{"04:00:00"}. This is
-used to assign batch dates that are missing. If a sample period ends before
-this time on a particular day, the batch date assigned is the previous day.
-If a sample period ends after this time, batch date assigned is the day
-that the sampling period ends (i.e., current day). For example, assuming 
-\code{samplePeriodCutTime="04:00:00"}, a sample period ending at 01:00:00
-(1 am) would assign catch to the previous day.  A sample period ending at
-07:00:00 (7 am) would assign catch to the current day.  See routine
-\code{F.assign.batch.date}.}
+\item{samplePeriodCutTime}{String giving the sample period cut off for batch 
+date assignment, in military time. Default value is \code{"04:00:00"}. This
+is used to assign batch dates that are missing. If a sample period ends
+before this time on a particular day, the batch date assigned is the
+previous day. If a sample period ends after this time, batch date assigned
+is the day that the sampling period ends (i.e., current day). For example,
+assuming \code{samplePeriodCutTime="04:00:00"}, a sample period ending at
+01:00:00 (1 am) would assign catch to the previous day.  A sample period
+ending at 07:00:00 (7 am) would assign catch to the current day.  See
+routine \code{F.assign.batch.date}.}
 
 \item{max.ok.gap}{Maximum gap, in hours, that is "okay." Default value is 
-\code{2}. Temporal gaps in trapping smaller than this are subsumed by the
-most immediate preceding valid trapping instance. Gaps in trapping bigger
-than this get assigned an imputed catch from the GAM model.  Because the
-GAM model for imputation predicts an hourly rate, this max gap cannot be <
+\code{2}. Temporal gaps in trapping smaller than this are subsumed by the 
+most immediate preceding valid trapping instance. Gaps in trapping bigger 
+than this get assigned an imputed catch from the GAM model.  Because the 
+GAM model for imputation predicts an hourly rate, this max gap cannot be < 
 1 hour.}
 
-\item{fishingGapMinutes}{Maximum gap, in minutes, that is NOT okay.  Default
-value is 10,080 minutes or 7 days. Gaps in fishing greater than this
+\item{fishingGapMinutes}{Maximum gap, in minutes, that is NOT okay.  Default 
+value is 10,080 minutes or 7 days. Gaps in fishing greater than this 
 constitute a "big" gap, and no imputation is performed.  The GAM models are
-unstable for "big" gaps. In these cases, the season is broken into two
+unstable for "big" gaps. In these cases, the season is broken into two 
 periods (before and after the gap) and treated as two separate traps.}
 
 \item{knotMesh}{The number of data points required per smoothing spline knot.
-Default value is 15. For example, \code{knotMesh=15} means each additional
+Default value is 15. For example, \code{knotMesh=15} means each additional 
 knot in a smoothing spline requires an additional 15 data points.  A linear
 fit requires at least 15 data points, a quadratic requires at least 30 data
-points, etc. This restriction helps assure smoothing
-splines have adequate support and are stable.}
+points, etc. This restriction helps assure smoothing splines have adequate
+support and are stable.}
 
-\item{halfConeMulti}{The multiplication factor to use for expanding fish
-caught during half-cone operations. Default value is \code{2}. For example, if 15
-fish were caught during half cone operation, the analysis considers this 
-\code{halfConeMulti*15} fish.}
+\item{halfConeMulti}{The multiplication factor to use for expanding fish 
+caught during half-cone operations. Default value is \code{2}. For example,
+if 15 fish were caught during half cone operation, the analysis considers
+this \code{halfConeMulti*15} fish.}
 
-\item{sample.size.forkLength}{Number of fish with measured fork length
+\item{sample.size.forkLength}{Number of fish with measured fork length 
 required to assign life stage. Default value is \code{100}.}
 
-\item{sample.size.forkLengthAndWeight}{Number of fish with measured
-fork length \emph{and} weight required to use weight in the assignment of
-life stage.  Default value is \code{100}.}
+\item{sample.size.forkLengthAndWeight}{Number of fish with measured fork
+length \emph{and} weight required to use weight in the assignment of life
+stage.  Default value is \code{100}.}
 
-\item{weight.prop.forkLength}{The minimum proportion of fish with weight to
-fish with fork length in order to use weight in assignment of life stage.
+\item{weight.prop.forkLength}{The minimum proportion of fish with weight to 
+fish with fork length in order to use weight in assignment of life stage. 
 Default value is \code{0.5}.}
 
-\item{forkLength.mean.diff}{When the number of life stage groups (\code{2} or \code{3}) is
-not specified, the clustering algorithm starts with \code{3} groups and reduces
-groups if the mean difference in forklength between groups is less than
-this number. Units are same as fork lengths (mm). Default value is \code{10} mm.}
+\item{forkLength.mean.diff}{When the number of life stage groups (\code{2} or
+\code{3}) is not specified, the clustering algorithm starts with \code{3}
+groups and reduces groups if the mean difference in forklength between
+groups is less than this number. Units are same as fork lengths (mm).
+Default value is \code{10} mm.}
 
-\item{time.zone}{Time zone to assign to all times.  Default value is
-\code{"America/Los_Angeles"}, or Pacific time. It would likely never happen, but
-these routines cannot correctly account for times in two different zones. 
-For example, one trap in one time zone, and another trap in a second zone. 
-This might only happen if a future analysis combined sites over large areas
-(e.g., states). In the current routines, all times are assigned (or forced)
-to be in this time zone.}
+\item{time.zone}{Time zone to assign to all times.  Default value is 
+\code{"America/Los_Angeles"}, or Pacific time. It would likely never
+happen, but these routines cannot correctly account for times in two
+different zones. For example, one trap in one time zone, and another trap
+in a second zone. This might only happen if a future analysis combined
+sites over large areas (e.g., states). In the current routines, all times
+are assigned (or forced) to be in this time zone.}
 
-\item{Yes.code}{Integer defining the code for \code{"Yes"}.  Usually \code{2}. This code is
-given in an Access look-up table named \code{table.names["yes.no.codes"]}.
-Unless it has changed, this table was named "\code{luNoYes}" in Access. To
-read this code from Access, an ODBC connection is established and
-disconnected during execution of this routine.}
+\item{Yes.code}{Integer defining the code for \code{"Yes"}.  Usually
+\code{2}. This code is given in an Access look-up table named
+\code{table.names["yes.no.codes"]}. Unless it has changed, this table was
+named "\code{luNoYes}" in Access. To read this code from Access, an ODBC
+connection is established and disconnected during execution of this
+routine.}
 
-\item{No.code}{Integer defining the code for \code{"No"}.  Usually \code{1}. This code is
-given in an Access look-up table named \code{table.names["yes.no.codes"]}.
-Unless it has changed, this table was named "\code{luNoYes}" in Access. To
-read this code from Access, an ODBC connection is established and
-disconnected during execution of this routine.}
+\item{No.code}{Integer defining the code for \code{"No"}.  Usually \code{1}.
+This code is given in an Access look-up table named
+\code{table.names["yes.no.codes"]}. Unless it has changed, this table was
+named "\code{luNoYes}" in Access. To read this code from Access, an ODBC
+connection is established and disconnected during execution of this
+routine.}
 
-\item{seed}{An integer specifying the seed to use in all functions utilizing
+\item{seed}{An integer specifying the seed to use in all functions utilizing 
 a random draw.  Currently set equal to \code{884}.}
 
 \item{forkLengthCutPoints}{A dataframe specifying the groups into which fish 
@@ -113,14 +117,25 @@ number of desired groups. Finally, the last row should have a right-end
 point equal or in excess to the maximum possible forklength, e.g., 999. See
 Details.}
 
-\item{plusCountDec}{An integer specifying the number of decimal places to 
-which plus-count fish should be rounded.  For example, when \code{plusCountDec=1},
-plus-count fish are rounded to the nearest tenth.  Setting \code{plusCountDec=0}
-rounds to the nearest whole fish.}
-
 \item{passageRounder}{An integer specifying the place to which final passage 
 estimates and confidence intervals should be rounded.  For example, a value
 of \code{4} rounds results to the nearest 1,000.}
+
+\item{eff.min.spline.samp.size}{An integer specifying the number of
+efficiency trials required to fit a spline efficiency model.  If fewer than
+this number of efficiency trials target a particular subsite, the Platform
+estimates constant efficiency for that subsite using the ROM method (see
+\code{F.efficiency.model}). If this number or more are available, 
+the Platform fits increasingly complex spline-based logistic regressions 
+and uses the one with lowest AIC.}
+
+\item{unassd.sig.digit}{A positive integer specifiying the number of 
+significant digits to which unassigned fish should be estimated during the 
+plus-count algorithm.  Values other than zero allow for fractional
+representation of less common fish types (e.g., Winter or Smolt) during
+passage estimation.  For example, when
+\code{unassd.sig.digit=1}, plus-count fish are rounded to the nearest tenth. 
+Setting \code{unassd.sig.digit=0} rounds to the nearest whole fish.}
 }
 \value{
 No return value.
@@ -129,35 +144,37 @@ No return value.
 Function to run at the beginning to define global variables.
 }
 \details{
-One additional global variable is defined. \code{table.names} is a
-list containing the mapping of table names in Access to table names in R.
-This was set up to facilitate painless table name changes in Access.  This
-should not change unless tables or table names in Access change.  Because
-these rarely change, we purposefully left this variable out of the
-arguments to \code{GlobalVars}. To change table names, edit the code
-of \code{GlobalVars} and recompile the package.
-
-For dataframe \code{forkLengthCutPoints}, provided cut points are assumed to 
-form intervals closed on the right.  For example, if the second column of 
-\code{forkLengthCutPoints} contains the integers 37, 59, and 105, then it is 
-assumed that three forklength intervals are desired.  The first will cover 
-(0,37], the second (37,59], and the third (59,105].  Note that in this 
-example, the code implicitly assumes that the maximum forklength to be 
-included is 105.  It is advisable to set this last number to a large number, 
-e.g., 999, so as to ensure all forklengths are included in the new grouping 
-scheme.
-
-The data base name in use is written to the R log file.
-
-Global variable \code{plusCountDec} allows for more robust estimation of fish
-captured with lesser frequencies, e.g., endangered fish for which estimation
-of passage is deemed useful.  Often, underlying non-randomly-sampled fish are
-caught in insufficient quantities to allow for the estimation of at least one
-of these special fish types, when rounded to the nearest fish following the
-application of underlying frequency distributions resulting from randomly
-sampled fish.  Manipulation of the decimal place following the allocation of
-these unassigned fish leads to non-zero estimates for rare categories
-represented in the random sample.
+One additional global variable is defined. \code{table.names} is a 
+  list containing the mapping of table names in Access to table names in R. 
+  This was set up to facilitate painless table name changes in Access.  This 
+  should not change unless tables or table names in Access change.  Because 
+  these rarely change, we purposefully left this variable out of the 
+  arguments to \code{GlobalVars}. To change table names, edit the code of
+  \code{GlobalVars} and recompile the package.
+  
+  In dataframe \code{forkLengthCutPoints}, cut point intervals are closed on
+  the right.  For example, if the second column of \code{forkLengthCutPoints}
+  contains the integers 37, 59, and 105, then it is assumed that three
+  forklength intervals are desired.  The first will cover (0,37], the second
+  (37,59], and the third (59,105]. The code assumes maximum forklength to be 
+  included is the maximum number given (i.e., 105 in the example). Cut points
+  must be set so that the last (and greatest) number is larger than the
+  maximum forklength to include.  It is acceptable to set the last cut point
+  to a large number, e.g., Inf or 999, to ensure all forklengths are included
+  in the new grouping scheme.
+  
+  The Access data base name in use is written to the R log file.
+  
+  Global variable \code{unassd.sig.digit} allows for more robust estimation of
+  fish captured with lesser frequencies, e.g., endangered fish for which
+  estimation of passage is deemed useful.  Often, underlying
+  non-randomly-sampled fish are caught in insufficient quantities to allow
+  for the estimation of at least one of these special fish types, when
+  rounded to the nearest fish following the application of underlying
+  frequency distributions resulting from randomly sampled fish.  Manipulation
+  of the decimal place following the allocation of these unassigned fish
+  leads to non-zero estimates for rare categories represented in the random
+  sample.
 }
 \examples{
 \dontrun{

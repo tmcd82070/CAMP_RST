@@ -4,7 +4,7 @@
 \alias{F.get.catch.data}
 \title{F.get.catch.data}
 \usage{
-F.get.catch.data(site, taxon, min.date, max.date, autoLS = FALSE,
+F.get.catch.data(site, taxon, min.date, max.date, output.file, autoLS = FALSE,
   nLS = NULL, weightUse = NULL, reclassifyFL = FALSE)
 }
 \arguments{
@@ -19,6 +19,8 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
 \item{max.date}{The end date for data to include.  Same format as 
 \code{min.date}.}
+
+\item{output.file}{A text string indicating a prefix to append to all output.}
 
 \item{autoLS}{A logical indicating whether or not lifestage assignment should
 be decided by the computer via a mixture distribution/clustering analysis.}

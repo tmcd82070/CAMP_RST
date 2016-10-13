@@ -148,7 +148,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
   
   #   ---- Fetch the catch and visit data.  
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.all,autoLS=FALSE,nLS=nLS,weightUse=weightUse,reclassifyFL=TRUE)
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autoLS=FALSE,nLS=nLS,weightUse=weightUse,reclassifyFL=TRUE)
   
   #   ---- All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   catch.df <- tmp.df$catch   

@@ -161,6 +161,7 @@ F.catch.model <- function( catch.df ){
   knotMesh <- get("knotMesh",envir=.GlobalEnv)
   max.ok.gap <- get("max.ok.gap",envir=.GlobalEnv)
   time.zone <- get("time.zone",envir=.GlobalEnv)
+  unassd.sig.digit <- get("unassd.sig.digit",envir=.GlobalEnv)
   
   #   ---- Sort the data appropriately.  
   catch.df <- catch.df[ order(catch.df$trapPositionID, catch.df$EndTime), ]
