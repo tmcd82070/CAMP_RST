@@ -97,6 +97,20 @@
 #'   overdispersions set to one.  Similar to the variance adjustment applied to 
 #'   catch, this is a modified quasilikelihood approach.  
 #'   
+#'   In the case when there are less than ten observed efficiency trials for one
+#'   trap, a bias-corrected efficiency is calculated in lieu of a model fit. 
+#'   This efficiency is calculated simply as the sum of the \code{nCaught} fish 
+#'   plus one, divided by the sum of the \code{nReleased} fish plus one. The 
+#'   plus-one manipulation prevents the direct estimation of variance via a 
+#'   formal generalized linear (or additive) model.  In this case, bootstrap 
+#'   samples originate from a multivariate distribution with mean equal to the 
+#'   bias-corrected efficiency, and a variance equal to the traditional 
+#'   generalized linear model (glm) variance, but with back-transformed
+#'   model-derived estimates of observed efficiencies replaced with their
+#'   bias-corrected equivalents. See McCulloch and Searle (2001), or any other
+#'   mathetmatical treatment of the generalized linear model, for details on the
+#'   glm variance.
+#'   
 #' @section Random Realizations: Catch fit models are utilized to generate
 #'   random realizations of catch for each individual trap.  To do this, the 
 #'   \code{rmvnorm} function randomly samples from a multivariate normal 
@@ -116,7 +130,10 @@
 #'   trap.
 #'   
 #' @references Manly, B. F. J.  Randomization, Bootstrap and Monte Carlo Methods
-#' in Biology, Third Edition, 2006.  Chapman and Hall/CRC.  
+#'   in Biology, Third Edition, 2006.  Chapman and Hall/CRC.
+#'   
+#'   McCulloch, C. E. and Searle, S. R.  Generalized, Linear, and Mixed Models,
+#'   2001. Wiley Interscience.
 #'   
 #' @seealso \code{F.est.catch}, \code{F.est.eff}, \code{F.summarize.passage}, \code{F.efficiency.model}
 #'   
@@ -361,9 +378,12 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
             #   ---- the number needed, assuming a logit link.  McCulloch, C.E. & Searle, S. R. 
             #   ---- Generalized, Linear, and Mixed Models, p. 147.  Note we also use an adjusted
             #   ---- mean that incorporates the bias.  
-            X <- sum(eff.obs.data$nReleased)
+            X <- rep(1,length(eff.obs.data$nCaught))
             p <- (sum(eff.obs.data$nCaught) + 1) / (sum(eff.obs.data$nReleased) + 1)
-            w <- p*(1 - p)
+            w <- eff.obs.data$nReleased^2*rep(p*(1 - p),length(eff.obs.data$nReleased))
+            
+            #w <- eff.obs.data$nReleased*rep(p*(1 - p),length(eff.obs.data$nReleased))
+            #fits[[trap]]$weights
             
             diagonal <- matrix(rep(0,length(X)*length(X)),length(X),length(X))
             for(i in 1:length(X)){
@@ -372,7 +392,23 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
             
             #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
             sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
-            rbeta <- rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
+            rbeta <- rmvnorm(n=10000000, mean=log(p/(1-p)),sigma=sig,method="chol")
+            
+            
+            #   ---- Bootstrap on the observed efficiency trials.
+            bsDF <- vector("list",R)
+            bsp <- vector("list",R)
+            for( bs.i in 1:10000000 ){
+              rowInd <- sample(seq(1:length(eff.obs.data$nReleased)),replace=TRUE)
+              bsDF[[bs.i]] <- eff.obs.data[rowInd,]
+              bsp[[bs.i]] <- sum(bsDF[[bs.i]]$nCaught + 1) / sum(bsDF[[bs.i]]$nReleased + 1)
+            }    
+            bspVec <- unlist(bsp)
+            hist(bspVec)
+            bspMean <- mean(bspVec)
+            bspMedian <- median(bspVec)
+            bspVar <- var(bspVec)
+            
           } else {
             rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  
           }

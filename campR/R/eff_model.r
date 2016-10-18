@@ -31,49 +31,46 @@
 #'   \code{F.get.releases}. }
 #'   
 #'   
-#'   \item{\code{eff.min.spline.samp.size} trials or more : 
-#'   A "B-spline model."  This model starts by estimating 
-#'   a constant logistic regression where recaptures (i.e., \code{nCaught}) is 
-#'   the number of "successes" and releases (i.e.,  \code{nReleased}) is
-#'   number of "trials". Assuming this constant model is successful, the method 
-#'   estimates a series of increasingly complex b-spline logistic regression 
-#'   models until AIC is minimized or model estimation fails (failure to 
-#'   converge or estimates at boundary). B-spline models, in general, divide 
-#'   the date range into intervals by adding 'knots'.  Between 'knots', 
-#'   b-spline models fit cubic polynomials in a way that  
-#'   connects smoothly at knots (refer to b-spline methods for details). 
+#'   \item{\code{eff.min.spline.samp.size} trials or more : A "B-spline model." 
+#'   This model starts by estimating a constant logistic regression where
+#'   recaptures (i.e., \code{nCaught}) is the number of "successes" and releases
+#'   (i.e.,  \code{nReleased}) is number of "trials". Assuming this constant
+#'   model is successful, the method estimates a series of increasingly complex
+#'   b-spline logistic regression models until AIC is minimized or model
+#'   estimation fails (failure to converge or estimates at boundary). B-spline
+#'   models, in general, divide the date range into intervals by adding 'knots'.
+#'   Between 'knots', b-spline models fit cubic polynomials in a way that 
+#'   connects smoothly at knots (refer to b-spline methods for details).
 #'   
-#'   The first (lowest order) b-spline model fitted contains 
-#'   zero knots and therefore estimates a cubic model. Assuming that 
-#'   model was successful and that AIC improved relative to the 
-#'   constant model, the method adds one knot at the median date
-#'   and re-estimates. If that model was successful and AIC improved 
-#'   relative to the previous model, the method adds another knot at 
-#'   the (1/(knots+1))-th quantiles of date and re-estimates.  The method
-#'   containues to add knots until one or more of the following 
-#'   conditions happen: (1) AIC does not improve, (2) estimation 
-#'   fails somehow, or (3) the maximum number of knots 
-#'   (i.e., \code{max.df.spline-3}) is fitted. 
+#'   The first (lowest order) b-spline model fitted contains zero knots and
+#'   therefore estimates a cubic model. Assuming that model was successful and
+#'   that AIC improved relative to the constant model, the method adds one knot
+#'   at the median date and re-estimates. If that model was successful and AIC
+#'   improved relative to the previous model, the method adds another knot at 
+#'   the (1/(knots+1))-th quantiles of date and re-estimates.  The method 
+#'   containues to add knots until one or more of the following conditions
+#'   happen: (1) AIC does not improve, (2) estimation fails somehow, or (3) the
+#'   maximum number of knots (i.e., \code{max.df.spline-3}) is fitted.
 #'   
-#'   Using the default value of \code{max.df.spline}, the efficiency model
-#'   is either constant (intercept-only), cubic, or b-spline with one 
-#'   interval knot.  
+#'   Using the default value of \code{max.df.spline}, the efficiency model is
+#'   either constant (intercept-only), cubic, or b-spline with one interval
+#'   knot.
 #'   
 #'   When the best logistic regression model is constant (intercept-only), 
-#'   estimated efficiency is the ratio-of-means estimator WITHOUT the "+1" 
-#'   bias correction.  With many efficiency trial, the "+1" bias correction 
-#'   is tiny and inconsequential. The exact efficiency model used at each subsite
-#'   is listed in the campR log file.  
+#'   estimated efficiency is the ratio-of-means estimator WITHOUT the "+1" bias
+#'   correction.  With many efficiency trial, the "+1" bias correction is tiny
+#'   and inconsequential. The exact efficiency model used at each subsite is
+#'   listed in the campR log file.
 #'   
-#'   The \eqn{\beta}s from the final logistic regression are saved for use in
+#'   The \eqn{\beta}s from the final logistic regression are saved for use in 
 #'   bootstrapping by function \code{F.boostrap.passage}.  Modeled efficiencies 
-#'   are used for all days, even if a particular day contained an 
-#'   efficiency trial. 
+#'   are used for all days, even if a particular day contained an efficiency
+#'   trial.
 #'   
-#'   All dates outside the efficiency trial season use the 
-#'   mean of estimates within the season.  This means the efficiency 
-#'   model can vary within a season, but is always constant before 
-#'   the first and after the last efficiency trial.}
+#'   All dates outside the efficiency trial season use the mean of estimates
+#'   within the season.  This means the efficiency model can vary within a
+#'   season, but is always constant before the first and after the last
+#'   efficiency trial.}
 #'   
 #'   }
 #'   

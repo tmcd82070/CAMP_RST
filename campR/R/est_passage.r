@@ -274,32 +274,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   c <- fix.dates("origBeg.date")
   d <- fix.dates("origEnd.date")
   newAllDates <- cbind(a[[1]],a[[2]],b[[2]],c[[2]],d[[2]])
-  
-  
-  
-  
-  
-  
-#   #   ---- old -- testing.
-#   release.df.keep <- release.df
-#   release.df <- merge(release.df,allDates,by.x=c('trapPositionID'),by.y=c('trap'),all.x=TRUE)
-#   
-#   f.banner("Efficiency estimation ")
-#   
-#   #   ---- Get all the batchDates for use in efficiency.
-#   bd.old <- strptime(sort( seq(as.Date(min(na.omit(release.df$ReleaseDate),na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$ReleaseDate),na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
-#   
-#   release.df <- release.df.keep
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+ 
   #   ---- Replace allDates with the data that actually matter here.  
   allDates <- newAllDates
   

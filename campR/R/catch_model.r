@@ -140,10 +140,24 @@
 #'   
 #'   If \code{catch.df} contains no periods of \code{"Not fishing"}, no
 #'   imputation is performed.
+#'   
+#' @section Unassigned Decimal Catch:  Starting with \code{campR} version 1.0.0,
+#'   unassigned fish could be partitioned into decimal fractions during the
+#'   plus-count routine.  This leads to catch values may have decimal values,
+#'   with the number of values after the decimal dictated by global variable
+#'   \code{unassd.sig.digit} in \code{GlobalVar.r}. Usually, this value is set
+#'   to \code{1}.  However, the use of decimal fish in Poisson-fitting 
+#'   algorithms prevents calculation of the AIC, since the functions utilized to
+#'   calculate its likelihood assume integer outcome data.  To get around this, 
+#'   the loglikelihood is reconstructed;  to estimate the value of \eqn{log(n!)}
+#'   inherent to the calculation, the method of Nemes (2007) is used.
 #' 
 #' @seealso \code{F.efficiency.model}
 #' 
 #' @author WEST Inc.
+#' 
+#' @references Nemes, G. (2010) "New asymptotic expansion for the Gamma
+#'   function", Archiv der Mathematik, 95 (2): 161–169.
 #'
 #' @examples
 #' \dontrun{

@@ -209,8 +209,9 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
     #   ---- Obtain catch data with weights.
     catch <- getCatchDataWeight(taxon,site,min.date,max.date)
     
-    #   ---- Reduce visits by removing duplicates in trapVisitID and throwing 
-    #   ---- out the "Not fishing." 
+    #   ---- Identify the unique visits here from the get-go, due to the missing records in the 
+    #   ---- Feather database described below.  This ensures that catch records resulting in zero 
+    #   ---- fish are retained for use when we "bring back the zeros" later.  
     visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
     visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
     
