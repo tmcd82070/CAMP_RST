@@ -403,7 +403,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   grand.df$check3 <- ifelse(grand.df$sum3 == grand.df$totalEstimatedCatch,TRUE,FALSE)
 
   if(sum(grand.df$check1 + grand.df$check2 + grand.df$check3) != nrow(grand.df)*3){
-    stop('Issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Investigate est_passage.R, around line 349.')
+    stop('Issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Investigate est_passage.R, around line 406.')
   } else {
     cat('No issue with summation of halfConeAssignedCatch, halfConeUnassignedCatch, assignedCatch, unassignedCatch, modAssignedCatch, modUnassignedCatch, imputedCatch, and/or totalEstimatedCatch.  Continuing...\n')
   }

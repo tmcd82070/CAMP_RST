@@ -209,6 +209,11 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
     #   ---- Obtain catch data with weights.
     catch <- getCatchDataWeight(taxon,site,min.date,max.date)
     
+    #   ---- Reduce visits by removing duplicates in trapVisitID and throwing 
+    #   ---- out the "Not fishing." 
+    visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
+    visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
+    
     #   ---- We have records brought back with missing StartTimes.  While these may be found in the 
     #   ---- original catch query, they seem to not be found in the gaps in fishing routine in Step 2.
     #   ---- To ensure consistency in computation, just get rid of these for all types of queries now.
@@ -362,7 +367,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
       
       #   ---- Keep 'Not fishing' less than 7 days, but all 'Fishing', regardless of how
       #   ---- long they were fishing.  This keeps fishing instances of duration 
-      #   ---- greater than seven days, if any actaully exist.  
+      #   ---- greater than seven days, if any actually exist.  
       catch <- catch5[(catch5$TrapStatus == "Not fishing" & catch5$SampleMinutes <= fishingGapMinutes) | catch5$TrapStatus == "Fishing",]  
     } else {
       catch <- catch2[(catch2$TrapStatus == "Not fishing" & catch2$SampleMinutes <= fishingGapMinutes) | catch2$TrapStatus == "Fishing",]
@@ -507,8 +512,10 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
   
   #   ---- Reduce visits by removing duplicates in trapVisitID and throwing 
   #   ---- out the"Not fishing." 
-  visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
-  visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
+  if(autoLS != TRUE){
+    visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
+    visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
+  }
   
   #   ---- Reduce catches to just positives.  Toss the 0 catches and non-fishing visits.
   catch <- catch[ (catch$Unmarked > 0) & (catch$TrapStatus == "Fishing"), ]
