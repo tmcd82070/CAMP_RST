@@ -74,10 +74,19 @@
 #'   specific mapping of days to weeks can be found within the \code{Dates} 
 #'   table of any associated CAMP Access database.
 #'   
-#'   Forklength groupings are specified via global variable
+#'   Forklength groupings are specified via global variable 
 #'   \code{forkLengthCutPoints} in \code{GlobalVars}, and by default, include up
-#'   to four distinct groupings.  However, if no fish exist for a particular
-#'   grouping, no output associated with that grouping is created.
+#'   to four distinct groupings.  However, if no fish exist for a particular 
+#'   grouping, no output associated with that grouping is created.  When
+#'   \code{reclassify=TRUE}, the biologically recorded \code{lifeStage} is 
+#'   redefined via groups specifed in data frame \code{forkLengthCutPoints}, as 
+#'   defined in \code{GlobalVars}.  Default behavior leads to four separate 
+#'   fork-length-based groups.  Similar to reports that break out totals by 
+#'   biologically assigned \code{lifeStage}s, reports utilizing breakout by fork
+#'   length may not report totals for all four groups, if the river and date 
+#'   range specified caught no fish with that particular range of fork lengths. 
+#'   The remapping of \code{lifeStage} to reflect fork-length-based groupings is
+#'   performed by function \code{reclassifyLS}.
 #'   
 #' @seealso \code{F.get.release.data}, \code{F.get.catch.data},
 #'   \code{F.est.passage}
@@ -103,7 +112,7 @@
 #' F.lifestage.passage.forkLength(site,taxon,min.date,max.date,by,
 #'   output.file,ci,nLS,weightUse,autoLS,reclassify)
 #' }
-F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,nLS=NULL,weightUse=NULL,autoLS=FALSE,reclassifyFL=TRUE){
+F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,nLS=NULL,weightUse=NULL,autoLS=FALSE){
 
   # site <- 1000
   # taxon <- 161980
@@ -117,6 +126,8 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   # weightUse <- NULL
   # reclassifyFL <- TRUE
   
+  #   ---- Ensure special consideration of forklength.
+  reclassifyFL <- TRUE
   
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)

@@ -25,8 +25,6 @@
 #' @param weightuse A logical indicating if variable \code{weight} should be used for
 #'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
 #'   if \code{autols=FALSE}.  See Details.
-#' @param reclassifyFL A logical indicating if passage should be estimated via 
-#'   fork-length-based class groups.
 #'   
 #' @details The date range difference specified via \code{max.date} and
 #'   \code{min.date} must be less than or equal to 366 days.  Note that this
@@ -67,16 +65,6 @@
 #'   \code{NULL}, the function \code{assignLifeStage} will determine if variable
 #'   \code{weight} will be used or not.
 #'   
-#'   When \code{reclassify=TRUE}, the biologically recorded \code{lifeStage} is 
-#'   redefined via groups specifed in data frame \code{forkLengthCutPoints}, as 
-#'   defined in \code{GlobalVars}.  Default behavior leads to four separate 
-#'   fork-length-based groups.  Similar to reports that break out totals by
-#'   biologically assigned \code{lifeStage}s, reports utilizing breakout by
-#'   fork length may not report totals for all four groups, if the river and date
-#'   range specified caught no fish with that particular range of fork lengths.
-#'   The remapping of \code{lifeStage} to reflect fork-length-based groupings
-#'   is performed by function \code{reclassifyLS}.  
-#'   
 #' @return A data frame containing daily passage estimates, corrected for times 
 #'   not fishing, along with associated standard errors.
 #'   
@@ -95,14 +83,7 @@
 #'   
 #' @author WEST Inc.
 #'   
-#' @seealso \code{assignLifeStage}, \code{assignlsCompare}, \code{F.run.passage}, \code{F.lifestage.passage.assignls},
-#'   \code{F.lifestage.passage.forkLength},
-#'   \code{F.lifestage.passage.assignls2group}, 
-#'   \code{F.lifestage.passage.assignls2groupNoWeight},
-#'   \code{F.lifestage.passage.assignls3group},
-#'   \code{F.lifestage.passage.assignls3groupNoWeight},
-#'   \code{F.lifestage.passage.assignlsNoWeight},
-#'   \code{reclassiyLS}
+#' @seealso \code{assignLifeStage}, \code{assignlsCompare}, \code{F.run.passage}
 #'
 #' @examples
 #' \dontrun{
@@ -116,13 +97,12 @@
 #' nls <- NULL
 #' weightuse <- NULL
 #' autols <- FALSE
-#' reclassifyFL <- FALSE
 #' passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci,
-#'   weightuse,autols,reclassifyFL)
+#'   weightuse,autols)
 #' }
 
 
-passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,nls=NULL,weightuse=NULL,autols=FALSE,reclassifyFL=FALSE){
+passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,nls=NULL,weightuse=NULL,autols=FALSE){
   
 #   site <- 12345
 #   taxon <- 161980
@@ -133,7 +113,6 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
 #   nls <- NULL
 #   weightuse <- NULL
 #   autols <- FALSE
-#   reclassifyFL <- FALSE
   
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
@@ -165,7 +144,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
   
   #   ---- Fetch the catch and visit data.  
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autols=autols,nls=nls,weightuse=weightuse,reclassifyFL=reclassifyFL)
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autols=autols,nls=nls,weightuse=weightuse,reclassifyFL=FALSE)
   
   #   ---- All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   catch.df <- tmp.df$catch   
