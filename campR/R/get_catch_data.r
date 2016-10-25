@@ -14,13 +14,13 @@
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
 #' @param output.file A text string indicating a prefix to append to all output.
-#' @param autoLS A logical indicating whether or not lifestage assignment should
+#' @param autols A logical indicating whether or not lifestage assignment should
 #'   be decided by the computer via a mixture distribution/clustering analysis.
-#' @param nLS A numeric communicating the number of new lifestages to assign. 
+#' @param nls A numeric communicating the number of new lifestages to assign. 
 #'   Values can be \code{2} or \code{3}.
-#' @param weightUse A logical indicating if weight data are to be incorporated 
+#' @param weightuse A logical indicating if weight data are to be incorporated 
 #'   in the assigning of lifestage.  \code{useWeight=NULL}, ignored if 
-#'   \code{autoLS} is \code{FALSE}, \code{NULL} leads to the program deciding if
+#'   \code{autols} is \code{FALSE}, \code{NULL} leads to the program deciding if
 #'   weight should be used, \code{FALSE} lead to the program not using weight to
 #'   assign lifestage.
 #' @param reclassifyFL A logical indicating if passage should be estimated via 
@@ -179,24 +179,24 @@
 #' taxon <- 161980
 #' min.date <- "2013-01-01"
 #' max.date <- "2013-06-01"
-#' autoLS <- FALSE
-#' nLS <- NULL
-#' weightUse <- NULL
+#' autols <- FALSE
+#' nls <- NULL
+#' weightuse <- NULL
 #' reclassifyFL <- FALSE
 #' 
 #' catch <- F.get.catch.data(site,taxon,min.date,max.date,
-#'   autoLS,nLS,weightUse,reclassifyFL)
+#'   autols,nls,weightuse,reclassifyFL)
 #' }
 #'
-F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, autoLS=FALSE,nLS=NULL,weightUse=NULL,reclassifyFL=FALSE){
+F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, autols=FALSE,nls=NULL,weightuse=NULL,reclassifyFL=FALSE){
   
 #   site <- 
 #   taxon <- 161980
 #   min.date <- "2010-01-01"
 #   max.date <- "2010-06-30"
-#   autoLS <- FALSE
-#   nLS <- NULL
-#   weightUse <- NULL
+#   autols <- FALSE
+#   nls <- NULL
+#   weightuse <- NULL
 #   reclassifyFL <- FALSE
   
   #   ---- Get stuff we need from the global environment.
@@ -204,7 +204,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
   halfConeMulti <- get("halfConeMulti",envir=.GlobalEnv)
   
   #   ---- STEP 1:  Get original raw catch data via querying. 
-  if(autoLS){
+  if(autols){
     
     #   ---- Obtain catch data with weights.
     catch <- getCatchDataWeight(taxon,site,min.date,max.date)
@@ -312,7 +312,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
     #   ---- If we have weight data, we cannot simply stop with fetching the catch2
     #   ---- data frame, since that, by design, has no weights.  So, we use what we 
     #   ---- really need from it, and add it to the weight catch data frame.  
-    if( autoLS ){
+    if( autols ){
 
       #   ---- The crosswalk needs a unique identifier for each trapVisitID.  This is a 
       #   ---- problem for 'Not fishing' instances, which by design, have a trapVisitID
@@ -394,7 +394,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
   
   
   #   ---- STEP 3:  Reassign lifestage, if requested.     
-  if(autoLS){
+  if(autols){
     cat('Starting mixture distribution estimation to assign life stage. \n')
     ##write.csv(catch,paste0(output.file,site,'.csv'),row.names=FALSE)
     cat('\n')
@@ -410,7 +410,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
     #   ---- Swap out the old catch with the new catch.
     catchFishing <- catch[catch$TrapStatus == "Fishing",]
     catchNotFishing <- catch[catch$TrapStatus == "Not fishing",]
-    catchFishing <- assignLifeStage(DATA=catchFishing,groupN=nLS,USEWeight=weightUse,output.file=output.file)  
+    catchFishing <- assignLifeStage(DATA=catchFishing,groupN=nls,USEWeight=weightuse,output.file=output.file)  
     
     # for debugging
     #jCatch <<- catchFishing
@@ -513,7 +513,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
   
   #   ---- Reduce visits by removing duplicates in trapVisitID and throwing 
   #   ---- out the"Not fishing." 
-  if(autoLS != TRUE){
+  if(autols != TRUE){
     visit.ind <- !duplicated( catch$trapVisitID ) | (catch$TrapStatus == "Not fishing")
     visits <- catch[visit.ind,!(names(catch) %in% c("Unmarked", "FinalRun", "lifeStage", "forkLength", "RandomSelection"))]
   }
