@@ -17,14 +17,14 @@
 #'   saved.  Set to NA to plot to the Plot window.
 #' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
-#' @param autoLS Default of \code{FALSE} leads to no assigning of no analytical
+#' @param autols Default of \code{FALSE} leads to no assigning of no analytical
 #'   life stage. If \code{TRUE}, assignment of analytical life stage is done. 
 #'   See Details.
-#' @param nLS Number of life stage groups to estimate. Ignored if 
-#'   \code{autoLS=FALSE}.  See Details.
-#' @param weightUse A logical indicating if variable \code{weight} should be used for
+#' @param nls Number of life stage groups to estimate. Ignored if 
+#'   \code{autols=FALSE}.  See Details.
+#' @param weightuse A logical indicating if variable \code{weight} should be used for
 #'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
-#'   if \code{autoLS=FALSE}.  See Details.
+#'   if \code{autols=FALSE}.  See Details.
 #' @param reclassifyFL A logical indicating if passage should be estimated via 
 #'   fork-length-based class groups.
 #'   
@@ -57,13 +57,13 @@
 #'   reports generated. Thus, reports spanning different time periods and sites
 #'   may report different run and life stage passage combinations.  
 #'   
-#'   In the case when \code{autoLS=TRUE}, the life stage is assigned 
+#'   In the case when \code{autols=TRUE}, the life stage is assigned 
 #'   analytically.  Note that the only numbers of groups allowed by argument 
-#'   (\code{nLS}) is \code{two} or \code{three}. If \code{NULL}, the function 
+#'   (\code{nls}) is \code{two} or \code{three}. If \code{NULL}, the function 
 #'   \code{assignLifeStage} determines the number of groups utilized.
 #'   
-#'   If \code{weightUse} is \code{FALSE}, any recorded weight measurements are
-#'   not used in the analytical life stage assignment. If \code{weightUse} is
+#'   If \code{weightuse} is \code{FALSE}, any recorded weight measurements are
+#'   not used in the analytical life stage assignment. If \code{weightuse} is
 #'   \code{NULL}, the function \code{assignLifeStage} will determine if variable
 #'   \code{weight} will be used or not.
 #'   
@@ -89,19 +89,19 @@
 #'   A graphical display of efficiency over time, for each trap, along with an 
 #'   accompanying \code{csv} tabular datasheet.
 #'   
-#'   In the case when \code{autoLS=TRUE}, a plot (\code{pdf}) and a confusion 
+#'   In the case when \code{autols=TRUE}, a plot (\code{pdf}) and a confusion 
 #'   matrix (\code{csv}) comparing the analytical and morphometric life stage 
 #'   assignments.
 #'   
 #' @author WEST Inc.
 #'   
-#' @seealso \code{assignLifeStage}, \code{assignLSCompare}, \code{F.run.passage}, \code{F.lifestage.passage.assignLS},
+#' @seealso \code{assignLifeStage}, \code{assignlsCompare}, \code{F.run.passage}, \code{F.lifestage.passage.assignls},
 #'   \code{F.lifestage.passage.forkLength},
-#'   \code{F.lifestage.passage.assignLS2group}, 
-#'   \code{F.lifestage.passage.assignLS2groupNoWeight},
-#'   \code{F.lifestage.passage.assignLS3group},
-#'   \code{F.lifestage.passage.assignLS3groupNoWeight},
-#'   \code{F.lifestage.passage.assignLSNoWeight},
+#'   \code{F.lifestage.passage.assignls2group}, 
+#'   \code{F.lifestage.passage.assignls2groupNoWeight},
+#'   \code{F.lifestage.passage.assignls3group},
+#'   \code{F.lifestage.passage.assignls3groupNoWeight},
+#'   \code{F.lifestage.passage.assignlsNoWeight},
 #'   \code{reclassiyLS}
 #'
 #' @examples
@@ -113,16 +113,16 @@
 #' max.date <- "2013-06-01"
 #' output.file <- "American"
 #' ci <- TRUE
-#' nLS <- NULL
-#' weightUse <- NULL
-#' autoLS <- FALSE
+#' nls <- NULL
+#' weightuse <- NULL
+#' autols <- FALSE
 #' reclassifyFL <- FALSE
 #' passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci,
-#'   weightUse,autoLS,reclassifyFL)
+#'   weightuse,autols,reclassifyFL)
 #' }
 
 
-passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,nLS=NULL,weightUse=NULL,autoLS=FALSE,reclassifyFL=FALSE){
+passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,nls=NULL,weightuse=NULL,autols=FALSE,reclassifyFL=FALSE){
   
 #   site <- 12345
 #   taxon <- 161980
@@ -131,8 +131,8 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
 #   output.file <- "here"
 #   ci <- TRUE
 #   nls <- NULL
-#   weightUse <- NULL
-#   autoLS <- FALSE
+#   weightuse <- NULL
+#   autols <- FALSE
 #   reclassifyFL <- FALSE
   
   #   ---- Obtain necessary variables from the global environment.  
@@ -165,7 +165,7 @@ passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.f
   setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
   
   #   ---- Fetch the catch and visit data.  
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autoLS=autoLS,nLS=nLS,weightUse=weightUse,reclassifyFL=reclassifyFL)
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autols=autols,nls=nls,weightuse=weightuse,reclassifyFL=reclassifyFL)
   
   #   ---- All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   catch.df <- tmp.df$catch   

@@ -136,7 +136,7 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,output.file=output.f
 
 
   # DATA <- catchFishing
-  # groupN <- nLS
+  # groupN <- nls
   # USEWeight <- NULL
   # output.file <- output.file
 
