@@ -102,7 +102,7 @@
 #' }
 
 
-passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,nls=NULL,weightuse=NULL,autols=FALSE){
+passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL){
   
 #   site <- 12345
 #   taxon <- 161980
