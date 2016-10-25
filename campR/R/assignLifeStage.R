@@ -139,6 +139,12 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,output.file=output.f
   # groupN <- nls
   # USEWeight <- NULL
   # output.file <- output.file
+    
+  #   ---- Jason: 10/25/2016.  The update to the Platform expects an nls=1 when the program is to decide 
+  #   ---- the number of groups.  Jared originally coded this to NULL.  So, remap the "1" to NULL.
+  if(groupN == 1){
+    groupN <- NULL
+  }
 
   if(!is.null(groupN)){
     if(!(groupN%in%c(2,3))){
