@@ -186,12 +186,29 @@ F.size.by.date <- function( site, taxon, run, min.date, max.date, output.file ){
   n <- n[!drop]
   valid <- valid[!drop]
   
+  #   ---- It could be the case that we get a small number of records that make it through
+  #   ---- to the drop stage above, but end up getting thrown out, most likely due to the
+  #   ---- lifeStage being Unassigned, and making it through the plus-count algorithm 
+  #   ---- non-sliced and -diced.  This happens on occasion.  This means, there is now no
+  #   ---- data to plot.  So, repeat the "no data to plot" code here for this contingency. 
+  if( length(valid) == 0 ){
+    plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
+    text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")
+    dev.off(dev.cur())
+    cat("FAILURE - F.size.by.date\n\n")
+    cat(paste("Working directory:", getwd(), "\n"))
+    cat(paste("R data frames saved in file:", "<no RData saved>", "\n\n"))
+    cat("Number of files created in working directory = 1\n")
+    cat(paste(out.graphs, "\n"))
+    cat("\n")        
+    return(catch.df)
+  }
+  
   #   ---- Repeat the values for number of fish of that particular length.
   x <- rep(x, n)
   y <- rep(y, n)
   lstage <- rep(lstage, n)
   valid <- rep(valid, n)
-
 
   #   ---- Construct the main plot.
   plot( x, y, type="n", xlab="", ylab="", xaxt="n" )

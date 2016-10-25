@@ -377,13 +377,46 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
             #   ---- Construct, via the general expression for a generalized linear model's variance,
             #   ---- the number needed, assuming a logit link.  McCulloch, C.E. & Searle, S. R. 
             #   ---- Generalized, Linear, and Mixed Models, p. 147.  Note we also use an adjusted
-            #   ---- mean that incorporates the bias.  
+            #   ---- mean that incorporates the bias. 
+            
+#             #   ---- Example from the above book, p. 147.
+#             egWeight <- c(5,5,5,5,5,5,5,5,5,5)
+#             egY <- c(0,0,2,2,3,4,5,5,5,5)
+#             egConc <- c(1/128,1/64,1/32,1/16,1/8,1/4,1/2,1,2,4)
+#             
+#             #   ---- CAMP RST style.
+#             eg <- glm(egY / egWeight ~ 1 + log(egConc), family=binomial, weights=egWeight )
+#             vcov(eg)
+#             
+#             #   ---- Emulate our intercept-only model.
+#             eg2 <- glm(egY / egWeight ~ 1, family=binomial, weights=egWeight )
+#             vcov(eg2)            
+#             
+#             #   ---- Manipulate the dispersion. 
+#             resids <- residuals(eg2, type="pearson")
+#             toss.ind <- (abs(resids) > 8)
+#             resids <- resids[!toss.ind]
+#             disp <- sum( resids*resids ) / (e.fit$df.residual - sum(toss.ind))
+#             if( disp < 1.0 ){
+#               disp <- 1.0
+#             }
+#             
+#             #   ---- reproduce our below.
+#             X <- rep(1,length(egWeight))
+#             p <- (sum(egY) + 0) / (sum(egWeight) + 0) 
+#             w <- egWeight*rep(p*(1 - p),length(X))
+#             
+#             diagonal <- matrix(rep(0,length(X)*length(X)),length(X),length(X))
+#             for(i in 1:length(X)){
+#               diagonal[i,i] <- w[i]
+#             }
+#             
+#             #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
+#             sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
+            
             X <- rep(1,length(eff.obs.data$nCaught))
             p <- (sum(eff.obs.data$nCaught) + 1) / (sum(eff.obs.data$nReleased) + 1)
-            w <- eff.obs.data$nReleased^2*rep(p*(1 - p),length(eff.obs.data$nReleased))
-            
-            #w <- eff.obs.data$nReleased*rep(p*(1 - p),length(eff.obs.data$nReleased))
-            #fits[[trap]]$weights
+            w <- eff.obs.data$nReleased*rep(p*(1 - p),length(X))
             
             diagonal <- matrix(rep(0,length(X)*length(X)),length(X),length(X))
             for(i in 1:length(X)){
@@ -392,22 +425,16 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
             
             #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
             sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
-            rbeta <- rmvnorm(n=10000000, mean=log(p/(1-p)),sigma=sig,method="chol")
+            rbeta <- rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
             
-            
-            #   ---- Bootstrap on the observed efficiency trials.
-            bsDF <- vector("list",R)
-            bsp <- vector("list",R)
-            for( bs.i in 1:10000000 ){
-              rowInd <- sample(seq(1:length(eff.obs.data$nReleased)),replace=TRUE)
-              bsDF[[bs.i]] <- eff.obs.data[rowInd,]
-              bsp[[bs.i]] <- sum(bsDF[[bs.i]]$nCaught + 1) / sum(bsDF[[bs.i]]$nReleased + 1)
-            }    
-            bspVec <- unlist(bsp)
-            hist(bspVec)
-            bspMean <- mean(bspVec)
-            bspMedian <- median(bspVec)
-            bspVar <- var(bspVec)
+#             #   ---- Bootstrap on the observed efficiency trials.
+#             bsDF <- lapply(1:100000, function(x) eff.obs.data[sample(seq(1:length(eff.obs.data$nReleased)),replace=TRUE),])
+#             bsp <- sapply(bsDF, function(x) (sum(x$nCaught) + 1) / (sum(x$nReleased) + 1))
+#             
+#             hist(bsp)
+#             bspMean <- mean(bsp)
+#             bspMedian <- median(bsp)
+#             bspVar <- var(bsp)*this is wrong
             
           } else {
             rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  

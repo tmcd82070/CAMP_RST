@@ -167,7 +167,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       #   ---- Save X, and the dates at which we predict, for bootstrapping.
       all.X[[trap]] <- X   
-      #all.dts[[trap]] <- df$batchDate[ind.inside] 
+      all.dts[[trap]] <- df$batchDate[ind.inside] 
         
     } else {    
     	

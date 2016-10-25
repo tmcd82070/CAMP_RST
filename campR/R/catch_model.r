@@ -157,7 +157,7 @@
 #' @author WEST Inc.
 #' 
 #' @references Nemes, G. (2010) "New asymptotic expansion for the Gamma
-#'   function", Archiv der Mathematik, 95 (2): 161–169.
+#'   function", Archiv der Mathematik, 95 (2): 161-169.
 #'
 #' @examples
 #' \dontrun{

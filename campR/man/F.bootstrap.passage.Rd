@@ -12,8 +12,8 @@ F.bootstrap.passage(grand.df, catch.fits, catch.Xmiss, catch.gapLens,
 \item{grand.df}{A data frame containing both daily estimated passage and 
 efficiency, for each trap.}
 
-\item{catch.fits}{A list of Poisson fitted \code{glm} objects for each trap, possibly with basis 
-spline covariates, used to impute missing catches.}
+\item{catch.fits}{A list of Poisson fitted \code{glm} objects for each trap,
+possibly with basis spline covariates, used to impute missing catches.}
 
 \item{catch.Xmiss}{A list containing a spline basis matrix of imputed days 
 where catch is missing for each trap.}
@@ -118,7 +118,21 @@ In order to bootstrap the estimated passage for a particular trap,
   binomial fit.  The resulting dispersion statistic is set to one in case it 
   calculates as less than one.  Traps with one efficiency trial also have 
   overdispersions set to one.  Similar to the variance adjustment applied to 
-  catch, this is a modified quasilikelihood approach.
+  catch, this is a modified quasilikelihood approach.  
+  
+  In the case when there are less than ten observed efficiency trials for one
+  trap, a bias-corrected efficiency is calculated in lieu of a model fit. 
+  This efficiency is calculated simply as the sum of the \code{nCaught} fish 
+  plus one, divided by the sum of the \code{nReleased} fish plus one. The 
+  plus-one manipulation prevents the direct estimation of variance via a 
+  formal generalized linear (or additive) model.  In this case, bootstrap 
+  samples originate from a multivariate distribution with mean equal to the 
+  bias-corrected efficiency, and a variance equal to the traditional 
+  generalized linear model (glm) variance, but with back-transformed
+  model-derived estimates of observed efficiencies replaced with their
+  bias-corrected equivalents. See McCulloch and Searle (2001), or any other
+  mathetmatical treatment of the generalized linear model, for details on the
+  glm variance.
 }
 
 \section{Random Realizations}{
@@ -164,7 +178,10 @@ WEST Inc.
 }
 \references{
 Manly, B. F. J.  Randomization, Bootstrap and Monte Carlo Methods
-in Biology, Third Edition, 2006.  Chapman and Hall/CRC.
+  in Biology, Third Edition, 2006.  Chapman and Hall/CRC.
+  
+  McCulloch, C. E. and Searle, S. R.  Generalized, Linear, and Mixed Models,
+  2001. Wiley Interscience.
 }
 \seealso{
 \code{F.est.catch}, \code{F.est.eff}, \code{F.summarize.passage}, \code{F.efficiency.model}
