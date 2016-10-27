@@ -2,59 +2,86 @@
 
 
 
-#   ---- Set variables necessary for Big Looper completion.  
-platform <- "CAMP_RST20161015-campR1.0.1"    
+#   ---- Set variables necessary for Big Looper completion. 
+RVersion <- "3.3.0"
+TestingPlatform <- "CAMP_RST20161015-campR1.0.1"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 #excelName <- "FeatherExcel"
 #excelName <- "AmericanExcel"
-reportRun <- c("B")#c("B","C","J")
+#excelName <- "FeatherQuickie"
+#excelName <- "RBDDExcel"
+excelName <- "StanislawExcel"
+
+reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
+# reportRun <- c("K","L","M","N","O","P")
+# reportRun <- c("A","K")#c("B","C","J")
+# reportRun <- c("B")
+reportRun <- c("H","I","J","K","L","M","N","O","P")
+
+
+#.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
+.libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
+
 
 #   ---- Get necessary packages in order.  
-install.packages(c("RODBC","mvtnorm"))
-require("RODBC")
-require("mvtnorm")
+# install.packages(c("RODBC","mvtnorm"))
+# require("RODBC",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
+# require("mvtnorm",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
+# require("splines",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
+
+
+
+
 
 #   ---- Install the working version of campR.  
 #   ---- Prior to running this step, make sure you install the zip folder.
+detach("package:campR", unload=TRUE)
 require(campR)
-
-library(RODBC)
-
 
 #   ---- Read in the desired Excel scheme.  This is kept in the helperCode folder of the inst folder
 #   ---- in the campR package development folder in CAMP_RST20160601.  
 theExcel <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/",excelName,".csv"))
 rownames(theExcel) <- NULL
+theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-theExcel <- theExcel[1:2,]
+theExcel <- theExcel[5:5,]
+
+
+
 
 #   ---- Tell the Big Looper where to put all the output.  
-theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",platform)
+theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
 outStem <- paste0(theStem,"/Outputs")
 
 #   ---- Identify the possible reports we can run, and folder stems we can create.  
 #   ---- This section should not be ameliorated.  
 nn <- c("label","folder","report","function")
-a <- c("A","EstProdAllRunsLSReport","later"                       ,"passageWithLifeStageAssign")
+a <- c("A","EstProdAllRunsLSReport","ls.run.passage"              ,"passageWithLifeStageAssign")
 b <- c("B","EstProdAllRunsReport"  ,"run.passage"                 ,"F.run.passage")
 c <- c("C","PassageEst_FL_Fall"    ,"lifestage.passage.forkLength","F.lifestage.passage.forkLength")
-d <- c("D","AllCatchTable"         ,"later"                       ,"F.allCatch.table")
-e <- c("E","ByCatchTable"          ,"later"                       ,"F.byCatch.table")
-f <- c("F","ChinookByDate"         ,"later"                       ,"F.chinookByDate.table")
-g <- c("G","ReleaseSummary"        ,"later"                       ,"F.release.summary")
-h <- c("H","SizeByDate"            ,"later"                       ,"F.size.by.date")
-i <- c("I","LengthFreq"            ,"later"                       ,"F.length.frequency")
+d <- c("D","AllCatchTable"         ,"all.catch"                   ,"F.allCatch.table")
+e <- c("E","ByCatchTable"          ,"by.catch"                    ,"F.byCatch.table")
+f <- c("F","ChinookByDate"         ,"chinook.by.date"             ,"F.chinookByDate.table")
+g <- c("G","ReleaseSummary"        ,"release.summary"             ,"F.release.summary")
+h <- c("H","SizeByDate"            ,"size.by.date"                ,"F.size.by.date")
+i <- c("I","LengthFreq"            ,"length.freq"                 ,"F.length.frequency")
 j <- c("J","WeeklyEffortReport"    ,"weekly.effort"               ,"F.weekly.effort")
+k <- c("K","AutoLS_2Group_YesWgt"  ,"auto.ls.2grp_yWgt"           ,"F.lifestage.passage.assignLS2group")
+l <- c("L","AutoLS_2Group_NoWgt"   ,"auto.ls.2grp_nWgt"           ,"F.lifestage.passage.assignLS2groupNoWeight")
+m <- c("M","AutoLS_3Group_YesWgt"  ,"auto.ls.3grp_yWgt"           ,"F.lifestage.passage.assignLS3group")
+n <- c("N","AutoLS_3Group_NoWgt"   ,"auto.ls.3grp_nWgt"           ,"F.lifestage.passage.assignLS3groupNoWeight")
+o <- c("O","AutoLS_2or3_AutoWgt"   ,"auto.ls.2or3grp_autoWgt"     ,"F.lifestage.passage.assignLS")
+p <- c("P","AutoLS_2or3_NoWgt"     ,"auto.ls.2or3grp_nWgt"        ,"F.lifestage.passage.assignLSNoWeight")
 
 
 #   ---- Clean up our requested report list for use in making folders. 
-masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j),stringsAsFactors=FALSE)
+masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p),stringsAsFactors=FALSE)
 names(masterReports) <- nn
 rownames(masterReports) <- NULL
 masterReports <- masterReports[masterReports$label %in% reportRun,]
 
 #   ---- Build up the request folder structure.  
-streamNames <- unique(theExcel$streamName)
+streamNames <- unique(paste0(theExcel$streamName,"--",theExcel$Site))
 nStreamNames <- length(streamNames)
 
 reportLabels <- masterReports$label
@@ -62,17 +89,50 @@ reportFolders <- masterReports$folder
 reportTitles <- masterReports$report
 nReports <- length(reportFolders)
 
+#   ---- Helper function to make directories, if they don't already exist.  
+makeTheDir <- function(theDir){
+  ifelse(!dir.exists(file.path(theDir)), dir.create(file.path(theDir),showWarnings=TRUE,recursive=TRUE), FALSE)
+  theDir <- NULL
+}
+
+
+
+
+#   ---- Set all the global variables away from the default that you want.  
+
+# db.file                         <<- "..\\Data\\CAMP.mdb"
+# output.dir                      <<- "..\\outputs"
+# sql.code.dir                    <<- file.path(find.package("campR"),"sql")
+# samplePeriodCutTime             <<- "04:00:00"
+# max.ok.gap                      <<- 2
+# fishingGapMinutes               <<- 10080
+# knotMesh                        <<- 15
+# halfConeMulti                   <<- 2
+# sample.size.forkLength          <<- 100
+# sample.size.forkLengthAndWeight <<- 100
+# weight.prop.forkLength          <<- 0.5
+# forkLength.mean.diff            <<- 10
+# time.zone                       <<- "America/Los_Angeles"
+# Yes.code                        <<- 1
+# No.code                         <<- 2
+# seed                            <<- 884
+# forkLengthCutPoints             <<- data.frame(lifeStage=c("FL1 leq 41mm","FL2 42-72mm","FL3 73-110mm","FL4 geq 111mm"),cutPoints=c(41,72,110,9999))
+# passageRounder                  <<- 4
+# eff.min.spline.samp.size        <<- 10
+# unassd.sig.digit                <<- 1
+
 #   ---- Given the 'theExcel', loop over the streams.  
 for(i in 1:nStreamNames){
   
   #   ---- Reduce the master 'theExcel' to one stream.  
-  theStreamName <- as.character(droplevels(streamNames[i]))
-  the1stExcel <- theExcel[theExcel$streamName == theStreamName,]
+  theStreamName <- strsplit(streamNames[i],"--",fixed=TRUE)[[1]][1] #as.character(droplevels(streamNames[i]))
+  theSiteName <- strsplit(streamNames[i],"--",fixed=TRUE)[[1]][2]
+  the1stExcel <- theExcel[theExcel$streamName == theStreamName & theExcel$Site == theSiteName,]
   seasons <- unique(the1stExcel$Season)
   nSeasons <- length(seasons)
   
   #   ---- Make individual folder for the stream.
-  makeTheDir(paste0(outStem,"/",theStreamName))
+  makeTheDir(paste0(outStem,"/",theStreamName,"--",theSiteName))
   
   #   ---- Given the stream, loop over the seasons.  
   for(j in 1:nSeasons){
@@ -85,7 +145,7 @@ for(i in 1:nStreamNames){
     #   ---- create a folder structure to house the results.
     
     #   ---- Make individual folder for a Season. 
-    makeTheDir(paste0(outStem,"/",theStreamName,"/",theSeason))
+    makeTheDir(paste0(outStem,"/",paste0(theStreamName,"--",theSiteName),"/",theSeason))
     
     #   ---- Given the Season, loop over the desired reports.  
     for(k in 1:nReports){
@@ -95,7 +155,7 @@ for(i in 1:nStreamNames){
       theReportTitle <- reportTitles[k]
       
       #   ---- Make individual folder for a report
-      makeTheDir(paste0(outStem,"/",theStreamName,"/",theSeason,"/",theReportFolder))
+      makeTheDir(paste0(outStem,"/",paste0(theStreamName,"--",theSiteName),"/",theSeason,"/",theReportFolder))
       
       #   ---- At this point, we're ready to create reports for this row in 'theExcel.'
       taxon       <- 161980
@@ -105,7 +165,7 @@ for(i in 1:nStreamNames){
       min.date    <- as.character(as.Date(the2ndExcel$minvisitTime,format="%m/%d/%Y"))
       max.date    <- as.character(as.Date(the2ndExcel$maxvisitTime,format="%m/%d/%Y"))
       by          <- "All"
-      outFileStem <- paste0(outStem,"/",theStreamName,"/",theSeason,"/",theReportFolder)
+      outFileStem <- paste0(outStem,"/",paste0(theStreamName,"--",theSiteName),"/",theSeason,"/",theReportFolder)
       outFile     <- paste0(theReportTitle,"-",siteText)
       outAll      <- paste0(outFileStem,"/",outFile,"-")
       
@@ -131,24 +191,31 @@ for(i in 1:nStreamNames){
       ch <- odbcConnectAccess(db.file)
       close(ch)
       
+      #   ---- Create the by lifestage and run report.  
+      if( theReportLabel == "A" ){
+        by <- "All"
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file=outAll,ci=TRUE,autoLS=FALSE,reclassifyFL=FALSE)
+      }
       
       #   ---- Create the ALL runs report.  
       if( theReportLabel == "B" ){
         
         #   ---- Run function run.passage over the four possible temporal periods.  
-        for(byj in 3:3){
+        for(byj in 1:4){
                if(byj == 1){by <- 'day'  } 
           else if(byj == 2){by <- 'week' } 
           else if(byj == 3){by <- 'month'} 
           else if(byj == 4){by <- 'year' }
-          
+
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
+          output.file <- outAll
           F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE)
           
           #   ---- If desired, remove some of the output.  
-          theFiles <- dir(outFileStem)
-          theFiles <- theFiles[grep("Late fall|Spring|Winter|Unassigned",theFiles)]
-          file.remove(paste0(outFileStem,"/",theFiles))
+          #theFiles <- dir(outFileStem)
+          #theFiles <- theFiles[grep("Late fall|Spring|Winter|Unassigned",theFiles)]
+          #file.remove(paste0(outFileStem,"/",theFiles))
         }
       }
         
@@ -156,22 +223,128 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "C" ){
           
         #   ---- Run function lifestage.passage.forkLength over the four possible temporal periods.  
-        for(byj in 2:2){
+        for(byj in 1:4){
           if(byj == 1){by <- 'day'  } 
           else if(byj == 2){by <- 'week' } 
           else if(byj == 3){by <- 'month'} 
           else if(byj == 4){by <- 'year' }
             
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
-          F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file=outAll,ci=TRUE,autoLS=FALSE,reclassifyFL=TRUE)
+          output.file <- outAll
+          F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file=output.file,ci=TRUE,autoLS=FALSE,reclassifyFL=TRUE)
         } 
+      }
+      
+      #   ---- Create the all-catch table.  
+      if( theReportLabel == "D" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        output.file <- outAll
+        F.allCatch.table( site,min.date,max.date,output.file)
+      }
+      
+      #   ---- Create the by-catch table.  
+      if( theReportLabel == "E" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        output.file <- outAll
+        F.byCatch.table(site,min.date,max.date,output.file)
+      }
+      
+      #   ---- Create the Chinook-by-date report.
+      if( theReportLabel == "F" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        output.file <- outAll
+        F.chinookByDate.table(site,min.date,max.date,output.file)
+      }
+      
+      #   ---- Create the release summary report. 
+      if( theReportLabel == "G" ){      
+        runs <- c(1,3,5,4)    # Spring, Fall, Late Fall Winter
+        run.names <- c('Spring','Fall','Late Fall','Winter')
+        for(l in 1:4){
+          run <- runs[l]
+          run.name <- run.names[l]
+          outAll <- paste0(outFileStem,"/",outFile,".",run.name,"-")
+          output.file <- outAll
+          F.release.summary(site,taxon,run,min.date,max.date,output.file)
+        }
+      } 
+
+      #   ---- Create the size-by-date report.  
+      if( theReportLabel == "H" ){
+        runs <- c(1,3,5,4)    # Spring, Fall, Late Fall, Winter
+        run.names <- c('Spring','Fall','Late Fall','Winter')
+        for(l in 1:4){
+          run <- runs[l]
+          run.name <- run.names[l]
+          outAll <- paste0(outFileStem,"/",outFile,".",run.name,"-")
+          output.file <- outAll
+          F.size.by.date(site,taxon,run,min.date,max.date,output.file)
+        }
+      }
+      
+      #   ---- Create the length frequency report.  
+      if( theReportLabel == "I" ){
+        runs <- c(1,3,5,4)    # Spring, Fall, Late Fall, Winter
+        run.names <- c('Spring','Fall','Late Fall','Winter')
+        for(l in 1:4){
+          run <- runs[l]
+          run.name <- run.names[l]
+          outAll <- paste0(outFileStem,"/",outFile,".",run.name,"-","_ls=F")
+          output.file <- outAll
+          F.length.frequency(site,taxon,run,min.date,max.date,output.file,by.lifestage=FALSE)
+          outAll <- paste0(outFileStem,"/",outFile,".",run.name,"-","_ls=T")
+          output.file <- outAll
+          F.length.frequency(site,taxon,run,min.date,max.date,output.file,by.lifestage=TRUE)
+        }
       }
       
       #   ---- Create the weekly effort report.  
       if(  theReportLabel == "J" ){
-        by <- "All"
         outAll <- paste0(outFileStem,"/",outFile,"-")
+        output.file <- outAll
         F.weekly.effort(site,taxon,min.date,max.date,outAll)
+      }
+ 
+      #   ---- Create automatic lifestage report:  lifestage to 2 groups and use weight variable.
+      if( theReportLabel == "K" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        output.file <- outAll
+        F.lifestage.passage.assignLS2group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)         
+      }
+
+      #   ---- Create automatic lifestage report:  lifestage to 2 groups and don't use weight variable.
+      if( theReportLabel == "L" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-") 
+        output.file <- outAll
+        F.lifestage.passage.assignLS2groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
+      }
+    
+      #   ---- Create automatic lifestage report:  lifestage to 3 groups and use weight variable.
+      if( theReportLabel == "M" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-") 
+        output.file <- outAll
+        F.lifestage.passage.assignLS3group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
+      }
+      
+      #   ---- Create automatic lifestage report:  lifestage to 3 groups and don't use weight variable.
+      if( theReportLabel == "N" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        output.file <- outAll
+        F.lifestage.passage.assignLS3groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
+      }
+      
+      #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and use or don't use weight variable.
+      if( theReportLabel == "O" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        output.file <- outAll
+        F.lifestage.passage.assignLS(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)            
+      }
+      
+      #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and don't use weight variable.
+      if( theReportLabel == "P" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        output.file <- outAll
+        F.lifestage.passage.assignLSNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
       }
       
     }
@@ -181,8 +354,4 @@ for(i in 1:nStreamNames){
 
 
 
-#   ---- Helper function to make directories, if they don't already exist.  
-makeTheDir <- function(theDir){
-  ifelse(!dir.exists(file.path(theDir)), dir.create(file.path(theDir),showWarnings=TRUE,recursive=TRUE), FALSE)
-  theDir <- NULL
-}
+
