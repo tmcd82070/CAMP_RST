@@ -232,7 +232,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 
       trapID <- names(catch.fits)[trap]
       trap.ind <- grand.df$trapPositionID == trapID
-
+      
       cat(paste("trap=", trapID, "\n" ))
 
       #   ---- Generate random realization of catch, where required, i.e., for 
@@ -314,8 +314,10 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
       }
 
 
-      #   ---- Generate random realizations of efficiency.  
-      ind <- which(trapID == names(eff.fits))
+      #   ---- Generate random realizations of efficiency.  We utilize the non-deciamal trapID, since we never fit 
+      #   ---- efficiency on the decimal traps alone.  This maps decimal traps of catch to non-decimal traps of 
+      #   ---- efficiency.  
+      ind <- which( as.character(round(as.numeric(trapID),0)) == names(eff.fits) )
       if( length(ind) > 0 ){
 
         e.fit <- eff.fits[[ind]]
@@ -360,7 +362,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
             }
           }
 
-          cat(paste("...Binomial over-dispersion in efficiency model for trap ", trapID, " = ", disp, "\n"))
+          cat(paste("...Binomial over-dispersion in efficiency model for trap ", as.character(round(as.numeric(trapID),0)), " = ", disp, "\n"))
 
           #   ---- Function vcov returns unscaled variance-covariance matrix. 
           #   ---- Scale by overdispersion.
