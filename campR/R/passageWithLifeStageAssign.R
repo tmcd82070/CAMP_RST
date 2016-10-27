@@ -1,6 +1,6 @@
 #' @export 
 #'
-#' @title passageWithLifeStageAssign
+#' @title F.passageWithLifeStageAssign
 #'
 #' @description Estimate annual passage / production estimates between days
 #' specified. 
@@ -102,7 +102,7 @@
 #' }
 
 
-passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL){
+F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL){
   
 #   site <- 12345
 #   taxon <- 161980

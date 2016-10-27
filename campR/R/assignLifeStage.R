@@ -108,7 +108,7 @@
 
 
 
-assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,output.file=output.file,...){
+assignLifeStage <- function(DATA,groupN=1,USEWeight=NULL,output.file=output.file,...){
 ### DATA = the catch data
 ### groupN = the number of life stage groups to fit, NULL allows the program to decide
 ### USEWeight = should weight be used in the mixture distribution, NULL allows the program to decide
@@ -146,6 +146,8 @@ assignLifeStage <- function(DATA,groupN=NULL,USEWeight=NULL,output.file=output.f
     groupN <- NULL
   }
 
+  cat(groupN)
+    
   if(!is.null(groupN)){
     if(!(groupN%in%c(2,3))){
       stop('The number of groups must be either 2 or 3!')
