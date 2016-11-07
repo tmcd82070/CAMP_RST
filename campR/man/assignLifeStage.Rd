@@ -4,7 +4,7 @@
 \alias{assignLifeStage}
 \title{assignLifeStage}
 \usage{
-assignLifeStage(DATA, groupN = NULL, USEWeight = NULL,
+assignLifeStage(DATA, groupN = 1, USEWeight = NULL,
   output.file = output.file, ...)
 }
 \arguments{

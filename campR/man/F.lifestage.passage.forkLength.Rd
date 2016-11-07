@@ -5,8 +5,7 @@
 \title{F.lifestage.passage.forkLength}
 \usage{
 F.lifestage.passage.forkLength(site, taxon, min.date, max.date, by, output.file,
-  ci = TRUE, nLS = NULL, weightUse = NULL, autoLS = FALSE,
-  reclassifyFL = TRUE)
+  ci = TRUE, autols = FALSE, nls = NULL, weightuse = NULL)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -30,19 +29,16 @@ estimated catch is to be summarized.  Can be one of \code{"day"},
 \item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 
-\item{nLS}{Number of life stage groups to estimate. Ignored if 
-\code{autoLS=FALSE}.  See Details.}
-
-\item{weightUse}{A logical indicating if variable \code{weight} should be used for
-the analytical life stage assignment;  the default is \code{NULL}. Ignored
-if \code{autoLS=FALSE}.  See Details.}
-
-\item{autoLS}{Default of \code{FALSE} leads to no assigning of no analytical
+\item{autols}{Default of \code{FALSE} leads to no assigning of no analytical
 life stage. If \code{TRUE}, assignment of analytical life stage is performed. 
 See Details.}
 
-\item{reclassifyFL}{A logical indicating if passage should be estimated via 
-forklength-based class groups.}
+\item{nls}{Number of life stage groups to estimate. Ignored if 
+\code{autols=FALSE}.  See Details.}
+
+\item{weightuse}{A logical indicating if variable \code{weight} should be used for
+the analytical life stage assignment;  the default is \code{NULL}. Ignored
+if \code{autols=FALSE}.  See Details.}
 }
 \value{
 A \code{csv} table of passage estimates over the specified date 
@@ -94,10 +90,19 @@ Function \code{F.lifestage.passage.forkLength} is the main workhorse function fo
   specific mapping of days to weeks can be found within the \code{Dates} 
   table of any associated CAMP Access database.
   
-  Forklength groupings are specified via global variable
+  Forklength groupings are specified via global variable 
   \code{forkLengthCutPoints} in \code{GlobalVars}, and by default, include up
-  to four distinct groupings.  However, if no fish exist for a particular
-  grouping, no output associated with that grouping is created.
+  to four distinct groupings.  However, if no fish exist for a particular 
+  grouping, no output associated with that grouping is created.  When
+  \code{reclassify=TRUE}, the biologically recorded \code{lifeStage} is 
+  redefined via groups specifed in data frame \code{forkLengthCutPoints}, as 
+  defined in \code{GlobalVars}.  Default behavior leads to four separate 
+  fork-length-based groups.  Similar to reports that break out totals by 
+  biologically assigned \code{lifeStage}s, reports utilizing breakout by fork
+  length may not report totals for all four groups, if the river and date 
+  range specified caught no fish with that particular range of fork lengths. 
+  The remapping of \code{lifeStage} to reflect fork-length-based groupings is
+  performed by function \code{reclassifyLS}.
 }
 \examples{
 \dontrun{
@@ -110,13 +115,13 @@ max.date <- "2013-06-01"
 by <- "week"
 output.file <- NA
 ci <- TRUE
-nLS <- NULL
-weightUse <- NULL
-autoLS <- FALSE
+nls <- NULL
+weightuse <- NULL
+autols <- FALSE
 reclassifyFL <- TRUE
 
 F.lifestage.passage.forkLength(site,taxon,min.date,max.date,by,
-  output.file,ci,nLS,weightUse,autoLS,reclassify)
+  output.file,ci,nls,weightuse,autols,reclassify)
 }
 }
 \author{

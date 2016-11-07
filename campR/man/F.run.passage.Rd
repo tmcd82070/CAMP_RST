@@ -84,11 +84,11 @@ Function \code{F.run.passage} is the main workhorse function for
  
 \dontrun{
 #   ---- Estimate passage on the American for the Fall run.
-site <- 57000
+site <- 6000
 taxon <- 161980
-min.date <- "2013-01-01"
-max.date <- "2013-06-01"
-by <- "week"
+min.date <- "2010-12-07"
+max.date <- "2011-06-02"
+by <- "day"
 output.file <- "Feather"
 ci <- TRUE
 }

@@ -4,8 +4,8 @@
 \alias{F.get.catch.data}
 \title{F.get.catch.data}
 \usage{
-F.get.catch.data(site, taxon, min.date, max.date, output.file, autoLS = FALSE,
-  nLS = NULL, weightUse = NULL, reclassifyFL = FALSE)
+F.get.catch.data(site, taxon, min.date, max.date, output.file, autols = FALSE,
+  nls = NULL, weightuse = NULL, reclassifyFL = FALSE)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are
@@ -22,15 +22,15 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
 \item{output.file}{A text string indicating a prefix to append to all output.}
 
-\item{autoLS}{A logical indicating whether or not lifestage assignment should
+\item{autols}{A logical indicating whether or not lifestage assignment should
 be decided by the computer via a mixture distribution/clustering analysis.}
 
-\item{nLS}{A numeric communicating the number of new lifestages to assign. 
+\item{nls}{A numeric communicating the number of new lifestages to assign. 
 Values can be \code{2} or \code{3}.}
 
-\item{weightUse}{A logical indicating if weight data are to be incorporated 
+\item{weightuse}{A logical indicating if weight data are to be incorporated 
 in the assigning of lifestage.  \code{useWeight=NULL}, ignored if 
-\code{autoLS} is \code{FALSE}, \code{NULL} leads to the program deciding if
+\code{autols} is \code{FALSE}, \code{NULL} leads to the program deciding if
 weight should be used, \code{FALSE} lead to the program not using weight to
 assign lifestage.}
 
@@ -201,13 +201,13 @@ site <- 57000
 taxon <- 161980
 min.date <- "2013-01-01"
 max.date <- "2013-06-01"
-autoLS <- FALSE
-nLS <- NULL
-weightUse <- NULL
+autols <- FALSE
+nls <- NULL
+weightuse <- NULL
 reclassifyFL <- FALSE
 
 catch <- F.get.catch.data(site,taxon,min.date,max.date,
-  autoLS,nLS,weightUse,reclassifyFL)
+  autols,nls,weightuse,reclassifyFL)
 }
 
 }
