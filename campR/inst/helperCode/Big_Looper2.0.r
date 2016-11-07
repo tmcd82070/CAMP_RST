@@ -2,21 +2,20 @@
 
 
 
+
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.3.0"
 TestingPlatform <- "CAMP_RST20161015-campR1.0.1"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
-#excelName <- "FeatherExcel"
 #excelName <- "AmericanExcel"
-#excelName <- "FeatherQuickie"
+#excelName <- "FeatherExcel"
 #excelName <- "RBDDExcel"
-excelName <- "StanislawExcel"
+#excelName <- "StanislawExcel"
+#excelName <- "MokelumneExcel"
+excelName <- "theExcel"
 
 reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
-# reportRun <- c("K","L","M","N","O","P")
-# reportRun <- c("A","K")#c("B","C","J")
-# reportRun <- c("B")
-reportRun <- c("H","I","J","K","L","M","N","O","P")
-
+reportRun <- c("A","B","C","D","E","F","G","H","I","J")
+reportRun <- c("K","L","M","N","O","P")
 
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
@@ -44,7 +43,7 @@ rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-theExcel <- theExcel[5:5,]
+theExcel <- theExcel[c(51:78),]
 
 
 
@@ -195,7 +194,7 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "A" ){
         by <- "All"
         outAll <- paste0(outFileStem,"/",outFile,"-")
-        passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file=outAll,ci=TRUE,autoLS=FALSE,reclassifyFL=FALSE)
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file=outAll,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL)
       }
       
       #   ---- Create the ALL runs report.  
@@ -224,14 +223,14 @@ for(i in 1:nStreamNames){
           
         #   ---- Run function lifestage.passage.forkLength over the four possible temporal periods.  
         for(byj in 1:4){
-          if(byj == 1){by <- 'day'  } 
+               if(byj == 1){by <- 'day'  } 
           else if(byj == 2){by <- 'week' } 
           else if(byj == 3){by <- 'month'} 
           else if(byj == 4){by <- 'year' }
             
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
-          F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file=output.file,ci=TRUE,autoLS=FALSE,reclassifyFL=TRUE)
+          F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file=output.file,ci=TRUE)
         } 
       }
       
@@ -309,42 +308,42 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "K" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.lifestage.passage.assignLS2group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)         
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=TRUE)         
       }
 
       #   ---- Create automatic lifestage report:  lifestage to 2 groups and don't use weight variable.
       if( theReportLabel == "L" ){
         outAll <- paste0(outFileStem,"/",outFile,"-") 
         output.file <- outAll
-        F.lifestage.passage.assignLS2groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=FALSE) 
       }
     
       #   ---- Create automatic lifestage report:  lifestage to 3 groups and use weight variable.
       if( theReportLabel == "M" ){
         outAll <- paste0(outFileStem,"/",outFile,"-") 
         output.file <- outAll
-        F.lifestage.passage.assignLS3group(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=TRUE)       
       }
       
       #   ---- Create automatic lifestage report:  lifestage to 3 groups and don't use weight variable.
       if( theReportLabel == "N" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.lifestage.passage.assignLS3groupNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE) 
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=FALSE) 
       }
       
-      #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and use or don't use weight variable.
+      #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and use weight variable.
       if( theReportLabel == "O" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.lifestage.passage.assignLS(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)            
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=TRUE)            
       }
       
       #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and don't use weight variable.
       if( theReportLabel == "P" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.lifestage.passage.assignLSNoWeight(site,taxon,min.date,max.date,output.file,ci=TRUE,autoLS=TRUE,reclassifyFL=FALSE)       
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=FALSE)       
       }
       
     }

@@ -10,9 +10,17 @@ passVec <- c("EstProdAllRunsLSReport","EstProdAllRunsReport","PassageEst_FL_Fall
 #   ---- Identify the rivers to include in the summary.
 riverVec <- c("Stanislaus River--Caswell State Park",
               "American River--American River at Watt Avenue",
-              "Sacramento River--RBDD RST")
+              "Sacramento River--RBDD RST",
+              "Mokelumne River--Golf RST Main Site",
+              "Feather River--Eye riffle",
+              "Feather River--Gateway Riffle",
+              "Feather River--Herringer Riffle",
+              "Feather River--Live Oak",
+              "Feather River--Steep Riffle",
+              "Feather River--Sunset Pumps")
 
-
+source('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/getTheData.R')
+source('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/getRiverPassage.R')
 
 all <- NULL
 l1 <- dir(masterFolder)[dir(masterFolder) != "Thumbs.db" & dir(masterFolder) %in% riverVec]
@@ -38,6 +46,13 @@ for(i in 1:length(l1)){
   }
 }
 
+all$river <- ifelse(all$siteName == "American River at Watt Avenue","American",
+             ifelse(all$siteName == "Golf RST main site below lower Sacramento Road Bridge","Mokelumne",
+             ifelse(all$siteName == "RBDD RST","Sacramento",
+             ifelse(all$siteName %in% c("Steep Riffle","Herringer Riffle","Sunset Pumps","Gateway Riffle","Live Oak","Eye Riffle"),"Feather",
+             ifelse(all$siteName == "Caswell State Park","Stanislaus","ERROR")))))
+
+
 all <- all[!is.na(all$bEst),]
 all <- all[all$bEst > 0,] 
 rownames(all) <- NULL
@@ -60,52 +75,4 @@ good$bUCL <- format(round(as.numeric(good$bUCL), 0),nsmall=0,big.mark=",")
 
 print(trouble)
 
-write.csv(good,"C:/Users/jmitchell/Desktop/allEstsCompareWRBDD.csv",row.names=FALSE)
-
-
-
-
-
-
-
-source('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/getTheData.R')
-
-getRiverPassage <- function(stem){
-
-#   stem <- l3Folder
-  
-  #   ---- Identify the different type of passage runs.  
-  files <- list.files(stem)
-  
-  if(length(files) > 0){
-    ls_passageB <- files[grep('lifestage_passage_table.csv',files)]
-    passageB <- files[grep('passage_table.csv',files)]         
-  
-    #   ---- Open up the files one-by-one, and suck out the passage results.  
-    openTheseB <- unique(data.frame(file=c(ls_passageB,passageB),stringsAsFactors=FALSE))
-    rownames(openTheseB) <- NULL
-    for(l in 1:nrow(openTheseB)){
-      if(substr(openTheseB$file[l],nchar(openTheseB$file[l]) - 26,nchar(openTheseB$file[l]) - 26 + 3) == 'life'){
-        openTheseB$type[l] <- 'life'
-      } else if(substr(openTheseB$file[l],nchar(openTheseB$file[l]) - 20,nchar(openTheseB$file[l]) - 20 + 2) == 'run'){
-        openTheseB$type[l] <- 'run'
-      } else {
-        openTheseB$type[l] <- 'summary'
-      }
-    }
-  
-    bigDFB <- getTheData(openThese=openTheseB,stem=stem)  
-    return(bigDFB)
-  } 
-}
-
-
-
-
-
-
-
-
-
-
-
+write.csv(good,"C:/Users/jmitchell/Desktop/allEstsCompare.csv",row.names=FALSE)
