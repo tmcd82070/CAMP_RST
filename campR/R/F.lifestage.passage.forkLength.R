@@ -19,16 +19,14 @@
 #' @param output.file A text string indicating a prefix to append to all output.
 #' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
-#' @param autoLS Default of \code{FALSE} leads to no assigning of no analytical
+#' @param autols Default of \code{FALSE} leads to no assigning of no analytical
 #'   life stage. If \code{TRUE}, assignment of analytical life stage is performed. 
 #'   See Details.
-#' @param nLS Number of life stage groups to estimate. Ignored if 
-#'   \code{autoLS=FALSE}.  See Details.
-#' @param weightUse A logical indicating if variable \code{weight} should be used for
+#' @param nls Number of life stage groups to estimate. Ignored if 
+#'   \code{autols=FALSE}.  See Details.
+#' @param weightuse A logical indicating if variable \code{weight} should be used for
 #'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
-#'   if \code{autoLS=FALSE}.  See Details.
-#' @param reclassifyFL A logical indicating if passage should be estimated via 
-#'   forklength-based class groups.
+#'   if \code{autols=FALSE}.  See Details.
 #' 
 #' @return A \code{csv} table of passage estimates over the specified date 
 #'   range, with fork-length groups down the rows, and Fall run across the columns.  A 
@@ -104,13 +102,13 @@
 #' by <- "week"
 #' output.file <- NA
 #' ci <- TRUE
-#' nLS <- NULL
-#' weightUse <- NULL
-#' autoLS <- FALSE
+#' nls <- NULL
+#' weightuse <- NULL
+#' autols <- FALSE
 #' reclassifyFL <- TRUE
 #' 
 #' F.lifestage.passage.forkLength(site,taxon,min.date,max.date,by,
-#'   output.file,ci,nLS,weightUse,autoLS,reclassify)
+#'   output.file,ci,nls,weightuse,autols,reclassify)
 #' }
 F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL){
 
@@ -121,9 +119,9 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   # by <- "week"
   # output.file <- "here"
   # ci <- TRUE
-  # autoLS <- FALSE
-  # nLS <- NULL
-  # weightUse <- NULL
+  # autols <- FALSE
+  # nls <- NULL
+  # weightuse <- NULL
   # reclassifyFL <- TRUE
   
   #   ---- Ensure special consideration of forklength.
