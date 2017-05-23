@@ -86,7 +86,7 @@
 #' thePassage <- F.est.passage(catch.df, release.df, "week", "myFileRoot", ci=TRUE )
 #' }
 
-F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
+F.est.passage.enh <- function( catch.df, release.df, summarize.by, file.root, ci ){
  
   # catch.df <- catch.df.ls
   # release.df <- release.df
@@ -288,287 +288,295 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   bd <- strptime(sort(seq(as.Date(min(na.omit(release.df$ReleaseDate),na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$ReleaseDate),na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
   bd.enh <<- strptime(sort(seq(as.Date(min(na.omit(release.df.enh$ReleaseDate),na.omit(release.df.enh$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df.enh$ReleaseDate),na.omit(release.df.enh$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
   
-  #   ---- Estimate capture for every day of season.  
-  eff.and.fits <- F.est.efficiency( release.df, bd, df.spline=4, plot=TRUE, plot.file=file.root )
+  # #   ---- Estimate efficiency for every day of season.  
+  # eff.and.fits <- F.est.efficiency( release.df, bd, df.spline=4, plot=TRUE, plot.file=file.root )
+  # if(usepb){
+  #   tmp <- getWinProgressBar(progbar)
+  #   setWinProgressBar(progbar, (2*tmp + 1)/3 )
+  # }
+  # efficiency <- eff.and.fits$eff
+
+  #   ---- Estimate efficiency for every day of all seasons over all time.
+  eff.and.fits.enh <- F.est.efficiency.enh( release.df.enh, bd.enh, df.spline=4, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)
     setWinProgressBar(progbar, (2*tmp + 1)/3 )
   }
-  efficiency <- eff.and.fits$eff
-
-  out.fn.list <- c(out.fn.list, attr(eff.and.fits, "out.fn.list"))
+  # efficiency.enh <- eff.and.fits.enh$eff
+  # 
+  # out.fn.list <- c(out.fn.list, attr(eff.and.fits, "out.fn.list"))
   
-  #   ---- Something is wrong with efficiency data. Make an empty efficiency data frame
-  if( all(is.na(efficiency[1,])) ){
-    efficiency <- data.frame( trapPositionID=catch$trapPositionID, batchDate=catch$batchDate, efficiency=rep(NA, nrow(catch)))
-    warning("Zero efficiency")
-  }
-
-  #   ---- Could do...
-  # n <- data.base( catch, efficiency=efficiency$efficiency, gam.estimated.eff=efficiency$gam.estimated )
-  #   ---- ...to produce a data frame of values that go into estimator, one line per batchDate.
-
-  #   ---- Now, estimate passage.  It shouldn't happen that efficiency <= 0, 
-  #   ---- but just in case.  This also gives us a way to exclude days -- 
-  #   ---- just set efficiency <= 0.
-  if( any(ind <- !is.na(efficiency$efficiency) & (efficiency$efficiency <= 0)) ){    
-    efficiency$efficiency[ind] <- NA
-  }
-
-  #   ---- First merge catch and efficiency data frames
-  catch$batchDay <- format(catch$batchDate, "%Y-%m-%d")
-  catch$trapPositionID <- as.character(catch$trapPositionID)
-  efficiency$batchDay <- format(efficiency$batchDate, "%Y-%m-%d")
-  efficiency$trapPositionID <- as.character(efficiency$trapPositionID)
-  
-  #   ---- Drop POSIX date from efficiency.
-  efficiency <- efficiency[,names(efficiency) != "batchDate"]  
-
-  cat("First 20 rows of CATCH...\n")
-  print(catch[1:20,])
-  cat("First 20 rows of EFFICIENCY...\n")
-  print(efficiency[1:20,])
-
-  #   ---- To ensure that trapPositionIDs with decimals find their efficiency trial trap match,
-  #   ---- ensure we have the old IDs -- otherwise, these won't ever be found.
-  catch$oldTrapPositionID <- as.character(round(as.numeric(catch$trapPositionID),0))
-  names(efficiency)[names(efficiency) == 'trapPositionID'] <- 'oldTrapPositionID'
-  
-  #   ---- The Grand Merge.  Merge catch info with efficiency info.
-  grand.df <- merge( catch, efficiency, by=c("oldTrapPositionID", "batchDay"), all=T)
-  
-  #   ---- Get rid of helper variable oldTrapPositionID;  it has served its purpose.  
-  grand.df$oldTrapPositionID <- NULL
-  
-  #   ---- For each trap, drop the dates that are outside its min. and max.date.  
-  #   ---- The season for each trap is identified as non missing catch.  I.e., the 
-  #   ---- grand merge puts in every date because efficiency data frame has all dates.
-  grand.df <- grand.df[!is.na(grand.df$catch), ]
-  
-  #   ---- Bring in raw catch (measured).
-  grand.df.rawCatch <- merge(grand.df,jason.catch4.df,by=c('trapPositionID','batchDate'),all.x=TRUE)       
-  
-  #   ---- Bring in inflated catch (measured + plus counts).  
-  grand.df.rawCatch.Inflated <- merge(grand.df.rawCatch,jason.totCatch4.df,by=c('trapPositionID','batchDate'),all.x=TRUE)
-  
-  #   ---- Bring in imputed catch.  
-  grand.df.rawCatch.Imputed <- merge(grand.df.rawCatch.Inflated ,jason.catch.and.fits4.df,by=c('trapPositionID','batchDate'),all.x=TRUE) 
-  grand.df <- grand.df.rawCatch.Imputed
-
-  #   ---- Somewhere, there are comments that state that catches of NA mean zero.  So, 
-  #   ---- replace NA in each of rawCatch and ImputedCatch with zero.
-  grand.df$imputedCatch <- ifelse(is.na(grand.df$imputedCatch), 0, round(grand.df$imputedCatch,1))
-  grand.df$rawCatch <- ifelse(is.na(grand.df$rawCatch), 0, grand.df$rawCatch)
-  grand.df$n.tot <- ifelse(is.na(grand.df$n.tot), 0, grand.df$n.tot)  # the preTotalCatch
-  grand.df$totalEstimatedCatch <- round(grand.df$n.tot + grand.df$imputedCatch,1)
-  grand.df$rawCatch <- grand.df$catch <- NULL
-
-  #   ---- Fish accounting.  
-  #   ---- Check and make sure that assignedCatch + unassignedCatch + imputedCatch = totalCatch.
-  #   ---- Check and make sure that assignedCatch + unassignedCatch = inflatedCatch.
-  #   ---- Check and make sure that inflatedCatch + imputedCatch = totalCatch.
-  
-  #   ---- Note the rounding.  In a rare instance on the Feather, 2012-01-25, trapPositionID 5002, what are displayed
-  #   ---- as 3 modUnassignedCatch leaves to a non-zero number when modUnassigned - 3 is calculated.  This causes 
-  #   ---- fish accounting to fail.  Round all these values (seen to play a role) to the nearest tenth, which should 
-  #   ---- take care of this mysterious issue.  
-  grand.df$sum1 <- round(grand.df$modAssignedCatch + grand.df$modUnassignedCatch + grand.df$imputedCatch,1)
-  grand.df$sum2 <- round(grand.df$modAssignedCatch + grand.df$modUnassignedCatch,1)
-  grand.df$sum3 <- round(grand.df$halfConeAssignedCatch + grand.df$halfConeUnassignedCatch + grand.df$assignedCatch + grand.df$unassignedCatch + grand.df$imputedCatch,1)
-  grand.df$check1 <- ifelse(grand.df$sum1 == grand.df$totalEstimatedCatch,TRUE,FALSE)
-  grand.df$check2 <- ifelse(grand.df$sum2 == round(grand.df$n.tot,1),TRUE,FALSE)
-  grand.df$check3 <- ifelse(grand.df$sum3 == grand.df$totalEstimatedCatch,TRUE,FALSE)
-
-  if(sum(grand.df$check1 + grand.df$check2 + grand.df$check3) != nrow(grand.df)*3){
-    stop('Issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Investigate est_passage.R, around line 406.')
-  } else {
-    cat('No issue with summation of halfConeAssignedCatch, halfConeUnassignedCatch, assignedCatch, unassignedCatch, modAssignedCatch, modUnassignedCatch, imputedCatch, and/or totalEstimatedCatch.  Continuing...\n')
-  }
-
-  #   ---- The passage estimator.
-  grand.df$passage <- rep(NA, nrow(grand.df))
-  grand.df$passage <- grand.df$totalEstimatedCatch / grand.df$efficiency   #ifelse(!is.na(grand.df$efficiency),grand.df$totalEstimatedCatch / grand.df$efficiency,0)
-  
-  #   ---- Need this information to construct week-based confidence intervals.
-  attr(grand.df,"min.date") <- min.date
-  attr(grand.df,"max.date") <- max.date
-
-  if( !is.na(file.root) ){
-    
-    #   ---- Do this so can change names (headers) in csv file; i.e., drop 2 columns.
-    tmp.df <- grand.df[, !(names(grand.df) %in% c("nReleased", "nCaught", "batchDay")) ] 
-    names(tmp.df)[ names(tmp.df) == "imputed.catch" ] <- "propImputedCatch"
-    names(tmp.df)[ names(tmp.df) == "imputed.eff" ] <- "propImputedEff"
-    
-    #   ---- Convert to numbers, 0 or 1.
-    tmp.df$propImputedEff <- as.numeric(tmp.df$propImputedEff)  
-    tmp.df$passage <- round(tmp.df$passage)  
-    tmp.df$totalCatch <- round(tmp.df$totalEstimatedCatch,1)
-    tmp.df$efficiency <- round(tmp.df$efficiency, 4)
-    tmp.df$halfConeAdj <- tmp.df$halfConeAssignedCatch + tmp.df$halfConeUnassignedCatch
-
-    #   ---- Merge in subsiteNames.
-    ssiteNames <- catch.df.sites           
-    tmp.df <- merge( ssiteNames, tmp.df, by.x="subSiteID", by.y="trapPositionID", all.y=T )
-    out.fn <- paste(file.root, "_baseTable.csv", sep="")
-    tmp.df$TrapPosition <- tmp.df$TrapPositionID <- NULL
-
-    #   ---- Rearrange columns.
-    tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','halfConeAdj','imputedCatch','totalEstimatedCatch','propImputedCatch','efficiency','propImputedEff','passage')]
-    tmp.df <- tmp.df[order(tmp.df$subSiteID,tmp.df$batchDate),] 
-
-    write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
-    out.fn.list <- c(out.fn.list, out.fn)
-  }
-
-  # ====== Passage estimates are done by day.  Compute variance and summarize ====================================================================================================
-  f.banner(paste(" Bootstrapping, if called for, and summarizing by", summarize.by))
-
-  #   ---- Summarization (to weeks, years, etc.) needs to happen in the bootstrapping routine.
-  #   ---- Even if bootstraps are not called for, F.bootstrap averages over traps (if multiple 
-  #   ---- present) and summarizes by 'summarize.by'.
-  n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
-                catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside,
-                eff.and.fits$X.dates, eff.and.fits$obs.data, summarize.by, 100, ci )
-  
-  if(usepb){
-    tmp <- getWinProgressBar(progbar)
-    setWinProgressBar(progbar, tmp + (1-tmp)*.9 )
-  }
-
-  #   ---- Grab the correct catch.df for use in summarizing.
-  if(passReport == 'ALLRuns'){
-    
-    #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
-    db <- get( "db.file", envir=.GlobalEnv ) 
-    ch <- odbcConnectAccess(db)
-    JDates <- sqlFetch( ch, "Dates" )
-    close(ch) 
-    
-    attr(catch.df.old$batchDate,"JDates") <- JDates
-    index.aux <- F.summarize.index( catch.df.old$batchDate, summarize.by )
-  } else {  # by lifeStage
-    
-    #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
-    db <- get( "db.file", envir=.GlobalEnv ) 
-    ch <- odbcConnectAccess(db)
-    JDates <- sqlFetch( ch, "Dates" )
-    close(ch) 
-    
-    attr(catch.df$batchDate,"JDates") <- JDates
-    index.aux <- F.summarize.index( catch.df$batchDate, summarize.by )
-  }
-
-  #   ---- Force summarize.index and bootstrap passage to have the same year. 
-  if(summarize.by == 'year'){
-    n[1,1] <- index.aux[[1]][1]
-  }
-
-  #   ---- Grab the correct catch.df for use in summarizing.
-  if(passReport == 'ALLRuns'){
-
-    #   ---- Calculate numerator (weighted) mean forklength.
-    num <- catch.df.old$mean.fl.Orig * catch.df.old$n.Orig
-    num <- tapply( num, index.aux, sum, na.rm=T )
-  
-    #   ---- Calcualte numerator standard deviation of forklength.
-    #   ---- This is sum of squares without the summing just yet.
-    num.sd <- (catch.df.old$sd.fl.Orig * catch.df.old$sd.fl.Orig) * (catch.df.old$n.Orig  - 1)    
-    num.sd <- tapply( num.sd, index.aux, sum, na.rm=T )
-
-    #   ---- Calculate n.  
-    den <- tapply( catch.df.old$n.Orig, index.aux, sum, na.rm=T)
-    
-  #   ---- Estimate by lifeStage.
-  } else {  
-  
-    #   ---- Calculate numerator (weighted) mean forklength.  
-    num <- catch.df$mean.fl.Orig * catch.df$n.Orig
-    num <- tapply( num, index.aux, sum, na.rm=T )
-
-    #   ---- Calculate numerator standard deviation of forklength.  
-    #   ---- This is sum of squares without the summing just yet.    
-    num.sd <- (catch.df$sd.fl.Orig * catch.df$sd.fl.Orig) * (catch.df$n.Orig  - 1)    
-    num.sd <- tapply( num.sd, index.aux, sum, na.rm=T )
-
-    #   ---- Calculate n.
-    den <- tapply( catch.df$n.Orig, index.aux, sum, na.rm=T)
-  }
-
-  #   ---- Mean and standard deviation computations.  
-  aux.fl <- ifelse( den > 0, num / den, NA )
-  aux.sd <- ifelse( den > 1, sqrt(num.sd / (den-1)), NA )
-
-  #   ---- Grab the correct catch.df for use in summarizing.
-  if(passReport == 'ALLRuns'){
-    
-    #   ---- Reduce data frame to select first of each and change to batchdate.
-    catch.df.reduced <- aggregate(catch.df.old,by=list(ID=catch.df.old$batchDate),head,1)
-  #   ---- By lifeStage.  
-  } else {      
-    #   ---- Reduce data frame.  Possibly due to multiple records over lifestage in run estimates. 
-    catch.df.reduced <- aggregate(catch.df,by=list(ID=catch.df$batchDate),head,1)
-  }
-
-  catch.df.Fishing <- catch.df
-  catch.df.Fishing$SampleMinutes <- ifelse(catch.df.Fishing$TrapStatus == 'Not fishing',0,catch.df.Fishing$SampleMinutes)
-  catch.df.Fishing <- unique(catch.df.Fishing[,c('SampleMinutes','batchDate','trapPositionID')])
-  num <-  aggregate(catch.df.Fishing$SampleMinutes,by=list(ID=catch.df.Fishing$batchDate),sum)[,2]
-
-  #   ---- Variable batchDate defaults to Mountain Time.  Fix that.
-  tzn <- get("time.zone", .GlobalEnv )                                                   
-  catch.df.reduced$batchDate <- as.POSIXct( strptime( format(catch.df.reduced$batchDate, "%Y-%m-%d"), "%Y-%m-%d", tz=tzn),tz=tzn)
-
-  #   ---- Index in reduced data frame.  
-  attr(catch.df.reduced$batchDate,"JDates") <- JDates
-  index.aux <- F.summarize.index(catch.df.reduced$batchDate,summarize.by)               
-
-  #   ---- Hours actually sampled during the 'index' period.
-  aux.hrs <- tapply( num, index.aux, sum, na.rm=T )/60                                  
-
-  #   ---- Make big data frame of statistics.  
-  aux<-data.frame( s.by=dimnames(aux.fl)[[1]],
-    nForkLenMM=c(den),
-    meanForkLenMM=c(aux.fl),
-    sdForkLenMM=c(aux.sd),
-    sampleLengthHrs=c(aux.hrs),
-    stringsAsFactors=F, row.names=NULL )
-
-  #   ---- Merge 'n' and 'aux' information together. 
-  n <- merge(n,aux, by="s.by", all.x=T)
-  n$sampleLengthDays <- n$sampleLengthHrs / 24
-  
-  #   ---- For catch periods in which no fish were caught, the underlying boring intercept-
-  #   ---- only model has a relatively large negative beta.  During bootstrapping, this beta
-  #   ---- is randomly sampled;  apparently, this can lead to small decimal confidence 
-  #   ---- intervals that are non-zero.  For zero-passage periods, force the confidence 
-  #   ---- intervals to also be zero. 
-  #n$lower.95 <- ifelse(n$passage == 0,0,n$lower.95)
-  #n$upper.95 <- ifelse(n$passage == 0,0,n$upper.95)
-  
-  #   ---- Possibly only works west of GMT (North America).  East of GMT, 
-  #   ---- it may be 12 hours off.  Untested east of GMT.  
-  tz.offset <- as.numeric(as.POSIXct(0, origin="1970-01-01", tz=time.zone))
-  n$date <- as.POSIXct( n$date-tz.offset, origin="1970-01-01", tz=time.zone )  
-
-  #   ---- Put the final data frame together.  
-  names(n)[names(n) == "s.by"] <- summarize.by
-
-  attr(n, "taxonID" ) <- attr(catch.df,"taxonID")
-  attr(n, "species.name") <- attr(catch.df, "species.name")
-  attr(n, "siteID" ) <- attr(catch.df,"siteID")
-  attr(n, "site.name") <- attr(catch.df, "site.name")
-  attr(n, "site.abbr") <- attr(catch.df, "site.abbr")
-  attr(n, "runID") <- attr(catch.df, "runID")
-  attr(n, "run.name") <- attr(catch.df, "run.name")
-  attr(n, "year") <- attr(catch.df, "year")
-  attr(n, "run.season") <- attr(catch.df, "run.season")
-  attr(n, "summarized.by") <- summarize.by
-  attr(n, "out.fn.list") <- out.fn.list
-  attr(n, "trapsOperating") <- catch.and.fits$trapsOperating
-
-  f.banner(" F.est.passage - COMPLETE ")
-
-  n
+  # #   ---- Something is wrong with efficiency data. Make an empty efficiency data frame
+  # if( all(is.na(efficiency[1,])) ){
+  #   efficiency <- data.frame( trapPositionID=catch$trapPositionID, batchDate=catch$batchDate, efficiency=rep(NA, nrow(catch)))
+  #   warning("Zero efficiency")
+  # }
+  #
+  # #   ---- Could do...
+  # # n <- data.base( catch, efficiency=efficiency$efficiency, gam.estimated.eff=efficiency$gam.estimated )
+  # #   ---- ...to produce a data frame of values that go into estimator, one line per batchDate.
+  # 
+  # #   ---- Now, estimate passage.  It shouldn't happen that efficiency <= 0, 
+  # #   ---- but just in case.  This also gives us a way to exclude days -- 
+  # #   ---- just set efficiency <= 0.
+  # if( any(ind <- !is.na(efficiency$efficiency) & (efficiency$efficiency <= 0)) ){    
+  #   efficiency$efficiency[ind] <- NA
+  # }
+  # 
+  # #   ---- First merge catch and efficiency data frames
+  # catch$batchDay <- format(catch$batchDate, "%Y-%m-%d")
+  # catch$trapPositionID <- as.character(catch$trapPositionID)
+  # efficiency$batchDay <- format(efficiency$batchDate, "%Y-%m-%d")
+  # efficiency$trapPositionID <- as.character(efficiency$trapPositionID)
+  # 
+  # #   ---- Drop POSIX date from efficiency.
+  # efficiency <- efficiency[,names(efficiency) != "batchDate"]  
+  # 
+  # cat("First 20 rows of CATCH...\n")
+  # print(catch[1:20,])
+  # cat("First 20 rows of EFFICIENCY...\n")
+  # print(efficiency[1:20,])
+  # 
+  # #   ---- To ensure that trapPositionIDs with decimals find their efficiency trial trap match,
+  # #   ---- ensure we have the old IDs -- otherwise, these won't ever be found.
+  # catch$oldTrapPositionID <- as.character(round(as.numeric(catch$trapPositionID),0))
+  # names(efficiency)[names(efficiency) == 'trapPositionID'] <- 'oldTrapPositionID'
+  # 
+  # #   ---- The Grand Merge.  Merge catch info with efficiency info.
+  # grand.df <- merge( catch, efficiency, by=c("oldTrapPositionID", "batchDay"), all=T)
+  # 
+  # #   ---- Get rid of helper variable oldTrapPositionID;  it has served its purpose.  
+  # grand.df$oldTrapPositionID <- NULL
+  # 
+  # #   ---- For each trap, drop the dates that are outside its min. and max.date.  
+  # #   ---- The season for each trap is identified as non missing catch.  I.e., the 
+  # #   ---- grand merge puts in every date because efficiency data frame has all dates.
+  # grand.df <- grand.df[!is.na(grand.df$catch), ]
+  # 
+  # #   ---- Bring in raw catch (measured).
+  # grand.df.rawCatch <- merge(grand.df,jason.catch4.df,by=c('trapPositionID','batchDate'),all.x=TRUE)       
+  # 
+  # #   ---- Bring in inflated catch (measured + plus counts).  
+  # grand.df.rawCatch.Inflated <- merge(grand.df.rawCatch,jason.totCatch4.df,by=c('trapPositionID','batchDate'),all.x=TRUE)
+  # 
+  # #   ---- Bring in imputed catch.  
+  # grand.df.rawCatch.Imputed <- merge(grand.df.rawCatch.Inflated ,jason.catch.and.fits4.df,by=c('trapPositionID','batchDate'),all.x=TRUE) 
+  # grand.df <- grand.df.rawCatch.Imputed
+  # 
+  # #   ---- Somewhere, there are comments that state that catches of NA mean zero.  So, 
+  # #   ---- replace NA in each of rawCatch and ImputedCatch with zero.
+  # grand.df$imputedCatch <- ifelse(is.na(grand.df$imputedCatch), 0, round(grand.df$imputedCatch,1))
+  # grand.df$rawCatch <- ifelse(is.na(grand.df$rawCatch), 0, grand.df$rawCatch)
+  # grand.df$n.tot <- ifelse(is.na(grand.df$n.tot), 0, grand.df$n.tot)  # the preTotalCatch
+  # grand.df$totalEstimatedCatch <- round(grand.df$n.tot + grand.df$imputedCatch,1)
+  # grand.df$rawCatch <- grand.df$catch <- NULL
+  # 
+  # #   ---- Fish accounting.  
+  # #   ---- Check and make sure that assignedCatch + unassignedCatch + imputedCatch = totalCatch.
+  # #   ---- Check and make sure that assignedCatch + unassignedCatch = inflatedCatch.
+  # #   ---- Check and make sure that inflatedCatch + imputedCatch = totalCatch.
+  # 
+  # #   ---- Note the rounding.  In a rare instance on the Feather, 2012-01-25, trapPositionID 5002, what are displayed
+  # #   ---- as 3 modUnassignedCatch leaves to a non-zero number when modUnassigned - 3 is calculated.  This causes 
+  # #   ---- fish accounting to fail.  Round all these values (seen to play a role) to the nearest tenth, which should 
+  # #   ---- take care of this mysterious issue.  
+  # grand.df$sum1 <- round(grand.df$modAssignedCatch + grand.df$modUnassignedCatch + grand.df$imputedCatch,1)
+  # grand.df$sum2 <- round(grand.df$modAssignedCatch + grand.df$modUnassignedCatch,1)
+  # grand.df$sum3 <- round(grand.df$halfConeAssignedCatch + grand.df$halfConeUnassignedCatch + grand.df$assignedCatch + grand.df$unassignedCatch + grand.df$imputedCatch,1)
+  # grand.df$check1 <- ifelse(grand.df$sum1 == grand.df$totalEstimatedCatch,TRUE,FALSE)
+  # grand.df$check2 <- ifelse(grand.df$sum2 == round(grand.df$n.tot,1),TRUE,FALSE)
+  # grand.df$check3 <- ifelse(grand.df$sum3 == grand.df$totalEstimatedCatch,TRUE,FALSE)
+  # 
+  # if(sum(grand.df$check1 + grand.df$check2 + grand.df$check3) != nrow(grand.df)*3){
+  #   stop('Issue with summation of assignedCatch, unassignedCatch, inflatedCatch, imputedCatch, and/or totalCatch.  Investigate est_passage.R, around line 406.')
+  # } else {
+  #   cat('No issue with summation of halfConeAssignedCatch, halfConeUnassignedCatch, assignedCatch, unassignedCatch, modAssignedCatch, modUnassignedCatch, imputedCatch, and/or totalEstimatedCatch.  Continuing...\n')
+  # }
+  # 
+  # #   ---- The passage estimator.
+  # grand.df$passage <- rep(NA, nrow(grand.df))
+  # grand.df$passage <- grand.df$totalEstimatedCatch / grand.df$efficiency   #ifelse(!is.na(grand.df$efficiency),grand.df$totalEstimatedCatch / grand.df$efficiency,0)
+  # 
+  # #   ---- Need this information to construct week-based confidence intervals.
+  # attr(grand.df,"min.date") <- min.date
+  # attr(grand.df,"max.date") <- max.date
+  # 
+  # if( !is.na(file.root) ){
+  #   
+  #   #   ---- Do this so can change names (headers) in csv file; i.e., drop 2 columns.
+  #   tmp.df <- grand.df[, !(names(grand.df) %in% c("nReleased", "nCaught", "batchDay")) ] 
+  #   names(tmp.df)[ names(tmp.df) == "imputed.catch" ] <- "propImputedCatch"
+  #   names(tmp.df)[ names(tmp.df) == "imputed.eff" ] <- "propImputedEff"
+  #   
+  #   #   ---- Convert to numbers, 0 or 1.
+  #   tmp.df$propImputedEff <- as.numeric(tmp.df$propImputedEff)  
+  #   tmp.df$passage <- round(tmp.df$passage)  
+  #   tmp.df$totalCatch <- round(tmp.df$totalEstimatedCatch,1)
+  #   tmp.df$efficiency <- round(tmp.df$efficiency, 4)
+  #   tmp.df$halfConeAdj <- tmp.df$halfConeAssignedCatch + tmp.df$halfConeUnassignedCatch
+  # 
+  #   #   ---- Merge in subsiteNames.
+  #   ssiteNames <- catch.df.sites           
+  #   tmp.df <- merge( ssiteNames, tmp.df, by.x="subSiteID", by.y="trapPositionID", all.y=T )
+  #   out.fn <- paste(file.root, "_baseTable.csv", sep="")
+  #   tmp.df$TrapPosition <- tmp.df$TrapPositionID <- NULL
+  # 
+  #   #   ---- Rearrange columns.
+  #   tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','halfConeAdj','imputedCatch','totalEstimatedCatch','propImputedCatch','efficiency','propImputedEff','passage')]
+  #   tmp.df <- tmp.df[order(tmp.df$subSiteID,tmp.df$batchDate),] 
+  # 
+  #   write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
+  #   out.fn.list <- c(out.fn.list, out.fn)
+  # }
+  # 
+  # # ====== Passage estimates are done by day.  Compute variance and summarize ====================================================================================================
+  # f.banner(paste(" Bootstrapping, if called for, and summarizing by", summarize.by))
+  # 
+  # #   ---- Summarization (to weeks, years, etc.) needs to happen in the bootstrapping routine.
+  # #   ---- Even if bootstraps are not called for, F.bootstrap averages over traps (if multiple 
+  # #   ---- present) and summarizes by 'summarize.by'.
+  # n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
+  #               catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside,
+  #               eff.and.fits$X.dates, eff.and.fits$obs.data, summarize.by, 100, ci )
+  # 
+  # if(usepb){
+  #   tmp <- getWinProgressBar(progbar)
+  #   setWinProgressBar(progbar, tmp + (1-tmp)*.9 )
+  # }
+  # 
+  # #   ---- Grab the correct catch.df for use in summarizing.
+  # if(passReport == 'ALLRuns'){
+  #   
+  #   #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
+  #   db <- get( "db.file", envir=.GlobalEnv ) 
+  #   ch <- odbcConnectAccess(db)
+  #   JDates <- sqlFetch( ch, "Dates" )
+  #   close(ch) 
+  #   
+  #   attr(catch.df.old$batchDate,"JDates") <- JDates
+  #   index.aux <- F.summarize.index( catch.df.old$batchDate, summarize.by )
+  # } else {  # by lifeStage
+  #   
+  #   #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
+  #   db <- get( "db.file", envir=.GlobalEnv ) 
+  #   ch <- odbcConnectAccess(db)
+  #   JDates <- sqlFetch( ch, "Dates" )
+  #   close(ch) 
+  #   
+  #   attr(catch.df$batchDate,"JDates") <- JDates
+  #   index.aux <- F.summarize.index( catch.df$batchDate, summarize.by )
+  # }
+  # 
+  # #   ---- Force summarize.index and bootstrap passage to have the same year. 
+  # if(summarize.by == 'year'){
+  #   n[1,1] <- index.aux[[1]][1]
+  # }
+  # 
+  # #   ---- Grab the correct catch.df for use in summarizing.
+  # if(passReport == 'ALLRuns'){
+  # 
+  #   #   ---- Calculate numerator (weighted) mean forklength.
+  #   num <- catch.df.old$mean.fl.Orig * catch.df.old$n.Orig
+  #   num <- tapply( num, index.aux, sum, na.rm=T )
+  # 
+  #   #   ---- Calcualte numerator standard deviation of forklength.
+  #   #   ---- This is sum of squares without the summing just yet.
+  #   num.sd <- (catch.df.old$sd.fl.Orig * catch.df.old$sd.fl.Orig) * (catch.df.old$n.Orig  - 1)    
+  #   num.sd <- tapply( num.sd, index.aux, sum, na.rm=T )
+  # 
+  #   #   ---- Calculate n.  
+  #   den <- tapply( catch.df.old$n.Orig, index.aux, sum, na.rm=T)
+  #   
+  # #   ---- Estimate by lifeStage.
+  # } else {  
+  # 
+  #   #   ---- Calculate numerator (weighted) mean forklength.  
+  #   num <- catch.df$mean.fl.Orig * catch.df$n.Orig
+  #   num <- tapply( num, index.aux, sum, na.rm=T )
+  # 
+  #   #   ---- Calculate numerator standard deviation of forklength.  
+  #   #   ---- This is sum of squares without the summing just yet.    
+  #   num.sd <- (catch.df$sd.fl.Orig * catch.df$sd.fl.Orig) * (catch.df$n.Orig  - 1)    
+  #   num.sd <- tapply( num.sd, index.aux, sum, na.rm=T )
+  # 
+  #   #   ---- Calculate n.
+  #   den <- tapply( catch.df$n.Orig, index.aux, sum, na.rm=T)
+  # }
+  # 
+  # #   ---- Mean and standard deviation computations.  
+  # aux.fl <- ifelse( den > 0, num / den, NA )
+  # aux.sd <- ifelse( den > 1, sqrt(num.sd / (den-1)), NA )
+  # 
+  # #   ---- Grab the correct catch.df for use in summarizing.
+  # if(passReport == 'ALLRuns'){
+  #   
+  #   #   ---- Reduce data frame to select first of each and change to batchdate.
+  #   catch.df.reduced <- aggregate(catch.df.old,by=list(ID=catch.df.old$batchDate),head,1)
+  # #   ---- By lifeStage.  
+  # } else {      
+  #   #   ---- Reduce data frame.  Possibly due to multiple records over lifestage in run estimates. 
+  #   catch.df.reduced <- aggregate(catch.df,by=list(ID=catch.df$batchDate),head,1)
+  # }
+  # 
+  # catch.df.Fishing <- catch.df
+  # catch.df.Fishing$SampleMinutes <- ifelse(catch.df.Fishing$TrapStatus == 'Not fishing',0,catch.df.Fishing$SampleMinutes)
+  # catch.df.Fishing <- unique(catch.df.Fishing[,c('SampleMinutes','batchDate','trapPositionID')])
+  # num <-  aggregate(catch.df.Fishing$SampleMinutes,by=list(ID=catch.df.Fishing$batchDate),sum)[,2]
+  # 
+  # #   ---- Variable batchDate defaults to Mountain Time.  Fix that.
+  # tzn <- get("time.zone", .GlobalEnv )                                                   
+  # catch.df.reduced$batchDate <- as.POSIXct( strptime( format(catch.df.reduced$batchDate, "%Y-%m-%d"), "%Y-%m-%d", tz=tzn),tz=tzn)
+  # 
+  # #   ---- Index in reduced data frame.  
+  # attr(catch.df.reduced$batchDate,"JDates") <- JDates
+  # index.aux <- F.summarize.index(catch.df.reduced$batchDate,summarize.by)               
+  # 
+  # #   ---- Hours actually sampled during the 'index' period.
+  # aux.hrs <- tapply( num, index.aux, sum, na.rm=T )/60                                  
+  # 
+  # #   ---- Make big data frame of statistics.  
+  # aux<-data.frame( s.by=dimnames(aux.fl)[[1]],
+  #   nForkLenMM=c(den),
+  #   meanForkLenMM=c(aux.fl),
+  #   sdForkLenMM=c(aux.sd),
+  #   sampleLengthHrs=c(aux.hrs),
+  #   stringsAsFactors=F, row.names=NULL )
+  # 
+  # #   ---- Merge 'n' and 'aux' information together. 
+  # n <- merge(n,aux, by="s.by", all.x=T)
+  # n$sampleLengthDays <- n$sampleLengthHrs / 24
+  # 
+  # #   ---- For catch periods in which no fish were caught, the underlying boring intercept-
+  # #   ---- only model has a relatively large negative beta.  During bootstrapping, this beta
+  # #   ---- is randomly sampled;  apparently, this can lead to small decimal confidence 
+  # #   ---- intervals that are non-zero.  For zero-passage periods, force the confidence 
+  # #   ---- intervals to also be zero. 
+  # #n$lower.95 <- ifelse(n$passage == 0,0,n$lower.95)
+  # #n$upper.95 <- ifelse(n$passage == 0,0,n$upper.95)
+  # 
+  # #   ---- Possibly only works west of GMT (North America).  East of GMT, 
+  # #   ---- it may be 12 hours off.  Untested east of GMT.  
+  # tz.offset <- as.numeric(as.POSIXct(0, origin="1970-01-01", tz=time.zone))
+  # n$date <- as.POSIXct( n$date-tz.offset, origin="1970-01-01", tz=time.zone )  
+  # 
+  # #   ---- Put the final data frame together.  
+  # names(n)[names(n) == "s.by"] <- summarize.by
+  # 
+  # attr(n, "taxonID" ) <- attr(catch.df,"taxonID")
+  # attr(n, "species.name") <- attr(catch.df, "species.name")
+  # attr(n, "siteID" ) <- attr(catch.df,"siteID")
+  # attr(n, "site.name") <- attr(catch.df, "site.name")
+  # attr(n, "site.abbr") <- attr(catch.df, "site.abbr")
+  # attr(n, "runID") <- attr(catch.df, "runID")
+  # attr(n, "run.name") <- attr(catch.df, "run.name")
+  # attr(n, "year") <- attr(catch.df, "year")
+  # attr(n, "run.season") <- attr(catch.df, "run.season")
+  # attr(n, "summarized.by") <- summarize.by
+  # attr(n, "out.fn.list") <- out.fn.list
+  # attr(n, "trapsOperating") <- catch.and.fits$trapsOperating
+  # 
+  # f.banner(" F.est.passage - COMPLETE ")
+  # 
+  # n
 
 }

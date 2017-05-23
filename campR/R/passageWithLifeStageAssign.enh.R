@@ -136,7 +136,9 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   release.df <- F.get.release.data( site, taxon, min.date, max.date  )
   
   #   ---- Fetch all efficiency data over all time.  
-  release.df.enh <<- F.get.release.data( site, taxon, "1900-01-01", "2017-05-22")
+  min.date2 <<- "1990-01-01"
+  max.date2 <<- "2017-05-22"
+  release.df.enh <<- F.get.release.data( site, taxon, min.date2, max.date2)
   
   #   ---- Check if we can estimate an efficiency (denominator).  
   if( nrow(release.df) == 0 ){
@@ -305,7 +307,7 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
         
         #   ---- Compute passage
         if(nrow(catch.df.ls) > 0){#} & sum(as.numeric(theSums)) > 0){
-          pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
+          pass <- F.est.passage.enh( catch.df.ls, release.df, "year", out.fn.root, ci )
         } else {
           
           #   ---- We need something for the matrix down below if ALL traps have zero fish in data frame theZeros above.

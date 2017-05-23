@@ -4,8 +4,8 @@
 
 require(EnvCovDBpostgres)
 
-min.date <- "2002-01-01"
-max.date <- "2002-12-31"
+min.date <- "2001-01-01"
+max.date <- "2004-12-31"
 
 #   ---- Convert to POSIXlt.
 min.date <- as.POSIXlt(min.date,format="%Y-%m-%d",tz="America/Los_Angeles")
@@ -32,10 +32,10 @@ p2 <- predict(m2,as.numeric(nd))
 #   ---- Take a look at what we have.  
 par(mfrow=c(2,1))
 plot(df$date,df$flow_cfs,pch=19,cex=0.5)
-lines(m1,col="red",lwd=2)
+#lines(m1,col="red",lwd=2)
 lines(p1,col="blue",lwd=1)
 
 plot(df$date,df$temp_c,pch=19,cex=0.5)
-lines(m2,col="red",lwd=2)
+#lines(m2,col="red",lwd=2)
 lines(p2,col="blue",lwd=1)
 par(mfrow=c(1,1))
