@@ -4,8 +4,8 @@
 
 
 #   ---- Set variables necessary for Big Looper completion. 
-RVersion <- "3.3.0"
-TestingPlatform <- "CAMP_RST20161015-campR1.0.1"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+RVersion <- "3.3.2"
+TestingPlatform <- "CAMP_RST20161212-campR1.0.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 #excelName <- "AmericanExcel"
 #excelName <- "FeatherExcel"
 #excelName <- "RBDDExcel"
@@ -16,6 +16,7 @@ excelName <- "theExcel"
 reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
 reportRun <- c("A","B","C","D","E","F","G","H","I","J")
 reportRun <- c("K","L","M","N","O","P")
+reportRun <- c("Q")
 
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
@@ -36,6 +37,11 @@ reportRun <- c("K","L","M","N","O","P")
 detach("package:campR", unload=TRUE)
 require(campR)
 
+#   ---- Install the working version of EnvCovDBpostgres.  
+#   ---- Prior to running this step, make sure you install the zip folder.
+detach("package:EnvCovDBpostgres", unload=TRUE)
+require(EnvCovDBpostgres)
+
 #   ---- Read in the desired Excel scheme.  This is kept in the helperCode folder of the inst folder
 #   ---- in the campR package development folder in CAMP_RST20160601.  
 theExcel <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/",excelName,".csv"))
@@ -43,7 +49,7 @@ rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-theExcel <- theExcel[c(51:78),]
+theExcel <- theExcel[c(1,5,36,52,71),]
 
 
 
@@ -71,10 +77,11 @@ m <- c("M","AutoLS_3Group_YesWgt"  ,"auto.ls.3grp_yWgt"           ,"F.lifestage.
 n <- c("N","AutoLS_3Group_NoWgt"   ,"auto.ls.3grp_nWgt"           ,"F.lifestage.passage.assignLS3groupNoWeight")
 o <- c("O","AutoLS_2or3_AutoWgt"   ,"auto.ls.2or3grp_autoWgt"     ,"F.lifestage.passage.assignLS")
 p <- c("P","AutoLS_2or3_NoWgt"     ,"auto.ls.2or3grp_nWgt"        ,"F.lifestage.passage.assignLSNoWeight")
+q <- c("Q","Enhanced_Eff_Get_Betas","run.passage.enh"             ,"F.run.passage.enh")
 
 
 #   ---- Clean up our requested report list for use in making folders. 
-masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p),stringsAsFactors=FALSE)
+masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q),stringsAsFactors=FALSE)
 names(masterReports) <- nn
 rownames(masterReports) <- NULL
 masterReports <- masterReports[masterReports$label %in% reportRun,]
@@ -346,6 +353,16 @@ for(i in 1:nStreamNames){
         F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=FALSE)       
       }
       
+      #   ---- Create enhanced efficiency beta estimates and associated plots and output.  
+      if( theReportLabel == "Q" ){
+        outAll <- paste0(outFileStem,"/",outFile,"-")
+        
+        #   ---- Function run.passage.enh expects a 'by' that isn't used.   
+        by <- 'year' 
+        output.file <- outAll
+        F.run.passage.enh(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE)
+
+      }
     }
   }
 }
