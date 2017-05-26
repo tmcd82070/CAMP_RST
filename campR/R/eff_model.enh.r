@@ -114,29 +114,45 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   #tbldemo <- sqlQuery(envCov,"SELECT * FROM tbldemo")
   #close(envCov)
   
-
+  #   ---- We assemble all the unique ourSiteIDs we need for this run.  
+  xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"subsites")$subSiteID,]
+  uniqueOurSiteIDsToQuery <- unique(c(xwalk$ourSiteIDChoice1))#,xwalk$ourSiteIDChoice2))
   
-  oursitevar <- ifelse(site %in% c(57000),16,NA)      # 17?
+  df <- list("vector",length(uniqueOurSiteIDsToQuery))
+  m1 <- list("vector",length(uniqueOurSiteIDsToQuery))
+  m2 <- list("vector",length(uniqueOurSiteIDsToQuery))
+  covarL <- list("vector",length(uniqueOurSiteIDsToQuery))
+  obs.eff.df$covar <- NA
+  for(ii in 1:length(uniqueOurSiteIDsToQuery)){
     
-  #   ---- Get covariate data of interest.  
-  df <- queryEnvCovDB("jmitchell","jmitchell",min.date2,max.date2,oursitevar,type="D",plot=TRUE)
-  
-  df$date <- strptime(df$date,format="%Y-%m-%d",tz=time.zone)
-  
-  #df1 <- df[!is.na(df$flow_cfs),]
-  
-  #   ---- Fit a simple smoothing spline and predict.    
-  covar <- NULL
-  if(sum(!is.na(df$flow_cfs)) > 0){
-    m1 <- smooth.spline(df[!is.na(df$flow_cfs),]$date,df[!is.na(df$flow_cfs),]$flow_cfs,cv=TRUE)
-    covar <- "flow_cfs"
-    obs.eff.df$flow_cfs <- predict(m1,as.numeric(obs.eff.df$batchDate))$y
+    #   ---- Get covariate data of interest.  
+    oursitevar <- uniqueOurSiteIDsToQuery[ii]   
+    df[[ii]] <- queryEnvCovDB("jmitchell","jmitchell",min.date2,max.date2,oursitevar,type="D",plot=TRUE)
+    df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
+    
+    #   ---- Fit a simple smoothing spline and predict.    
+    covar <- NULL
+    if(sum(!is.na(df[[ii]]$flow_cfs)) > 0){
+      m1[[ii]] <- smooth.spline(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date,df[[ii]][!is.na(df[[ii]]$flow_cfs),]$flow_cfs,cv=TRUE)
+      covar <- "flow_cfs"
+      obs.eff.df$flow_cfs <- NA
+      obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$flow_cfs <- predict(m1[[ii]],as.numeric(obs.eff.df$batchDate))$y
+    }
+    if(sum(!is.na(df[[ii]]$temp_c)) > 0){
+      m2[[ii]] <- smooth.spline(df[[ii]][!is.na(df[[ii]]$temp_c),]$date,df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c,cv=TRUE)
+      covarL[[ii]] <- c(covar,"temp_c")
+      obs.eff.df$temp_c <- NA
+      obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$temp_c <- predict(m2[[ii]],as.numeric(obs.eff.df$batchDate))$y
+    }
+    
+    #   ---- Identify here which subSiteIDs have which covariates.  
+    obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$covar <- paste0(covarL[[ii]],collapse=" + ")
   }
-  if(sum(!is.na(df$flow_cfs)) > 0){
-    m2 <- smooth.spline(df[!is.na(df$temp_c),]$date,df[!is.na(df$temp_c),]$temp_c,cv=TRUE)
-    covar <- c(covar,"temp_c")
-    obs.eff.df$temp_c <- predict(m2,as.numeric(obs.eff.df$batchDate))$y
-  }
+
+
+
+ 
+
   
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
   for( trap in traps ){
@@ -205,16 +221,22 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       
       #   ---- There are enough observations to estimate B-spline model -- with covariates!
       
-      #   ---- Fit glm model, increasing degress of freedom, until minimize AIC or something goes wrong.  
+      #   ---- Fit glm model, increase degress of freedom, until minimize AIC or something goes wrong.  
       cat(paste("\n\n++++++Spline model fitting for trap:", trap, "\n Trials are:"))
       print(tmp.df)
       
-      covar <- paste0(covar,collapse=" + ")
-      cat(paste("\n\n++++++ ...and covariates are",covar,".\n"))
+      covarMat <- as.matrix(tmp.df[,strsplit(tmp.df$covar[1]," + ",fixed=TRUE)[[1]]])
+      
+      #   ---- If we have only one covariate, make sure the vector (not matrix) is named for clarity in models.
+      if(dim(covarMat)[2] == 1){
+        colnames(covarMat) <- tmp.df$covar[1]
+      }
+      covar <- obs.eff.df[obs.eff.df$TrapPositionID == trap,]$covar[1]
+      cat(paste("\n\n++++++ ...and covariates include",covar,".\n"))
       
       #   ---- At least one efficiency trial "inside" for this trap.
       #   ---- Fit a null model (with our covariates).  
-      fit <- glm( nCaught / nReleased ~ 1 + flow_cfs*temp_c, family=binomial, data=tmp.df, weights=tmp.df$nReleased ) 
+      fit <- glm( nCaught / nReleased ~ 1 + covarMat, family=binomial, data=tmp.df, weights=tmp.df$nReleased ) 
       fit.AIC <- AIC(fit)
       
       cat(paste("df= ", 1, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
@@ -250,7 +272,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
           tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
           
-          cur.fit <- glm( nCaught / nReleased ~ tmp.bs + flow_cfs*temp_c, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
+          cur.fit <- glm( nCaught / nReleased ~ covarMat + tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
           cur.AIC <- AIC(cur.fit)
           
           cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
@@ -293,14 +315,14 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         par(mfrow=c(2,2))
         
           #   ---- Plot of efficiency versus variable 1. 
-          if(sum(!is.na(tmp.df$flow_cfs)) > 0){
+          if("flow_cfs" %in% names(tmp.df)){
             plot(tmp.df$flow_cfs,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col="red",xlab="Flow cfs",ylab='Efficiency (0.0 - 1.0)',main=paste0("Flow cfs at ",attr(df,"site.name")))
           } else {
             plot(1,1)
           }
         
           #   ---- Plot of efficiency versus variable 2.
-          if(sum(!is.na(tmp.df$temp_c)) > 0){
+          if("temp_c" %in% names(tmp.df)){
             plot(tmp.df$temp_c,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col="blue",xlab="Temperature C",ylab='Efficiency (0.0 - 1.0)',main=paste0("Temp C at ",attr(df,"site.name")))
           } else {
             plot(1,1)
@@ -314,14 +336,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           legend("topright",c("Observed","Predicted"),pch=c(19,NA),lwd=c(NA,1),col=c("red","blue"))
           
           #   ---- 'Plot' some statistics of interest.
-          plot(1,xaxt="n",yaxt="n",type="n",xlab="",ylab="",xlim=c(0, 10),ylim=c(0, 10))
-          text(8,3,exp(1000*coef(fit)[names(coef(fit)) == "flow_cfs"])
-          coef(fit)[names(coef(fit)) == "temp_c"]
+          #plot(1,xaxt="n",yaxt="n",type="n",xlab="",ylab="",xlim=c(0, 10),ylim=c(0, 10))
           
-          glm(nCaught/nReleased ~ flow_cfs,family=binomial,data=tmp.df,weights=tmp.df$nReleased)   
-          
-          
-          
+        
         par(mfrow=c(1,1))
         dev.off()
       
