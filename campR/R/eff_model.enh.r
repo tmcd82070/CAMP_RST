@@ -118,38 +118,43 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"subsites")$subSiteID,]
   uniqueOurSiteIDsToQuery <- unique(c(xwalk$ourSiteIDChoice1))#,xwalk$ourSiteIDChoice2))
   
-  df <- list("vector",length(uniqueOurSiteIDsToQuery))
-  m1 <- list("vector",length(uniqueOurSiteIDsToQuery))
-  m2 <- list("vector",length(uniqueOurSiteIDsToQuery))
-  covarL <- list("vector",length(uniqueOurSiteIDsToQuery))
+  df <- vector("list",length(uniqueOurSiteIDsToQuery))
+  m1 <- vector("list",length(uniqueOurSiteIDsToQuery))
+  m2 <- vector("list",length(uniqueOurSiteIDsToQuery))
+  covarL <- vector("list",length(uniqueOurSiteIDsToQuery))
   obs.eff.df$covar <- NA
   for(ii in 1:length(uniqueOurSiteIDsToQuery)){
     
     #   ---- Get covariate data of interest.  
     oursitevar <- uniqueOurSiteIDsToQuery[ii]   
-    df[[ii]] <- queryEnvCovDB("jmitchell","jmitchell",min.date2,max.date2,oursitevar,type="D",plot=TRUE)
+    minEffDate <- as.character(min(obs.eff.df$batchDate))
+    maxEffDate <- as.character(max(obs.eff.df$batchDate))
+    df[[ii]] <- queryEnvCovDB("jmitchell","jmitchell",minEffDate,maxEffDate,oursitevar,type="D",plot=TRUE)
     df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
     
     #   ---- Fit a simple smoothing spline and predict.    
     covar <- NULL
     if(sum(!is.na(df[[ii]]$flow_cfs)) > 0){
       m1[[ii]] <- smooth.spline(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date,df[[ii]][!is.na(df[[ii]]$flow_cfs),]$flow_cfs,cv=TRUE)
-      covar <- "flow_cfs"
+      covarL[[ii]] <- "flow_cfs"
       obs.eff.df$flow_cfs <- NA
       obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$flow_cfs <- predict(m1[[ii]],as.numeric(obs.eff.df$batchDate))$y
+      df[[ii]]$pred_flow_cfs <- predict(m1[[ii]])$y
     }
     if(sum(!is.na(df[[ii]]$temp_c)) > 0){
-      m2[[ii]] <- smooth.spline(df[[ii]][!is.na(df[[ii]]$temp_c),]$date,df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c,cv=TRUE)
+      m2[[ii]] <- smooth.spline(as.numeric(df[[ii]][!is.na(df[[ii]]$temp_c),]$date),df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c,cv=TRUE)
       covarL[[ii]] <- c(covar,"temp_c")
       obs.eff.df$temp_c <- NA
       obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$temp_c <- predict(m2[[ii]],as.numeric(obs.eff.df$batchDate))$y
+      df[[ii]]$pred_temp_c <- predict(m2[[ii]])$y
     }
     
     #   ---- Identify here which subSiteIDs have which covariates.  
     obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$covar <- paste0(covarL[[ii]],collapse=" + ")
   }
 
-
+  #   ---- Preserve for use in making plots below.  
+  df.covar <- df
 
  
 
@@ -311,8 +316,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         pred <- 1 / (1 + exp(-pred))  
         
         #   ---- Make a very boring plot to assess goodness-of-fit of prediction. 
-        png(paste0(plot.file,"-",trap,".png"),res=400,width=6,height=6,units="in")
-        par(mfrow=c(2,2))
+        png(paste0(plot.file,"-",trap,".png"),res=400,width=16,height=6,units="in")
+        par(mfcol=c(2,3))
         
           #   ---- Plot of efficiency versus variable 1. 
           if("flow_cfs" %in% names(tmp.df)){
@@ -321,9 +326,31 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
             plot(1,1)
           }
         
+          #   ---- Plot of variable 1 versus time with smoother. Currently assumes 1 entry in the list df.covar.
+          if("flow_cfs" %in% names(tmp.df)){
+            ym <- min(df.covar[[1]]$flow_cfs)
+            yM <- max(df.covar[[1]]$flow_cfs) 
+            plot(df.covar[[1]]$date,df.covar[[1]]$flow_cfs,xlab=NA,ylab=NA,xaxt='n',yaxt='n',ylim=c(ym,yM),type="p",cex=0.5,pch=19,col="black",main=paste0("Qry Flow cfs at ",attr(df,"site.name")))
+            par(new=TRUE)
+            plot(df.covar[[1]]$date,df.covar[[1]]$pred_flow_cfs,xlab='Date',ylab='Flow (cfs)',ylim=c(ym,yM),col="red",type="l")
+          } else {
+            plot(1,1)
+          }
+        
           #   ---- Plot of efficiency versus variable 2.
           if("temp_c" %in% names(tmp.df)){
             plot(tmp.df$temp_c,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col="blue",xlab="Temperature C",ylab='Efficiency (0.0 - 1.0)',main=paste0("Temp C at ",attr(df,"site.name")))
+          } else {
+            plot(1,1)
+          }
+        
+          #   ---- Plot of variable 1 versus time with smoother. Currently assumes 1 entry in the list df.covar.
+          if("temp_c" %in% names(tmp.df)){
+            ym <- min(df.covar[[1]]$temp_c)
+            yM <- max(df.covar[[1]]$temp_c) 
+            plot(df.covar[[1]]$date,df.covar[[1]]$temp_c,xlab=NA,ylab=NA,xaxt='n',yaxt='n',ylim=c(ym,yM),type="p",cex=0.5,pch=19,col="black",main=paste0("Qry Flow cfs at ",attr(df,"site.name")))
+            par(new=TRUE)
+            plot(df.covar[[1]]$date,df.covar[[1]]$pred_temp_c,xlab='Date',ylab='Flow (cfs)',ylim=c(ym,yM),col="red",type="l")
           } else {
             plot(1,1)
           }
