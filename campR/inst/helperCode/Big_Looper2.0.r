@@ -18,9 +18,14 @@ reportRun <- c("A","B","C","D","E","F","G","H","I","J")
 reportRun <- c("K","L","M","N","O","P")
 reportRun <- c("Q")
 
+
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
 
+#   ---- Read in mapping of subSiteID to ourSiteID, if necessary.
+if("Q" %in% reportRun){
+  luSubSiteID <<- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
+}
 
 #   ---- Get necessary packages in order.  
 # install.packages(c("RODBC","mvtnorm"))
@@ -49,9 +54,9 @@ rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-theExcel <- theExcel[c(1,5,36,52,71),]
+theExcel <- theExcel[c(1,5,13,24,26,32,36,52,71),]
 
-
+# 15 -- needs unit values to run.  
 
 
 #   ---- Tell the Big Looper where to put all the output.  
@@ -356,6 +361,12 @@ for(i in 1:nStreamNames){
       #   ---- Create enhanced efficiency beta estimates and associated plots and output.  
       if( theReportLabel == "Q" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
+        
+        #   ---- These adapted functions are not (currently) part of a package.
+        source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.enh.R"))
+        source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.enh.R"))
+        source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.enh.R"))
+        source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.enh.R"))
         
         #   ---- Function run.passage.enh expects a 'by' that isn't used.   
         by <- 'year' 

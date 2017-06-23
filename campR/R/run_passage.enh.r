@@ -108,7 +108,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   
   #   ---- Fetch efficiency data
   release.df <- F.get.release.data( site, taxon, min.date, max.date  )
-  
+
   #   ---- Fetch all efficiency data over all time.  
   min.date2 <<- "1990-01-01"
   max.date2 <<- "2017-05-22"
