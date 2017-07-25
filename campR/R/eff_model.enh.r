@@ -193,17 +193,78 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     max.date.temp <- suppressWarnings(max(df[[ii]][!is.na(df[[ii]]$temp_c),]$date))
       
     
+    #   ---- Short little helper function to query covariates from the CAMP mdb.  
+    getCAMPEnvCov <- function(cov,covID,unitID){
+      
+      #   ---- Get all records.  This is inefficient, since this is done for each call of getCAMPEnvCov, 
+      #   ---- but it's easier, and relatively speaking, is a small short query.  
+      dbCov <- sqlQuery(ch,paste0("SELECT * FROM EnvDataRaw;"))
+      
+      #   ---- See if the metric of interest has any records.  If so, report the UnitID, if it exists for cov.
+      if(sum(!is.na(dbCov[,cov])) > 0 & !is.na(unitID)){
+        cat(paste0("Covariate '",cov,"' has these unique UnitID values: ",paste0(sort(na.omit(unique(dbCov[,covID]))),collapse=", "),".\n"))
+      } else if(!is.na(unitID)) {
+        cat(paste0("No valid records of covariate '",cov,"' found.\n"))
+      }
+      
+      #   ---- Some covariates, like weather, do not have a covID.  
+      if(!is.na(covID)){
+        dbCov2 <- dbCov[!is.na(dbCov[,cov]),c("subSiteID","measureTime",cov,covID)]
+        dbCov2 <- dbCov2[dbCov2[,covID] == unitID,]
+      } else {
+        dbCov2 <- dbCov[!is.na(dbCov[,cov]),c("subSiteID","measureTime",cov)]
+      }
+      dbCov2 <- dbCov2[order(dbCov2$subSiteID,dbCov2$measureTime),]
+      
+      #   ---- Put as an attribute the unique covID values, and cov so these can be summarized. 
+      attr(dbCov2,"cov") <- cov
+      if(!is.na(covID)){
+        attr(dbCov2,"uniqueUnitID") <- sort(na.omit(unique(dbCov[,covID])))
+      } else {
+        attr(dbCov2,"uniqueUnitID") <- NA
+      }
+      return(dbCov2)
+    }
+    
     #   ---- Query this river's Access database for information recorded at the trap.  For now, we only use this 
     #   ---- for turbidity.  I name objects that respect this.  
     db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
-      dbCov <- sqlQuery(ch,"SELECT * FROM EnvDataRaw;")
-      dbTurb <- dbCov[!is.na(dbCov$turbidity),c("subSiteID","measureTime","turbidity","turbidityUnitID")]
-      dbTurb <- dbTurb[dbTurb$turbidityUnitID == 20,]
-      dbTurb <- dbTurb[order(dbTurb$subSiteID,dbTurb$measureTime),]
+      dbDisc <- getCAMPEnvCov("discharge","dischargeUnitID",12)                     # <--- not sure on the UnitID.  could be 13 too?
+      dbDpcm <- getCAMPEnvCov("waterDepth","waterDepthUnitID",3)                    # <--- depth in cm (American)
+      dbDpft <- getCAMPEnvCov("waterDepth","waterDepthUnitID",6)                    # <--- depth in feet (RBDD)
+      dbATpC <- getCAMPEnvCov("airTemp","airTempUnitID",18)
+      dbATpF <- getCAMPEnvCov("airTemp","airTempUnitID",19)
+      dbTurb <- getCAMPEnvCov("turbidity","turbidityUnitID",20)
+      dbWVel <- getCAMPEnvCov("waterVel","waterVelUnitID",8)
+      dbWTpC <- getCAMPEnvCov("waterTemp","waterTempUnitID",18)                     # <--- water temp in C (American)
+      dbWTmF <- getCAMPEnvCov("waterTemp","waterTempUnitID",19)                     # <--- water temp in F (RBDD)
+      dbLite <- getCAMPEnvCov("lightPenetration","lightPenetration",20)             # <--- not sure on the UnitID.
+      dbDOxy <- getCAMPEnvCov("dissolvedOxygen","dissolvedOxygenUnitID",36)         
+      dbCond <- getCAMPEnvCov("conductivity","conductivityUnitID",36)               # <--- not sure on the UnitID.
+      dbBaro <- getCAMPEnvCov("barometer","barometerUnitID",33)                     # <--- not sure on the UnitID.    
+      dbWeat <- getCAMPEnvCov("weather",NA,NA)
     close(ch)
     
+    #   ---- Put all database covariates into a list for easier processing.
+    dbCovar <- list(dbDisc,dbDpcm,dbDpft,dbATpC,dbATpF,dbTurb,dbWVel,dbWTpC,dbWTmF,dbLite,dbDOxy,dbCond,dbBaro,dbWeat)
     
+    #   ---- Collapse all the UnitIDs we have. 
+    dfUnitIDs <- NULL
+    for(i in 1:length(dbCovar)){
+      l <- length(attr(dbCovar[[i]],"uniqueUnitID"))
+      if(l > 0){
+        dfUnitIDs.i <- data.frame("site"=rep(site,l),"covar"=rep(attr(dbCovar[[i]],"cov"),l),"UnitID"=attr(dbCovar[[i]],"uniqueUnitID"))
+        dfUnitIDs <- rbind(dfUnitIDs,dfUnitIDs.i)
+      }
+    }
+    
+    #   ---- Read in how to map unstandardized weather values to standardized values.  Put this in as data.frame...eventually. 
+    weaMap <- read.csv("//LAR-FILE-SRV/Data/PSMFC_CampRST/felipe products/variables/weather/weatherLookupMapped20170720.csv")
+    #weaKey <- weaMap[1:4,c("PrecipLevel","PrecipLevelText")]
+    dbWeat <- merge(dbWeat,weaMap[,c("weather","precipLevel")],by=c("weather"),all.x=TRUE)
+    dbWeat <- dbWeat[,c("subSiteID","measureTime","precipLevel")]
+    names(dbWeat)[names(dbWeat) == "PrecipLevel"] <- "precipLevel"
     
     
     # one <- dbTurb[dbTurb$subSiteID == "1005",]
@@ -251,7 +312,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
 
       obs.eff.df$temp_c <- NA
       obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$temp_c <- predict(m2[[ii]],as.numeric(obs.eff.df$batchDate))$y
-      #df[[ii]]$pred_temp_c <- predict(m2[[ii]])$y
+      #df[[ii]]$pred_temp_c <- predict(m2[[iii]])$y
       df[[ii]]$pred_temp_c <- predict(m2[[ii]],x=as.numeric(df[[ii]]$date))$y
       
       #    ---- See if we have any predicted values outside the range for which we have data.
@@ -266,7 +327,123 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     }
     
     #   ---- Next for data from the CAMP db, which could be collected per subSiteID.  Reduce to the set of subsiteIDs in this run.  This 
-    #   ---- is necessary for the Feather, which has many sites that branch into individual subSiteIDs.  
+    #   ---- is necessary for the Feather, which has many sites that branch into individual subSiteIDs.  Do this for each covar.
+    
+    #dbCov <- dbCovar[[ii]]
+    
+    
+  
+  obs.eff.df <- estCovar(dbDisc,"discharge_cfs",1,traps,obs.eff.df)                   # <--- not sure on the UnitID.  could be 13 too?
+  obs.eff.df <- estCovar(dbDpcm,"waterDepth_cm",1,traps,obs.eff.df)                    # <--- depth in cm (American)
+  obs.eff.df <- estCovar(dbDpft,"waterDepth_ft",1,traps,obs.eff.df)                   # <--- depth in feet (RBDD)
+  obs.eff.df <- estCovar(dbATpC,"airTemp_C",1,traps,obs.eff.df)
+  obs.eff.df <- estCovar(dbATpF,"airTemp_F",1,traps,obs.eff.df)
+  obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df)
+  obs.eff.df <- estCovar(dbWVel,"waterVel",1,traps,obs.eff.df)
+  obs.eff.df <- estCovar(dbWTpC,"waterTemp_C",1,traps,obs.eff.df)                   # <--- water temp in C (American)
+  obs.eff.df <- estCovar(dbWTmF,"waterTemp_F",1,traps,obs.eff.df)                     # <--- water temp in F (RBDD)
+  obs.eff.df <- estCovar(dbLite,"lightPenetration_ntu",1,traps,obs.eff.df)             # <--- not sure on the UnitID.
+  obs.eff.df <- estCovar(dbDOxy,"dissolvedOxygen_mgL",1,traps,obs.eff.df)        
+  obs.eff.df <- estCovar(dbCond,"conductivity_mgL",1,traps,obs.eff.df)              # <--- not sure on the UnitID.
+  obs.eff.df <- estCovar(dbBaro,"barometer_inHg",1,traps,obs.eff.df)                    # <--- not sure on the UnitID.    
+  obs.eff.df <- estCovar(dbWeat,"precipLevel_qual",2,traps,obs.eff.df)
+
+    
+  obs.eff.df <- obs.eff.df[order(obs.eff.df$TrapPositionID,obs.eff.df$batchDate),]
+  dbWeat <- dbWeat[order(dbWeat$measureTime),]
+    
+    
+    estCovar <- function(dbCov,covName,estType,traps,obs.eff.df){
+
+      # dbCov <- dbWeat
+      # covName <- "precipLevel_qual"
+      # estType <- 1
+      ## traps <- traps
+      ## obs.eff.df <- obs.eff.df
+      
+      CAMPCovName <- strsplit(covName,"_",fixed=TRUE)[[1]][1]
+      
+      if(nrow(dbCov) == 0 | sum(!is.na(dbCov[,CAMPCovName])) == 0){
+        #obs.eff.df[,covName] <- NA
+      } else {
+      
+        allCovar <- NULL
+        dbCov <- dbCov[dbCov$subSiteID %in% traps,]
+        theJJ <- unique(dbCov$subSiteID)
+        obs.eff.df[,covName] <- NA                                 #     $turbidity_ntu
+        if(sum(!is.na(dbCov[,CAMPCovName])) > 0){
+          
+          if(estType == 1){
+          
+            for(jj in 1:length(theJJ)){
+              
+              jdbCov <- dbCov[dbCov$subSiteID == theJJ[jj],]
+              
+              #   ---- Compile the good dates for each subSiteID.   
+              min.date.cov <- suppressWarnings(min(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime))
+              max.date.cov <- suppressWarnings(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime))
+              
+              #   ---- I only keep the current.  So, after running, only the last jj is here.  
+              m3[[ii]] <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=TRUE)
+              
+              #   ---- Build up the formula string in data frame obs.eff.df.
+              if("covar" %in% names(obs.eff.df)){
+                if(is.na(obs.eff.df$covar[1])){
+                  obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
+                } else {
+                  obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- paste0(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar," + ",covName)
+                }
+              } else {
+                obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
+              }
+              
+              #   ---- Helpful in checking.  Eventually delete.  
+              #table(obs.eff.df$TrapPositionID,obs.eff.df$covar,exclude=NULL)
+              
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- predict(m3[[ii]],as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
+              
+              #jdbCov$pred_turbidity_ntu <- predict(m3[[ii]])$y
+              jdbCov[paste0("pred_",covName)] <- predict(m3[[ii]],x=as.numeric(jdbCov$measureTime))$y
+              
+              allCovar <- rbind(allCovar,jdbCov)
+              
+              #    ---- See if we have any predicted values outside the range for which we have data.
+              if(sum(jdbCov$measureTime < min.date.cov | jdbCov$measureTime > max.date.cov) > 0){
+                jdbTurb[jdbCov$measureTime < min.date.cov | jdbCov$measureTime > max.date.cov,paste0("pred_",covName)] <- NA
+              }
+              
+              #    ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
+              if(sum(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate + 60*60 < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate - 60*60 > max.date.cov) > 0){
+                obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & (obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate + 60*60 < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate - 60*60 > max.date.cov),covName] <- NA
+              }
+              
+              #   ---- Helpful in checking.  Eventually delete.  
+              #obs.eff.df[obs.eff.df$TrapPositionID == "1001" & !is.na(obs.eff.df$turbidity_ntu),]$turbidity_ntu
+              
+            }
+          } else if(estType == 2){
+            
+            #   ---- Use this if the covariate is qualitative -- doesn't make sense to spline it out, e.g., weather.
+            #dbCov$batchDate <- as.POSIXct(strptime(dbCov$measureTime,format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+            names(dbCov)[names(dbCov) == "measureTime"] <- "EndTime"
+            dbCov <- F.assign.batch.date(dbCov)
+            test <- merge(obs.eff.df,dbCov,by.x)
+          }
+        }  
+      }  
+      return(obs.eff.df)
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     allTurb <- NULL
     dbTurb <- dbTurb[dbTurb$subSiteID %in% traps,]
     theJJ <- unique(dbTurb$subSiteID)

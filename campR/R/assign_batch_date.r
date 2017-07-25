@@ -60,7 +60,7 @@
 
 F.assign.batch.date <- function( df ){
   
-  # df <- df.test
+  # df <- dbCov   df.test
   
   #   ---- Get quantities from the global environment.  
   cuttime <- get( "samplePeriodCutTime", envir=.GlobalEnv )
