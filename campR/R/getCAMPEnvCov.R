@@ -1,6 +1,6 @@
 #'@export
 #'
-#'@title F.get.release.data
+#'@title getCAMPEnvCov
 #'  
 #'@description Query individual covariates and their recorded units from an
 #'  Access CAMP database.
