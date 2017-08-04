@@ -109,14 +109,6 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   #   ---- Fetch efficiency data
   release.df <- F.get.release.data( site, taxon, min.date, max.date  )
 
-  #   ---- Fetch all efficiency data over all time.  
-  min.date2 <<- "1990-01-01"
-  max.date2 <<- "2017-05-22"
-  release.df.enh <<- F.get.release.data( site, taxon, min.date2, max.date2)
-  
-  if( nrow(release.df) == 0 ){
-    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
-  }
   
   setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
   
@@ -131,6 +123,21 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   if( nrow(catch.df) == 0 ){
     stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
   }
+  
+  #   ---- Fetch all efficiency data over all time.  I need the visit.df StartTime and EndTime to calculate sun and moon 
+  #   ---- proportions, so move get.release.data to after the catch.  Note I make get.release.data.enh to do this.  
+  min.date2 <<- "1990-01-01"
+  max.date2 <<- "2017-05-22"
+  release.df.enh <<- F.get.release.data.enh( site, taxon, min.date2, max.date2, visit.df)
+  
+  if( nrow(release.df) == 0 ){
+    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
+  }
+  
+  
+  
+  
+  
   
   #   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables
   catch.df0 <- F.summarize.fish.visit( catch.df, 'unassigned' )   # jason - 5/20/2015 - we summarize over lifeStage, wrt to unassigned.   10/2/2015 - i think by 'unassigned,' i really mean 'unmeasured'???

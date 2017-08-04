@@ -192,39 +192,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     min.date.temp <- suppressWarnings(min(df[[ii]][!is.na(df[[ii]]$temp_c),]$date))
     max.date.temp <- suppressWarnings(max(df[[ii]][!is.na(df[[ii]]$temp_c),]$date))
       
-    
-    #   ---- Short little helper function to query covariates from the CAMP mdb.  
-    getCAMPEnvCov <- function(cov,covID,unitID){
-      
-      #   ---- Get all records.  This is inefficient, since this is done for each call of getCAMPEnvCov, 
-      #   ---- but it's easier, and relatively speaking, is a small short query.  
-      dbCov <- sqlQuery(ch,paste0("SELECT * FROM EnvDataRaw;"))
-      
-      #   ---- See if the metric of interest has any records.  If so, report the UnitID, if it exists for cov.
-      if(sum(!is.na(dbCov[,cov])) > 0 & !is.na(unitID)){
-        cat(paste0("Covariate '",cov,"' has these unique UnitID values: ",paste0(sort(na.omit(unique(dbCov[,covID]))),collapse=", "),".\n"))
-      } else if(!is.na(unitID)) {
-        cat(paste0("No valid records of covariate '",cov,"' found.\n"))
-      }
-      
-      #   ---- Some covariates, like weather, do not have a covID.  
-      if(!is.na(covID)){
-        dbCov2 <- dbCov[!is.na(dbCov[,cov]),c("subSiteID","measureTime",cov,covID)]
-        dbCov2 <- dbCov2[dbCov2[,covID] == unitID,]
-      } else {
-        dbCov2 <- dbCov[!is.na(dbCov[,cov]),c("subSiteID","measureTime",cov)]
-      }
-      dbCov2 <- dbCov2[order(dbCov2$subSiteID,dbCov2$measureTime),]
-      
-      #   ---- Put as an attribute the unique covID values, and cov so these can be summarized. 
-      attr(dbCov2,"cov") <- cov
-      if(!is.na(covID)){
-        attr(dbCov2,"uniqueUnitID") <- sort(na.omit(unique(dbCov[,covID])))
-      } else {
-        attr(dbCov2,"uniqueUnitID") <- NA
-      }
-      return(dbCov2)
-    }
+    source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")
+    source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
     
     #   ---- Query this river's Access database for information recorded at the trap.  For now, we only use this 
     #   ---- for turbidity.  I name objects that respect this.  
@@ -264,17 +233,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #weaKey <- weaMap[1:4,c("PrecipLevel","PrecipLevelText")]
     dbWeat <- merge(dbWeat,weaMap[,c("weather","precipLevel")],by=c("weather"),all.x=TRUE)
     dbWeat <- dbWeat[,c("subSiteID","measureTime","precipLevel")]
-    names(dbWeat)[names(dbWeat) == "PrecipLevel"] <- "precipLevel"
-    
-    
-    # one <- dbTurb[dbTurb$subSiteID == "1005",]
-    # plot(one$measureTime,one$turbidity),type="l")
-    # 
-    # 
-    # #asPOSIXlt(dbCov$measureTime,origin="1970-01-01 00:00.00 UTC",format="%Y-%m-%d",tz=time.zone))
-    
-    
-    
+    names(dbWeat)[names(dbWeat) == "precipLevel"] <- "precipLevel"
+   
     
     
     #   ---- Fit a simple smoothing spline and predict.  First for temp and flow from the EnvCovDB.    
@@ -331,171 +291,35 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     #dbCov <- dbCovar[[ii]]
     
+    #   ---- Now, bring in smoothing-spline estimated values.  
     
+    obs.eff.df <- estCovar(dbDisc,"discharge_cfs",1,traps,obs.eff.df)                   # <--- not sure on the UnitID.  could be 13 too?
+    obs.eff.df <- estCovar(dbDpcm,"waterDepth_cm",1,traps,obs.eff.df)                   # <--- depth in cm (American)
+    obs.eff.df <- estCovar(dbDpft,"waterDepth_ft",1,traps,obs.eff.df)                   # <--- depth in feet (RBDD)
+    obs.eff.df <- estCovar(dbATpC,"airTemp_C",1,traps,obs.eff.df)
+    obs.eff.df <- estCovar(dbATpF,"airTemp_F",1,traps,obs.eff.df)
+    obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df)
+    obs.eff.df <- estCovar(dbWVel,"waterVel",1,traps,obs.eff.df)
+    obs.eff.df <- estCovar(dbWTpC,"waterTemp_C",1,traps,obs.eff.df)                     # <--- water temp in C (American)
+    obs.eff.df <- estCovar(dbWTmF,"waterTemp_F",1,traps,obs.eff.df)                     # <--- water temp in F (RBDD)
+    obs.eff.df <- estCovar(dbLite,"lightPenetration_ntu",1,traps,obs.eff.df)            # <--- not sure on the UnitID.
+    obs.eff.df <- estCovar(dbDOxy,"dissolvedOxygen_mgL",1,traps,obs.eff.df)        
+    obs.eff.df <- estCovar(dbCond,"conductivity_mgL",1,traps,obs.eff.df)                # <--- not sure on the UnitID.
+    obs.eff.df <- estCovar(dbBaro,"barometer_inHg",1,traps,obs.eff.df)                  # <--- not sure on the UnitID.    
+    obs.eff.df <- estCovar(dbWeat,"precipLevel_qual",2,traps,obs.eff.df)
   
-  obs.eff.df <- estCovar(dbDisc,"discharge_cfs",1,traps,obs.eff.df)                   # <--- not sure on the UnitID.  could be 13 too?
-  obs.eff.df <- estCovar(dbDpcm,"waterDepth_cm",1,traps,obs.eff.df)                    # <--- depth in cm (American)
-  obs.eff.df <- estCovar(dbDpft,"waterDepth_ft",1,traps,obs.eff.df)                   # <--- depth in feet (RBDD)
-  obs.eff.df <- estCovar(dbATpC,"airTemp_C",1,traps,obs.eff.df)
-  obs.eff.df <- estCovar(dbATpF,"airTemp_F",1,traps,obs.eff.df)
-  obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df)
-  obs.eff.df <- estCovar(dbWVel,"waterVel",1,traps,obs.eff.df)
-  obs.eff.df <- estCovar(dbWTpC,"waterTemp_C",1,traps,obs.eff.df)                   # <--- water temp in C (American)
-  obs.eff.df <- estCovar(dbWTmF,"waterTemp_F",1,traps,obs.eff.df)                     # <--- water temp in F (RBDD)
-  obs.eff.df <- estCovar(dbLite,"lightPenetration_ntu",1,traps,obs.eff.df)             # <--- not sure on the UnitID.
-  obs.eff.df <- estCovar(dbDOxy,"dissolvedOxygen_mgL",1,traps,obs.eff.df)        
-  obs.eff.df <- estCovar(dbCond,"conductivity_mgL",1,traps,obs.eff.df)              # <--- not sure on the UnitID.
-  obs.eff.df <- estCovar(dbBaro,"barometer_inHg",1,traps,obs.eff.df)                    # <--- not sure on the UnitID.    
-  obs.eff.df <- estCovar(dbWeat,"precipLevel_qual",2,traps,obs.eff.df)
+    obs.eff.df <- obs.eff.df[order(obs.eff.df$TrapPositionID,obs.eff.df$batchDate),]
 
     
-  obs.eff.df <- obs.eff.df[order(obs.eff.df$TrapPositionID,obs.eff.df$batchDate),]
-  dbWeat <- dbWeat[order(dbWeat$measureTime),]
     
     
-    estCovar <- function(dbCov,covName,estType,traps,obs.eff.df){
 
-      # dbCov <- dbWeat
-      # covName <- "precipLevel_qual"
-      # estType <- 1
-      ## traps <- traps
-      ## obs.eff.df <- obs.eff.df
-      
-      CAMPCovName <- strsplit(covName,"_",fixed=TRUE)[[1]][1]
-      
-      if(nrow(dbCov) == 0 | sum(!is.na(dbCov[,CAMPCovName])) == 0){
-        #obs.eff.df[,covName] <- NA
-      } else {
-      
-        allCovar <- NULL
-        dbCov <- dbCov[dbCov$subSiteID %in% traps,]
-        theJJ <- unique(dbCov$subSiteID)
-        obs.eff.df[,covName] <- NA                                 #     $turbidity_ntu
-        if(sum(!is.na(dbCov[,CAMPCovName])) > 0){
-          
-          if(estType == 1){
-          
-            for(jj in 1:length(theJJ)){
-              
-              jdbCov <- dbCov[dbCov$subSiteID == theJJ[jj],]
-              
-              #   ---- Compile the good dates for each subSiteID.   
-              min.date.cov <- suppressWarnings(min(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime))
-              max.date.cov <- suppressWarnings(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime))
-              
-              #   ---- I only keep the current.  So, after running, only the last jj is here.  
-              m3[[ii]] <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=TRUE)
-              
-              #   ---- Build up the formula string in data frame obs.eff.df.
-              if("covar" %in% names(obs.eff.df)){
-                if(is.na(obs.eff.df$covar[1])){
-                  obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
-                } else {
-                  obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- paste0(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar," + ",covName)
-                }
-              } else {
-                obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
-              }
-              
-              #   ---- Helpful in checking.  Eventually delete.  
-              #table(obs.eff.df$TrapPositionID,obs.eff.df$covar,exclude=NULL)
-              
-              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- predict(m3[[ii]],as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
-              
-              #jdbCov$pred_turbidity_ntu <- predict(m3[[ii]])$y
-              jdbCov[paste0("pred_",covName)] <- predict(m3[[ii]],x=as.numeric(jdbCov$measureTime))$y
-              
-              allCovar <- rbind(allCovar,jdbCov)
-              
-              #    ---- See if we have any predicted values outside the range for which we have data.
-              if(sum(jdbCov$measureTime < min.date.cov | jdbCov$measureTime > max.date.cov) > 0){
-                jdbTurb[jdbCov$measureTime < min.date.cov | jdbCov$measureTime > max.date.cov,paste0("pred_",covName)] <- NA
-              }
-              
-              #    ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
-              if(sum(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate + 60*60 < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate - 60*60 > max.date.cov) > 0){
-                obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & (obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate + 60*60 < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate - 60*60 > max.date.cov),covName] <- NA
-              }
-              
-              #   ---- Helpful in checking.  Eventually delete.  
-              #obs.eff.df[obs.eff.df$TrapPositionID == "1001" & !is.na(obs.eff.df$turbidity_ntu),]$turbidity_ntu
-              
-            }
-          } else if(estType == 2){
-            
-            #   ---- Use this if the covariate is qualitative -- doesn't make sense to spline it out, e.g., weather.
-            #dbCov$batchDate <- as.POSIXct(strptime(dbCov$measureTime,format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
-            names(dbCov)[names(dbCov) == "measureTime"] <- "EndTime"
-            dbCov <- F.assign.batch.date(dbCov)
-            test <- merge(obs.eff.df,dbCov,by.x)
-          }
-        }  
-      }  
-      return(obs.eff.df)
-    }
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    allTurb <- NULL
-    dbTurb <- dbTurb[dbTurb$subSiteID %in% traps,]
-    theJJ <- unique(dbTurb$subSiteID)
-    obs.eff.df$turbidity_ntu <- NA
-    if(sum(!is.na(dbTurb$turbidity)) > 0){
-      
-      for(jj in 1:length(theJJ)){
-        
-        jdbTurb <- dbTurb[dbTurb$subSiteID == theJJ[jj],]
-        
-        #   ---- Compile the good dates for each subSiteID.   
-        min.date.turb <- suppressWarnings(min(jdbTurb[!is.na(jdbTurb$turbidity),]$measureTime))
-        max.date.turb <- suppressWarnings(max(jdbTurb[!is.na(jdbTurb$turbidity),]$measureTime))
-      
-        #   ---- I only keep the current.  So, after running, only the last jj is here.  
-        m3[[ii]] <- smooth.spline(as.numeric(jdbTurb[!is.na(jdbTurb$turbidity),]$measureTime),jdbTurb[!is.na(jdbTurb$turbidity),]$turbidity,cv=TRUE)
-        
-        if("covar" %in% names(obs.eff.df)){
-          if(is.na(obs.eff.df$covar[1])){
-            obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- "turbidity_ntu"
-          } else {
-            obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- paste0(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar," + turbidity_ntu")
-          }
-        } else {
-          obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- "turbidity_ntu"
-        }
-        
-        #   ---- Helpful in checking.  Eventually delete.  
-        #table(obs.eff.df$TrapPositionID,obs.eff.df$covar,exclude=NULL)
-        
-        obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$turbidity_ntu <- predict(m3[[ii]],as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
-        
-        #jdbTurb$pred_turbidity_ntu <- predict(m3[[ii]])$y
-        jdbTurb$pred_turbidity_ntu <- predict(m3[[ii]],x=as.numeric(jdbTurb$measureTime))$y
-      
-        allTurb <- rbind(allTurb,jdbTurb)
-        
-        #    ---- See if we have any predicted values outside the range for which we have data.
-        if(sum(jdbTurb$measureTime < min.date.turb | jdbTurb$measureTime > max.date.turb) > 0){
-          jdbTurb[jdbTurb$measureTime < min.date.turb | jdbTurb$measureTime > max.date.turb,]$pred_turbidity_ntu <- NA
-        }
-        
-        #    ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
-        if(sum(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate + 60*60 < min.date.turb | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate - 60*60 > max.date.turb) > 0){
-          obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & (obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate + 60*60 < min.date.turb | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate - 60*60 > max.date.turb),]$turbidity_ntu <- NA
-        }
-        
-        #   ---- Helpful in checking.  Eventually delete.  
-        #obs.eff.df[obs.eff.df$TrapPositionID == "1001" & !is.na(obs.eff.df$turbidity_ntu),]$turbidity_ntu
-        
-      }
-    }
+    #   ---- Look at how the full models work out with respect to different traps.  
+    table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
+
   }
 
   #   ---- Preserve for use in making plots below.  
@@ -510,6 +334,11 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
     ind <- !is.na(df$efficiency)
     
+    #   ---- Define these so we can model on (basically) fishing day of the season.  For now,
+    #   ---- I assume fishing periods don't straddle Dec. 31. 
+    df$fishDay <- as.POSIXlt(df$batchDate)$yday + 1
+    df$fishPeriod <- as.factor(as.POSIXlt(df$batchDate)$year + 1900)
+    
     #   ---- Find the "season", which is between first and last trials
     strt.dt <- min( df$batchDate[ind], na.rm=T )  # Earliest date with an efficiency trial
     end.dt  <- max( df$batchDate[ind], na.rm=T )  # Latest date with efficiency trial
@@ -521,7 +350,27 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     tmp.df <- df[ind & ind.inside,]
     m.i <- sum(ind & ind.inside)
     
-    #   ----- See if we have any missing covars --- assumes all other values are not NA.  
+    #   ---- With the inclusion of all CAMP covariates, the probability increases by a lot that we don't have all 
+    #   ---- the values over all time.  Chuck those that don't have at least ... 90% of the data rows, given a 
+    #   ---- trap.  Note that this considers NA WITHIN a column.  If we delete, we have to update tmp.df$covar.
+    atLeast <- floor(0.90*m.i) + 1
+    vars <- unlist(strsplit(tmp.df$covar[1]," + ",fixed=TRUE)[[1]])
+    for(i in 1:length(vars)){
+      if(!(sum(!is.na(tmp.df[,vars[i]])) >= atLeast)){
+        cat(paste0("Trap ",trap," variable ",vars[i]," has only ",sum(!is.na(tmp.df[,vars[i]]))," points but needs ",atLeast," for inclusion.  Deleting.\n"))
+        tmp.df[,vars[i]] <- NULL
+        
+        #   ---- Have to now update the "+" situation.  Removed variable could be leading, in the middle, or 
+        #   ---- trailing.  So, consider all these.  
+        tmp.df$covar <- gsub(paste0(" + ",vars[i]),"",tmp.df$covar,fixed=TRUE)  # middle or trailing -- remove leading " + "
+        tmp.df$covar <- gsub(vars[i],"",tmp.df$covar,fixed=TRUE)                # leading -- remove var[i] alone
+      } else {
+        cat(paste0("Trap ",trap," variable ",vars[i]," has ",sum(!is.na(tmp.df[,vars[i]]))," points and only need ",atLeast," for inclusion.  Keeping.\n"))
+      }
+    }
+    
+    #   ---- See if we have any missing covars --- assumes all other values are not NA.  Note that this considers 
+    #   ---- NA OVER columns.  
     tmp.df$allCovars <- apply(tmp.df,1,function(x) as.numeric(!(sum(is.na(x)) > 0)))
     
     #   ---- Could be that we have efficiency trials performed at times for which we have no covariate information.
@@ -531,7 +380,19 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     cat( paste0("Trap ",trap," has ",nrow(dataDeficient)," rows of data covariate deficient, out of ",nrow(tmp.df)," originally present.\n") )
     write.csv(dataDeficient,paste0(plot.file,"-",trap,"dataDeficient.csv"),row.names=FALSE)
     tmp.df <- tmp.df[tmp.df$allCovars == 1,]
+    tmp.df$allCovars <- NULL     # This has served its purpose.  
     
+    
+    
+    #   ---- At this point, have cleaned up the this trap's efficiency data.  NOW, define fish-start days, so that we can
+    #   ---- model via the number of days from the start of fishing.  This puts efficiency years "on top of each other."  
+    #   ---- I *could* have deleted, because of bad covariates, the *true* start of the fishing period for a certain 
+    #   ---- year.  I'm okay with this I think.  
+    
+    #   ---- Model with respect to the day of the year.  I assume "day of the year" = "kth day of fishing".  This is
+    #   ---- NOT TRUE IF A FISHING PERIOD STRADDLES DEC 31.
+    tmp.df$fishDay <- as.POSIXlt(tmp.df$batchDate)$yday + 1
+    tmp.df$fishPeriod <- as.factor(as.POSIXlt(tmp.df$batchDate)$year + 1900)
     
     
     if( m.i == 0 ){
@@ -584,7 +445,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       
       #   ---- There are enough observations to estimate B-spline model -- with covariates!
       
-      #   ---- Fit glm model, increase degress of freedom, until minimize AIC or something goes wrong.  
+      #   ---- Fit glm model, increase degrees of freedom, until minimize AIC or something goes wrong.  
       cat(paste("\n\n++++++Spline model fitting for trap:", trap, "\n Trials are:"))
       print(tmp.df)
       
@@ -599,22 +460,23 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       if(dim(covarMat)[2] == 1){
         colnames(covarMat) <- tmp.df$covar[1]
       }
-      covar <- obs.eff.df[obs.eff.df$TrapPositionID == trap,]$covar[1]
-      cat(paste("\n\n++++++ ...and covariates include",covar,".\n"))
+      covar <- tmp.df$covar[1]
+      cat(paste0("\n\n++++++ ...and covariates include",covar,".\n"))
       
       #   ---- See if our smoothing splines lead to non-sensical estimates; i.e., negative values for 
-      #   ---- either of flow (cfs) or turbidity (ntu).  But not temperature!
+      #   ---- either of flow (cfs) or turbidity (ntu).  But not temperature!  Others?
       if("temp_c" %in% colnames(covarMat)){
 
         theNames <- colnames(covarMat)
+        theNames <- theNames[theNames != "temp_c"]
         
         #   ---- Without temp_c.  I assume temp_c is the only var for which negatives are permissable.  
         covarMat <- cbind(apply(as.matrix(covarMat[,colnames(covarMat) != "temp_c"]),2,function(x) ifelse(x < 0,0,x)),as.matrix(covarMat[,colnames(covarMat) == "temp_c"]))
-        colnames(covarMat) <- theNames
+        colnames(covarMat) <- c(theNames,"temp_c")
       } else {
         covarMat <- apply(covarMat,2,function(x) ifelse(x < 0,0,x))
       }
-    
+  
       #   ---- At least one efficiency trial "inside" for this trap.
       #   ---- Fit a null model (with our covariates).  
       fit <- glm( nCaught / nReleased ~ 1 + covarMat, family=binomial, data=tmp.df, weights=tmp.df$nReleased ) 
@@ -639,6 +501,16 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         
       } else {
         
+        
+        
+        #   ---- Figure out covariates.  
+        fit <- 
+        
+        
+        
+        
+        
+        
         #		---- Fit increasingly complex models. 
         #				 Note, we skip the quadratic:
         #					df = 3 means cubic model (no internal knots)
@@ -650,9 +522,13 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         cur.df <- 3
         repeat{
           
-          cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
+          #cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
+          #tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
+          #tmp.bs <- tmp.bs[as.logical(goodInd),]     # <--- Keep rows with all good covariates.
+          
+          cur.bspl <- bs( df$fishDay[ind.inside], df=cur.df )
           tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
-          tmp.bs <- tmp.bs[as.logical(goodInd),]     # <--- Keep rows with all good covariates.
+          tmp.bs <- tmp.bs[as.logical(goodInd),]     # <--- Keep rows with all good covariates.  tmp.df already reduced.
           
           cur.fit <- glm( nCaught / nReleased ~ covarMat + tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
           cur.AIC <- AIC(cur.fit)

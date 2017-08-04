@@ -74,12 +74,13 @@
 #' max.date <- "2013-06-01"
 #' df <- F.get.release.data(site,taxon,min.date,max.date)
 #' }
-F.get.release.data <- function( site, taxon, min.date, max.date ){
+F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
 
   # site <- 57000
   # taxon <- 161980
   # min.date <- min.date2#"2006-01-01"
   # max.date <- max.date2#"2006-12-01"
+  # visit.df <- visit.df
   
   #   ---- Get global environment data. 
   halfConeMulti <- get("halfConeMulti",envir=.GlobalEnv)
@@ -114,19 +115,70 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
   release.visit <- sqlFetch( ch, "TempRelRecap_final" )
   F.sql.error.check(release.visit)
 
+  max.date.eff <- max(release.visit$ReleaseDate) + 30*24*60*60  # 30-day buffer after
+  min.date.eff <- min(release.visit$ReleaseDate) - 30*24*60*60  # 30-day buffer before
   
   #   ---- Get dates information for moon and sun info. 
-  tblDates <- sqlQuery(ch,paste0("SELECT nightLength,
+  tblDates <- sqlQuery(ch,paste0("SELECT uniqueDate,
+                                 nightLength,
                                  moonRise,
                                  moonSet,
                                  sunRise,
                                  sunSet
                                  FROM Dates 
-                                 WHERE uniqueDate <= #",as.Date(max.date2),"# 
-                                 AND uniqueDate >= #",as.Date(min.date2),"# 
+                                 WHERE uniqueDate <= #",as.Date(max.date.eff),"# 
+                                 AND uniqueDate >= #",as.Date(min.date.eff),"# 
                                  ORDER BY uniqueDate"))
+  
+  trapVisits <- sqlQuery(ch,paste0("SELECT trapVisitID,
+                                           trapPositionID,
+                                           visitTime
+                                    FROM trapVisit
+                                    WHERE visitTime <= #",as.Date(max.date2),"# 
+                                      AND visitTime >= #",as.Date(min.date2),"# 
+                                    ORDER BY trapPositionID,visitTime"))
+  
   close(ch)
   
+  
+  
+  #   ---- We compile metrics that we need to compile over trapping.  
+  
+  #   ---- Construct a trapVisit data frame of all visits.  
+  tmp <- trapVisits
+  tmp$visitTime <- as.POSIXlt(strftime(trapVisits$visitTime),tz="America/Los_Angeles")
+  
+  #   ---- Construct start and end times.  I also construct SampleMinutes...sometimes these differ from Connie's.  I need 
+  #   ---- a temporal sequence of all visits, so I can shuffle in the sun and moon times.  This means my estimates differ 
+  #   ---- from what Connie would get, but not by very much I believe.  While she may combine trapping visits, I keep them
+  #   ---- separate.  In both cases, we both would capture similar <proportions> of sun and moon time, overall.  I state
+  #   ---- all this because I ignore the SampleMinutes in release.visit, and use my own created here.  
+  names(tmp)[names(tmp) == "visitTime"] <- "EndTime"
+  tmp$StartTime <- as.POSIXlt(strftime(c(as.POSIXlt(NA,tz="America/Los_Angeles"),strftime(tmp$EndTime[1:(nrow(tmp) - 1)],tz="America/Los_Angeles"))),tz="America/Los_Angeles")
+  tmp$SampleMinutes <- difftime(tmp$EndTime,tmp$StartTime,units="mins")
+  tmp$uniqueDate <- NA  
+  
+  
+  #   ---- Calculate the proportion of each trapVisitID experience sun or moon, depending.  
+  traps <- unique(tmp$trapPositionID)
+  
+  sun <- makeSkinnyTimes("sunRise","sunSet",tblDates)
+  tmp <- getTimeProp(sun,"sunRise","sunSet",traps,tmp,"sun")
+  
+  moon <- makeSkinnyTimes("moonRise","moonSet",tblDates)
+  tmp <- getTimeProp(moon,"moonRise","moonSet",traps,tmp,"moon")
+  
+  #   ---- But, we really want proportion of night, and not day.
+  tmp$nightMinutes <- NA
+  tmp[!is.na(tmp$sunProp),]$nightMinutes <- as.numeric(tmp[!is.na(tmp$sunProp),]$SampleMinutes) - tmp[!is.na(tmp$sunProp),]$sunMinutes
+  tmp$nightProp <- 1 - tmp$sunProp
+  
+  #   ---- Rename to preserve, since 'tmp' is used below, and bring in the goodies.  Clean up tmp a bit so it merges in nicely, 
+  #   ---- and doesn't reproduce data already present in release.visit.  
+  tmpAstro <- tmp
+  names(tmpAstro)[names(tmpAstro) == "SampleMinutes"] <- "JasonSampleMinutes"
+  tmpAstro$trapPositionID <- NULL
+  release.visit <- merge(release.visit,tmpAstro,by=c("trapVisitID"),all.x=TRUE)
 
   #   ---- Assign time zones to date-time columns
   time.zone <- get( "time.zone", envir=.GlobalEnv )
@@ -155,8 +207,11 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
     tmp <- release.visit[ ind == g, ]
     one.row <- tmp[1,]
 
-    #   ---- Number caught.
+    #   ---- Number caught.  And number of night and moon minutes.  And total (Jason) fishing minutes.  
     one.row$Recaps <- sum(tmp$Recaps, na.rm=T)
+    one.row$allNightMins <- sum(tmp$nightMinutes)        
+    one.row$allMoonMins <- sum(as.numeric(tmp$moonMinutes))
+    one.row$allSampleMins <- sum(as.numeric(tmp$JasonSampleMinutes))
 
     #   ---- Compute time to first and last visit after release, even if they did not catch any marked fish. 
     tmp.hdiff <- as.numeric( difftime(tmp$VisitTime, tmp$ReleaseDate, units="hours") )
@@ -167,12 +222,18 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
     if( one.row$Recaps == 0 ){
       one.row$meanRecapTime <- NA
       one.row$meanTimeAtLargeHrs <- NA   
+      
+      one.row$meanNightProp <- one.row$allNightMins / one.row$allSampleMins
+      one.row$meanMoonProp <- one.row$allMoonMins / one.row$allSampleMins
     } else {
       tmp.v <- as.numeric(tmp$VisitTime)
       one.row$meanRecapTime <- sum(tmp.v * tmp$Recaps, na.rm=T) / one.row$Recaps
       one.row$meanTimeAtLargeHrs <- sum(tmp.hdiff * tmp$Recaps, na.rm=T) / one.row$Recaps 
+      
+      one.row$meanNightProp <- one.row$allNightMins / one.row$allSampleMins
+      one.row$meanMoonProp <- one.row$allMoonMins / one.row$allSampleMins
     }
-    
+  
     #   ---- Drop the columns over which we are summing.
     one.row <- one.row[,-which( names(one.row) %in% c("VisitTime", "trapVisitID", "SampleMinutes")) ]   
     ans <- rbind(ans, data.frame(one.row))
@@ -189,5 +250,6 @@ F.get.release.data <- function( site, taxon, min.date, max.date ){
   attr(ans, "siteID" ) <- site
 
   ans
-
+  #plot(tmp$sunProp[!is.na(tmp$sunProp)],tmp$moonProp[!is.na(tmp$moonProp)])
+  #plot(ans$meanNightProp[!is.na(ans$meanNightProp)],ans$meanMoonProp[!is.na(ans$meanMoonProp)])
 }
