@@ -23,6 +23,10 @@
 #'   frames for use with function \code{getTimeProp}, the true workhorse
 #'   function.
 #'   
+#'   Note that the temporal \code{dates} table is defined via the earliest and
+#'   latest efficiency trial date for the run in question.  To this, an
+#'   additional month us appended at each end.
+#'   
 #' @seealso \code{getTimeProp}
 #' 
 #' @author WEST Inc. 
@@ -35,7 +39,6 @@
 #' 
 #' sun <- makeSkinnyTimes(rise,set,dates)
 #' }
-
 makeSkinnyTimes <- function(rise,set,dates){
   
   # rise <- "sunRise"
