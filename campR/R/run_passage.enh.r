@@ -128,9 +128,27 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   #   ---- proportions, so move get.release.data to after the catch.  Note I make get.release.data.enh to do this.  
   min.date2 <<- "1990-01-01"
   max.date2 <<- "2017-05-22"
+  
+  #   ---- I calculate mean forklength here and attach via an attribute on visit.df.  This way, it gets into function 
+  #   ---- F.get.release.data.enh.  Note I make no consideration of FinalRun, or anything else.  I get rid of plus 
+  #   ---- count fish, and instances where forkLength wasn't measured.  NOte that I do not restrict to RandomSelection == 
+  #   ---- 'yes'.  Many times, if there are few fish in the trap, they'll just measure everything, and record a 
+  #   ---- RandomSelection == 'no'.  
+  catch.df2 <- catch.df[catch.df$Unassd != "Unassigned" & !is.na(catch.df$forkLength),]
+  
+  #   ---- Get the weighted-mean forkLength, weighting on the number of that length of fish caught.  Return a vector
+  #   ---- of numeric values in millimeters, with entry names reflecting trapVisitIDs.  Also get the N for weighting. 
+  flVec <- sapply(split(catch.df2, catch.df2$trapVisitID), function(x) weighted.mean(x$forkLength, w = x$Unmarked)) 
+  flDF <- data.frame(trapVisitID=names(flVec),wmForkLength=flVec,stringsAsFactors=FALSE)
+  nVec <- aggregate(catch.df2$Unmarked,list(trapVisitID=catch.df2$trapVisitID),sum)
+  names(nVec)[names(nVec) == "x"] <- "nForkLength"
+  tmp <- merge(flDF,nVec,by=c("trapVisitID"),all.x=TRUE)
+  tmp <- tmp[order(as.integer(tmp$trapVisitID)),]
+  attr(visit.df,"fl") <- tmp
+
   release.df.enh <<- F.get.release.data.enh( site, taxon, min.date2, max.date2, visit.df)
   
-  if( nrow(release.df) == 0 ){
+  if( nrow(release.df.enh) == 0 ){
     stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
   }
   

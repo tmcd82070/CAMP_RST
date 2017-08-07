@@ -132,31 +132,93 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   
   trapVisits <- sqlQuery(ch,paste0("SELECT trapVisitID,
                                            trapPositionID,
-                                           visitTime
+                                           visitTime,
+                                           visitTime2
                                     FROM trapVisit
                                     WHERE visitTime <= #",as.Date(max.date2),"# 
                                       AND visitTime >= #",as.Date(min.date2),"# 
+                                      AND ( (visitTypeID < 5 AND fishProcessedID <> 2)
+                                       OR   (visitTypeID = 1 AND fishProcessedID = 2) )
                                     ORDER BY trapPositionID,visitTime"))
   
   close(ch)
-  
+
   
   
   #   ---- We compile metrics that we need to compile over trapping.  
   
   #   ---- Construct a trapVisit data frame of all visits.  
   tmp <- trapVisits
+  #tmp$fishProcessedID <- NULL
   tmp$visitTime <- as.POSIXlt(strftime(trapVisits$visitTime),tz="America/Los_Angeles")
+  tmp$visitTime2 <- as.POSIXlt(strftime(trapVisits$visitTime2),tz="America/Los_Angeles")
   
-  #   ---- Construct start and end times.  I also construct SampleMinutes...sometimes these differ from Connie's.  I need 
-  #   ---- a temporal sequence of all visits, so I can shuffle in the sun and moon times.  This means my estimates differ 
-  #   ---- from what Connie would get, but not by very much I believe.  While she may combine trapping visits, I keep them
-  #   ---- separate.  In both cases, we both would capture similar <proportions> of sun and moon time, overall.  I state
-  #   ---- all this because I ignore the SampleMinutes in release.visit, and use my own created here.  
-  names(tmp)[names(tmp) == "visitTime"] <- "EndTime"
-  tmp$StartTime <- as.POSIXlt(strftime(c(as.POSIXlt(NA,tz="America/Los_Angeles"),strftime(tmp$EndTime[1:(nrow(tmp) - 1)],tz="America/Los_Angeles"))),tz="America/Los_Angeles")
+  #   ---- Bring in the mean forkLengths. 
+  fl <- attr(visit.df,"fl")
+  
+  #   ---- Some trapVisitIDs are not in the final catch table, for whatever reason.  Find these 
+  #   ---- missing trap instances so they can be zeroed out.  These trap visits often are found 
+  #   ---- in dfs when calculating efficiency.  We will put their fish at n of fish at 0.
+  maxTrapVisitID <- max(trapVisits$trapVisitID)
+  trapVisitIDSpine <- data.frame(trapVisitID=seq(1,maxTrapVisitID,1))
+  fl0 <- merge(trapVisitIDSpine,fl,by=c("trapVisitID"),all.x=TRUE)
+  fl0[is.na(fl0)] <- 0
+  fl0 <- fl0[fl0$nForkLength == 0,]
+  
+  tmp <- merge(tmp,fl,by=c("trapVisitID"),all.x=TRUE)
+   
+  
+  #   ---- Construct start and end times.  I also construct SampleMinutes...sometimes these differ from Connie's, by 60 
+  #   ---- minutes.  This has to do with daylight savings.  I need POSIX to 'be dumb' with respect to daylight savings, 
+  #   ---- to match Connie.  I wonder if Connie's SampleMinutes are off by 60 minutes?  I suspect the times recorded in 
+  #   ---- the CAMP are 'raw' times, and so when one "springs forward" +60 minutes go along for the ride, and when one 
+  #   ---- "falls back," CAMP loses 60 minutes.  This explains why spring-time SampleMinutes that I calculate are short 
+  #   ---- by 60 minutes.  I don't think this is easily fixed.   
+  tmp <- tmp[order(tmp$trapPositionID,tmp$visitTime),]
+  
+  #   ---- Apply the lag throughout.
+  tmp$StartTime <- as.POSIXlt(strftime(c(as.POSIXlt(NA,tz="America/Los_Angeles"),strftime(tmp$visitTime[1:(nrow(tmp) - 1)],tz="America/Los_Angeles"))),tz="America/Los_Angeles")
+  
+  #   ---- Identify where the lag logic is wrong.  These occur when the lag visitTime != lag visitTime2.  Adjust the StartTime to be correct. 
+  tmp$StartTime <- ifelse(as.POSIXlt(strftime(c(as.POSIXlt(NA,tz="America/Los_Angeles"),strftime(tmp$visitTime[1:(nrow(tmp) - 1)],tz="America/Los_Angeles"))),tz="America/Los_Angeles") !=
+         as.POSIXlt(strftime(c(as.POSIXlt(NA,tz="America/Los_Angeles"),strftime(tmp$visitTime2[1:(nrow(tmp) - 1)],tz="America/Los_Angeles"))),tz="America/Los_Angeles"),
+         as.POSIXct(strftime(c(as.POSIXlt(NA,tz="America/Los_Angeles"),strftime(tmp$visitTime2[1:(nrow(tmp) - 1)],tz="America/Los_Angeles"))),tz="America/Los_Angeles"),
+         as.POSIXct(tmp$StartTime))
+  
+  #   ---- So POSIX is awful with ifelse.  Or I'm not doing it right.  Regardless, put it to how we want it.  
+  tmp$StartTime2 <- as.POSIXlt(tmp$StartTime,format="%Y-%m-%d %H:%M:%S",tz="America/Los_Angeles",origin="1970-01-01 00:00:00 UTC")
+  tmp$StartTime <- NULL
+  names(tmp)[names(tmp) == "StartTime2"] <- "StartTime"
+  
+  #   ---- Apply the EndTime logic.  This is much easier.  
+  tmp$EndTime <- tmp$visitTime2 
+  tmp[tmp$visitTime != tmp$visitTime2,]$EndTime <- tmp[tmp$visitTime != tmp$visitTime2,]$visitTime
+  
   tmp$SampleMinutes <- difftime(tmp$EndTime,tmp$StartTime,units="mins")
+  
+  #   ---- We need to be smart here.
+  #   ---- Put the SampleMinutes for the first record for each trapPositionID to -99.
+  tmp[tmp$trapPositionID != c(99,tmp$trapPositionID[1:(nrow(tmp) - 1)]),]$SampleMinutes <- -99
+  
+  #   ---- Put the SampleMinutes for a time frame greater than the gap in fishing length to -88.
+  tmp[tmp$SampleMinutes > fishingGapMinutes,]$SampleMinutes <- -88
+  
   tmp$uniqueDate <- NA  
+  
+  #   ---- Check where we can.  Note that catch.df isn't read in by the function. 
+  # connieSM <- unique(catch.df[,c("oldtrapPositionID","trapVisitID","SampleMinutes")])
+  # names(connieSM)[names(connieSM) == "oldtrapPositionID"] <- "trapPositionID"
+  # names(connieSM)[names(connieSM) == "SampleMinutes"] <- "SampleMinutesC"
+  # 
+  # tmp2 <- merge(tmp,connieSM,by=c("trapPositionID","trapVisitID"),all.x=TRUE)
+  # tmp2$Diff <- as.numeric(tmp2$SampleMinutes) - tmp2$SampleMinutesC
+  # 
+  # tmp2[tmp2$Diff != 0 & !is.na(tmp2$Diff),]
+  # tmp2[tmp2$Diff != -60 & tmp2$Diff != 0 & !is.na(tmp2$Diff),]
+  
+
+  
+  
   
   
   #   ---- Calculate the proportion of each trapVisitID experience sun or moon, depending.  
@@ -193,6 +255,12 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   release.visit$oldRecaps <- release.visit$Recaps
   release.visit$Recaps <- release.visit$oldRecaps + release.visit$halfConeAdj
 
+  
+  release.visit[is.na(release.visit$nForkLength),]$nForkLength <- fl0[match(release.visit[is.na(release.visit$nForkLength),]$trapVisitID,fl0$trapVisitID),]$nForkLength
+  
+  
+  
+  
   #   ---- Sum over trapVisits at a trapPosition.  
   by.list <- list(trapPositionID = release.visit$trapPositionID,
                   releaseID = release.visit$releaseID )
@@ -212,6 +280,8 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
     one.row$allNightMins <- sum(tmp$nightMinutes)        
     one.row$allMoonMins <- sum(as.numeric(tmp$moonMinutes))
     one.row$allSampleMins <- sum(as.numeric(tmp$JasonSampleMinutes))
+    one.row$allfl <- sum(tmp[tmp$nForkLength > 0,]$wmForkLength*tmp[tmp$nForkLength > 0,]$nForkLength)
+    one.row$allNfl <- sum(tmp$nForkLength) 
 
     #   ---- Compute time to first and last visit after release, even if they did not catch any marked fish. 
     tmp.hdiff <- as.numeric( difftime(tmp$VisitTime, tmp$ReleaseDate, units="hours") )
@@ -225,6 +295,7 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
       
       one.row$meanNightProp <- one.row$allNightMins / one.row$allSampleMins
       one.row$meanMoonProp <- one.row$allMoonMins / one.row$allSampleMins
+      one.row$wmVisitForkLength <- one.row$allfl / one.row$allNfl
     } else {
       tmp.v <- as.numeric(tmp$VisitTime)
       one.row$meanRecapTime <- sum(tmp.v * tmp$Recaps, na.rm=T) / one.row$Recaps
@@ -232,6 +303,7 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
       
       one.row$meanNightProp <- one.row$allNightMins / one.row$allSampleMins
       one.row$meanMoonProp <- one.row$allMoonMins / one.row$allSampleMins
+      one.row$wmVisitForkLength <- one.row$allfl / one.row$allNfl
     }
   
     #   ---- Drop the columns over which we are summing.

@@ -145,7 +145,7 @@ getTimeProp <- function(df,rise,set,traps,tmp,metric){
   the0 <- unique(tmp$trapVisitID)[!(unique(tmp$trapVisitID) %in% unique(allSumm$trapVisitID))]
   the0 <- data.frame(trapVisitID=the0,moonMinutes=rep(0,length(the0)))
   
-  #   ---- But the two together and sort for prettiness.  
+  #   ---- Put the two together and sort for prettiness.  
   allSumm <- rbind(allSumm,the0)
   allSumm[,paste0(metric,"Minutes")] <- as.numeric(allSumm[,paste0(metric,"Minutes")])
   allSumm <- allSumm[order(allSumm$trapVisitID),]
@@ -155,9 +155,8 @@ getTimeProp <- function(df,rise,set,traps,tmp,metric){
   propMet <- paste0(metric,"Prop")
   done[,propMet] <- done[,paste0(metric,"Minutes")] / as.numeric(done[,"SampleMinutes"])
   
-  #   ---- The first trapping instance for a trap is NA or negative, since there was no 
-  #   ---- previous fishing time on which to build.  So, NA these proportions out. 
-  done[,propMet] <- ifelse( (is.na(done[,propMet]) | (done[,propMet] < 0) ),NA,done[,propMet])
-  
+  #   ---- Make sure that proportion measures that should have no value actually have none.
+  done[,propMet] <- ifelse(done$SampleMinutes %in% c(-88,-99),NA,done[,propMet])
+
   return(done)
 }
