@@ -295,7 +295,7 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
       
       one.row$meanNightProp <- one.row$allNightMins / one.row$allSampleMins
       one.row$meanMoonProp <- one.row$allMoonMins / one.row$allSampleMins
-      one.row$wmVisitForkLength <- one.row$allfl / one.row$allNfl
+      one.row$meanForkLength <- one.row$allfl / one.row$allNfl
     } else {
       tmp.v <- as.numeric(tmp$VisitTime)
       one.row$meanRecapTime <- sum(tmp.v * tmp$Recaps, na.rm=T) / one.row$Recaps
@@ -303,7 +303,7 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
       
       one.row$meanNightProp <- one.row$allNightMins / one.row$allSampleMins
       one.row$meanMoonProp <- one.row$allMoonMins / one.row$allSampleMins
-      one.row$wmVisitForkLength <- one.row$allfl / one.row$allNfl
+      one.row$meanForkLength <- one.row$allfl / one.row$allNfl
     }
   
     #   ---- Drop the columns over which we are summing.

@@ -71,7 +71,10 @@ F.est.efficiency.enh <- function( release.df, batchDate, df.spline=4, plot=TRUE,
 
   #   ---- Fix up the data frame.
   rel.df <- release.df[,c("releaseID","ReleaseDate","nReleased","HrsToFirstVisitAfter",
-  												"HrsToLastVisitAfter","trapPositionID","meanRecapTime","Recaps",'beg.date','end.date')]
+  												"HrsToLastVisitAfter","trapPositionID","meanRecapTime","Recaps",'beg.date','end.date',
+  												"allMoonMins","meanMoonProp",   # added this line for enhanced models for collapsing on batchDate.
+  												"allNightMins","meanNightProp", # added this line for enhanced models for collapsing on batchDate.
+  												"allfl","meanForkLength")]      # added this line for enhanced models for collapsing on batchDate.
   rel.df$batchDate <- rep(NA, nrow(rel.df))
   names(rel.df)[ names(rel.df) == "meanRecapTime" ] <- "EndTime"
 
@@ -87,13 +90,24 @@ F.est.efficiency.enh <- function( release.df, batchDate, df.spline=4, plot=TRUE,
   rel.df <- F.assign.batch.date( rel.df )
   rel.df$batchDate.str <- format(rel.df$batchDate,"%Y-%m-%d")
 
-  #   ---- Sum by batch dates.  This combines release and catches over trials that occured close in time.
+  
+  rel.df[rel.df$releaseID %in% c(276,277),]
+  
+  #   ---- Sum by batch dates.  This combines release and catches over trials that occured close in time.  For enhanced
+  #   ---- efficiency models, need to collapse prop of moon and night and forklength as well over batchDate.
   ind <- list( TrapPositionID=rel.df$trapPositionID,batchDate=rel.df$batchDate.str )
   nReleased <- tapply( rel.df$nReleased,ind, sum )
   nCaught   <- tapply( rel.df$Recaps,ind, sum )
+  
+  #lapply(split(truc, truc$x), function(z) weighted.mean(z$y, z$w)) 
+  
+  bdMeanNightProp  <- sapply( split(rel.df, ind) ,function(z) weighted.mean(z$meanNightProp,z$allNightMins) )
+  bdMeanMoonProp   <- sapply( split(rel.df, ind) ,function(z) weighted.mean(z$meanMoonProp,z$allMoonMins) )
+  bdMeanForkLength <- sapply( split(rel.df, ind) ,function(z) weighted.mean(z$meanForkLength,z$allfl) )
 
   eff.est <- cbind( expand.grid( TrapPositionID=dimnames(nReleased)[[1]],batchDate=dimnames(nReleased)[[2]]), 
-                nReleased=c(nReleased),nCaught=c(nCaught) )
+                nReleased=c(nReleased),nCaught=c(nCaught),bdMeanNightProp=c(bdMeanNightProp),
+                bdMeanMoonProp=c(bdMeanMoonProp),bdMeanForkLength=c(bdMeanForkLength) )
   eff.est$batchDate <- as.character(eff.est$batchDate)
 
   #   ================== done with data manipulations ===========================
