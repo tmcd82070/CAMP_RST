@@ -78,9 +78,10 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   DF <- DF[order(DF$batchDate2),]
   
   #   ---- Plot.
-  plot(DF$batchDate2,DF$p,xaxt="n",yaxt="n",xlim=as.numeric(c(beg.x,end.x)),ylim=c(0,1),xlab=NA,ylab=NA,type="l",col="black")
+  title <- paste0("Enhanced Efficiency Cubic Spline Trap ",fit$data$TrapPositionID[1])
+  plot(DF$batchDate2,DF$p,xlim=as.numeric(c(beg.x,end.x)),ylim=c(0,1),xlab="Time",ylab="Efficiency",type="l",col="black")
   par(new=TRUE)
-  plot(tmp.df$batchDate2,tmp.df$efficiency,xlim=as.numeric(c(beg.x,end.x)),ylim=c(0,1),xlab="Time",ylab="Efficiency",pch=19,col="red")
+  points(tmp.df$batchDate2,tmp.df$efficiency,pch=19,col="red",cex=(fit$data$nReleased)/mean((fit$data$nReleased))  )
   points(Boundary.knots,yboundary,pch=19,col="blue")
   points(knots,yknots,pch=19,col="blue")
   

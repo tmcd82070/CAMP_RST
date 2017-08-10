@@ -19,7 +19,7 @@
 #'  \code{unitID} are returned, although all unique values encountered are saved
 #'  as attribute \code{"uniqueUnitID"}.
 #'  
-#'@details Qualitative variables, of which currently only includes
+#'@details Qualitative variables, which currently only includes
 #'  \code{"weather"}, do not subset to values with a valid \code{unitID}, if
 #'  only because these don't exist.  Alternatively, a lookup table of all
 #'  weather values ever recorded is used to map to one of four ordinal values of

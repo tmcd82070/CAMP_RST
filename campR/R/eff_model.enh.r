@@ -367,7 +367,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     
     # JASON PLAYS AROUND AND ENSURES A DATE REPEATS OVER TWO YEARS.
-    df[!is.na(df$efficiency),]$batchDate[15] <- df[!is.na(df$efficiency),]$batchDate[1]
+    #df[!is.na(df$efficiency),]$batchDate[15] <- df[!is.na(df$efficiency),]$batchDate[1]
     
     
     
@@ -417,7 +417,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- the values over all time.  Chuck those that don't have at least ... 90% of the data rows, given a 
     #   ---- trap.  Note that this considers NA WITHIN a column.  If we delete, we have to update tmp.df$covar.
     atLeast <- floor(0.90*m.i) + 1
-    vars <- unlist(strsplit(tmp.df$covar[1]," + ",fixed=TRUE)[[1]])
+    vars <- colnames(tmp.df[,(which(colnames(tmp.df) == "covar") + 1):ncol(tmp.df)]) #unlist(strsplit(tmp.df$covar[1]," + ",fixed=TRUE)[[1]])
+    vars <- vars[!(vars %in% c("fishDay","batchDate2"))]
     for(i in 1:length(vars)){
       if(!(sum(!is.na(tmp.df[,vars[i]])) >= atLeast)){
         cat(paste0("Trap ",trap," variable ",vars[i]," has only ",sum(!is.na(tmp.df[,vars[i]]))," points but needs ",atLeast," for inclusion.  Deleting.\n"))
@@ -453,10 +454,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- year.  I'm okay with this I think.  
     
     
-    par(mfrow=c(1,2))
-    plot(tmp.df$batchDate,tmp.df$efficiency,col=c("red","green","blue")[as.factor(tmp.df$fishPeriod)],pch=19,cex=3)
-    plot(tmp.df$batchDate2,tmp.df$efficiency,col=c("red","green","blue")[as.factor(tmp.df$fishPeriod)],pch=19,cex=3)
-    par(mfrow=c(1,1))
+    # par(mfrow=c(1,2))
+    # plot(tmp.df$batchDate,tmp.df$efficiency,col=c("red","green","blue")[as.factor(tmp.df$fishPeriod)],pch=19,cex=3)
+    # plot(tmp.df$batchDate2,tmp.df$efficiency,col=c("red","green","blue")[as.factor(tmp.df$fishPeriod)],pch=19,cex=3)
+    # par(mfrow=c(1,1))
     
     
     if( m.i == 0 ){
@@ -559,6 +560,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           #   ---- years' data to our 1969-1970 year.
           cur.bspl <- bs( df$batchDate2[eff.ind.inside], df=cur.df )
           tmp.bs <- cur.bspl[!is.na(df$efficiency[eff.ind.inside]),]
+          tmp.bs <- tmp.bs[as.logical(goodInd),]
           
           cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
           cur.AIC <- AIC(cur.fit)
