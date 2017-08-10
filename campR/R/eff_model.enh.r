@@ -91,6 +91,31 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   # max.df.spline <- 4
   # plot.file <- plot.file
   
+  
+  
+  #   ---- Read in table of fishing seasons.  These are derived from taking the minimum 
+  #   ---- start period of fishing, based on month and date, for all fishing seasons 
+  #   ---- recorded in "theExcel" used for Big-Looping.  Similar logic applies for the
+  #   ---- end period of fishing, where the maximum is used.  Doug and Connie provided
+  #   ---- these dates, and should serve as seasons to "bracket" efficiency trials 
+  #   ---- for modeling.  
+  
+  #   ---- I want to use POSIX for these, so in "theExcel," I code these dates with 
+  #   ---- respect to Jan 1, 1970.  I need a year for POSIX.  So, for example, the 
+  #   ---- American, over year 2013-2016, has an earliest fishing start date of 
+  #   ---- 12/31, with the latest end to fishing on 7/1.  I want to code these dates
+  #   ---- via 1970, so I put in 12/31/1969 and 7/1/1970 for these.  So, it is 
+  #   ---- important to note that fishing seasons that straddle 12/31 will have 
+  #   ---- periods that start in 1969, but end in 1970.  Otherwise, start and end 
+  #   ---- fishing dates will be coded via year 1970.  
+  
+  #   ---- Need to make this go to the package inst folder, not the working directory.
+  theExcel <- read.csv("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/theExcel.csv",stringsAsFactors=FALSE)
+  bsplBegDt <- as.POSIXlt(strptime(theExcel[theExcel$siteID == site,]$minOverall[1],format="%m/%d/%Y",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+  bsplEndDt <- as.POSIXlt(strptime(theExcel[theExcel$siteID == site,]$maxOverall[1],format="%m/%d/%Y",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+  
+  
+  
   ans <- NULL
   traps <- sort( unique(obs.eff.df$TrapPositionID))
   
@@ -201,6 +226,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       
     source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")
     source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
+    source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot.bs.spline.R")
     
     #   ---- Query this river's Access database for information recorded at the trap.  For now, we only use this 
     #   ---- for turbidity.  I name objects that respect this.  
@@ -337,23 +363,39 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
     ind <- !is.na(df$efficiency)
     
+    
+    
+    
     # JASON PLAYS AROUND AND ENSURES A DATE REPEATS OVER TWO YEARS.
     df[!is.na(df$efficiency),]$batchDate[15] <- df[!is.na(df$efficiency),]$batchDate[1]
     
     
-    #   ---- Define these so we can model on (basically) fishing day of the season.  For now,
-    #   ---- I assume fishing periods don't straddle Dec. 31. 
-    df$fishDay <- as.POSIXlt(df$batchDate)$yday + 1
-    df$fishPeriod <- as.factor(as.POSIXlt(df$batchDate)$year + 1900)
     
-    firstYear <- min(as.POSIXlt(df$batchDate)$year + 1900)
-    df$batchDate2 <-  as.POSIXct(paste0(firstYear,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone)
+    
+    
+    #   ---- Define these so we can model on (basically) fishing day of the season.  Do this with respect to 
+    #   ---- the year 1970 paradigm defined above.  We really only care about the number of days since the
+    #   ---- minimum start of fishing, over all years, so the year is immaterial.  Use 1970, or maybe 1969, 
+    #   ---- so we always keep this fact in mind.  Not sure this will always work... Need to check.  
+    sign <- as.numeric(strftime(df$batchDate,format="%j")) - as.numeric(strftime(bsplBegDt,format="%j"))
+    df$fishDay <- ifelse(sign == 0,0,
+                  ifelse(sign  < 0,sign + 365,as.numeric(strftime(df$batchDate,format="%j")))) 
+    #df$fishPeriod <- as.factor(as.POSIXlt(df$batchDate)$year + 1900)
+    
+    #firstYear <- min(as.POSIXlt(df$batchDate)$year + 1900)
+    firstYear <- min(bsplBegDt$year + 1900)
+    df$batchDate2 <- ifelse(sign >= 0,as.POSIXct(paste0(firstYear,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone),
+                     ifelse(sign < 0,as.POSIXct(paste0(firstYear + 1,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone),
+                     NA))
+    df$batchDate2 <- as.POSIXct(df$batchDate2,format="%Y-%m-%d",tz="America/Los_Angeles",origin="1970-01-01 00:00:00 UTC")
+      
+    #df$batchDate2 <- as.POSIXct(paste0(firstYear,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone)
     
     
     #   ---- Find the "season", which is between first and last trials
-    #   ---- Jason uses batchDate2 here, to be sure to grab all.  
-    strt.dt <- min( df$batchDate2[ind], na.rm=T )  # Earliest date with an efficiency trial
-    end.dt  <- max( df$batchDate2[ind], na.rm=T )  # Latest date with efficiency trial
+    #   ---- We look for 'inside' with respect to our 1969-1970 mapped year of trials.  
+    strt.dt <- bsplBegDt #min( df$batchDate[ind], na.rm=T )  # Earliest date with an efficiency trial
+    end.dt  <- bsplEndDt #max( df$batchDate[ind], na.rm=T )  # Latest date with efficiency trial
     ind.inside <- (strt.dt <= df$batchDate2) & (df$batchDate2 <= end.dt)
     inside.dates <- c(strt.dt, end.dt)
     all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
@@ -361,6 +403,15 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- The fitting data frame
     tmp.df <- df[ind & ind.inside,]
     m.i <- sum(ind & ind.inside)
+    
+    #   ---- We defined the start and end for the fishing season.  Need this to know when we need an efficiency estimate.
+    #   ---- But we need to find the actual temporal range of efficiency dates, so the boundary points of the spline are
+    #   ---- appropriate for efficiency effort.  Otherwise, the boundary points in the efficiency spline uses the 
+    #   ---- overall min and max of fishing, which isn't correct.  
+    eff.strt.dt <- min(tmp.df$batchDate2)
+    eff.end.dt <- max(tmp.df$batchDate2)
+    eff.ind.inside <- (eff.strt.dt <= df$batchDate2) & (df$batchDate2 <= eff.end.dt)
+    eff.inside.dates <- c(eff.strt.dt,eff.end.dt)
     
     #   ---- With the inclusion of all CAMP covariates, the probability increases by a lot that we don't have all 
     #   ---- the values over all time.  Chuck those that don't have at least ... 90% of the data rows, given a 
@@ -498,10 +549,16 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         repeat{
           
           #cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
+          #tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
           
-          cur.bspl <- bs( df$batchDate2[ind.inside], df=cur.df )
+          #   ---- Note:  ind.inside for these enhanced efficiency models should be the julian dates
+          #   ---- inside the min and max fishing days...not what it's been historically.  We are not
+          #   ---- applying to catch data, so these intercept pre- and post- fits don't matter.  
           
-          tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
+          #   ---- Note I use a unique here...we expect batchDate duplicates when reducing from many 
+          #   ---- years' data to our 1969-1970 year.
+          cur.bspl <- bs( df$batchDate2[eff.ind.inside], df=cur.df )
+          tmp.bs <- cur.bspl[!is.na(df$efficiency[eff.ind.inside]),]
           
           cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
           cur.AIC <- AIC(cur.fit)
@@ -521,15 +578,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         cat("\nFinal Efficiency model for trap: ", trap, "\n")
         print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
         
-        
-        #   ---- Plot the spline here.  
-        as.POSIXlt(attr(bspl,"knots"),format="%Y-%m-%d",tz=time.zone,origin="1970-01-01 00:00:00 UTC")
-        
-        write.csv(bspl,"C:/Users/jmitchell/Desktop/matrix.csv",row.names=FALSE)
-        
-        
-        
-        
+        plot.bs.spline(bspl,fit,bsplBegDt,bsplEndDt,tmp.df)
         
         #   ---- Make a design matrix for ease in calculating predictions.
         if( length(coef(fit)) <= 1 ){
@@ -554,11 +603,11 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         #df$efficiency[miss.eff.inside] <- pred[miss.eff]
         
         #   ---- If, however, you want to use the modeled efficiency for all days, even when a trial was done, use these. 
-        df$efficiency[ind.inside] <- pred
+        df$efficiency[eff.ind.inside] <- pred
         
         #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
         mean.p <- mean(pred, na.rm=T)
-        df$efficiency[!ind.inside] <- mean.p
+        df$efficiency[!eff.ind.inside] <- mean.p
         
         #   ---- Save the fit for bootstrapping.
         fits[[trap]] <- fit  
