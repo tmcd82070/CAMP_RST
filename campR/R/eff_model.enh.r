@@ -499,8 +499,19 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       #   ---- Very simple design matrix in this case, since we're only fitting an intercept.  
       if( length(coef(fits[[trap]])) == 1 ){
         #pred <- matrix( coef(fit), sum(ind.inside), 1 )
-        X <- matrix( 1, sum(ind.inside), 1)
+        X <- matrix( 1, sum(eff.ind.inside), 1)
       }
+      
+      #   ---- Plot the spline.  Note this reproduces the pred calculation just above.  I like having 
+      #   ---- all of that in the function from start to finish, although it's clear it's not much. 
+      #   ---- For this mean-only model, I have to finagle X to look like bs-function output. 
+      attr(X,"intercept") <- FALSE
+      attr(X,"Boundary.knots") <- as.numeric(eff.inside.dates)
+      attr(X,"knots") <- numeric(0)
+      bspl <- X
+      png(filename=paste0(plot.file,"-EnhEff-",trap,".png"),width=7,height=7,units="in",res=600)
+      plot.bs.spline(bspl,fits[[trap]],bsplBegDt,bsplEndDt,tmp.df)
+      dev.off()
       
       #   ---- Save X, and the dates at which we predict, for bootstrapping.
       all.X[[trap]] <- X   
@@ -580,8 +591,6 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         cat("\nFinal Efficiency model for trap: ", trap, "\n")
         print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
         
-        plot.bs.spline(bspl,fit,bsplBegDt,bsplEndDt,tmp.df)
-        
         #   ---- Make a design matrix for ease in calculating predictions.
         if( length(coef(fit)) <= 1 ){
           pred <- matrix( coef(fit), sum(ind.inside), 1 )
@@ -590,6 +599,12 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           X <- cbind( 1, bspl )
           pred <- X %*% coef(fit)
         }
+        
+        #   ---- Plot the spline.  Note this reproduces the pred calculation just above.  I like having 
+        #   ---- all of that in the function from start to finish, although it's clear it's not much. 
+        png(filename=paste0(plot.file,"-EnhEff-",trap,".png"),width=7,height=7,units="in",res=600)
+        plot.bs.spline(bspl,fit,bsplBegDt,bsplEndDt,tmp.df)
+        dev.off()
         
         #   ---- Save X, and the dates at which we predict, for bootstrapping.
         all.X[[trap]] <- X   

@@ -39,11 +39,11 @@
 plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.ind.inside]){
   
   # X <- bspl
-  # fit <- fit
+  # fit <- fits[[trap]]#fit
   # beg.x <- bsplBegDt
   # end.x <- bsplEndDt
   # eff <- tmp.df
-  # bd2=df$batchDate2[ind.inside]
+  # bd2=df$batchDate2[eff.ind.inside]
   
   #   ---- For CAMP work, we assume there is no intercept.  Check for this.
   int <- attr(X,"intercept")
@@ -51,8 +51,11 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
     stop(paste0("ERROR:  This function assumes no intercept in bs object ",deparse(substitute(X)),".\n"))
   }
   Boundary.knots <- attr(X,"Boundary.knots")
-  degree <- attr(X,"degree")   # do i need this?  we always use cubic.
+  #degree <- attr(X,"degree")   # do i need this?  we always use cubic.
   knots <- attr(X,"knots")
+  
+  #   ---- Identify if the bspl object is really just a vector of 1s.
+  intOnly <- sum(X == rep(1,nrow(X))) == nrow(X) 
   
   #   ---- In CAMP work, and in general, the X (bspl) matrix may not be sorted  
   #   ---- by row.  This means the x-variable against which we ultimately wnat to plot.  
@@ -63,15 +66,26 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   #   ---- are which; i.e., we need to sort.  So, use the hard-coded batchDate object. 
   DF <- data.frame(batchDate2=bd2,X)
   b <- coef(fit)
-  y <- cbind(rep(1,nrow(X)),X) %*% b
+  
+  #   ---- Check if X is just a vector of 1s; i.e., an intercept-only model.  
+  if( intOnly == TRUE ){
+    y <- X %*% b
+  } else {
+    y <- cbind(rep(1,nrow(X)),X) %*% b
+  }
   p <- 1/(1 + exp(-1*y))
   DF <- cbind(DF,y=y,p=p)
   
   #   ---- Get the y-coordinates for the 2 boundary knots.
-  yboundary <- 1/(1 + exp(-1*cbind(rep(1,2),predict(bspl,Boundary.knots)) %*% b))
+  if( intOnly == TRUE){
+    yboundary <- DF$p[1:2]
+    yknots <- numeric(0)
+  } else {
+    yboundary <- 1/(1 + exp(-1*cbind(rep(1,2),predict(bspl,Boundary.knots)) %*% b))
   
-  if(length(knots) > 0){
-    yknots <- 1/(1 + exp(-1*cbind(rep(1,length(knots)),predict(bspl,knots)) %*% b))
+    if(length(knots) > 0){
+      yknots <- 1/(1 + exp(-1*cbind(rep(1,length(knots)),predict(bspl,knots)) %*% b))
+    }
   }
   
   #   ---- Sort DF after multiplication by b vector.  
@@ -79,10 +93,12 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   
   #   ---- Plot.
   title <- paste0("Enhanced Efficiency Cubic Spline Trap ",fit$data$TrapPositionID[1])
-  plot(DF$batchDate2,DF$p,xlim=as.numeric(c(beg.x,end.x)),ylim=c(0,1),xlab="Time",ylab="Efficiency",type="l",col="black")
+  plot(DF$batchDate2,DF$p,xlim=as.numeric(c(beg.x,end.x)),ylim=c(0,1),xlab="Time",ylab="Efficiency",type="l",col="black",main=title)
   par(new=TRUE)
-  points(tmp.df$batchDate2,tmp.df$efficiency,pch=19,col="red",cex=(fit$data$nReleased)/mean((fit$data$nReleased))  )
   points(Boundary.knots,yboundary,pch=19,col="blue")
-  points(knots,yknots,pch=19,col="blue")
+  points(tmp.df$batchDate2,tmp.df$efficiency,pch=19,col="red",cex=(fit$data$nReleased)/mean((fit$data$nReleased))  )
+  if(length(knots) > 0){
+    points(knots,yknots,pch=19,col="blue")
+  }
   
 }
