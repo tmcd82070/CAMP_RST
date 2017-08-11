@@ -112,8 +112,13 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   
   setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
   
+  #   ---- Fetch all efficiency data over all time.  I need the visit.df StartTime and EndTime to calculate sun and moon 
+  #   ---- proportions, so move get.release.data to after the catch.  Note I make get.release.data.enh to do this.  
+  min.date2 <<- "1990-01-01"
+  max.date2 <<- "2017-05-22"
+  
   #   ---- Fetch the catch and visit data
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date, output.file  )
+  tmp.df   <- F.get.catch.data( site, taxon, min.date2, max.date2, output.file  )
   
   catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
@@ -124,10 +129,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
     stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
   }
   
-  #   ---- Fetch all efficiency data over all time.  I need the visit.df StartTime and EndTime to calculate sun and moon 
-  #   ---- proportions, so move get.release.data to after the catch.  Note I make get.release.data.enh to do this.  
-  min.date2 <<- "1990-01-01"
-  max.date2 <<- "2017-05-22"
+
   
   #   ---- I calculate mean forklength here and attach via an attribute on visit.df.  This way, it gets into function 
   #   ---- F.get.release.data.enh.  Note I make no consideration of FinalRun, or anything else.  I get rid of plus 

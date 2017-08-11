@@ -39,7 +39,7 @@
 plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.ind.inside]){
   
   # X <- bspl
-  # fit <- fits[[trap]]#fit
+  # fit <- fit0
   # beg.x <- bsplBegDt
   # end.x <- bsplEndDt
   # eff <- tmp.df
@@ -54,6 +54,9 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   #degree <- attr(X,"degree")   # do i need this?  we always use cubic.
   knots <- attr(X,"knots")
   
+  #   ---- Preserve the bs object before manipulation.  
+  bspl <- X
+  
   #   ---- Identify if the bspl object is really just a vector of 1s.
   intOnly <- sum(X == rep(1,nrow(X))) == nrow(X) 
   
@@ -64,36 +67,52 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   #   ---- that in general, an x-value could be in X twice+, via two+ rows.  This 
   #   ---- duplication in the x doesn't affect estimation, but we need to ID which rows
   #   ---- are which; i.e., we need to sort.  So, use the hard-coded batchDate object. 
-  DF <- data.frame(batchDate2=bd2,X)
+
+  #   ---- Id the beta vector.  
   b <- coef(fit)
   
-  #   ---- Check if X is just a vector of 1s; i.e., an intercept-only model.  
-  if( intOnly == TRUE ){
-    y <- X %*% b
-  } else {
-    y <- cbind(rep(1,nrow(X)),X) %*% b
+  #   ---- See if we have other covariates we need to do something with.  
+  if( length(coef(fit)) > ncol(X) ){
+    
+    dat <- fit$data[,colnames(fit$data)[colnames(fit$data) %in% names(coef(fit))]]
+    covarMeans <- suppressWarnings(apply(dat,2,function(x) mean(as.numeric(x))))
+    X <- cbind(rep(1,nrow(X)),X,matrix(covarMeans,ncol=length(covarMeans),nrow=nrow(X),byrow=TRUE))
+    colnames(X) <- names(b)
+  } else if(!intOnly){
+    
+    #   ---- Tack on the intercept column, if necessary.  
+    X <- cbind(rep(1,nrow(X)),X)
   }
+  
+  #   ---- Check if X is just a vector of 1s; i.e., an intercept-only model.  
+  y <- X %*% b
   p <- 1/(1 + exp(-1*y))
-  DF <- cbind(DF,y=y,p=p)
+  DF <- data.frame(X,y=y,p=p)
   
   #   ---- Get the y-coordinates for the 2 boundary knots.
   if( intOnly == TRUE){
     yboundary <- DF$p[1:2]
     yknots <- numeric(0)
+  } else if(length(coef(fit)) > ncol(bspl)) {
+    yboundary <- 1/(1 + exp(-1*cbind(rep(1,2),predict(bspl,Boundary.knots),matrix(covarMeans,ncol=length(covarMeans),nrow=2,byrow=TRUE)) %*% b))
+    if(length(knots) > 0){
+      yknots <- 1/(1 + exp(-1*cbind(rep(1,length(knots)),predict(bspl,knots),matrix(covarMeans,ncol=length(covarMeans),nrow=length(knots),byrow=TRUE)) %*% b))
+    }
   } else {
     yboundary <- 1/(1 + exp(-1*cbind(rep(1,2),predict(bspl,Boundary.knots)) %*% b))
-  
     if(length(knots) > 0){
       yknots <- 1/(1 + exp(-1*cbind(rep(1,length(knots)),predict(bspl,knots)) %*% b))
     }
   }
   
-  #   ---- Sort DF after multiplication by b vector.  
+  #   ---- Sort DF.
+  DF$batchDate2 <- bd2
   DF <- DF[order(DF$batchDate2),]
   
   #   ---- Plot.
+  yM <- 0.3  # maybe set as argument?
   title <- paste0("Enhanced Efficiency Cubic Spline Trap ",fit$data$TrapPositionID[1])
-  plot(DF$batchDate2,DF$p,xlim=as.numeric(c(beg.x,end.x)),ylim=c(0,1),xlab="Time",ylab="Efficiency",type="l",col="black",main=title)
+  plot(DF$batchDate2,DF$p,xlim=as.numeric(c(beg.x,end.x)),ylim=c(0,yM),xlab="Time",ylab="Efficiency",type="l",col="black",main=title)
   par(new=TRUE)
   points(Boundary.knots,yboundary,pch=19,col="blue")
   points(tmp.df$batchDate2,tmp.df$efficiency,pch=19,col="red",cex=(fit$data$nReleased)/mean((fit$data$nReleased))  )
