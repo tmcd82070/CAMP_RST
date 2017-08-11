@@ -19,6 +19,7 @@ reportRun <- c("K","L","M","N","O","P")
 reportRun <- c("Q")
 
 
+
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
 
@@ -215,9 +216,9 @@ for(i in 1:nStreamNames){
         #   ---- Run function run.passage over the four possible temporal periods.  
         for(byj in 1:4){
                if(byj == 1){by <- 'day'  } 
-          else if(byj == 2){by <- 'week' } 
-          else if(byj == 3){by <- 'month'} 
-          else if(byj == 4){by <- 'year' }
+          # else if(byj == 2){by <- 'week' } 
+          # else if(byj == 3){by <- 'month'} 
+          # else if(byj == 4){by <- 'year' }
 
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
@@ -363,10 +364,17 @@ for(i in 1:nStreamNames){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         
         #   ---- These adapted functions are not (currently) part of a package.
-        source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.enh.R"))
-        source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.enh.R"))
-        source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.enh.R"))
-        source(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.enh.R"))
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/get_release_data.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.enh.R")
+        
+        source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeSkinnyTimes.R")
+        source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTimeProp.R")
+        source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")
+        source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
+        source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot.bs.spline.R")
         
         #   ---- Function run.passage.enh expects a 'by' that isn't used.   
         by <- 'year' 
