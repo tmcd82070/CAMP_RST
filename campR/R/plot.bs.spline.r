@@ -39,7 +39,7 @@
 plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.ind.inside]){
   
   # X <- bspl
-  # fit <- fit0
+  # fit <- fit1
   # beg.x <- bsplBegDt
   # end.x <- bsplEndDt
   # eff <- tmp.df
@@ -74,7 +74,13 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   #   ---- See if we have other covariates we need to do something with.  
   if( length(coef(fit)) > ncol(X) ){
     
-    dat <- fit$data[,colnames(fit$data)[colnames(fit$data) %in% names(coef(fit))]]
+    #   ---- Check if we have only one non-intercept variable.
+    if( (length(coef(fit)) - ncol(X)) == 2 ){
+      dat <- data.frame(fit$data[,colnames(fit$data)[colnames(fit$data) %in% names(coef(fit))]])
+      colnames(dat) <- names(b)[length(b)]
+    } else {
+      dat <- fit$data[,colnames(fit$data)[colnames(fit$data) %in% names(coef(fit))]]
+    }
     covarMeans <- suppressWarnings(apply(dat,2,function(x) mean(as.numeric(x))))
     X <- cbind(rep(1,nrow(X)),X,matrix(covarMeans,ncol=length(covarMeans),nrow=nrow(X),byrow=TRUE))
     colnames(X) <- names(b)
