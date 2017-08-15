@@ -630,6 +630,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         
         
         #   ---- Fit the full model with all possible covariates that made it.  Object fit.tmp.bs is from the last kept run.
+        
+        method <- "likeType3SS"    # "pVal"    
+        distn <- "quasibinomial"   # "binomial"
         pCutOff <- 0.10
         covarString <- tmp.df$covar[1]
         
@@ -638,7 +641,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         covarString <- gsub(paste0(" + ","waterTemp_C"),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
         covarString <- gsub("waterTemp_C","",covarString,fixed=TRUE)                # leading -- remove var[i] alone
         
-        fit0 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs + ",covarString)), family=quasibinomial, data=tmp.df, weights=tmp.df$nReleased ) 
+        fit0 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs + ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
         png(filename=paste0(plot.file,"-EnhEff-",trap,"-1.png"),width=7,height=7,units="in",res=600)
         plot.bs.spline(bspl,fit0,bsplBegDt,bsplEndDt,tmp.df)
         dev.off()
@@ -647,8 +650,47 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         repeat{
           
           #   ---- Identify the worst-performing variable.  I use the highest p-value.  
-          theHighestp <- max(coefficients(summary(fit0))[row.names(coefficients(summary(fit0))) != "(Intercept)" & !(sapply(row.names(coefficients(summary(fit0))),function(x) grepl("fit.tmp",x,fixed=TRUE))),4])
-          varToTestForDeletion <- row.names(coefficients(summary(fit0)))[coefficients(summary(fit0))[,4] == theHighestp]
+          if(method == "pVal"){
+            theHighestp <- max(coefficients(summary(fit0))[row.names(coefficients(summary(fit0))) != "(Intercept)" & !(sapply(row.names(coefficients(summary(fit0))),function(x) grepl("fit.tmp",x,fixed=TRUE))),4])
+            varToTestForDeletion <- row.names(coefficients(summary(fit0)))[coefficients(summary(fit0))[,4] == theHighestp]
+          
+          } else if(method == "likeType3SS"){
+            
+            #   ---- We need to calculate a X2 test for each variable, one-by-one.  
+            thePossibleCovarString <- as.data.frame(coefficients(summary(fit0)))[row.names(coefficients(summary(fit0))) != "(Intercept)" & !(sapply(row.names(coefficients(summary(fit0))),function(x) grepl("fit.tmp",x,fixed=TRUE))),]
+            
+            #   ---- Loop through, creating a formula string with the ith row's coefficient deleted. 
+            checkThisMany <- nrow(thePossibleCovarString)
+            holdEm <- vector("list",checkThisMany)
+            df.anova <- NULL
+            for(v in 1:checkThisMany){
+              
+              if( checkThisMany == 1 ){
+                vthCovarString <- paste0("nCaught / nReleased ~ fit.tmp.bs")
+              } else {
+                vthCovarString <- paste0("nCaught / nReleased ~ fit.tmp.bs + ",paste0(rownames(thePossibleCovarString)[-v],collapse=" + "))
+              }
+              holdEm[[v]] <- glm( as.formula(vthCovarString), family=distn, data=tmp.df, weights=tmp.df$nReleased )
+              
+              #   ---- Assuming all variables to be tested are of 1 degree of freedom, could just find the set that results in the lowest
+              #   ---- residual deviance.  But, we should make it smarter for the eventual factors we could have.  
+              tmp.anova <- as.data.frame(anova(holdEm[[v]]))
+              tmp.anova$testingCovarDF <- anova(fit0)[row.names(anova(fit0)) == rownames(thePossibleCovarString)[v],]$Df
+              tmp.anova$model <- v
+              tmp.anova$testingCovar <- rownames(thePossibleCovarString)[v]
+              df.anova <- rbind(df.anova,tmp.anova)
+            }
+            df.anova$biggerModelDev <- anova(fit0)$`Resid. Dev`[checkThisMany + 2]   # + 1 Int + 1 spline
+            df.chi <- aggregate(df.anova,list(df.anova$testingCovar),function(x) tail(x,1))
+            df.chi$Group.1 <- df.chi$`Resid. Df` <- NULL
+            df.chi$ChiSq <- df.chi$`Resid. Dev` - df.chi$biggerModelDev
+            df.chi$pVal <- pchisq(df.chi$ChiSq/summary(fit0)$dispersion,df.chi$testingCovarDF,lower.tail=FALSE)
+            
+            #   ---- Now, identify the one with the highest Chi-square p-value.  
+            theHighestp <- max(df.chi$pVal) 
+            varToTestForDeletion <- df.chi[df.chi$pVal == theHighestp,]$testingCovar
+            
+          }
           
           if(theHighestp > pCutOff & covarString != ""){
             
@@ -656,17 +698,69 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
             
             #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
             covarString <- gsub(paste0(" + ",varToTestForDeletion),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
-            covarString <- gsub(varToTestForDeletion,"",covarString,fixed=TRUE)                # leading -- remove var[i] alone
+            covarString <- gsub(paste0(varToTestForDeletion," + "),"",covarString,fixed=TRUE)  # leading -- remove var[i] alone and next " + "
         
             #   ---- Fit updated model.  
             if(covarString == ""){  # We could NOW have a blank covarString.  Note the lack of the '+' below. 
-              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs ",covarString)), family=quasibinomial, data=tmp.df, weights=tmp.df$nReleased ) 
+              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
             } else {
-              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs + ",covarString)), family=quasibinomial, data=tmp.df, weights=tmp.df$nReleased ) 
+              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs + ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
             }
+            
+            #   ---- Output visual impact of variable deletion.  
             png(filename=paste0(plot.file,"-EnhEff-",trap,"-",model.i,".png"),width=7,height=7,units="in",res=600)
             plot.bs.spline(bspl,fit1,bsplBegDt,bsplEndDt,tmp.df)
             dev.off()
+            
+            
+            
+            # #   ---- We've now removed a covariate.  Should we reconsider the temporal spline?
+            # fit0 <- fit1
+            # 
+            # cur.df <- 3
+            # repeat{
+            #   
+            #   #   ---- Note:  ind.inside for these enhanced efficiency models should be the julian dates
+            #   #   ---- inside the min and max fishing days...not what it's been historically.  We are not
+            #   #   ---- applying to catch data, so these intercept pre- and post- fits don't matter.  
+            #   
+            #   #   ---- Note I use a unique here...we expect batchDate duplicates when reducing from many 
+            #   #   ---- years' data to our 1969-1970 year.
+            #   cur.bspl <- bs( df$batchDate2[eff.ind.inside], df=cur.df )
+            #   tmp.bs <- cur.bspl[!is.na(df$efficiency[eff.ind.inside]),]
+            #   
+            #   #   ---- Fit updated model.  
+            #   if(covarString == ""){  # We could NOW have a blank covarString.  Note the lack of the '+' below. 
+            #     fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs ",covarString)), family=quasibinomial, data=tmp.df, weights=tmp.df$nReleased ) 
+            #   } else {
+            #     fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs + ",covarString)), family=quasibinomial, data=tmp.df, weights=tmp.df$nReleased ) 
+            #   }
+            #   
+            #   cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
+            #   cur.AIC <- AIC(cur.fit)
+            #   
+            #   cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
+            #   
+            #   if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC - 2) ){
+            #     break
+            #   } else {
+            #     fit <- cur.fit
+            #     fit.AIC <- cur.AIC
+            #     bspl <- cur.bspl
+            #     fit.tmp.bs <- tmp.bs
+            #     cur.df <- cur.df + 1
+            #   }
+            # }
+            # 
+            # cat("\nFinal Efficiency model for trap: ", trap, "\n")
+            # print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
+            # 
+            # #   ---- Plot the spline.  Note this reproduces the pred calculation just above.  I like having 
+            # #   ---- all of that in the function from start to finish, although it's clear it's not much. 
+            # png(filename=paste0(plot.file,"-EnhEff-",trap,"-0.png"),width=7,height=7,units="in",res=600)
+            # plot.bs.spline(bspl,fit,bsplBegDt,bsplEndDt,tmp.df)
+            # dev.off()  
+            
           } else {
             cat(paste0("Variable ",varToTestForDeletion," has a p-value of ",round(theHighestp,8),", which is less than ",pCutOff,".  Keeping and exiting.\n"))
             cat("Final model identified.\n")
@@ -680,6 +774,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         cat(paste0("The final fit with covariates and spline together is:  \n"))
         print(summary(fit0, disp=sum(residuals(fit0, type="pearson")^2)/fit0$df.residual))
         cat(paste0("\n\n\n"))
+        
+        
+        
+        
         
         
         
