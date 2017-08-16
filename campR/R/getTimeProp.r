@@ -54,6 +54,13 @@ getTimeProp <- function(df,rise,set,traps,tmp,metric){
   # traps <- traps
   # tmp <- tmp
   # metric <- "moon"
+  
+  df <- sun
+  rise <- "sunRise"
+  set <- "sunSet"
+  traps <- traps
+  tmp <- tmp
+  metric <- "sun"
 
   #   ---- Create skinny of fishing times that is in temporal order by trapPositionID.  
   #   ---- Similar to the above, but with StartTime, EndTime, and by trapPositionID.
@@ -143,7 +150,8 @@ getTimeProp <- function(df,rise,set,traps,tmp,metric){
   #   ---- because up is uniformly 0 in this case.  
   #   ---- Find these, and make sure they get 0 Minutes in allSumm.  
   the0 <- unique(tmp$trapVisitID)[!(unique(tmp$trapVisitID) %in% unique(allSumm$trapVisitID))]
-  the0 <- data.frame(trapVisitID=the0,moonMinutes=rep(0,length(the0)))
+  the0 <- data.frame(trapVisitID=the0,Minutes=rep(0,length(the0)))
+  names(the0)[names(the0) == "Minutes"] <- paste0(metric,"Minutes")
   
   #   ---- Put the two together and sort for prettiness.  
   allSumm <- rbind(allSumm,the0)
