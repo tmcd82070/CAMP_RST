@@ -42,9 +42,9 @@
 #'}
 estCovar <- function(dbCov,covName,estType,traps,obs.eff.df){
   
-  # dbCov <- dbDpcm
-  # covName <- "waterDepth_cm"
-  # estType <- 1
+  # dbCov <- dbWeat
+  # covName <- "precipLevel_qual"
+  # estType <- 2
   # traps <- traps
   # obs.eff.df <- obs.eff.df
 
@@ -77,7 +77,7 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df){
           max.date.cov <- suppressWarnings(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime))
           
           #   ---- I only keep the current.  So, after running, only the last jj is here.  
-          m3[[ii]] <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=TRUE)
+          m3 <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=TRUE)
           
           #   ---- Build up the formula string in data frame obs.eff.df.
           if("covar" %in% names(obs.eff.df)){  # always true?
@@ -93,10 +93,10 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df){
           #   ---- Helpful in checking.  Eventually delete.  
           #table(obs.eff.df$TrapPositionID,obs.eff.df$covar,exclude=NULL)
           
-          obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- predict(m3[[ii]],as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
+          obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- predict(m3,as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
           
-          #jdbCov$pred_turbidity_ntu <- predict(m3[[ii]])$y
-          jdbCov[paste0("pred_",covName)] <- predict(m3[[ii]],x=as.numeric(jdbCov$measureTime))$y
+          #jdbCov$pred_turbidity_ntu <- predict(m3)$y
+          jdbCov[paste0("pred_",covName)] <- predict(m3,x=as.numeric(jdbCov$measureTime))$y
           
           allCovar <- rbind(allCovar,jdbCov)
           
@@ -130,9 +130,24 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df){
         #   ---- the first.  
         dbCov <- dbCov[!duplicated(paste0(dbCov$TrapPositionID,dbCov$batchDate)),]
     
+        
+        #   ---- Build up the formula string in data frame obs.eff.df.
+        for(jj in 1:length(theJJ)){
+          if("covar" %in% names(obs.eff.df)){  # always true?
+            if(is.na(obs.eff.df$covar[1])){
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
+            } else {
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- paste0(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar," + ",covName)
+            }
+          } else {
+            obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
+          }
+        }
+        
         #   ---- Bring new data in.  
         obs.eff.df <- merge(obs.eff.df,dbCov[,c("TrapPositionID","batchDate",CAMPCovName)],by=c("TrapPositionID","batchDate"),all.x=TRUE)
         names(obs.eff.df)[names(obs.eff.df) == CAMPCovName] <- covName
+        
       }
     }  
   }  
