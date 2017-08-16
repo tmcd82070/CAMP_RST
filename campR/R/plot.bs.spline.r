@@ -125,5 +125,5 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   if(length(knots) > 0){
     points(knots,yknots,pch=19,col="blue")
   }
-  
+  return(X)
 }
