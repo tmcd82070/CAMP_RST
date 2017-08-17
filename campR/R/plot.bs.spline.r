@@ -36,14 +36,16 @@
 #' #   ---- is provided for argument bd2 (batchDate2).   
 #' plot.bs.spline(X,fit,beg.x,end.x,tmp.df)
 #' }
-plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.ind.inside]){
+plot.bs.spline <- function(X,fit,beg.x,end.x,eff0=tmp.df,bd2=df$batchDate2[eff.ind.inside],s.beg,s.end){
   
-  # X <- bspl
-  # fit <- fit1
+  # X <- m1$bspl
+  # fit <- m1$fit
   # beg.x <- bsplBegDt
   # end.x <- bsplEndDt
-  # eff <- tmp.df
+  # eff0 <- tmp.df
   # bd2=df$batchDate2[eff.ind.inside]
+  # s.beg <- m1$s.beg
+  # s.end <- m1$s.end
   
   #   ---- For CAMP work, we assume there is no intercept.  Check for this.
   int <- attr(X,"intercept")
@@ -57,17 +59,22 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   #   ---- Preserve the bs object before manipulation.  
   bspl <- X
   
+  #   ---- We don't want repeats. X is the spline basis, so when mapping multiple years'
+  #   ---- efficiency data to one year (batchDate2), we get duplicates.  We generally 
+  #   ---- ignore these (bs function is unaffected -- dupped dates get same bs spline 
+  #   ---- matrix columns), but we want to bring in observed covariates on the dates we 
+  #   ---- have, if possible.  Using average values SUCKS.  
+  X2 <- X[!duplicated(X),]
+  
+  #   ---- We haven't sorted either, so this gets us the unique bd2.
+  bd2 <- bd2[!duplicated(X)]
+  
+  rownames(X2) <- as.character(bd2)
+  X <- X2
+  
   #   ---- Identify if the bspl object is really just a vector of 1s.
   intOnly <- sum(X == rep(1,nrow(X))) == nrow(X) 
   
-  #   ---- In CAMP work, and in general, the X (bspl) matrix may not be sorted  
-  #   ---- by row.  This means the x-variable against which we ultimately wnat to plot.  
-  #   ---- For CAMP, the reduction of multiple years of data to the "one 1969/1979 year"
-  #   ---- means that the bs basis matrix is, in general, not sorted.  This also means
-  #   ---- that in general, an x-value could be in X twice+, via two+ rows.  This 
-  #   ---- duplication in the x doesn't affect estimation, but we need to ID which rows
-  #   ---- are which; i.e., we need to sort.  So, use the hard-coded batchDate object. 
-
   #   ---- Id the beta vector.  
   b <- coef(fit)
   
@@ -90,7 +97,7 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
     X <- cbind(rep(1,nrow(X)),X)
   }
   
-  #   ---- Check if X is just a vector of 1s; i.e., an intercept-only model.  
+  #   ---- Calculate predictions
   y <- X %*% b
   p <- 1/(1 + exp(-1*y))
   DF <- data.frame(X,y=y,p=p)
@@ -114,6 +121,7 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   #   ---- Sort DF.
   DF$batchDate2 <- bd2
   DF <- DF[order(DF$batchDate2),]
+  DF <- DF[!duplicated(DF$batchDate2),]
   
   #   ---- Plot.
   yM <- 0.3  # maybe set as argument?
@@ -121,9 +129,9 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff=tmp.df,bd2=df$batchDate2[eff.in
   plot(DF$batchDate2,DF$p,xlim=as.numeric(c(beg.x,end.x)),ylim=c(0,yM),xlab="Time",ylab="Efficiency",type="l",col="black",main=title)
   par(new=TRUE)
   points(Boundary.knots,yboundary,pch=19,col="blue")
-  points(tmp.df$batchDate2,tmp.df$efficiency,pch=19,col="red",cex=(fit$data$nReleased)/mean((fit$data$nReleased))  )
+  points(eff0$batchDate2,eff0$efficiency,pch=19,col="red",cex=(fit$data$nReleased)/mean((fit$data$nReleased))  )
   if(length(knots) > 0){
     points(knots,yknots,pch=19,col="blue")
   }
-  return(list(X=X,pred=p))
+  return(list(X=X,pred=p,DF=DF))
 }

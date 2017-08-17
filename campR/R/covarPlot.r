@@ -38,14 +38,14 @@
 
 covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside){
   
-  covar <- "turbidity_ntu"
-  df <- obs.eff.df
-  dbCovar <- dbTurb
-  trap <- 57004
-  eff.ind.inside <- eff.ind.inside
+  # covar <- "turbidity_ntu"
+  # df <- obs.eff.df
+  # dbCovar <- dbTurb
+  # trap <- 57004
+  # eff.ind.inside <- eff.ind.inside
   
   #   ---- We give the function all the data, so restrict to the trap.  
-  df <- df[df$TrapPositionID == 57004,]
+  df <- df[df$TrapPositionID == trap,]
   effdf <- df[!is.na(df$efficiency),]
   
   #   ---- Plot of efficiency versus covariate.
@@ -71,11 +71,11 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside){
     xm <- min(xD[!is.na(xD)])
     xM <- max(xD[!is.na(xD)])
     ym <- min(yS[!is.na(yS)])
-    yM <- 50#max(yS[!is.na(yS)])
+    yM <- max(yS[!is.na(yS)])
 
     plot(xD,yD,xlab=NA,ylab=NA,xaxt='n',yaxt='n',xlim=c(xm,xM),ylim=c(ym,yM),type="p",cex=0.25,pch=19,main=paste0(covar," at ",df$TrapPositionID[1]))
     par(new=TRUE)
-    plot(xS[eff.ind.inside],yS[eff.ind.inside],xlab='Date',ylab='Turbidity (NTU)',xlim=c(xm,xM),ylim=c(ym,yM),type="l",col="red")
+    plot(xS[eff.ind.inside],yS[eff.ind.inside],xlab='Date',ylab=covar,xlim=c(xm,xM),ylim=c(ym,yM),type="l",col="red")
 
   } else {
     plot(1,1)
