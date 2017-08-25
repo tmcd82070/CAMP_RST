@@ -91,6 +91,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   # max.df.spline <- 4
   # plot.file <- plot.file
   
+  option <- 2
+  
   
   
   #   ---- Read in table of fishing seasons.  These are derived from taking the minimum 
@@ -202,10 +204,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     dbDisconnect(ch)
     
     if(nrow(nGood) > 0){
-      df[[ii]] <- queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=TRUE)
+      df[[ii]] <- queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
       df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
     } else {
-      df[[ii]] <- queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=TRUE)
+      df[[ii]] <- queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
       #df[[ii]]$date <- head(strptime(df[[ii]]$date,format="%Y-%m-%d %H:%M:%s",tz=time.zone))
       
       if(sum(!is.na(df[[ii]]$flow_cfs)) > 0){
@@ -281,6 +283,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         df[[ii]][df[[ii]]$date < min.date.flow | df[[ii]]$date > max.date.flow,]$pred_flow_cfs <- NA
       }
       
+      #   ---- Build a dataframe like the CAMP covariates.  
+      dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=df[[ii]]$flow_statistic)
+      
       #    ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
       if(sum(obs.eff.df$batchDate + 60*60 < min.date.flow | obs.eff.df$batchDate - 60*60 > max.date.flow) > 0){
         obs.eff.df[obs.eff.df$batchDate + 60*60 < min.date.flow | obs.eff.df$batchDate - 60*60 > max.date.flow,]$flow_cfs <- NA
@@ -309,7 +314,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         df[[ii]][df[[ii]]$date < min.date.temp | df[[ii]]$date > max.date.temp,]$pred_temp_c <- NA
       }
       
-      #    ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
+      #   ---- Build a dataframe like the CAMP covariates.  
+      dbTpPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=df[[ii]]$temp_statistic)
+      
+      #   ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
       if(sum(obs.eff.df$batchDate + 60*60 < min.date.temp | obs.eff.df$batchDate - 60*60 > max.date.temp) > 0){
         obs.eff.df[obs.eff.df$batchDate + 60*60 < min.date.temp | obs.eff.df$batchDate - 60*60 > max.date.temp,]$temp_c <- NA
       }
@@ -320,7 +328,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     #dbCov <- dbCovar[[ii]]
     
-    #   ---- Now, bring in smoothing-spline estimated values.  
+    #   ---- Now, bring in smoothing-spline estimated values.
     
     obs.eff.df <- estCovar(dbDisc,"discharge_cfs",1,traps,obs.eff.df)                   # <--- not sure on the UnitID.  could be 13 too?
     obs.eff.df <- estCovar(dbDpcm,"waterDepth_cm",1,traps,obs.eff.df)                   # <--- depth in cm (American)
@@ -358,15 +366,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
     ind <- !is.na(df$efficiency)
-    
-    
-    
+ 
     
     # JASON PLAYS AROUND AND ENSURES A DATE REPEATS OVER TWO YEARS.
     #df[!is.na(df$efficiency),]$batchDate[15] <- df[!is.na(df$efficiency),]$batchDate[1]
-    
-    
-    
     
     
     #   ---- Define these so we can model on (basically) fishing day of the season.  Do this with respect to 
@@ -495,7 +498,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       #   ---- Very simple design matrix in this case, since we're only fitting an intercept.  
       if( length(coef(fits[[trap]])) == 1 ){
         #pred <- matrix( coef(fit), sum(ind.inside), 1 )
-        X <- matrix( 1, sum(eff.ind.inside), 1)
+        X <- matrix( 1, length(df$batchDate2[eff.ind.inside]), 1)#sum(eff.ind.inside), 1)
       }
       
       #   ---- Plot the spline.  Note this reproduces the pred calculation just above.  I like having 
@@ -505,8 +508,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       attr(X,"Boundary.knots") <- as.numeric(eff.inside.dates)
       attr(X,"knots") <- numeric(0)
       bspl <- X
-      png(filename=paste0(plot.file,"-EnhEff-",trap,"-0.png"),width=7,height=7,units="in",res=600)
-      plot.bs.spline(bspl,fits[[trap]],bsplBegDt,bsplEndDt,tmp.df)
+      png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",0,"mt.png"),width=7,height=7,units="in",res=600)
+      model.info <- plot.bs.spline(bspl,fits[[trap]],bsplBegDt,bsplEndDt,tmp.df,option)
       dev.off()
       
       #   ---- Save X, and the dates at which we predict, for bootstrapping.
@@ -516,572 +519,311 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     } else {    
       
       #   ---- There are enough observations to estimate B-spline model.
+      covarString <- "1"
+      m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial")
       
-      #   ---- Fit glm model, increasing degress of freedom, until minimize AIC or something goes wrong.  
-      cat(paste("\n\n++++++Spline model fitting for trap:", trap, "\n Trials are:"))
-      print(tmp.df)
+      cat("\nTemporal-only efficiency model for trap: ", trap, "\n")
+      print(summary(m0$fit, disp=sum(residuals(m0$fit, type="pearson")^2)/m0$fit$df.residual)  )
+        
+      #   ---- Plot the spline.  
+      png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",0,"mt.png"),width=7,height=7,units="in",res=600)
+      model.info <- plot.bs.spline(m0$bspl,m0$fit,bsplBegDt,bsplEndDt,tmp.df,option)
+      dev.off()       
+        
+    }   
       
-      #   ---- At least one efficiency trial "inside" for this trap.
-      #   ---- Fit a null model.  
-      fit <- glm( nCaught / nReleased ~ 1, family=binomial, data=tmp.df, weights=tmp.df$nReleased ) 
-      fit.AIC <- AIC(fit)
+    
+  
+  # #   ---- At this point, we have a temporal spline.  We now consider covariates.  Identify them.
+  # covarMat <- as.matrix(tmp.df[,strsplit(tmp.df$covar[1]," + ",fixed=TRUE)[[1]]])
+  # 
+  # #   ---- If we have only one covariate, make sure the vector (not matrix) is named for clarity in models.
+  # if(dim(covarMat)[2] == 1){
+  #   colnames(covarMat) <- tmp.df$covar[1]
+  # }
+  # covar <- tmp.df$covar[1]
+  # cat(paste0("\n\n++++++ Starting backwards selection of confounding covariates: ",gsub(" + ",", ",covar,fixed=TRUE),".\n"))
+  # 
+  # #   ---- See if our smoothing splines lead to non-sensical estimates; i.e., negative values for 
+  # #   ---- either of flow (cfs) or turbidity (ntu).  But not temperature!  Others?
+  # if("temp_c" %in% colnames(covarMat)){
+  #   
+  #   theNames <- colnames(covarMat)
+  #   theNames <- theNames[theNames != "temp_c"]
+  #   
+  #   #   ---- Without temp_c.  I assume temp_c is the only var for which negatives are permissable.  
+  #   covarMat <- cbind(apply(as.matrix(covarMat[,colnames(covarMat) != "temp_c"]),2,function(x) ifelse(x < 0,0,x)),as.matrix(covarMat[,colnames(covarMat) == "temp_c"]))
+  #   colnames(covarMat) <- c(theNames,"temp_c")
+  # } else {
+  #   covarMat <- apply(covarMat,2,function(x) ifelse(x < 0,0,x))
+  # } 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
       
-      cat(paste("df= ", 1, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
-      
-      if( !fit$converged | fit$boundary ){
+    #   ---- Fit the full model with all possible covariates that made it.  Object fit.tmp.bs is from the last kept run.
+    method <- "likeType3SS"    # "pVal"    
+    distn <- "binomial"   # "binomial"
+    pCutOff <- 0.10
+    covarString <- tmp.df$covar[1]
         
-        #   ---- Something went wrong with the constant model. 
-        #		---- I don't think this can actually happen because m.i > 10 and sum(nCaught) > 0, 
-        #   ---- but I'm adding this clause just in case (maybe something is missing).
-        #		---- In this case, use ROM+1 estimator.
-        cat("Constant (intercept-only) logistic model for efficiency failed. Using 'ROM+1' estimator. ")
-        obs.mean <- (sum(tmp.df$nCaught)+1) / (sum(tmp.df$nReleased)+1)   
-        cat(paste("'ROM+1' efficiency= ", obs.mean, "\n"))
-        
-        df$efficiency <- obs.mean
-        
-        fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
-        eff.type[[trap]] <- 3
-        
-      } else {
-        
-        #		---- Fit increasingly complex models. 
-        #				 Note, we skip the quadratic:
-        #					df = 3 means cubic model (no internal knots)
-        #				  df = 4 means cubic spline w/ 1 internal knot at median
-        #					df = 5 means cubic spline w/ 2 internal knots at 0.33 and 0.66 of range
-        #					etc.
-        #				 Subtract 3 from df to get number of internal knots.
-        
-        cur.df <- 3
-        repeat{
-          
-          #cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
-          #tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
-          
-          #   ---- Note:  ind.inside for these enhanced efficiency models should be the julian dates
-          #   ---- inside the min and max fishing days...not what it's been historically.  We are not
-          #   ---- applying to catch data, so these intercept pre- and post- fits don't matter.  
-          
-          #   ---- Note I use a unique here...we expect batchDate duplicates when reducing from many 
-          #   ---- years' data to our 1969-1970 year.
-          cur.bspl <- bs( df$batchDate2[eff.ind.inside], df=cur.df )
-          tmp.bs <- cur.bspl[!is.na(df$efficiency[eff.ind.inside]),]
-          
-          cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
-          cur.AIC <- AIC(cur.fit)
-          
-          cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
-          
-          if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC - 2) ){
-            break
-          } else {
-            fit <- cur.fit
-            fit.AIC <- cur.AIC
-            bspl <- cur.bspl
-            fit.tmp.bs <- tmp.bs
-            cur.df <- cur.df + 1
-          }
-        }
-        
-        cat("\nFinal Efficiency model for trap: ", trap, "\n")
-        print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
-        
-        #   ---- Plot the spline.  Note this reproduces the pred calculation just above.  I like having 
-        #   ---- all of that in the function from start to finish, although it's clear it's not much. 
-        png(filename=paste0(plot.file,"-EnhEff-",trap,"-0.png"),width=7,height=7,units="in",res=600)
-        plot.bs.spline(bspl,fit,bsplBegDt,bsplEndDt,tmp.df)
-        dev.off()       
-        
-        
-        
-        
-        
-        # #   ---- At this point, we have a temporal spline.  We now consider covariates.  Identify them.
-        # covarMat <- as.matrix(tmp.df[,strsplit(tmp.df$covar[1]," + ",fixed=TRUE)[[1]]])
-        # 
-        # #   ---- If we have only one covariate, make sure the vector (not matrix) is named for clarity in models.
-        # if(dim(covarMat)[2] == 1){
-        #   colnames(covarMat) <- tmp.df$covar[1]
-        # }
-        # covar <- tmp.df$covar[1]
-        # cat(paste0("\n\n++++++ Starting backwards selection of confounding covariates: ",gsub(" + ",", ",covar,fixed=TRUE),".\n"))
-        # 
-        # #   ---- See if our smoothing splines lead to non-sensical estimates; i.e., negative values for 
-        # #   ---- either of flow (cfs) or turbidity (ntu).  But not temperature!  Others?
-        # if("temp_c" %in% colnames(covarMat)){
-        #   
-        #   theNames <- colnames(covarMat)
-        #   theNames <- theNames[theNames != "temp_c"]
-        #   
-        #   #   ---- Without temp_c.  I assume temp_c is the only var for which negatives are permissable.  
-        #   covarMat <- cbind(apply(as.matrix(covarMat[,colnames(covarMat) != "temp_c"]),2,function(x) ifelse(x < 0,0,x)),as.matrix(covarMat[,colnames(covarMat) == "temp_c"]))
-        #   colnames(covarMat) <- c(theNames,"temp_c")
-        # } else {
-        #   covarMat <- apply(covarMat,2,function(x) ifelse(x < 0,0,x))
-        # }
-        
-        
-        
+    #   ---- What to do about waterTemp_C vs. temp_c?
+    #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
+    covarString <- gsub(paste0(" + ","waterTemp_C"),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
+    covarString <- gsub("waterTemp_C","",covarString,fixed=TRUE)                # leading -- remove var[i] alone
+    
+    #   ---- Save a record of the variables we care about for plotting below.  
+    covarStringPlot <- covarString
+    
+    #   ---- If we only ended up with an intercept-only model, skip straight to the end.
+    if( !(m.i < eff.min.spline.samp.size) | (sum(tmp.df$nCaught) == 0) ){
         
 
-        
-        
-        
-        
-        #   ---- Fit the full model with all possible covariates that made it.  Object fit.tmp.bs is from the last kept run.
-        
-        method <- "likeType3SS"    # "pVal"    
-        distn <- "quasibinomial"   # "binomial"
-        pCutOff <- 0.10
-        covarString <- tmp.df$covar[1]
-        
-        #   ---- What to do about waterTemp_C vs. temp_c?
-        #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
-        covarString <- gsub(paste0(" + ","waterTemp_C"),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
-        covarString <- gsub("waterTemp_C","",covarString,fixed=TRUE)                # leading -- remove var[i] alone
-        
-        fit0 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs + ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
-        png(filename=paste0(plot.file,"-EnhEff-",trap,"-1.png"),width=7,height=7,units="in",res=600)
-        plot.bs.spline(bspl,fit0,bsplBegDt,bsplEndDt,tmp.df)
-        dev.off()
-        
-        model.i <- 2
-        repeat{
+      m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,distn)
+      fit0 <- m0$fit
+      tmp.bs <- m0$bspl[!is.na(df$efficiency[eff.ind.inside]),]
+      disp <- m0$disp
+      
+      #   ---- Send results to console.  Note that this applies the value of disp in the summary.  
+      #   ---- In other words, this is 'quasibinomial' by definition, but in a backwards way.  
+      cat("\n\n\nTemporal & initial covariate efficiency model for trap: ", trap, "\n")
+      print(summary(m0$fit, disp=sum(residuals(m0$fit, type="pearson")^2)/m0$fit$df.residual))
+      
+      #   ---- Plot the spline.  
+      png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",1,"m0.png"),width=7,height=7,units="in",res=600)
+      model.info <- plot.bs.spline(m0$bspl,m0$fit,bsplBegDt,bsplEndDt,tmp.df,option)
+      dev.off()  
+      
+      
+
           
-          #   ---- Identify the worst-performing variable.  I use the highest p-value.  
-          if(method == "pVal"){
-            theHighestp <- max(coefficients(summary(fit0))[row.names(coefficients(summary(fit0))) != "(Intercept)" & !(sapply(row.names(coefficients(summary(fit0))),function(x) grepl("fit.tmp",x,fixed=TRUE))),4])
-            varToTestForDeletion <- row.names(coefficients(summary(fit0)))[coefficients(summary(fit0))[,4] == theHighestp]
-          
-          } else if(method == "likeType3SS"){
+      model.i <- 2
+      repeat{
             
-            #   ---- We need to calculate a X2 test for each variable, one-by-one.  
-            thePossibleCovarString <- as.data.frame(coefficients(summary(fit0)))[row.names(coefficients(summary(fit0))) != "(Intercept)" & !(sapply(row.names(coefficients(summary(fit0))),function(x) grepl("fit.tmp",x,fixed=TRUE))),]
+        #   ---- Identify the worst-performing variable.  I use the highest p-value.  
+        if(method == "pVal"){
+          theHighestp <- max(coefficients(summary(fit0))[row.names(coefficients(summary(fit0))) != "(Intercept)" & !(sapply(row.names(coefficients(summary(fit0))),function(x) grepl("fit.tmp",x,fixed=TRUE))),4])
+          varToTestForDeletion <- row.names(coefficients(summary(fit0)))[coefficients(summary(fit0))[,4] == theHighestp]
             
-            #   ---- Loop through, creating a formula string with the ith row's coefficient deleted. 
-            checkThisMany <- nrow(thePossibleCovarString)
-            holdEm <- vector("list",checkThisMany)
-            df.anova <- NULL
-            for(v in 1:checkThisMany){
+        } else if(method == "likeType3SS"){
               
-              if( checkThisMany == 1 ){
-                vthCovarString <- paste0("nCaught / nReleased ~ fit.tmp.bs")
-              } else {
-                vthCovarString <- paste0("nCaught / nReleased ~ fit.tmp.bs + ",paste0(rownames(thePossibleCovarString)[-v],collapse=" + "))
-              }
-              holdEm[[v]] <- glm( as.formula(vthCovarString), family=distn, data=tmp.df, weights=tmp.df$nReleased )
+          #   ---- We need to calculate a X2 test for each variable, one-by-one.  
+          thePossibleCovarString <- as.data.frame(coefficients(summary(fit0)))[row.names(coefficients(summary(fit0))) != "(Intercept)" & !(sapply(row.names(coefficients(summary(fit0))),function(x) grepl("tmp.bs",x,fixed=TRUE))),]
               
-              #   ---- Assuming all variables to be tested are of 1 degree of freedom, could just find the set that results in the lowest
-              #   ---- residual deviance.  But, we should make it smarter for the eventual factors we could have.  
-              tmp.anova <- as.data.frame(anova(holdEm[[v]]))
-              tmp.anova$testingCovarDF <- anova(fit0)[row.names(anova(fit0)) == rownames(thePossibleCovarString)[v],]$Df
-              tmp.anova$model <- v
-              tmp.anova$testingCovar <- rownames(thePossibleCovarString)[v]
-              df.anova <- rbind(df.anova,tmp.anova)
-            }
-            df.anova$biggerModelDev <- anova(fit0)$`Resid. Dev`[checkThisMany + 2]   # + 1 Int + 1 spline
-            df.chi <- aggregate(df.anova,list(df.anova$testingCovar),function(x) tail(x,1))
-            df.chi$Group.1 <- df.chi$`Resid. Df` <- NULL
-            df.chi$ChiSq <- df.chi$`Resid. Dev` - df.chi$biggerModelDev
-            df.chi$pVal <- pchisq(df.chi$ChiSq/summary(fit0)$dispersion,df.chi$testingCovarDF,lower.tail=FALSE)
-            
-            #   ---- Now, identify the one with the highest Chi-square p-value.  
-            theHighestp <- max(df.chi$pVal) 
-            varToTestForDeletion <- df.chi[df.chi$pVal == theHighestp,]$testingCovar
-            
-          }
-          
-          if(theHighestp > pCutOff & covarString != ""){
-            
-            cat(paste0("Variable ",varToTestForDeletion," has a p-value of ",round(theHighestp,4),", which is greater than ",pCutOff,".  Removing.\n"))
-            
-            #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
-            covarString <- gsub(paste0(" + ",varToTestForDeletion),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
-            covarString <- gsub(paste0(varToTestForDeletion," + "),"",covarString,fixed=TRUE)  # leading -- remove var[i] alone and next " + "
-        
-            #   ---- Fit updated model.  
-            if(covarString == ""){  # We could NOW have a blank covarString.  Note the lack of the '+' below. 
-              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+          #   ---- Loop through, creating a formula string with the ith row's coefficient deleted. 
+          checkThisMany <- nrow(thePossibleCovarString)
+          holdEm <- vector("list",checkThisMany)
+          df.anova <- NULL
+          for(v in 1:checkThisMany){
+                
+            if( checkThisMany == 1 ){
+              vthCovarString <- paste0("nCaught / nReleased ~ tmp.bs")
             } else {
-              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ fit.tmp.bs + ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+              vthCovarString <- paste0("nCaught / nReleased ~ tmp.bs + ",paste0(rownames(thePossibleCovarString)[-v],collapse=" + "))
             }
-            
-            #   ---- Output visual impact of variable deletion.  
-            png(filename=paste0(plot.file,"-EnhEff-",trap,"-",model.i,".png"),width=7,height=7,units="in",res=600)
-            plot.bs.spline(bspl,fit1,bsplBegDt,bsplEndDt,tmp.df)
-            dev.off()
-            
-            
-            
-            # #   ---- We've now removed a covariate.  Should we reconsider the temporal spline?
-            # fit0 <- fit1
-            # 
-            # cur.df <- 3
-            # repeat{
-            #   
-            #   #   ---- Note:  ind.inside for these enhanced efficiency models should be the julian dates
-            #   #   ---- inside the min and max fishing days...not what it's been historically.  We are not
-            #   #   ---- applying to catch data, so these intercept pre- and post- fits don't matter.  
-            #   
-            #   #   ---- Note I use a unique here...we expect batchDate duplicates when reducing from many 
-            #   #   ---- years' data to our 1969-1970 year.
-            #   cur.bspl <- bs( df$batchDate2[eff.ind.inside], df=cur.df )
-            #   tmp.bs <- cur.bspl[!is.na(df$efficiency[eff.ind.inside]),]
-            #   
-            #   #   ---- Fit updated model.  
-            #   if(covarString == ""){  # We could NOW have a blank covarString.  Note the lack of the '+' below. 
-            #     fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs ",covarString)), family=quasibinomial, data=tmp.df, weights=tmp.df$nReleased ) 
-            #   } else {
-            #     fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs + ",covarString)), family=quasibinomial, data=tmp.df, weights=tmp.df$nReleased ) 
-            #   }
-            #   
-            #   cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
-            #   cur.AIC <- AIC(cur.fit)
-            #   
-            #   cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
-            #   
-            #   if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC - 2) ){
-            #     break
-            #   } else {
-            #     fit <- cur.fit
-            #     fit.AIC <- cur.AIC
-            #     bspl <- cur.bspl
-            #     fit.tmp.bs <- tmp.bs
-            #     cur.df <- cur.df + 1
-            #   }
-            # }
-            # 
-            # cat("\nFinal Efficiency model for trap: ", trap, "\n")
-            # print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
-            # 
-            # #   ---- Plot the spline.  Note this reproduces the pred calculation just above.  I like having 
-            # #   ---- all of that in the function from start to finish, although it's clear it's not much. 
-            # png(filename=paste0(plot.file,"-EnhEff-",trap,"-0.png"),width=7,height=7,units="in",res=600)
-            # plot.bs.spline(bspl,fit,bsplBegDt,bsplEndDt,tmp.df)
-            # dev.off()  
-            
-          } else {
-            cat(paste0("Variable ",varToTestForDeletion," has a p-value of ",round(theHighestp,8),", which is less than ",pCutOff,".  Keeping and exiting.\n"))
-            cat("Final model identified.\n")
-            break
+            holdEm[[v]] <- glm( as.formula(vthCovarString), family=distn, data=tmp.df, weights=tmp.df$nReleased )
+                
+            #   ---- Assuming all variables to be tested are of 1 degree of freedom, could just find the set that results in the lowest
+            #   ---- residual deviance.  But, we should make it smarter for the eventual factors we could have.  
+            tmp.anova <- as.data.frame(anova(holdEm[[v]]))
+            tmp.anova$testingCovarDF <- anova(fit0)[row.names(anova(fit0)) == rownames(thePossibleCovarString)[v],]$Df
+            tmp.anova$model <- v
+            tmp.anova$testingCovar <- rownames(thePossibleCovarString)[v]
+            df.anova <- rbind(df.anova,tmp.anova)
           }
-          fit0 <- fit1
-          model.i <- model.i + 1
-          varToTestForDeletion <- NULL
+          df.anova$biggerModelDev <- anova(fit0)$`Resid. Dev`[checkThisMany + 2]   # + 1 Int + 1 spline
+          df.chi <- aggregate(df.anova,list(df.anova$testingCovar),function(x) tail(x,1))
+          df.chi$Group.1 <- df.chi$`Resid. Df` <- NULL
+          df.chi$ChiSq <- abs(df.chi$`Resid. Dev` - df.chi$biggerModelDev)
+          df.chi$pVal <- pchisq(df.chi$ChiSq/summary(fit0)$dispersion,df.chi$testingCovarDF,lower.tail=FALSE)
+          df.chi$pVal <- pchisq(df.chi$ChiSq/disp,df.chi$testingCovarDF,lower.tail=FALSE)
+          
+          # #   ---- Tinkering with deviance -- normal models.
+          # samp <- NULL
+          # for(i in 1:10000){
+          #   N <- 10
+          #   e <- rnorm(N,0,100)
+          #   beta0 <- 1
+          #   beta1 <- 2
+          #   x <- seq(0,N - 1,1)
+          #   y <- beta0 + beta1*x + e
+          #   df <- data.frame(y=y,x=x)
+          #   mF <- glm(y ~ 1 + x,data=df,family=gaussian)
+          #   summary(mF)
+          #   
+          #   #   ---- Test for significance of beta1 via likelihood ratio test statistic.  Need reduced model.
+          #   mR <- glm(y ~ 1,data=df,family=gaussian)
+          #   
+          #   deltaDev <- (mR$deviance - mF$deviance)/summary(mF)$dispersion  # <- this is distributed (exactly b/c of normal) X^2(1).
+          #   lp <- pchisq(deltaDev,1,lower.tail=FALSE)     # <- s/b approximate (exact?) to wald z in summary(mF).
+          #   
+          #   #   ---- Compare explicitly the two p-values.
+          #   tp <- coefficients(summary(mF))[2,4]   # t-based pvalue
+          #   samp <- rbind(samp,data.frame(tp=tp,lp=lp,sample=i))
+          # }
+          # 
+          # hist(samp$tp-samp$lp)
+          
+          #   ---- Now, identify the one with the highest Chi-square p-value.  
+          theHighestp <- max(df.chi$pVal) 
+          varToTestForDeletion <- df.chi[df.chi$pVal == theHighestp,]$testingCovar
+          
         }
-       
-        cat(paste0("The final fit with covariates and spline together is:  \n"))
-        print(summary(fit0, disp=sum(residuals(fit0, type="pearson")^2)/fit0$df.residual))
-        cat(paste0("\n\n\n"))
+          
+        if(theHighestp > pCutOff & covarString != ""){
+            
+          cat(paste0("Variable ",varToTestForDeletion," has a p-value of ",round(theHighestp,4),", which is greater than ",pCutOff,".  Removing.\n\n"))
+              
+          #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
+          covarString <- gsub(paste0(" + ",varToTestForDeletion),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
+          covarString <- gsub(paste0(varToTestForDeletion," + "),"",covarString,fixed=TRUE)  # leading -- remove var[i] alone and next " + "
+          
+          #   ---- Fit updated model.  
+          if(covarString == ""){  # We could NOW have a blank covarString.  Note the lack of the '+' below. 
+            fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+          } else {
+            fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs + ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+          }
+              
+          #   ---- Output visual impact of variable deletion.  
+          png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",model.i,"mc.png"),width=7,height=7,units="in",res=600)
+          model.info <- plot.bs.spline(m0$bspl,fit1,bsplBegDt,bsplEndDt,tmp.df,option)
+          dev.off()
+             
+          #   ---- We've now removed a covariate.  Reconsider the temporal spline.
+          fit0 <- fit1    
+          
+          if(covarString != ""){
+          
+            
+            m2 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,distn)
+            fit2 <- m2$fit
+            tmp.bs <- m2$bspl[!is.na(df$efficiency[eff.ind.inside]),]
+            disp <- m2$disp
+            
+            #   ---- Send results to console.  Note that this applies the value of disp in the summary.  
+            #   ---- In other words, this is 'quasibinomial' by definition, but in a backwards way.  
+            #cat("\nFinal Efficiency model for trap: ", trap, "\n")
+            #print(summary(m2$fit, disp=sum(residuals(m2$fit, type="pearson")^2)/m2$fit$df.residual))
+            
+            #   ---- Plot the spline.  
+            png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",model.i,"mt.png"),width=7,height=7,units="in",res=600)
+            model.info <- plot.bs.spline(m2$bspl,m2$fit,bsplBegDt,bsplEndDt,tmp.df,option)
+            dev.off()  
         
-        
-        
-        
-        
-        
-        
-        
-        
-        #   ---- Make a design matrix for ease in calculating predictions.
-        if( length(coef(fit)) <= 1 ){
-          pred <- matrix( coef(fit), sum(eff.ind.inside), 1 )
-          X <- matrix( 1, sum(eff.ind.inside), 1)
+            #   ---- Report.  fit1 is from the covariate fit, while fit2 is from the subsequent temporal spline fit.
+            before.bs.Len <- length(coef(fit1)[substr(names(coef(fit1)),1,6) == "tmp.bs"])
+            after.bs.Len <- length(coef(fit2)[substr(names(coef(fit2)),1,6) == "tmp.bs"])
+            cat(paste0("After last variable removable, I went from a ",before.bs.Len," spline to a ",after.bs.Len," spline.\n\n"))
+            fit0 <- fit2
+          }
+          
         } else {
-          X <- cbind( 1, bspl )
-          pred <- X %*% coef(fit)
+          cat(paste0("Variable ",varToTestForDeletion," has a p-value of ",round(theHighestp,8),", which is less than ",pCutOff,".  Keeping and exiting.\n\n"))
+          cat("Final model identified.\n")
+          break
         }
-      
-        #   ---- Save X, and the dates at which we predict, for bootstrapping.
-        all.X[[trap]] <- X   
-        all.dts[[trap]] <- df$batchDate[ind.inside]   
-        
-        #   ---- Standard logistic prediction equation.  
-        #   ---- "Pred" is all efficiencies for dates between min and max of trials.
-        pred <- 1 / (1 + exp(-pred))  
-        
-        #   ---- If you want to use observed efficiency on days when efficiency trials were run, uncomment.
-        #miss.eff.inside <- ind.inside & !ind  # missing efficiencies inside first and last trials, sized same as df
-        #miss.eff <- miss.eff.inside[ind.inside]      # missing efficiencies inside first and last trials, sized same as pred
-        #df$efficiency[miss.eff.inside] <- pred[miss.eff]
-        
-        #   ---- If, however, you want to use the modeled efficiency for all days, even when a trial was done, use these. 
-        df$efficiency[eff.ind.inside] <- pred
-        
-        #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
-        mean.p <- mean(pred, na.rm=T)
-        df$efficiency[!eff.ind.inside] <- mean.p
-        
-        #   ---- Save the fit for bootstrapping.
-        fits[[trap]] <- fit  
-        
-      } 
-
-      #   ---- Save the raw efficiency data.  
-      obs.data[[trap]] <- tmp.df
-      eff.type[[trap]] <- 5
-      
-    }
-    
-    #   ---- Uncomment the following line if using imputed value for all days.  Otherwise, comment it out, 
-    #   ---- and imputed.eff will tell which are observed.  With the following uncommented, you can find 
-    #   ---- efficiency trials in grand.df with !is.na(grand.df$nReleased).
-    ind <- rep(F, nrow(df))   
-    
-    df$imputed.eff <- factor( !ind, levels=c(T,F), labels=c("Yes", "No"))
-    df$trapPositionID <- trap
-    
-    ans <- rbind(ans, df)
-  
-  }
-  
-  
-  #ans[ans$trapPositionID == "57004" & !is.na(ans$nCaught),]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  #   ---- There are enough observations to estimate B-spline model -- with covariates!
-  
-  #   ---- Fit glm model, increase degrees of freedom, until minimize AIC or something goes wrong.  
-  cat(paste("\n\n++++++Spline model fitting for trap:", trap, "\n Trials are:"))
-  print(tmp.df)
-  
-  
-  
-  
-  
-  
-  covarMat <- as.matrix(tmp.df[,strsplit(tmp.df$covar[1]," + ",fixed=TRUE)[[1]]])
-  
-  #   ---- If we have only one covariate, make sure the vector (not matrix) is named for clarity in models.
-  if(dim(covarMat)[2] == 1){
-    colnames(covarMat) <- tmp.df$covar[1]
-  }
-  covar <- tmp.df$covar[1]
-  cat(paste0("\n\n++++++ ...and covariates include",covar,".\n"))
-  
-  #   ---- See if our smoothing splines lead to non-sensical estimates; i.e., negative values for 
-  #   ---- either of flow (cfs) or turbidity (ntu).  But not temperature!  Others?
-  if("temp_c" %in% colnames(covarMat)){
-    
-    theNames <- colnames(covarMat)
-    theNames <- theNames[theNames != "temp_c"]
-    
-    #   ---- Without temp_c.  I assume temp_c is the only var for which negatives are permissable.  
-    covarMat <- cbind(apply(as.matrix(covarMat[,colnames(covarMat) != "temp_c"]),2,function(x) ifelse(x < 0,0,x)),as.matrix(covarMat[,colnames(covarMat) == "temp_c"]))
-    colnames(covarMat) <- c(theNames,"temp_c")
-  } else {
-    covarMat <- apply(covarMat,2,function(x) ifelse(x < 0,0,x))
-  }
-  
-  #   ---- At least one efficiency trial "inside" for this trap.
-  #   ---- Fit a null model (with our covariates).  
-  fit <- glm( nCaught / nReleased ~ 1 + covarMat, family=binomial, data=tmp.df, weights=tmp.df$nReleased ) 
-  fit.AIC <- AIC(fit)
-  
-  cat(paste("df= ", 1, ", conv= ", fit$converged, " bound= ", fit$boundary, " AIC= ", round(fit.AIC, 4), "\n"))
-  
-  if( !fit$converged | fit$boundary ){
-    
-    #   ---- Something went wrong with the constant model. 
-    #		---- I don't think this can actually happen because m.i > 10 and sum(nCaught) > 0, 
-    #   ---- but I'm adding this clause just in case (maybe something is missing).
-    #		---- In this case, use ROM+1 estimator.
-    cat("Constant (intercept-only) logistic model for efficiency failed. Using 'ROM+1' estimator. ")
-    obs.mean <- (sum(tmp.df$nCaught)+1) / (sum(tmp.df$nReleased)+1)   
-    cat(paste("'ROM+1' efficiency= ", obs.mean, "\n"))
-    
-    df$efficiency <- obs.mean
-    
-    fits[[trap]] <- data.frame(nCaught=df$nCaught[ind], nReleased=df$nReleased[ind])
-    eff.type[[trap]] <- 3
-    
-  } else {
-    
-    
-    
-    #   ---- Figure out covariates.  
-    fit <- 
-      
-      
-      
-      
-      
-      
-      #		---- Fit increasingly complex models. 
-      #				 Note, we skip the quadratic:
-      #					df = 3 means cubic model (no internal knots)
-      #				  df = 4 means cubic spline w/ 1 internal knot at median
-      #					df = 5 means cubic spline w/ 2 internal knots at 0.33 and 0.66 of range
-    #					etc.
-    #				 Subtract 3 from df to get number of internal knots.
-    
-    cur.df <- 3
-    repeat{
-      
-      #cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
-      #tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
-      #tmp.bs <- tmp.bs[as.logical(goodInd),]     # <--- Keep rows with all good covariates.
-      
-      cur.bspl <- bs( df$fishDay[ind.inside], df=cur.df )
-      tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
-      tmp.bs <- tmp.bs[as.logical(goodInd),]     # <--- Keep rows with all good covariates.  tmp.df already reduced.
-      
-      cur.fit <- glm( nCaught / nReleased ~ covarMat + tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
-      cur.AIC <- AIC(cur.fit)
-      
-      cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
-      
-      if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC - 2) ){
-        #bspl <- cur.bspl
-        break
-      } else {
-        fit <- cur.fit
-        fit.AIC <- cur.AIC
-        bspl <- cur.bspl
-        cur.df <- cur.df + 1
+        model.i <- model.i + 1
+        varToTestForDeletion <- NULL
       }
-    }
-    
-    cat("\nFinal Efficiency model for trap: ", trap, "\n")
-    print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
-    
-    #   ---- Make a design matrix for ease in calculating predictions.
-    if( length(coef(fit)) <= 1 ){
-      pred <- matrix( coef(fit), sum(ind.inside), 1 )
-      X <- matrix( 1, sum(ind.inside), 1)
     } else {
-      pred <- predict(fit)
-      
-      
-      # pred2 <- predict(fit,newdata=seq(min(fit$data$batchDate),max(fit$data$batchDate),by=60*60*24))
-      # pred2 <- predict(fit,newdata=as.data.frame(rep(1,nrow(tmp.bs)),tmp.bs))
-      # pred2 <- predict(fit,newdata=cur.bspl)
-      # 
-      # #pdat <- data.frame(x = seq(min(fit$data$batchDate),max(fit$data$batchDate),by=60*60*24))
-      # ## predict for new `x`
-      # newX <- seq(min(fit$data$batchDate),max(fit$data$batchDate),by=60*60*24)
-      # 
-      # 
-      # bs(newX,cur.df)
-      # 
-      # 
-      # 
-      # nX <- length(newX)
-      # pdat <- transform(pdat,yhat=predict(fit,newdata=data.frame(covarMatflow_cfs=rep(0.1,nX),covarMatturbidity_ntu=rep(0.1,nX),batchDate=newX))#cbind(covarMatflow_cfs=rep(0.1,nX),covarMatturbidity_ntu=rep(0.1,nX),x=newX)))
-      # 
-      
-      
-      
-      #X <- cbind( 1, bspl ) #cbind( 1, bspl, flow_cfs, temp_c )
+      #   ---- Intercept-only model.  Just report what we already have.  
+      fit0 <- fits[[trap]]
+    } 
+          
+    cat(paste0("The final fit with covariates and spline together is:  \n"))
+    print(summary(fit0, disp=sum(residuals(fit0, type="pearson")^2)/fit0$df.residual))
+    cat(paste0("\n\n\n"))
+          
+    fit <- fit0
+        
+        
+        
+        
+        
+        
+    #   ---- Make a design matrix for ease in calculating predictions.
+    plotCovars <- unlist(strsplit(covarStringPlot," + ",fixed=TRUE)[[1]])
+        
+    if( length(coef(fit)) <= 1 ){
+      pred <- matrix( coef(fit), sum(eff.ind.inside), 1 )
+      X <- matrix( 1, length(df$batchDate2[eff.ind.inside]), 1)#sum(eff.ind.inside), 1)
+      nCovars <- 0
+    } else {
+      #X <- cbind( 1, bspl )
       #pred <- X %*% coef(fit)
+      X <- model.info$X
+      pred <- log(model.info$pred/(1 - model.info$pred))
+      nCovars <- length(plotCovars)
     }
-    
-    #   ---- JASON TURNS OFF FOR ENHANCED MODEL BETA OBTAINMENT.
-    # #   ---- Save X, and the dates at which we predict, for bootstrapping.
-    # all.X[[trap]] <- X   
-    # all.dts[[trap]] <- df$batchDate[ind.inside]   
-    
+      
+    #   ---- Save X, and the dates at which we predict, for bootstrapping.
+    all.X[[trap]] <- X   
+    all.dts[[trap]] <- df$batchDate[ind.inside]   
+        
     #   ---- Standard logistic prediction equation.  
     #   ---- "Pred" is all efficiencies for dates between min and max of trials.
     pred <- 1 / (1 + exp(-pred))  
-    
-    #   ---- Make a very boring plot to assess goodness-of-fit of prediction. 
-    png(paste0(plot.file,"-",trap,".png"),res=400,width=16,height=6,units="in")
-    par(mfcol=c(2,4))
-    
-    #   ---- Plot of efficiency versus variable 1. 
-    if("flow_cfs" %in% names(tmp.df)){
-      plot(tmp.df$flow_cfs,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col=c("pink","red")[as.factor(tmp.df$allCovars)],xlab="Flow cfs",ylab='Efficiency (0.0 - 1.0)',main=paste0("Flow cfs at ",attr(df,"site.name")))
-    } else {
-      plot(1,1)
-    }
-    
-    #   ---- Plot of variable 1 versus time with smoother. Currently assumes 1 entry in the list df.covar.
-    if("flow_cfs" %in% names(tmp.df)){
-      ym <- min(df.covar[[1]][!is.na(df.covar[[1]]$flow_cfs),]$flow_cfs)
-      yM <- max(df.covar[[1]][!is.na(df.covar[[1]]$flow_cfs),]$flow_cfs) 
-      plot(df.covar[[1]]$date,df.covar[[1]]$flow_cfs,xlab=NA,ylab=NA,xaxt='n',yaxt='n',ylim=c(ym,yM),type="p",cex=0.5,pch=19,col="black",main=paste0("Qry Flow cfs at ",attr(df,"site.name")))
-      par(new=TRUE)
-      plot(df.covar[[1]]$date,df.covar[[1]]$pred_flow_cfs,xlab='Date',ylab='Flow (cfs)',ylim=c(ym,yM),col="red",type="l")
-    } else {
-      plot(1,1)
-    }
-    
-    #   ---- Plot of efficiency versus variable 2.
-    if("temp_c" %in% names(tmp.df)){
-      plot(tmp.df$temp_c,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col=c("lightblue","blue")[as.factor(tmp.df$allCovars)],xlab="Temperature C",ylab='Efficiency (0.0 - 1.0)',main=paste0("Temp C at ",attr(df,"site.name")))
-    } else {
-      plot(1,1)
-    }
-    
-    #   ---- Plot of variable 2 versus time with smoother. Currently assumes 1 entry in the list df.covar.
-    if("temp_c" %in% names(tmp.df)){
-      ym <- min(df.covar[[1]][!is.na(df.covar[[1]]$temp_c),]$temp_c)
-      yM <- max(df.covar[[1]][!is.na(df.covar[[1]]$temp_c),]$temp_c) 
-      plot(df.covar[[1]]$date,df.covar[[1]]$temp_c,xlab=NA,ylab=NA,xaxt='n',yaxt='n',ylim=c(ym,yM),type="p",cex=0.5,pch=19,col="black",main=paste0("Qry Temp C at ",attr(df,"site.name")))
-      par(new=TRUE)
-      plot(df.covar[[1]]$date,df.covar[[1]]$pred_temp_c,xlab='Date',ylab='Temp (C)',ylim=c(ym,yM),col="red",type="l")
-    } else {
-      plot(1,1)
-    }
-    
-    #   ---- Plot of efficiency versus variable 3.
-    if("turbidity_ntu" %in% names(tmp.df)){
-      plot(tmp.df$turbidity_ntu,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col=c("lightblue","blue")[as.factor(tmp.df$allCovars)],xlab="Turbidity NTU",ylab='Efficiency (0.0 - 1.0)',main=paste0("Turbidity ntu at ",attr(df,"site.name")))
-    } else {
-      plot(1,1)
-    }
-    
-    #   ---- Plot of variable 3 versus time with smoother. Currently assumes 1 entry in the list df.covar.
-    if("turbidity_ntu" %in% names(tmp.df)){
-      xm <- min(df.covar.turb[!is.na(df.covar.turb$turbidity),]$measureTime)
-      xM <- max(df.covar.turb[!is.na(df.covar.turb$turbidity),]$measureTime) 
-      ym <- min(df.covar.turb[!is.na(df.covar.turb$turbidity),]$turbidity)
-      yM <- 50#max(df.covar.turb[!is.na(df.covar.turb$turbidity),]$turbidity) 
-      theJJ <- unique(dbTurb$subSiteID)   # i coded for all traps, but really just 
-      theJJ <- theJJ[theJJ == trap]       # want the one here.
-      col <- c("red","orange","green","blue","purple","brown","black")
+        
       
-      for(jj in 1:length(theJJ)){
-        jTurb <- theJJ[jj]
-        if(jj > 1){
-          par(new=TRUE)
-        } 
-        plot(df.covar.turb[df.covar.turb$subSiteID == jTurb,]$measureTime,df.covar.turb[df.covar.turb$subSiteID == jTurb,]$turbidity,xlab=NA,ylab=NA,xaxt='n',yaxt='n',xlim=c(xm,xM),ylim=c(ym,yM),type="p",cex=0.25,pch=19,col="black",main=paste0("Qry Turbidity NTU at ",attr(df,"site.name")))
-        par(new=TRUE)
-        plot(df.covar.turb[df.covar.turb$subSiteID == jTurb,]$measureTime,df.covar.turb[df.covar.turb$subSiteID == jTurb,]$pred_turbidity_ntu,xlab='Date',ylab='Turbidity (NTU)',xlim=c(xm,xM),ylim=c(ym,yM),col=col[jj],type="l")
+    #   ---- Make a lookup vector.  
+    dfs <- c("dbMoon","dbNite","dbFLen","dbFlPG","dbTpPG","dbDisc","dbDpcm","dbDpft","dbATpC","dbATpF","dbTurb","dbWVel","dbWTpC","dbWTmF","dbLite","dbDOxy","dbCond","dbBaro","dbWeat")
+    covars <- c("bdMeanMoonProp","bdMeanNightProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
+    covarlu <- dfs
+    names(covarlu) <-covars
+        
+    #   ---- The postgres flow and temp data are trap independent, unlike the CAMP data.  So, tie the data
+    #   ---- to the trap in the way the covar plotting function expects.
+    if(exists("dbFlPG")) dbFlPG$subSiteID <- trap
+    if(exists("dbTpPG")) dbTpPG$subSiteID <- trap
+        
+    tt <- forEffPlots[forEffPlots$trapPositionID == trap,]
+    dbMoon <- data.frame(subSiteID=tt$trapPositionID,measureTime=tt$EndTime,moonProp=tt$moonProp,moonPropUnitID=-99)
+    dbNite <- data.frame(subSiteID=tt$trapPositionID,measureTime=tt$EndTime,nightProp=tt$nightProp,nightPropUnitID=-99)
+    dbFLen <- data.frame(subSiteID=tt$trapPositionID,measureTime=tt$EndTime,wmForkLength=tt$wmForkLength,wmForkLengthUnitID=-99)
+        
+    DF <- model.info[[3]]
+    DF <- DF[!duplicated(DF$batchDate2),]
+    DF <- DF[order(DF$batchDate2),]
+        
+        
+    png(paste0(plot.file,"-",trap,".png"),res=400,width=4*(nCovars + 1),height=6,units="in")
+          
+      par(mfcol=c(2,nCovars + 1))
+          
+      #   ---- Plot covariate-specific stuff.  
+      if(nCovars > 0){
+        for(cc in 1:nCovars){
+          covarPlot(plotCovars[cc],obs.eff.df,get(covarlu[plotCovars[cc]]),trap,eff.ind.inside)
+        }
       }
-    } else {
-      plot(1,1)
-    }
-    
-    #   ---- Get a plot of observed versus a prediction curve.  
-    yM <- max(tmp.df$nCaught / tmp.df$nReleased)
-    plot(tmp.df$batchDate,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col="red",ylim=c(0,yM),xaxt='n',yaxt='n',xlab=NA,ylab=NA)
-    par(new=TRUE)
-    plot(tmp.df$batchDate,pred,type="l",pch=19,col="blue",ylim=c(0,yM),xlab="Date",ylab='Efficiency (0.0 - 1.0)',main=attr(df,"site.name"))
-    legend("topright",c("Observed","Predicted"),pch=c(19,NA),lwd=c(NA,1),col=c("red","blue"))
-    
-    #   ---- 'Plot' some statistics of interest.
-    #plot(1,xaxt="n",yaxt="n",type="n",xlab="",ylab="",xlim=c(0, 10),ylim=c(0, 10))
-    X <- capture.output(summary(fit))
-    
-    plot(1,col="white")
-    for(i in 1:length(X)){
-      text(0.6,0.7 + 0.7/length(X)*(length(X) - i),X[i], pos=4, family="mono",cex=0.6)
-    }
-    
-    
+   
+      #   ---- Get a plot of observed versus a prediction curve.  
+      yM <- max(tmp.df$nCaught / tmp.df$nReleased)
+      plot(tmp.df$batchDate2,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col="red",ylim=c(0,yM),xaxt='n',yaxt='n',xlab=NA,ylab=NA,cex=(tmp.df$nReleased)/mean((tmp.df$nReleased)))
+      par(new=TRUE)
+      plot(DF$batchDate2,DF$p,type="l",pch=19,col="blue",ylim=c(0,yM),xlab="Date",ylab='Efficiency (0.0 - 1.0)',main=attr(df,"site.name"))
+      legend("topright",c("Observed","Predicted"),pch=c(19,NA),lwd=c(NA,1),col=c("red","blue"))
+          
+      #   ---- 'Plot' some statistics of interest.
+      O <- capture.output(summary(fit))
+          
+      plot(1,col="white")
+      for(i in 1:length(O)){
+        text(0.6,0.7 + 0.7/length(O)*(length(O) - i),O[i], pos=4, family="mono",cex=0.6)
+      }
+          
+    dev.off()
+    par(mfcol=c(1,1))
+        
+        
     #   ---- JASON TURNS OFF FOR ENHANCED MODEL BETA OBTAINMENT.        
     # #   ---- If you want to use observed efficiency on days when efficiency trials were run, uncomment.
     # #miss.eff.inside <- ind.inside & !ind  # missing efficiencies inside first and last trials, sized same as df
@@ -1094,28 +836,40 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     # #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
     # mean.p <- mean(pred, na.rm=T)
     # df$efficiency[!ind.inside] <- mean.p
-    
+        
     #   ---- Save the fit for bootstrapping.
     fits[[trap]] <- fit  
+        
+    #   ---- If you want to use observed efficiency on days when efficiency trials were run, uncomment.
+    #miss.eff.inside <- ind.inside & !ind  # missing efficiencies inside first and last trials, sized same as df
+    #miss.eff <- miss.eff.inside[ind.inside]      # missing efficiencies inside first and last trials, sized same as pred
+    #df$efficiency[miss.eff.inside] <- pred[miss.eff]
+        
+    #   ---- If, however, you want to use the modeled efficiency for all days, even when a trial was done, use these. 
+    df$efficiency[eff.ind.inside] <- pred
+        
+    #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
+    mean.p <- mean(pred, na.rm=T)
+    df$efficiency[!eff.ind.inside] <- mean.p
+        
+    #   ---- Save the fit for bootstrapping.
+    fits[[trap]] <- fit  
+        
+    #   ---- Save the raw efficiency data.  
+    obs.data[[trap]] <- tmp.df
+    eff.type[[trap]] <- 5
     
-  } 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+    #   ---- Uncomment the following line if using imputed value for all days.  Otherwise, comment it out, 
+    #   ---- and imputed.eff will tell which are observed.  With the following uncommented, you can find 
+    #   ---- efficiency trials in grand.df with !is.na(grand.df$nReleased).
+    ind <- rep(F, nrow(df))   
+      
+    df$imputed.eff <- factor( !ind, levels=c(T,F), labels=c("Yes", "No"))
+    df$trapPositionID <- trap
+      
+    ans <- rbind(ans, df)
+
+  }
   
   attr(ans,"subsites") <- attr(obs.eff.df, "subsites")
   attr(ans,"site.name") <- attr(obs.eff.df, "site.name")
