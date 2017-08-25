@@ -230,20 +230,20 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- for turbidity.  I name objects that respect this.  
     db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
-      dbDisc <- getCAMPEnvCov("discharge","dischargeUnitID",12)                     # <--- not sure on the UnitID.  could be 13 too?
-      dbDpcm <- getCAMPEnvCov("waterDepth","waterDepthUnitID",3)                    # <--- depth in cm (American)
-      dbDpft <- getCAMPEnvCov("waterDepth","waterDepthUnitID",6)                    # <--- depth in feet (RBDD)
-      dbATpC <- getCAMPEnvCov("airTemp","airTempUnitID",18)
-      dbATpF <- getCAMPEnvCov("airTemp","airTempUnitID",19)
-      dbTurb <- getCAMPEnvCov("turbidity","turbidityUnitID",20)
-      dbWVel <- getCAMPEnvCov("waterVel","waterVelUnitID",8)
-      dbWTpC <- getCAMPEnvCov("waterTemp","waterTempUnitID",18)                     # <--- water temp in C (American)
-      dbWTmF <- getCAMPEnvCov("waterTemp","waterTempUnitID",19)                     # <--- water temp in F (RBDD)
-      dbLite <- getCAMPEnvCov("lightPenetration","lightPenetration",20)             # <--- not sure on the UnitID.
-      dbDOxy <- getCAMPEnvCov("dissolvedOxygen","dissolvedOxygenUnitID",36)         
-      dbCond <- getCAMPEnvCov("conductivity","conductivityUnitID",36)               # <--- not sure on the UnitID.
-      dbBaro <- getCAMPEnvCov("barometer","barometerUnitID",33)                     # <--- not sure on the UnitID.    
-      dbWeat <- getCAMPEnvCov("weather",NA,NA)
+      dbDisc <- getCAMPEnvCov(ch,"discharge","dischargeUnitID",12)                     # <--- not sure on the UnitID.  could be 13 too?
+      dbDpcm <- getCAMPEnvCov(ch,"waterDepth","waterDepthUnitID",3)                    # <--- depth in cm (American)
+      dbDpft <- getCAMPEnvCov(ch,"waterDepth","waterDepthUnitID",6)                    # <--- depth in feet (RBDD)
+      dbATpC <- getCAMPEnvCov(ch,"airTemp","airTempUnitID",18)
+      dbATpF <- getCAMPEnvCov(ch,"airTemp","airTempUnitID",19)
+      dbTurb <- getCAMPEnvCov(ch,"turbidity","turbidityUnitID",20)
+      dbWVel <- getCAMPEnvCov(ch,"waterVel","waterVelUnitID",8)
+      dbWTpC <- getCAMPEnvCov(ch,"waterTemp","waterTempUnitID",18)                     # <--- water temp in C (American)
+      dbWTmF <- getCAMPEnvCov(ch,"waterTemp","waterTempUnitID",19)                     # <--- water temp in F (RBDD)
+      dbLite <- getCAMPEnvCov(ch,"lightPenetration","lightPenetration",20)             # <--- not sure on the UnitID.
+      dbDOxy <- getCAMPEnvCov(ch,"dissolvedOxygen","dissolvedOxygenUnitID",36)         
+      dbCond <- getCAMPEnvCov(ch,"conductivity","conductivityUnitID",36)               # <--- not sure on the UnitID.
+      dbBaro <- getCAMPEnvCov(ch,"barometer","barometerUnitID",33)                     # <--- not sure on the UnitID.    
+      dbWeat <- getCAMPEnvCov(ch,"weather",NA,NA)
     close(ch)
     
     #   ---- Put all database covariates into a list for easier processing.

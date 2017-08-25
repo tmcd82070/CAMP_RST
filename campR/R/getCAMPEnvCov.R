@@ -5,6 +5,7 @@
 #'@description Query individual covariates and their recorded units from an
 #'  Access CAMP database.
 #'
+#'@param ch An RODBC-inspired database connection.  
 #'@param cov The text string name of the environmental covariate in the
 #'  \code{EnvDataRaw} table of the CAMP Access database.
 #'@param covID  The text string name of the environmental covariate units
@@ -31,9 +32,9 @@
 #'  
 #' @examples
 #' \dontrun{
-#' getCAMPEnvCov(cov,covID,unitID)
+#' getCAMPEnvCov(ch,cov,covID,unitID)
 #'}
-getCAMPEnvCov <- function(cov,covID,unitID){
+getCAMPEnvCov <- function(ch,cov,covID,unitID){
   
   # cov <- "weather"
   # covID <- NA
