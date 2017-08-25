@@ -235,6 +235,12 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   tmp[!is.na(tmp$sunProp),]$nightMinutes <- as.numeric(tmp[!is.na(tmp$sunProp),]$SampleMinutes) - tmp[!is.na(tmp$sunProp),]$sunMinutes
   tmp$nightProp <- 1 - tmp$sunProp
   
+  
+  forEffPlots <<- tmp[,c("trapVisitID","trapPositionID","StartTime","EndTime","wmForkLength","nForkLength","nightProp","moonProp")]
+  
+  #plot(forEffPlots$EndTime,forEffPlots$nightProp,col=c("red","orange","green","blue","black")[as.factor(forEffPlots$trapPositionID)],pch=19)
+  #plot(forEffPlots$EndTime,forEffPlots$moonProp,col=c("red","orange","green","blue","black")[as.factor(forEffPlots$trapPositionID)],pch=19)
+  
   #   ---- Rename to preserve, since 'tmp' is used below, and bring in the goodies.  Clean up tmp a bit so it merges in nicely, 
   #   ---- and doesn't reproduce data already present in release.visit.  
   tmpAstro <- tmp

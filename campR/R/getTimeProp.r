@@ -55,12 +55,12 @@ getTimeProp <- function(df,rise,set,traps,tmp,metric){
   # tmp <- tmp
   # metric <- "moon"
   
-  # df <- sun
-  # rise <- "sunRise"
-  # set <- "sunSet"
-  # traps <- traps
-  # tmp <- tmp
-  # metric <- "sun"
+  df <- sun
+  rise <- "sunRise"
+  set <- "sunSet"
+  traps <- traps
+  tmp <- tmp
+  metric <- "sun"
 
   #   ---- Create skinny of fishing times that is in temporal order by trapPositionID.  
   #   ---- Similar to the above, but with StartTime, EndTime, and by trapPositionID.
