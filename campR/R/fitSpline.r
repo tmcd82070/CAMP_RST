@@ -42,6 +42,21 @@ fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df){
   cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
     
     if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df | cur.AIC > (fit.AIC - 2) ){
+      if(cur.df == 3){
+        
+        #   ---- If we're here, we have a model with no temporal component.  
+        fit <- fit
+        fit.AIC <- fit.AIC
+        bspl <- matrix( 1, length(df$batchDate2[eff.ind.inside]), 1)#cur.bspl
+        
+        attr(bspl,"intercept") <- FALSE
+        attr(bspl,"Boundary.knots") <- as.numeric(eff.inside.dates)
+        attr(bspl,"knots") <- numeric(0)
+        
+        tmp.bs <- tmp.bs
+        cur.df <- NA
+        disp <- sum(residuals(fit, type="pearson")^2)/fit$df.residual
+      }
       break
     } else {
       fit <- cur.fit
@@ -52,6 +67,7 @@ fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df){
       disp <- sum(residuals(cur.fit, type="pearson")^2)/cur.fit$df.residual
     }
   }
+  
   ans <- list(fit=fit,fit.AIC=fit.AIC,bspl=bspl,tmp.bs=tmp.bs,cur.df=cur.df,disp=disp,s.beg=s.beg,s.end=s.end)
   return(ans)
 }

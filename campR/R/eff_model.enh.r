@@ -626,7 +626,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
               
           #   ---- We need to calculate a X2 test for each variable, one-by-one.  
           thePossibleCovarString <- as.data.frame(coefficients(summary(fit0)))[row.names(coefficients(summary(fit0))) != "(Intercept)" & !(sapply(row.names(coefficients(summary(fit0))),function(x) grepl("tmp.bs",x,fixed=TRUE))),]
-              
+          temporalSplinePresent <- ifelse(sum(grepl("tmp.bs",row.names(coefficients(summary(fit0))))) > 0,1,0) 
+          
           #   ---- Loop through, creating a formula string with the ith row's coefficient deleted. 
           checkThisMany <- nrow(thePossibleCovarString)
           holdEm <- vector("list",checkThisMany)
@@ -635,20 +636,29 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
                 
             if( checkThisMany == 1 ){
               vthCovarString <- paste0("nCaught / nReleased ~ tmp.bs")
+              if(temporalSplinePresent == 0){
+                vthCovarString <- paste0("nCaught / nReleased ~ 1")
+              }
             } else {
               vthCovarString <- paste0("nCaught / nReleased ~ tmp.bs + ",paste0(rownames(thePossibleCovarString)[-v],collapse=" + "))
+              if(temporalSplinePresent == 0){   # Can this ever happen?
+                vthCovarString <- paste0("nCaught / nReleased ~ 1 + ",paste0(rownames(thePossibleCovarString)[-v],collapse=" + "))
+              }
             }
             holdEm[[v]] <- glm( as.formula(vthCovarString), family=distn, data=tmp.df, weights=tmp.df$nReleased )
                 
             #   ---- Assuming all variables to be tested are of 1 degree of freedom, could just find the set that results in the lowest
             #   ---- residual deviance.  But, we should make it smarter for the eventual factors we could have.  
             tmp.anova <- as.data.frame(anova(holdEm[[v]]))
+            if(nrow(tmp.anova) == 1){
+              rownames(tmp.anova) <- rownames(thePossibleCovarString)[v]
+            }
             tmp.anova$testingCovarDF <- anova(fit0)[row.names(anova(fit0)) == rownames(thePossibleCovarString)[v],]$Df
             tmp.anova$model <- v
             tmp.anova$testingCovar <- rownames(thePossibleCovarString)[v]
             df.anova <- rbind(df.anova,tmp.anova)
           }
-          df.anova$biggerModelDev <- anova(fit0)$`Resid. Dev`[checkThisMany + 2]   # + 1 Int + 1 spline
+          df.anova$biggerModelDev <- anova(fit0)$`Resid. Dev`[checkThisMany + 1 + temporalSplinePresent]   # + 1 Int + 1 spline
           df.chi <- aggregate(df.anova,list(df.anova$testingCovar),function(x) tail(x,1))
           df.chi$Group.1 <- df.chi$`Resid. Df` <- NULL
           df.chi$ChiSq <- abs(df.chi$`Resid. Dev` - df.chi$biggerModelDev)
