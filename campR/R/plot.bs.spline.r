@@ -36,7 +36,7 @@
 #' #   ---- is provided for argument bd2 (batchDate2).   
 #' plot.bs.spline(X,fit,beg.x,end.x,tmp.df)
 #' }
-plot.bs.spline <- function(X,fit,beg.x,end.x,eff0=tmp.df,option,bd2=df$batchDate2[eff.ind.inside]){
+plot.bs.spline <- function(X,fit,beg.x,end.x,eff0=tmp.df,option,bd2){
   
   # X <- m0$bspl
   # fit <- m0$fit
@@ -137,7 +137,7 @@ plot.bs.spline <- function(X,fit,beg.x,end.x,eff0=tmp.df,option,bd2=df$batchDate
     #   ---- Build a design matrix for the days on which we have observations.  
     colnames(X) <- paste0("tmp.bs",colnames(X))
     X <- data.frame("(Intercept)"=rep(1,nrow(X)),X,"batchDate2"=bd2,check.names=FALSE)
-    X <- merge(X,tmp.df,by=c("batchDate2"),all.y=TRUE)
+    X <- merge(X,eff0,by=c("batchDate2"),all.y=TRUE)
     X <- X[,c("batchDate2",names(coef(fit)))]
     
     D <- X

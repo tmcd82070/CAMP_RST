@@ -36,7 +36,7 @@
 #' covarPlot("turbidity_ntu",obs.eff.df,dbTurb,57004,eff.ind.inside)
 #'}
 
-covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside){
+covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
   
   # covar <- "turbidity_ntu"
   # df <- obs.eff.df

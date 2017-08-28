@@ -22,6 +22,15 @@
 #'  that this data frame contains one day for all in-between days, given
 #'  efficiency trials.
 #'  
+#' @param xwalk A data frame containing lookup information tying
+#'   \code{subSiteID} to the unique identifying \code{ourSiteIDChoice1} (and
+#'   \code{ourSiteIDChoice2}) in the online postgreSQL covariate database.
+#'   
+#' @param oursitevar The integer of length one identifying the
+#'   \code{ourSiteIDChoice1} (or \code{ourSiteIDChoice2}) of the
+#'   \code{subSiteID}'s identifying station number in the postgreSQL covariate
+#'   database.
+#'  
 #' @return Data frame \code{obs.eff.df} with the requested covariate's data
 #'  values appended on days for which data were available.
 #'  
@@ -40,30 +49,30 @@
 #' \dontrun{
 #' estCovar(dbCov,covName,estType,traps,obs.eff.df)
 #'}
-estCovar <- function(dbCov,covName,estType,traps,obs.eff.df){
+estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   
-  # dbCov <- dbWeat
-  # covName <- "precipLevel_qual"
-  # estType <- 2
+  # dbCov <- dbWVel
+  # covName <- "waterVel_fts"
+  # estType <- 1
   # traps <- traps
   # obs.eff.df <- obs.eff.df
-
-  # dbCov <- dbWeat
-  # covName <- "precipLevel_qual"
-  # estType <- 2
-  # traps <- traps
-  # obs.eff.df <- obs.eff.df
+  # xwalk <- xwalk
+  # oursitevar <- oursitevar
   
   CAMPCovName <- strsplit(covName,"_",fixed=TRUE)[[1]][1]
   
   if(nrow(dbCov) == 0 | sum(!is.na(dbCov[,CAMPCovName])) == 0){
     #obs.eff.df[,covName] <- NA
+    
+    
+  
   } else {
     
     allCovar <- NULL
     dbCov <- dbCov[dbCov$subSiteID %in% traps,]
     theJJ <- unique(dbCov$subSiteID)
-    obs.eff.df[,covName] <- NA                                 #     $turbidity_ntu
+    obs.eff.df[,covName] <- NA
+    
     if(sum(!is.na(dbCov[,CAMPCovName])) > 0){
       
       if(estType == 1){
@@ -73,46 +82,75 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df){
           jdbCov <- dbCov[dbCov$subSiteID == theJJ[jj],]
           
           #   ---- Compile the good dates for each subSiteID.   
-          min.date.cov <- suppressWarnings(min(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime))
-          max.date.cov <- suppressWarnings(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime))
+          min.date.cov <- as.POSIXct(format(min(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+          max.date.cov <- as.POSIXct(format(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
           
-          #   ---- I only keep the current.  So, after running, only the last jj is here.  
-          m3 <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=TRUE)
-          
-          #   ---- Build up the formula string in data frame obs.eff.df.
-          if("covar" %in% names(obs.eff.df)){  # always true?
-            if(is.na(obs.eff.df$covar[1])){
-              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
-            } else {
-              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- paste0(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar," + ",covName)
-            }
+          #   ---- If there is only one observation, the smooth.spline doesn't appear to work.  Force it.
+          if(sum(!is.na(jdbCov[,CAMPCovName])) == 1){
+            m3 <- jdbCov[,CAMPCovName]
           } else {
-            obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
+             
+            #   ---- I only keep the current.  So, after running, only the last jj is here.  
+            m3 <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=TRUE)
           }
           
-          #   ---- Helpful in checking.  Eventually delete.  
-          #table(obs.eff.df$TrapPositionID,obs.eff.df$covar,exclude=NULL)
           
-          obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- predict(m3,as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
-          
-          #jdbCov$pred_turbidity_ntu <- predict(m3)$y
-          jdbCov[paste0("pred_",covName)] <- predict(m3,x=as.numeric(jdbCov$measureTime))$y
-          
-          allCovar <- rbind(allCovar,jdbCov)
-          
-          #    ---- See if we have any predicted values outside the range for which we have data.
-          if(sum(jdbCov$measureTime < min.date.cov | jdbCov$measureTime > max.date.cov) > 0){
-            jdbTurb[jdbCov$measureTime < min.date.cov | jdbCov$measureTime > max.date.cov,paste0("pred_",covName)] <- NA
+          #   ---- Sometimes, there is an environmental observation on a day that doesn't correspond to an efficiency trial
+          #   ---- batchDate.  This could be because we take the average of catch days as the defined efficiency-trial date.  
+          #   ---- For now, throw out instances where these dates don't match.  Generally, this occurs because the 
+          #   ---- environmental measurement wasn't made consistently on all days during a season.  Could be enhanced so 
+          #   ---- that single-day measurements of environmental covariates cover more days.  We deal with this right here
+          #   ---- before the covariate is added to the building covar string.  
+          batchDateForChecking <- as.POSIXct(format(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime,format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+          if(sum(batchDateForChecking %in% obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & !is.na(obs.eff.df$efficiency),]$batchDate) > 0){
+           
+            #   ---- Build up the formula string in data frame obs.eff.df.
+            if("covar" %in% names(obs.eff.df)){  # always true?
+              if(is.na(obs.eff.df$covar[1])){
+                obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
+              } else {
+                obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- paste0(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar," + ",covName)
+              }
+            } else {
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$covar <- covName
+            }
+            
+            #   ---- Helpful in checking.  Eventually delete.  
+            #table(obs.eff.df$TrapPositionID,obs.eff.df$covar,exclude=NULL)
+            
+            #   ---- If there is only one observation, the smooth.spline doesn't appear to work.  Force it.
+            if(sum(!is.na(jdbCov[,CAMPCovName])) == 1){
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- m3
+              jdbCov[paste0("pred_",covName)] <- m3
+            } else {
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- predict(m3,as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
+              #jdbCov$pred_turbidity_ntu <- predict(m3)$y
+              jdbCov[paste0("pred_",covName)] <- predict(m3,x=as.numeric(jdbCov$measureTime))$y
+            }
+            
+            allCovar <- rbind(allCovar,jdbCov)
+            
+            #    ---- See if we have any predicted values outside the range for which we have data.
+            if(sum(allCovar$measureTime < min.date.cov | allCovar$measureTime > max.date.cov) > 0){
+              allCovar[allCovar$measureTime < min.date.cov | allCovar$measureTime > max.date.cov,paste0("pred_",covName)] <- NA
+            }
+            
+            #    ---- See if we have any predicted values outside the range for which we have data.  
+            if(sum(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate > max.date.cov) > 0){
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & (obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate > max.date.cov),covName] <- NA
+            }
+            
+            #   ---- Helpful in checking.  Eventually delete.  
+            #obs.eff.df[obs.eff.df$TrapPositionID == "1001" & !is.na(obs.eff.df$turbidity_ntu),]$turbidity_ntu
+          } else {
+            
+            #   ---- If we're here, we don't have an environmental observation on a date of an efficiency trial.  So, if 
+            #   ---- we have a column of all NA in obs.eff.df, get rid of it.  I think it can only be NA, or possibly
+            #   ---- non-NA on non-batchDates, which we don't want.
+            if(covName %in% names(obs.eff.df)){
+              obs.eff.df[,covName] <- NULL
+            }
           }
-          
-          #    ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
-          if(sum(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate + 60*60 < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate - 60*60 > max.date.cov) > 0){
-            obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & (obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate + 60*60 < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate - 60*60 > max.date.cov),covName] <- NA
-          }
-          
-          #   ---- Helpful in checking.  Eventually delete.  
-          #obs.eff.df[obs.eff.df$TrapPositionID == "1001" & !is.na(obs.eff.df$turbidity_ntu),]$turbidity_ntu
-          
         }
       } else if(estType == 2){
         

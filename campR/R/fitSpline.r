@@ -1,11 +1,12 @@
 
-fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist){
+fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df){
 
   # covarString <- covarString   #covarString,df,eff.ind.inside,tmp.df
   # df <- df
   # eff.ind.inside <- eff.ind.inside
   # tmp.df <- tmp.df
-  # dist <- "quasibinomial"
+  # dist <- "binomial"
+  # max.df <- max.df.spline
   
   #   ---- Record the dates we actually do the spline.  Tricky because bd2 is the mapped set of dates.
   #   ---- I specifically use tz = "UTC" to get out of daylight savings madness.  
@@ -40,7 +41,7 @@ fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist){
     
   cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
     
-    if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC - 2) ){
+    if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df | cur.AIC > (fit.AIC - 2) ){
       break
     } else {
       fit <- cur.fit
