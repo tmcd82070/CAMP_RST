@@ -51,8 +51,8 @@
 #'}
 estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   
-  # dbCov <- dbWVel
-  # covName <- "waterVel_fts"
+  # dbCov <- dbDisc #dbWVel
+  # covName <- "discharge_cfs" #"waterVel_fts"
   # estType <- 1
   # traps <- traps
   # obs.eff.df <- obs.eff.df
@@ -85,8 +85,8 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
           min.date.cov <- as.POSIXct(format(min(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
           max.date.cov <- as.POSIXct(format(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
           
-          #   ---- If there is only one observation, the smooth.spline doesn't appear to work.  Force it.
-          if(sum(!is.na(jdbCov[,CAMPCovName])) == 1){
+          #   ---- If there is only one observation, or < 4 unique values, the smooth.spline doesn't appear to work.  Force it.
+          if( (sum(!is.na(jdbCov[,CAMPCovName])) == 1) | (length(unique(jdbCov[,CAMPCovName][!is.na(jdbCov[,CAMPCovName])])) < 4) ){
             m3 <- jdbCov[,CAMPCovName]
           } else {
              
@@ -119,8 +119,8 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
             #table(obs.eff.df$TrapPositionID,obs.eff.df$covar,exclude=NULL)
             
             #   ---- If there is only one observation, the smooth.spline doesn't appear to work.  Force it.
-            if(sum(!is.na(jdbCov[,CAMPCovName])) == 1){
-              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- m3
+            if( (sum(!is.na(jdbCov[,CAMPCovName])) == 1) | (length(unique(jdbCov[,CAMPCovName][!is.na(jdbCov[,CAMPCovName])])) < 4) ){
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID & obs.eff.df$batchDate %in% batchDateForChecking,covName] <- m3
               jdbCov[paste0("pred_",covName)] <- m3
             } else {
               obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- predict(m3,as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
