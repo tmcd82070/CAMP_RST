@@ -133,7 +133,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   
   #   ---- I calculate mean forklength here and attach via an attribute on visit.df.  This way, it gets into function 
   #   ---- F.get.release.data.enh.  Note I make no consideration of FinalRun, or anything else.  I get rid of plus 
-  #   ---- count fish, and instances where forkLength wasn't measured.  NOte that I do not restrict to RandomSelection == 
+  #   ---- count fish, and instances where forkLength wasn't measured.  Note that I do not restrict to RandomSelection == 
   #   ---- 'yes'.  Many times, if there are few fish in the trap, they'll just measure everything, and record a 
   #   ---- RandomSelection == 'no'.  
   catch.df2 <- catch.df[catch.df$Unassd != "Unassigned" & !is.na(catch.df$forkLength),]

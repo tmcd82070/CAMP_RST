@@ -25,7 +25,7 @@ reportRun <- c("Q")
 
 #   ---- Read in mapping of subSiteID to ourSiteID, if necessary.
 if("Q" %in% reportRun){
-  luSubSiteID <<- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
+  #luSubSiteID <<- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
 }
 
 #   ---- Get necessary packages in order.  
@@ -55,7 +55,7 @@ rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-theExcel <- theExcel[c(1,5,13,24,26,32,36,52,71),]
+theExcel <- theExcel[c(1),]#,5,13,15),]#,5,13,24,26,32,36,52,71),]
 
 # 15 -- needs unit values to run.  
 
@@ -375,6 +375,8 @@ for(i in 1:nStreamNames){
         source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")
         source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
         source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot.bs.spline.R")
+        source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/fitSpline.R")
+        source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/covarPlot.R")
         
         #   ---- Function run.passage.enh expects a 'by' that isn't used.   
         by <- 'year' 

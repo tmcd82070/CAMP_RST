@@ -272,7 +272,17 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     covar <- NULL
     if(sum(!is.na(df[[ii]]$flow_cfs)) > 0){
       m1[[ii]] <- smooth.spline(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date,df[[ii]][!is.na(df[[ii]]$flow_cfs),]$flow_cfs,cv=TRUE)
-      obs.eff.df$covar <- "flow_cfs"
+      
+      if("covar" %in% names(obs.eff.df)){
+        if(is.na(obs.eff.df$covar[1])){
+          obs.eff.df$covar <- paste0("flow_cfs")
+        } else {
+          obs.eff.df$covar <- paste0(obs.eff.df$covar," + flow_cfs")
+        }
+      } else {
+        obs.eff.df$covar <- "flow_cfs"
+      }
+      
       obs.eff.df$flow_cfs <- NA
       obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$flow_cfs <- predict(m1[[ii]],as.numeric(obs.eff.df$batchDate))$y
       #df[[ii]]$pred_flow_cfs <- predict(m1[[ii]])$y
@@ -283,8 +293,13 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         df[[ii]][df[[ii]]$date < min.date.flow | df[[ii]]$date > max.date.flow,]$pred_flow_cfs <- NA
       }
       
-      #   ---- Build a dataframe like the CAMP covariates.  
-      dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=df[[ii]]$flow_statistic)
+      #   ---- Build a dataframe like the CAMP covariates.  If we're running against the unit table, we have no statistic.  
+      #   ---- For flow, call it 450L, for temp, 451L.
+      if(oursitevar >= 80){
+        dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=450L)
+      } else {
+        dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=df[[ii]]$flow_statistic)
+      }
       
       #    ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
       if(sum(obs.eff.df$batchDate + 60*60 < min.date.flow | obs.eff.df$batchDate - 60*60 > max.date.flow) > 0){
@@ -314,9 +329,14 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         df[[ii]][df[[ii]]$date < min.date.temp | df[[ii]]$date > max.date.temp,]$pred_temp_c <- NA
       }
       
-      #   ---- Build a dataframe like the CAMP covariates.  
-      dbTpPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=df[[ii]]$temp_statistic)
-      
+      #   ---- Build a dataframe like the CAMP covariates.  If we're running against the unit table, we have no statistic.  
+      #   ---- For flow, call it 450L, for temp, 451L.  Recall that oursitevar >= 80 means EnvCovDB from unit table is used.
+      if(oursitevar >= 80){
+        dbTpPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=451L)       
+      } else {
+        dbTpPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=df[[ii]]$temp_statistic)       
+      }
+
       #   ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
       if(sum(obs.eff.df$batchDate + 60*60 < min.date.temp | obs.eff.df$batchDate - 60*60 > max.date.temp) > 0){
         obs.eff.df[obs.eff.df$batchDate + 60*60 < min.date.temp | obs.eff.df$batchDate - 60*60 > max.date.temp,]$temp_c <- NA
@@ -352,10 +372,15 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   #   ---- Look at how the full models work out with respect to different traps.  
   table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
 
-  # plot(obs.eff.df[!is.na(obs.eff.df$efficiency),]$flow_cfs,
-  #      obs.eff.df[!is.na(obs.eff.df$efficiency),]$discharge_cfs,
-  #      col=c("red","blue")[as.factor(obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)],pch=19)
+  # plot(obs.eff.df[!is.na(obs.eff.df$efficiency),]$temp_c,
+  #      obs.eff.df[!is.na(obs.eff.df$efficiency),]$waterTemp_C,
+  #      col=c("red","orange","green","blue","black")[as.factor(obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)],pch=19)
   # lines(c(-50000,50000),c(-50000,50000),col="black")
+  # 
+  # cor(obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57001",]$temp_c,
+  #     obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57001",]$waterTemp_C)
+  # cor(obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57004",]$temp_c,
+  #     obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57004",]$waterTemp_C)
   
   
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
@@ -600,6 +625,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       fit0 <- m0$fit
       tmp.bs <- m0$bspl[!is.na(df$efficiency[eff.ind.inside]),]
       disp <- m0$disp
+      new.bspl <- m0$bspl
       
       #   ---- Send results to console.  Note that this applies the value of disp in the summary.  
       #   ---- In other words, this is 'quasibinomial' by definition, but in a backwards way.  
@@ -661,8 +687,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           df.anova$biggerModelDev <- anova(fit0)$`Resid. Dev`[checkThisMany + 1 + temporalSplinePresent]   # + 1 Int + 1 spline
           df.chi <- aggregate(df.anova,list(df.anova$testingCovar),function(x) tail(x,1))
           df.chi$Group.1 <- df.chi$`Resid. Df` <- NULL
-          df.chi$ChiSq <- abs(df.chi$`Resid. Dev` - df.chi$biggerModelDev)
-          df.chi$pVal <- pchisq(df.chi$ChiSq/summary(fit0)$dispersion,df.chi$testingCovarDF,lower.tail=FALSE)
+          df.chi$ChiSq <- df.chi$`Resid. Dev` - df.chi$biggerModelDev
+          #df.chi$pVal <- pchisq(df.chi$ChiSq/summary(fit0)$dispersion,df.chi$testingCovarDF,lower.tail=FALSE)
           df.chi$pVal <- pchisq(df.chi$ChiSq/disp,df.chi$testingCovarDF,lower.tail=FALSE)
           
           # #   ---- Tinkering with deviance -- normal models.
@@ -701,9 +727,14 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
             
           cat(paste0("Variable ",varToTestForDeletion," has a p-value of ",round(theHighestp,4),", which is greater than ",pCutOff,".  Removing.\n\n"))
               
-          #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
-          covarString <- gsub(paste0(" + ",varToTestForDeletion),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
-          covarString <- gsub(paste0(varToTestForDeletion," + "),"",covarString,fixed=TRUE)  # leading -- remove var[i] alone and next " + "
+          #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. If this is the last covariate, 
+          #   ---- we have nothing left.  
+          if(checkThisMany == 1){
+            covarString <- ""
+          } else {
+            covarString <- gsub(paste0(" + ",varToTestForDeletion),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
+            covarString <- gsub(paste0(varToTestForDeletion," + "),"",covarString,fixed=TRUE)  # leading -- remove var[i] alone and next " + "
+          }
           
           #   ---- Fit updated model.  
           if(covarString == ""){  # We could NOW have a blank covarString.  Note the lack of the '+' below. 
@@ -711,10 +742,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           } else {
             fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs + ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
           }
-              
-          #   ---- Output visual impact of variable deletion.  
+          
+          #   ---- Output visual impact of variable deletion.  Object new.bspl possibly has a bigger spline from below. 
           png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",model.i,"mc.png"),width=7,height=7,units="in",res=600)
-          model.info <- plot.bs.spline(m0$bspl,fit1,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
+          model.info <- plot.bs.spline(new.bspl,fit1,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
           dev.off()
              
           #   ---- We've now removed a covariate.  Reconsider the temporal spline.
@@ -730,8 +761,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
             
             #   ---- Send results to console.  Note that this applies the value of disp in the summary.  
             #   ---- In other words, this is 'quasibinomial' by definition, but in a backwards way.  
-            #cat("\nFinal Efficiency model for trap: ", trap, "\n")
-            #print(summary(m2$fit, disp=sum(residuals(m2$fit, type="pearson")^2)/m2$fit$df.residual))
+            cat("\nFinal Efficiency model for trap: ", trap, "\n")
+            print(summary(m2$fit, disp=sum(residuals(m2$fit, type="pearson")^2)/m2$fit$df.residual))
             
             #   ---- Plot the spline.  
             png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",model.i,"mt.png"),width=7,height=7,units="in",res=600)
@@ -742,7 +773,24 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
             before.bs.Len <- length(coef(fit1)[substr(names(coef(fit1)),1,6) == "tmp.bs"])
             after.bs.Len <- length(coef(fit2)[substr(names(coef(fit2)),1,6) == "tmp.bs"])
             cat(paste0("After last variable removable, I went from a ",before.bs.Len," spline to a ",after.bs.Len," spline.\n\n"))
+            if(after.bs.Len != before.bs.Len){
+              new.bspl <- m2$bspl
+            } 
             fit0 <- fit2
+          } else if(covarString == ""){
+            
+            #   ---- If we are here, we are back to the temporal spline-only model.  No covariate works.  
+            covarString <- "1"
+            m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline)
+            
+            cat("\nTemporal-only (after consideration of covariates) efficiency model for trap: ", trap, "\n")
+            print(summary(m0$fit, disp=sum(residuals(m0$fit, type="pearson")^2)/m0$fit$df.residual)  )
+            
+            #   ---- Plot the spline.  
+            png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",model.i + 1,"mc.png"),width=7,height=7,units="in",res=600)
+            model.info <- plot.bs.spline(m0$bspl,m0$fit,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
+            dev.off() 
+            break
           }
           
         } else {

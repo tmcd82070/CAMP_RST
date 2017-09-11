@@ -38,8 +38,8 @@
 #' }
 plot.bs.spline <- function(X,fit,beg.x,end.x,eff0=tmp.df,option,bd2){
   
-  # X <- m2$bspl
-  # fit <- m2$fit
+  # X <- m0$bspl
+  # fit <- fit1#m2$fit
   # beg.x <- bsplBegDt
   # end.x <- bsplEndDt
   # eff0 <- tmp.df
