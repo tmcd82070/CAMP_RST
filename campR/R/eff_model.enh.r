@@ -371,6 +371,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   #   ---- Look at how the full models work out with respect to different traps.  
   table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
 
+   
+  
+  
+  
   # plot(obs.eff.df[!is.na(obs.eff.df$efficiency),]$temp_c,
   #      obs.eff.df[!is.na(obs.eff.df$efficiency),]$waterTemp_C,
   #      col=c("red","orange","green","blue","black")[as.factor(obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)],pch=19)
@@ -381,13 +385,17 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   # cor(obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57004",]$temp_c,
   #     obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57004",]$waterTemp_C)
   
-  
+  varSummary <- NULL
+  possibleVars <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
+
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
   for( trap in traps ){
     
     df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
     ind <- !is.na(df$efficiency)
  
+    initialVars <- names(df)[!(names(df) %in% c("batchDate","nReleased","nCaught","efficiency","covar","batchDate2","fishDay"))]
+    initialVarsNum <- c(2,as.integer(possibleVars %in% initialVars))
     
     # JASON PLAYS AROUND AND ENSURES A DATE REPEATS OVER TWO YEARS.
     #df[!is.na(df$efficiency),]$batchDate[15] <- df[!is.na(df$efficiency),]$batchDate[1]
@@ -430,6 +438,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- With the inclusion of all CAMP covariates, the probability increases by a lot that we don't have all 
     #   ---- the values over all time.  Chuck those that don't have at least ... 90% of the data rows, given a 
     #   ---- trap.  Note that this considers NA WITHIN a column.  If we delete, we have to update tmp.df$covar.
+    # write.csv(tmp.df,"L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Mokelumne River--Golf RST Main Site/2006/Enhanced_Eff_Get_Betas/tmp.df.csv",row.names=FALSE)
     atLeast <- floor(0.90*m.i) + 1
     vars <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength",colnames(tmp.df[,(which(colnames(tmp.df) == "covar") + 1):ncol(tmp.df)]))
     vars <- vars[!(vars %in% c("fishDay","batchDate2"))]
@@ -589,29 +598,53 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   
   
   
-  
-  
-  
-  
-  
-  
     
+    #   ---- Clean up the duplicate variable situation. 
+    
+    #   ---- If we have water temperature from both EnvCovDB and CAMP, keep EnvCovDB.
+    one <- sum(initialVars %in% "temp_c")
+    two <- as.numeric(sum(initialVars %in% c("waterTemp_C","waterTemp_F")) >= 1)
+    interimVars1 <- initialVars
+    interimVars1Num <- c(3,as.numeric(possibleVars %in% interimVars1))
+    
+    #   ---- If both conditions are true, we have both vars.  Get rid of CAMP.  
+    if( (one == two) & (one == 1) ){
+      interimVars1 <- interimVars1[!(interimVars1 %in% c("waterTemp_C","waterTemp_F"))]
+      interimVars1Num <- c(3,as.numeric(possibleVars %in% interimVars1))
+      
+      #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
+      covarString <- gsub(paste0(" + ","waterTemp_C"),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
+      covarString <- gsub("waterTemp_C","",covarString,fixed=TRUE)                # leading -- remove var[i] alone
+      cat("I have removed variable waterTemp_C because temp_c is already present.\n\n")
+      
+      covarString <- gsub(paste0(" + ","waterTemp_F"),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
+      covarString <- gsub("waterTemp_F","",covarString,fixed=TRUE)                # leading -- remove var[i] alone
+      cat("I have removed variable waterTemp_F because temp_c is already present.\n\n")
+    }
+  
+  
+    #   ---- If we have water flow from both EnvCovDB and CAMP, keep EnvCovDB.
+    one <- sum(initialVars %in% "flow_cfs")
+    two <- as.numeric(sum(initialVars %in% c("discharge_cfs")) >= 1)
+    interimVars2 <- initialVars
+    interimVars2Num <- c(4,as.numeric(possibleVars %in% interimVars2))
+    
+    #   ---- If both conditions are true, we have both vars.  Get rid of CAMP.  
+    if( (one == two) & (one == 1) ){
+      interimVars2 <- interimVars2[!(interimVars2 %in% c("discharge_cfs"))]
+      interimVars2Num <- c(4,as.numeric(possibleVars %in% interimVars2))
+      
+      #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
+      covarString <- gsub(paste0(" + ","discharge_cfs"),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
+      covarString <- gsub("discharge_cfs","",covarString,fixed=TRUE)                # leading -- remove var[i] alone
+      cat("I have removed variable discharge_cfs because flow_cfs is already present.\n\n")
+    }
       
     #   ---- Fit the full model with all possible covariates that made it.  Object fit.tmp.bs is from the last kept run.
     method <- "likeType3SS"    # "pVal"    
     distn <- "binomial"   # "binomial"
     pCutOff <- 0.10
     covarString <- tmp.df$covar[1]
-        
-    #   ---- What to do about waterTemp_C vs. temp_c?  NOTE THIS GETS RID OF waterTemp_C REGARDLESS.  REVISIT.
-    #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
-    covarString <- gsub(paste0(" + ","waterTemp_C"),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
-    covarString <- gsub("waterTemp_C","",covarString,fixed=TRUE)                # leading -- remove var[i] alone
-    
-    #   ---- What to do about flow_cfs vs. discharge_cfs?  NOTE THIS GETS RID OF discharge_cfs REGARDLESS.  REVISIT.
-    #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
-    covarString <- gsub(paste0(" + ","discharge_cfs"),"",covarString,fixed=TRUE)  # middle or trailing -- remove leading " + "
-    covarString <- gsub("discharge_cfs","",covarString,fixed=TRUE)                # leading -- remove var[i] alone
     
     #   ---- Save a record of the variables we care about for plotting below.  
     covarStringPlot <- covarString
@@ -819,9 +852,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           
     fit <- fit0
         
-        
-        
-        
+    #   ---- Summarize which variables for this subSiteID made it into the final model.  
+    finalVars <- names(fit$coefficients)[!(names(fit$coefficients) %in% c("(Intercept)",names(fit$coefficients)[c(grepl("tmp",names(fit$coefficients)))]))]
+    finalVarsNum <- c(5,as.integer(possibleVars %in% finalVars))
         
         
     #   ---- Make a design matrix for ease in calculating predictions.
@@ -943,11 +976,29 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     df$trapPositionID <- trap
       
     ans <- rbind(ans, df)
+    
+    #   ---- Compile which variables entered.  
+    v <- data.frame(trap,rbind(initialVarsNum,interimVars1Num,interimVars2Num,finalVarsNum))
+    varSummary <- rbind(varSummary,v)
 
   }
   
   attr(ans,"subsites") <- attr(obs.eff.df, "subsites")
   attr(ans,"site.name") <- attr(obs.eff.df, "site.name")
+  
+  #   ---- Clean up varSummary for output.  
+  colnames(varSummary) <- c("TrapPositionID","numStage",possibleVars)
+  varSummary$Stage <- NA
+  varSummary[varSummary$numStage == 2,]$Stage <- "Initial"
+  varSummary[varSummary$numStage == 3,]$Stage <- "Interim (Temp)"
+  varSummary[varSummary$numStage == 4,]$Stage <- "Interim (Flow)"
+  varSummary[varSummary$numStage == 5,]$Stage <- "Final"
+  varSummary$numStage <- NULL
+  
+  #   ---- Export these data in a special spot, ready to go for more R processing.
+  here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/"
+  save(varSummary,file=paste0(here,"varSummary_",site,".RData"))
+  
   
   # #   ---- Make a plot if called for.
   # if( !is.na(plot.file) ) {
