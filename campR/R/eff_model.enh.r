@@ -738,9 +738,17 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           
           #   ---- Fit updated model.  
           if(covarString == ""){  # We could NOW have a blank covarString.  Note the lack of the '+' below. 
-            fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+            if(temporalSplinePresent == 1){
+              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+            } else if(temporalSplinePresent == 0){
+              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+            }
           } else {
-            fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs + ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+            if(temporalSplinePresent == 1){   # Assumes this was calculated above in evaluation of covariate.
+              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ tmp.bs + ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+            } else if(temporalSplinePresent == 0){
+              fit1 <- glm( as.formula(paste0("nCaught / nReleased ~ ",covarString)), family=distn, data=tmp.df, weights=tmp.df$nReleased ) 
+            }
           }
           
           #   ---- Output visual impact of variable deletion.  Object new.bspl possibly has a bigger spline from below. 
