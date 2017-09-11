@@ -294,8 +294,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       
       #   ---- Build a dataframe like the CAMP covariates.  If we're running against the unit table, we have no statistic.  
       #   ---- For flow, call it 450L, for temp, 451L.
-      if(oursitevar >= 80){
-        dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=450L)
+      if(!(nrow(nGood) > 0)){
+        dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=rep(450L,nrow(df[[ii]])))
       } else {
         dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=df[[ii]]$flow_statistic)
       }
@@ -330,7 +330,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       
       #   ---- Build a dataframe like the CAMP covariates.  If we're running against the unit table, we have no statistic.  
       #   ---- For flow, call it 450L, for temp, 451L.  Recall that oursitevar >= 80 means EnvCovDB from unit table is used.
-      if(oursitevar >= 80){
+      if(!(nrow(nGood) > 0)){
         dbTpPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=451L)       
       } else {
         dbTpPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=df[[ii]]$temp_statistic)       

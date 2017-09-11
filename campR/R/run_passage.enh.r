@@ -97,7 +97,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )
   run.season <- data.frame( start=strt.dt, end=end.dt )
   dt.len <- difftime(end.dt, strt.dt, units="days")
-  if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
+  #if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
   
   #   ---- Identify the type of passage report we're doing
   assign("passReport","ALLRuns",envir=.GlobalEnv)
