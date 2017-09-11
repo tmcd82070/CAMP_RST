@@ -201,7 +201,6 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     res <- dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
     nGood <- dbFetch(res)
     dbClearResult(res)
-  
     #close(ch)
     dbDisconnect(ch)
     
@@ -212,10 +211,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       df[[ii]] <- queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
       #df[[ii]]$date <- head(strptime(df[[ii]]$date,format="%Y-%m-%d %H:%M:%s",tz=time.zone))
       
-      if(sum(!is.na(df[[ii]]$flow_cfs)) > 0){
+      if(sum(!is.na(df[[ii]]$flow_cfs)) > 0 & (sum(df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs)) > 0) ){
         df[[ii]][df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs),]$flow_cfs <- NA
       }
-      if(sum(!is.na(df[[ii]]$temp_c)) > 0){
+      if(sum(!is.na(df[[ii]]$temp_c)) > 0 & (sum((df[[ii]]$temp_c >= 100 | df[[ii]]$temp_c <= 0) & !is.na(df[[ii]]$temp_c)) < 0)){
         df[[ii]][(df[[ii]]$temp_c >= 100 | df[[ii]]$temp_c <= 0) & !is.na(df[[ii]]$temp_c),]$temp_c <- NA
       }
       #dev.off();plot(df[[ii]]$date,df[[ii]]$flow_cfs,type="l",col="red",xlab="Date",ylab="Flow(cfs)",main="Flow (cfs)")
