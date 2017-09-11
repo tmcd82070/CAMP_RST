@@ -118,7 +118,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   max.date2 <<- "2017-05-22"
   
   #   ---- Fetch the catch and visit data
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date, output.file  )
+  tmp.df   <- F.get.catch.data( site, taxon, min.date2, max.date2, output.file  )
   
   catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
