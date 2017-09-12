@@ -76,7 +76,7 @@
 #' }
 F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
 
-  # site <- 57000
+  # site <- 34000
   # taxon <- 161980
   # min.date <- min.date2#"2006-01-01"
   # max.date <- max.date2#"2006-12-01"

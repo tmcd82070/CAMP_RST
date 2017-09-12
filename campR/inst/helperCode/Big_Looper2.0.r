@@ -55,9 +55,9 @@ rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-theExcel <- theExcel[c(1),]#,5,13,15),]#,5,13,24,26,32,36,52,71),]
+theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
 
-# 15 -- needs unit values to run.  
+#theExcel <- theExcel[c(71),]
 
 
 #   ---- Tell the Big Looper where to put all the output.  
