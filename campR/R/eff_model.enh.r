@@ -249,7 +249,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     #   ---- Put all database covariates into a list for easier processing.
     dbCovar <- list(dbDisc,dbDpcm,dbDpft,dbATpC,dbATpF,dbTurb,dbWVel,dbWTpC,dbWTmF,dbLite,dbDOxy,dbCond,dbBaro,dbWeat)
-    
+
     #   ---- Collapse all the UnitIDs we have. 
     dfUnitIDs <- NULL
     for(i in 1:length(dbCovar)){
@@ -259,6 +259,24 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         dfUnitIDs <- rbind(dfUnitIDs,dfUnitIDs.i)
       }
     }
+    
+    #   ---- Compile unique UnitIDs per covar. 
+    dfUnitIDs <- unique(dfUnitIDs)
+    rownames(dfUnitIDs) <- NULL
+    
+    dfUnitIDs$test <- NA
+    for(i in 1:nrow(dfUnitIDs)){
+      if(i == 1){
+        dfUnitIDs[i,]$test <- dfUnitIDs[i,]$UnitID
+      } else if(dfUnitIDs[i,]$covar != dfUnitIDs[i - 1,]$covar){
+        dfUnitIDs[i,]$test <- paste0(dfUnitIDs[i,]$UnitID," ")
+      } else {
+        dfUnitIDs[i,]$test <- paste0(dfUnitIDs[i - 1,]$test,dfUnitIDs[i,]$UnitID,sep=" ")
+      }
+    }
+    
+    dfUnitIDs <- aggregate(dfUnitIDs,list(dfUnitIDs$covar),function(x) tail(x,1))
+    dfUnitIDs$Group.1 <- dfUnitIDs$UnitID <- dfUnitIDs$site <- NULL
     
     #   ---- Read in how to map unstandardized weather values to standardized values.  Put this in as data.frame...eventually. 
     weaMap <- read.csv("//LAR-FILE-SRV/Data/PSMFC_CampRST/felipe products/variables/weather/weatherLookupMapped20170720.csv")
@@ -386,7 +404,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   #     obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57004",]$waterTemp_C)
   
   varSummary <- NULL
-  possibleVars <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
+  possibleVars <- c("(Intercept)","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
 
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
   for( trap in traps ){
@@ -394,7 +412,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
     ind <- !is.na(df$efficiency)
  
-    initialVars <- names(df)[!(names(df) %in% c("batchDate","nReleased","nCaught","efficiency","covar","batchDate2","fishDay"))]
+    initialVars <- c("(Intercept)",names(df)[!(names(df) %in% c("batchDate","nReleased","nCaught","efficiency","covar","batchDate2","fishDay"))])
     initialVarsNum <- c(2,as.integer(possibleVars %in% initialVars))
     
     # JASON PLAYS AROUND AND ENSURES A DATE REPEATS OVER TWO YEARS.
@@ -853,7 +871,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     fit <- fit0
         
     #   ---- Summarize which variables for this subSiteID made it into the final model.  
-    finalVars <- names(fit$coefficients)[!(names(fit$coefficients) %in% c("(Intercept)",names(fit$coefficients)[c(grepl("tmp",names(fit$coefficients)))]))]
+    finalVars <- names(fit$coefficients)[!(names(fit$coefficients) %in% c(names(fit$coefficients)[c(grepl("tmp",names(fit$coefficients)))]))]
     finalVarsNum <- c(5,as.integer(possibleVars %in% finalVars))
         
         
@@ -977,8 +995,19 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       
     ans <- rbind(ans, df)
     
+    #   ---- Summarize the betas in the final model.  
+    finalBetas <- coefficients(fit)
+    finalBetas <- finalBetas[!(grepl("tmp.bs",names(finalBetas),fixed=TRUE))]
+    
+    finalBetasNum <- possibleVars %in% names(finalBetas)
+    finalBetasNum[finalBetasNum == TRUE] <- finalBetas
+    finalLogOddsNum <- c(7,exp(finalBetasNum))
+    finalBetasNum <- c(6,finalBetasNum)
+
     #   ---- Compile which variables entered.  
-    v <- data.frame(trap,rbind(initialVarsNum,interimVars1Num,interimVars2Num,finalVarsNum))
+    v <- data.frame(trap,rbind(initialVarsNum,interimVars1Num,interimVars2Num,finalVarsNum,finalBetasNum,finalLogOddsNum))
+    v$threshold <- atLeast
+    v$available <- m.i
     varSummary <- rbind(varSummary,v)
 
   }
@@ -987,13 +1016,16 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   attr(ans,"site.name") <- attr(obs.eff.df, "site.name")
   
   #   ---- Clean up varSummary for output.  
-  colnames(varSummary) <- c("TrapPositionID","numStage",possibleVars)
+  colnames(varSummary) <- c("subsiteID","numStage",possibleVars,"threshold","available")
   varSummary$Stage <- NA
   varSummary[varSummary$numStage == 2,]$Stage <- "Initial"
   varSummary[varSummary$numStage == 3,]$Stage <- "Interim (Temp)"
   varSummary[varSummary$numStage == 4,]$Stage <- "Interim (Flow)"
   varSummary[varSummary$numStage == 5,]$Stage <- "Final"
+  varSummary[varSummary$numStage == 6,]$Stage <- "Final Model Betas"
+  varSummary[varSummary$numStage == 7,]$Stage <- "Final Model Odds Ratios"
   varSummary$numStage <- NULL
+  rownames(varSummary) <- NULL
   
   #   ---- Export these data in a special spot, ready to go for more R processing.
   here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/"
