@@ -12,7 +12,7 @@ Description: R routines for the CAMP R platform.
 License: GNU General Public License
 RoxygenNote: 5.0.1
 Depends: RODBC
-Imports: 
+Imports:
  quantreg, 
  splines, 
  MASS,
@@ -29,4 +29,6 @@ Imports:
  Rcpp,
  ellipse,
  tidyr
-
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
