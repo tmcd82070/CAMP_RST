@@ -1,0 +1,130 @@
+
+
+
+
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{cancel}
+\usepackage{booktabs}
+
+\begin{document}
+
+
+\section{Calculating Daily Percent $Q_d$, or $\text{perc } Q_d$}
+
+In hydrology, the quantity ``$Q$" describes the amount of flow of a liquid with respect to time.  The quantity ``percent $Q$", or ``perc $Q$", is then a proportion of the flow of a stream through a set of rotary screw-traps, at a specific river-mile, over the course of one day.  When both trap-flow and stream-flow are measured over the same amount of time, perc $Q$ can be interpreted as the proportion of total stream volume that flows through a set of traps.  
+
+Calculation of perc $Q$ requires estimates of stream velocity and flow, or discharge, via either of the USGS and CDEC, whose automated gauges provide daily on-the-fly discharge estimates.  Note that units commonly associated with flow include $\text{m}^3/\text{s}$, $\text{ft}^3/\text{s}$, and $\text{acre-feet}/\text{s}$, and emphasize a metric of volume per time.  Biologists directly measure velocity at a particular rotary screw trap.  Perc $Q$ also requires an estimate of the cross-sectional area of water flowing through a screw-trap, which can vary based on stream turbulence.  It additionally requires the proportion of time a trap successfully fished over the course of a day, as well as the status of a cone as either ``full" or ``half."
+
+To derive perc $Q$, first write out its proportional definition.
+\begin{align*}
+\text{perc }Q &= 100\% \times \frac{\text{total trap flow}}{\text{total stream flow}}
+\end{align*}
+
+For brevity, designate as $Q_d$ the total stream flow on the $d$th day, and $q_{id}$ the flow through the $i$th trap on the $d$th day.  Assume that on any one day, $n$ traps operate at one particular river-mile.  Then daily perc $Q_d$ is 
+\begin{align*}
+\text{perc }Q_d &= 100\% \times \frac{\text{total daily trap flow}}{\text{total daily stream flow}} \\
+                &= 100\% \times \frac{\sum\limits_{i=1}^{n} q_{id}}{Q_d}.
+\end{align*}
+
+
+\subsection*{Denominator total daily stream flow $Q_d$}
+
+Gauges managed by the USGS or CDEC provide measurements of denominator total stream flows $Q$.  
+
+At the Red-Bluff Diversion Dam (RBDD) on the Sacramento River, local USGS gauge {\tt 11377100} at Bend Bridge records daily discharge, say $D_d$, in the units of cubic meters per second.  These measurements are then converted to acre-feet per day.  Acre-feet are used because the size of cone-widths, a key part in the calculation of the perc $Q_d$ numerator, are measured in feet.  
+
+So then, the expression for total stream flow $Q_d$, in units of acre-feet / day, becomes
+\begin{align*}
+Q_d &= D_d \, \frac{86400\text{ s}}{1} \, \frac{1 \text{ acre}}{43560\text{ ft}^2} \text{ / day}\\
+    &= D_d \, \text{acre-feet / day}.
+\end{align*}
+
+\noindent For example, suppose that a query on gauge {\tt 11377100} communicates that the discharge $D_d$ on May 7, 2000 was 13900 $\text{ft}^3 / \text{s}$.  Then the total stream volume over the course of one day, or $Q_d$ in acre-feet / day, is
+\begin{align*}
+Q_d &= D \, \frac{86400\text{ s}}{1} \, \frac{1 \text{ acre}}{43560\text{ ft}^2} \text{ / day}\\
+    &= \frac{13900 \text{ ft}^3}{\text{s}} \, \frac{86400\text{ s}}{1} \, \frac{1 \text{ acre}}{43560\text{ ft}^2} \text{ / day}\\
+    &\approx 27570.24 \text{ acre-feet \text{ / day}}.
+\end{align*}
+
+
+\subsection*{Numerator total daily trap flow $\sum q_{id}$}
+
+Estimation of numerator daily trap-specific $q_{id}$ are more subtle, and take into consideration the cross-section of flow through the screw-trap cone, as well as the proportion of time during the day during which a trap was fishing.  Finally, half-cone status is considered as well.
+
+To obtain an estimate of the total daily volume $q_{id}$ that passes through the $i$th screw-trap, the daily velocity of stream flow $v_{id}$ is measured, in $\text{ft}/\text{s}$.  Velocity $v_{id}$ is then multiplied by the cross-sectional area $a_{id}$ of the screw-trap, in $\text{ft}^2$.  Days on which the stream flow is more turbulent result in higher cross-sectional areas.  The opposite is true on days with more placid stream conditions.  Due to this, the daily cross-sectional square-footage may change slightly day-to-day.  Table \ref{tab:table1} lists cross-sectional square footages $a_{id}$, as a function of the height $h$ of water in the $i$th cone, in inches, as measured from the bottom.  For example, very placid days may record a water height of 45 inches, leading to a cross-sectional area $a_{id}$ of $22.7 \text{ ft}^2$, while turbulent days may whip water within the cone to a height of 51 inches, resulting in a cross-sectional area $a_{id}$ of $26.6 \text{ ft}^2$.
+
+
+\begin{table}[h!]
+  \centering
+  \caption{Cross-sectional square-footage $a$ as a function of the height $h$ of water within the cone, as measured from the bottom, rounded to the nearest inch.  Water heights measured outside the range listed, or not measured at all, assume a height of 48 inches.}
+  \label{tab:table1}
+  \begin{tabular}{cc}
+    \toprule
+    Water height & Cross-Sectional\\
+    $h$          & Area $a$          \\
+    (in)         & $\text{ft}^2$     \\
+    \midrule
+    45 & 22.7 \\
+    46 & 23.3 \\
+    47 & 24.0 \\
+    48 & 24.6 \\
+    49 & 25.3 \\
+    50 & 26.0 \\
+    51 & 26.6 \\
+    52 & 27.2 \\
+    Other & 24.6 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+In addition to daily measurements concerning cross-sectional areas, the amount of time $t_{id}$, in seconds, the $i$th trap fished during that day is recorded.   
+
+Together, these measurements provide an estimate of the unadjusted daily volume of water $V_{id}$ that passes through the trap, which is then converted to acre-feet, similar to the daily denominator $Q_d$ of total stream flow.  So, 
+\begin{align*}
+V_{id} &= v_{id}a_{id}t_{id} \, \frac{1 \text{ acre}}{43560 \text{ ft}^2}.
+\end{align*}
+
+However, on many days, the $i$th trap fails to fish an entire 24 hours, or 86400 s.  In this case, the estimation of volume is expanded, so as to estimate the total daily volume for that day.  For example, a trap that fished for only 12 hours would have its estimated volume multiplied by two, so as to estimate a daily volume $V_{id}$.  To account for this, $V_{id}$ is multiplied by $86000 \text{ s} / t_{id}$.  Thus, if a trap fishes an entire day of 86400 s, the original estimate of volume $V_{id}$ is multiplied by one.  Call this final expanded volume $V^{\prime}_{id}$.  Then it follows that 
+\begin{align*}
+V^{\prime}_{id} &= v_{id}a_{id}t_{id} \, \frac{1 \text{ acre}}{43560 \text{ ft}^2} \, \frac{86400 \text{ s}}{t_{id}} \\
+                &= v_{id}a_{id} \, \frac{1 \text{ acre}}{43560 \text{ ft}^2} \, \frac{86400 \text{ s}}{1}.
+\end{align*}
+The cancellation of the amount of seconds spent fishing $t_{id}$ when calculating $V^{\prime}_{id}$ makes sense here because $v_{id}a_{id}$ provides a 1 s estimate of flow.  Multiplication of this resulting number by 86400 s thus provides a daily volume estimate.  
+
+Finally, days on which a cone was set at half-cone have volume estimates halved.  This is easily incorporated into the final expression for $q_i$ via a multiplier, $c_{id}$, say.  So, $c_{id}$ takes on values of one during days with full-cone operation, but values of $1/2$ on half-cone days.  Thus, the estimate of volume flowing through the $i$th trap over one day is 
+\begin{align*}
+V^{\prime}_{id} &= v_{id}a_{id}c_{id} \, \frac{1 \text{ acre}}{43560 \text{ ft}^2} \, \frac{86400 \text{ s}}{1}.
+\end{align*}
+Thus, the volume that flowed over the course of one day is the flow $q_{id}$; i.e., $q_{id} = V^{\prime}_{id} \text{ / day}$.  
+
+For example, on May 7, 2000, the velocity $v_{id}$ within table {\tt EnvDataRaw} in the {\tt CAMP.mdb} for the RBDD at {\tt subSiteID} {\tt 42020} was $3.2 \text{ ft}/\text{s}$.  Additionally, in table {\tt trapVisit}, find that on this same day and {\tt subSiteID} that the trap was in the full-cone configuration via variable {\tt halfConeID}, as well as evidence that it was fishing for approximately 24 hours via variable {\tt visitTime}.  Finally, take note that the cone depth at the start of trapping via {\tt coneDepthAtStart} was 48 inches, implying that the cross-sectional area $a_{id}$ was 24.6 $\text{ft}^2$. Then the volume of water $V^{\prime}_i$ that flowed through the trap is 
+\begin{align*}
+V^{\prime}_{id} &= v_{id}a_{id}c_{id} \, \frac{1 \text{ acre}}{43560 \text{ ft}^2} \, \frac{86400 \text{ s}}{1} \\
+                &= \frac{3.2 \text{ft}}{\text{s}} \, \frac{24.6 \text{ft}^2}{1} \, 1 \, \frac{1 \text{ acre}}{43560 \text{ ft}^2} \, \frac{86400 \text{ s}}{1} \\
+                &= 156.14 \text{ acre-feet}.
+\end{align*}
+meaning that over the course of one day, the flow $q_i = 156.14 \text{ acre-feet}\text{ / day}$.
+
+In the case that only this one trap {\tt 42020} were functioning on May 7, 2000, then the estimated percent $Q_d$ for this day would then be 
+\begin{align*}
+\text{perc }Q_d &= 100\% \times \frac{\text{total daily trap flow}}{\text{total daily stream flow}} \\
+                &= 100\% \times \frac{\sum\limits_{i=1}^{1} q_{id}}{Q_d} \\
+                &= 100\% \times \frac{\frac{156.14 \text{ acre-feet}}{1 \text{ day}}} {\frac{27570.24 \text{ acre-feet}}{1 {\text{ day}}}} \\
+                &= 100\% \times 0.005665 \\
+                &= 0.5665\%.
+\end{align*}
+Thus, on May 7, 2000, approximately one-half of one percent of the total stream flow of the Sacramento River flowed through rotary-screw trap {\tt 42020}.
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
