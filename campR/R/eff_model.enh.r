@@ -136,8 +136,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   
 
   
-  
-  test <- getTogetherCovarData(obs.eff.df)
+  #   ---- Query for covariates.  This is a big function!
+  obs.eff.df <- getTogetherCovarData(obs.eff.df)
   
   
   
@@ -225,8 +225,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     
     #   ---- Define these so we can model on (basically) fishing day of the season.  Do this with respect to 
-    #   ---- the year 1970 paradigm defined above.  We really only care about the number of days since the
-    #   ---- minimum start of fishing, over all years, so the year is immaterial.  Use 1970, or maybe 1969, 
+    #   ---- the year 1960 paradigm defined above.  We really only care about the number of days since the
+    #   ---- minimum start of fishing, over all years, so the year is immaterial.  Use 1960, or maybe 1959, 
     #   ---- so we always keep this fact in mind.  Not sure this will always work... Need to check.  
     sign <- as.numeric(strftime(df$batchDate,format="%j")) - as.numeric(strftime(bsplBegDt,format="%j"))
     df$fishDay <- ifelse(sign == 0,0,
@@ -247,7 +247,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
 
     
     #   ---- Find the "season", which is between first and last trials
-    #   ---- We look for 'inside' with respect to our 1969-1970 mapped year of trials.  
+    #   ---- We look for 'inside' with respect to our 1959-1960 mapped year of trials.  
     strt.dt <- bsplBegDt #min( df$batchDate[ind], na.rm=T )  # Earliest date with an efficiency trial
     end.dt  <- bsplEndDt #max( df$batchDate[ind], na.rm=T )  # Latest date with efficiency trial
     ind.inside <- (strt.dt <= df$batchDate2) & (df$batchDate2 <= end.dt)

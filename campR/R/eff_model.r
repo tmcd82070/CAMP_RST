@@ -86,10 +86,10 @@
 #' }
 F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA ){
   
-#   obs.eff.df <- eff
-#   plot <- plot
-#   max.df.spline <- 4
-#   plot.file <- plot.file
+  # obs.eff.df <- eff
+  # plot <- plot
+  # max.df.spline <- 4
+  # plot.file <- plot.file
 
   ans <- NULL
   traps <- sort( unique(obs.eff.df$TrapPositionID))
@@ -101,6 +101,137 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   names(all.ind.inside) <- traps
   names(obs.data) <- traps
   names(eff.type) <- traps
+  
+  
+  
+  
+  
+  
+  #   ---- Decide if we're going to use enhanced efficiency.  
+  if(SOMETHING == TRUE){
+    
+    #   ---- Get stuff we need to fit the enhanced efficiency models.  
+    
+    #   ---- 1.  We know traps from immediately above.
+    data(betas)
+    betas <- betas[betas$subsiteID %in% traps,]
+    
+    # I think this is now better in function getTogetherCovarData.
+    # #   ---- 2.  Read in CAMP covariates.  So, run Connie's cleaning query.
+    # db <- get( "db.file", envir=.GlobalEnv )
+    # ch <- odbcConnectAccess(db)
+    # 
+    #   #   ---- Develop the TempReportCriteria_TrapVisit table.
+    #   F.buildReportCriteria( site, min.date2, max.date2 )
+    # 
+    #   #   ---- Run the clean-up query.
+    #   F.run.sqlFile( ch, "QryCleanEnvCov.sql")#, min.date2, max.date2 )
+    # 
+    #   #   ---- Now, fetch the result.  
+    #   dbCov <- sqlFetch( ch, "EnvDataRaw_Standardized" )
+    # 
+    # close(ch)
+    
+    #   ---- 3. Get the first date at which we start the temporal sequence.
+    theExcel <- read.csv("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/theExcel.csv",stringsAsFactors=FALSE)
+    bsplBegDt <- as.POSIXlt(strptime(theExcel[theExcel$siteID == site,]$minOverall[1],format="%m/%d/%Y",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+    bsplEndDt <- as.POSIXlt(strptime(theExcel[theExcel$siteID == site,]$maxOverall[1],format="%m/%d/%Y",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+    
+    #   ---- 4. Given the obs.eff.df dataframe (and its dates), run function getTogetherCovarData.
+    #   ----    This will assemble data on the days we care about.  
+    
+    #   ----    It knows which days to run on because it pulls off a min.date and max.date from obs.eff.df.  
+    obs.eff.df <- getTogetherCovarData(obs.eff.df)
+    
+    
+    #   ---- 5. Now that we have the data (e-trial data?), we need to set the dates with respect to the 
+    #   ----    start of fishing.  Basically Julian day.  
+    #   ----    Need to make this go to the package inst folder, not the working directory.
+    theExcel <- read.csv("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/theExcel.csv",stringsAsFactors=FALSE)
+    bsplBegDt <- as.POSIXlt(strptime(theExcel[theExcel$siteID == site,]$minOverall[1],format="%m/%d/%Y",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+    bsplEndDt <- as.POSIXlt(strptime(theExcel[theExcel$siteID == site,]$maxOverall[1],format="%m/%d/%Y",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+    
+  
+    for(trap in traps){
+    
+      
+      #   ---- 4. Find out which covariates this trap cares about.  
+      thisB1 <- betas[betas$subsiteID == trap,]                                                               # Restrict to trap.
+      thisB2 <- thisB1[,names(thisB1)[sapply(thisB1,function(x) ifelse(is.numeric(x),sum(x),x)) != "0"]]      # Restrict to non-zero covariates.
+      thisB3 <- thisB2[,!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))]   # Restrict to covariates.  
+      
+      covarB <- thisB3
+      cat(paste0("Enhanced efficiency model for trap ",trap," seeks recorded data on covariates ",paste0(names(covarB),collapse=", "),".\n"))
+      #names(covarB)[names(covarB) == "waterDepth_ft"] <- "waterDepth_cm"
+      
+      
+      #   ---- 5. Estimate the enhanced efficiency.  There are several ways to do this.  
+      
+      #   ---- Make a design matrix.  Can I take all dates here?
+      X <- obs.eff.df[,names(covarB)]
+      rownames(X) <-paste0(obs.eff.df$TrapPositionID,"---",obs.eff.df$batchDate)
+      
+      XX <- X[complete.cases(X),]
+      
+      X %*% covarB
+      
+      
+      
+      
+      # #   ---- We have three types of covariates.  Those from the Environmental Covariate Database, those from CAMP, 
+      # #   ---- and those from e-trials.  Check if we have what's required for each of the three types.  
+      # EnvCovDBCovars <- c("temp_c","flow_cfs")
+      # CAMPCovars <- c("discharge_cfs","waterDepth_cm","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","lightPenetration_cm")
+      # EtrialCovars <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")
+      # 
+      # #   ---- EnvCovDBpostgres Covariates
+      # EnvCovDBB <- names(covarB)[names(covarB) %in% EnvCovDBCovars]  
+      # 
+      # #   ---- CAMP Covariates
+      # CAMPB <- unlist(strsplit(names(covarB)[names(covarB) %in% CAMPCovars],"_",fixed=TRUE))[c(TRUE,FALSE)]
+      # 
+      # #   ---- e-trials Covariates
+      # EtrialB <- names(covarB)[names(covarB) %in% EtrialCovars]
+      
+      
+      
+      
+      
+
+      
+      
+
+      
+      
+      
+      
+
+        
+      
+      
+
+      
+
+      
+      
+
+      
+    as.POSIXct("2017-03-23",tz="UTC")
+    seq.POSIXt(as.POSIXct(min.date,tz=),as.POSIXct(max.date,tz=),"day")
+  
+    }
+  
+  
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   # 	---- If number of trials at a trap less than this number, 
   #        assume constant and use ROM+1 estimator
