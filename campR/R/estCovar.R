@@ -81,17 +81,17 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
           
           jdbCov <- dbCov[dbCov$subSiteID == theJJ[jj],]
           
-          #   ---- Compile the good dates for each subSiteID.   
-          min.date.cov <- as.POSIXct(format(min(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
-          max.date.cov <- as.POSIXct(format(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+          #   ---- Compile the good dates for each subSiteID.   Jason changes old "measureTime" to "measureDate" on 11/20/2017 due to updated db.
+          min.date.cov <- as.POSIXct(format(min(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+          max.date.cov <- as.POSIXct(format(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
           
           #   ---- If there is only one observation, or < 4 unique values, the smooth.spline doesn't appear to work.  Force it.
           if( (sum(!is.na(jdbCov[,CAMPCovName])) == 1) | (length(unique(jdbCov[,CAMPCovName][!is.na(jdbCov[,CAMPCovName])])) < 4) ){
             m3 <- jdbCov[,CAMPCovName]
           } else {
              
-            #   ---- I only keep the current.  So, after running, only the last jj is here.  
-            m3 <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=TRUE)
+            #   ---- I only keep the current.  So, after running, only the last jj is here.  Jason uses cv=FALSE due to (now duplicated) dates in measureDate (11/20/2017).
+            m3 <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=FALSE)
           }
           
           
@@ -101,7 +101,7 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
           #   ---- environmental measurement wasn't made consistently on all days during a season.  Could be enhanced so 
           #   ---- that single-day measurements of environmental covariates cover more days.  We deal with this right here
           #   ---- before the covariate is added to the building covar string.  
-          batchDateForChecking <- as.POSIXct(format(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureTime,format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+          batchDateForChecking <- as.POSIXct(format(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate,format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
           if(sum(batchDateForChecking %in% obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & !is.na(obs.eff.df$efficiency),]$batchDate) > 0){
            
             #   ---- Build up the formula string in data frame obs.eff.df.
@@ -125,14 +125,14 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
             } else {
               obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,covName] <- predict(m3,as.numeric(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate))$y
               #jdbCov$pred_turbidity_ntu <- predict(m3)$y
-              jdbCov[paste0("pred_",covName)] <- predict(m3,x=as.numeric(jdbCov$measureTime))$y
+              jdbCov[paste0("pred_",covName)] <- predict(m3,x=as.numeric(jdbCov$measureDate))$y
             }
             
             allCovar <- rbind(allCovar,jdbCov)
             
             #    ---- See if we have any predicted values outside the range for which we have data.
-            if(sum(allCovar$measureTime < min.date.cov | allCovar$measureTime > max.date.cov) > 0){
-              allCovar[allCovar$measureTime < min.date.cov | allCovar$measureTime > max.date.cov,paste0("pred_",covName)] <- NA
+            if(sum(allCovar$measureDate < min.date.cov | allCovar$measureDate > max.date.cov) > 0){
+              allCovar[allCovar$measureDate < min.date.cov | allCovar$measureDate > max.date.cov,paste0("pred_",covName)] <- NA
             }
             
             #    ---- See if we have any predicted values outside the range for which we have data.  
@@ -159,7 +159,7 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
         
         #   ---- Use this if the covariate is qualitative -- doesn't make sense to spline it out, e.g., weather.
         #dbCov$batchDate <- as.POSIXct(strptime(dbCov$measureTime,format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
-        names(dbCov)[names(dbCov) == "measureTime"] <- "EndTime"
+        names(dbCov)[names(dbCov) == "measureDate"] <- "EndTime"
         names(dbCov)[names(dbCov) == "subSiteID"] <- "TrapPositionID"
         dbCov <- F.assign.batch.date(dbCov)
         
