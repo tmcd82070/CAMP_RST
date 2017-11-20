@@ -145,7 +145,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   TestingPlatform <- "CAMP_RST20161212-campR1.0.0"
   luSubSiteID <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
   xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"subsites")$subSiteID,]
-  uniqueOurSiteIDsToQuery <- unique(c(xwalk$ourSiteIDChoice1))#,xwalk$ourSiteIDChoice2))
+  uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2)))
   
   df <- vector("list",length(uniqueOurSiteIDsToQuery))
   m1 <- vector("list",length(uniqueOurSiteIDsToQuery))   #  flow (cfs)
@@ -229,23 +229,36 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     #   ---- Query this river's Access database for information recorded at the trap.  For now, we only use this 
     #   ---- for turbidity.  I name objects that respect this.  
+    
+    #   ---- 11/20/2017.  Update to run Connie's cleaning query.
     db <- get( "db.file", envir=.GlobalEnv )
     ch <- odbcConnectAccess(db)
-      dbDisc <- getCAMPEnvCov(ch,"discharge","dischargeUnitID",12)                     # <--- not sure on the UnitID.  could be 13 too?
-      dbDpcm <- getCAMPEnvCov(ch,"waterDepth","waterDepthUnitID",3)                    # <--- depth in cm (American)
-      dbDpft <- getCAMPEnvCov(ch,"waterDepth","waterDepthUnitID",6)                    # <--- depth in feet (RBDD)
-      dbATpC <- getCAMPEnvCov(ch,"airTemp","airTempUnitID",18)
-      dbATpF <- getCAMPEnvCov(ch,"airTemp","airTempUnitID",19)
-      dbTurb <- getCAMPEnvCov(ch,"turbidity","turbidityUnitID",20)
-      dbWVel <- getCAMPEnvCov(ch,"waterVel","waterVelUnitID",8)
-      dbWTpC <- getCAMPEnvCov(ch,"waterTemp","waterTempUnitID",18)                     # <--- water temp in C (American)
-      dbWTmF <- getCAMPEnvCov(ch,"waterTemp","waterTempUnitID",19)                     # <--- water temp in F (RBDD)
-      dbLite <- getCAMPEnvCov(ch,"lightPenetration","lightPenetrationUnitID",20)       # <--- not sure on the UnitID.
-      dbDOxy <- getCAMPEnvCov(ch,"dissolvedOxygen","dissolvedOxygenUnitID",36)         
-      dbCond <- getCAMPEnvCov(ch,"conductivity","conductivityUnitID",36)               # <--- not sure on the UnitID.
-      dbBaro <- getCAMPEnvCov(ch,"barometer","barometerUnitID",33)                     # <--- not sure on the UnitID.    
-      dbWeat <- getCAMPEnvCov(ch,"weather",NA,NA)
+    
+      #   ---- Develop the TempReportCriteria_TrapVisit table.
+      F.buildReportCriteria( site, min.date2, max.date2 )
+    
+      #   ---- Run the clean-up query.
+      F.run.sqlFile( ch, "QryCleanEnvCov.sql")#, min.date2, max.date2 )
+    
+      #   ---- Now, fetch the result.  
+      dbCov <- sqlFetch( ch, "EnvDataRaw_Standardized" )
+    
     close(ch)
+    
+    #   ---- Make a dataframe for what we have.  
+    dbDisc <- getCAMPEnvCov(dbCov,"discharge","dischargeUnitID",12)                     # <--- not sure on the UnitID.  could be 13 too?
+    dbDpcm <- getCAMPEnvCov(dbCov,"waterDepth","waterDepthUnitID",3)                    # <--- depth in cm
+    dbATpC <- getCAMPEnvCov(dbCov,"airTemp","airTempUnitID",18)
+    dbATpF <- getCAMPEnvCov(dbCov,"airTemp","airTempUnitID",19)
+    dbTurb <- getCAMPEnvCov(dbCov,"turbidity","turbidityUnitID",20)
+    dbWVel <- getCAMPEnvCov(dbCov,"waterVel","waterVelUnitID",8)
+    dbWTpC <- getCAMPEnvCov(dbCov,"waterTemp","waterTempUnitID",18)                     # <--- water temp in C (American)
+    dbLite <- getCAMPEnvCov(dbCov,"lightPenetration","lightPenetrationUnitID",20)       # <--- not sure on the UnitID.
+    dbDOxy <- getCAMPEnvCov(dbCov,"dissolvedOxygen","dissolvedOxygenUnitID",36)         
+    dbCond <- getCAMPEnvCov(dbCov,"conductivity","conductivityUnitID",36)               # <--- not sure on the UnitID.
+    dbBaro <- getCAMPEnvCov(dbCov,"barometer","barometerUnitID",33)                     # <--- not sure on the UnitID.    
+    dbWeat <- getCAMPEnvCov(dbCov,"weather",NA,NA)
+
     
     #   ---- Put all database covariates into a list for easier processing.
     dbCovar <- list(dbDisc,dbDpcm,dbDpft,dbATpC,dbATpF,dbTurb,dbWVel,dbWTpC,dbWTmF,dbLite,dbDOxy,dbCond,dbBaro,dbWeat)
@@ -301,7 +314,14 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       }
       
       obs.eff.df$flow_cfs <- NA
-      obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$flow_cfs <- predict(m1[[ii]],as.numeric(obs.eff.df$batchDate))$y
+      
+      #   ---- Not the best, but works with two possible IDChoices.  
+      if(ii == 1){
+        obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$flow_cfs <- predict(m1[[ii]],as.numeric(obs.eff.df$batchDate))$y       
+      } else if(ii == 2){
+        obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice2 == oursitevar,]$subSiteID,]$flow_cfs <- predict(m1[[ii]],as.numeric(obs.eff.df$batchDate))$y        
+      }
+
       #df[[ii]]$pred_flow_cfs <- predict(m1[[ii]])$y
       df[[ii]]$pred_flow_cfs <- predict(m1[[ii]],x=as.numeric(df[[ii]]$date))$y
       
@@ -337,7 +357,12 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       }
 
       obs.eff.df$temp_c <- NA
-      obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$temp_c <- predict(m2[[ii]],as.numeric(obs.eff.df$batchDate))$y
+      if(ii == 1){
+        obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID,]$temp_c <- predict(m2[[ii]],as.numeric(obs.eff.df$batchDate))$y       
+      } else if(ii == 2){
+        obs.eff.df[obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice2 == oursitevar,]$subSiteID,]$temp_c <- predict(m2[[ii]],as.numeric(obs.eff.df$batchDate))$y       
+      }
+
       #df[[ii]]$pred_temp_c <- predict(m2[[iii]])$y
       df[[ii]]$pred_temp_c <- predict(m2[[ii]],x=as.numeric(df[[ii]]$date))$y
       
@@ -366,22 +391,23 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #dbCov <- dbCovar[[ii]]
     
     #   ---- Now, bring in smoothing-spline estimated values.
+    if(ii == 1){
+      obs.eff.df <- estCovar(dbDisc,"discharge_cfs",1,traps,obs.eff.df,xwalk,oursitevar)                   # <--- not sure on the UnitID.  could be 13 too?
+      obs.eff.df <- estCovar(dbDpcm,"waterDepth_cm",1,traps,obs.eff.df,xwalk,oursitevar)                   # <--- depth in cm (American)
+      obs.eff.df <- estCovar(dbDpft,"waterDepth_ft",1,traps,obs.eff.df,xwalk,oursitevar)                   # <--- depth in feet (RBDD)
+      obs.eff.df <- estCovar(dbATpC,"airTemp_C",1,traps,obs.eff.df,xwalk,oursitevar)
+      obs.eff.df <- estCovar(dbATpF,"airTemp_F",1,traps,obs.eff.df,xwalk,oursitevar)
+      obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df,xwalk,oursitevar)
+      obs.eff.df <- estCovar(dbWVel,"waterVel_fts",1,traps,obs.eff.df,xwalk,oursitevar)
+      obs.eff.df <- estCovar(dbWTpC,"waterTemp_C",1,traps,obs.eff.df,xwalk,oursitevar)                     # <--- water temp in C (American)
+      obs.eff.df <- estCovar(dbWTmF,"waterTemp_F",1,traps,obs.eff.df,xwalk,oursitevar)                     # <--- water temp in F (RBDD)
+      obs.eff.df <- estCovar(dbLite,"lightPenetration_ntu",1,traps,obs.eff.df,xwalk,oursitevar)            # <--- not sure on the UnitID.
+      obs.eff.df <- estCovar(dbDOxy,"dissolvedOxygen_mgL",1,traps,obs.eff.df,xwalk,oursitevar)        
+      obs.eff.df <- estCovar(dbCond,"conductivity_mgL",1,traps,obs.eff.df,xwalk,oursitevar)                # <--- not sure on the UnitID.
+      obs.eff.df <- estCovar(dbBaro,"barometer_inHg",1,traps,obs.eff.df,xwalk,oursitevar)                  # <--- not sure on the UnitID.    
+      obs.eff.df <- estCovar(dbWeat,"precipLevel_qual",2,traps,obs.eff.df,xwalk,oursitevar)
+    }
     
-    obs.eff.df <- estCovar(dbDisc,"discharge_cfs",1,traps,obs.eff.df,xwalk,oursitevar)                   # <--- not sure on the UnitID.  could be 13 too?
-    obs.eff.df <- estCovar(dbDpcm,"waterDepth_cm",1,traps,obs.eff.df,xwalk,oursitevar)                   # <--- depth in cm (American)
-    obs.eff.df <- estCovar(dbDpft,"waterDepth_ft",1,traps,obs.eff.df,xwalk,oursitevar)                   # <--- depth in feet (RBDD)
-    obs.eff.df <- estCovar(dbATpC,"airTemp_C",1,traps,obs.eff.df,xwalk,oursitevar)
-    obs.eff.df <- estCovar(dbATpF,"airTemp_F",1,traps,obs.eff.df,xwalk,oursitevar)
-    obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df,xwalk,oursitevar)
-    obs.eff.df <- estCovar(dbWVel,"waterVel_fts",1,traps,obs.eff.df,xwalk,oursitevar)
-    obs.eff.df <- estCovar(dbWTpC,"waterTemp_C",1,traps,obs.eff.df,xwalk,oursitevar)                     # <--- water temp in C (American)
-    obs.eff.df <- estCovar(dbWTmF,"waterTemp_F",1,traps,obs.eff.df,xwalk,oursitevar)                     # <--- water temp in F (RBDD)
-    obs.eff.df <- estCovar(dbLite,"lightPenetration_ntu",1,traps,obs.eff.df,xwalk,oursitevar)            # <--- not sure on the UnitID.
-    obs.eff.df <- estCovar(dbDOxy,"dissolvedOxygen_mgL",1,traps,obs.eff.df,xwalk,oursitevar)        
-    obs.eff.df <- estCovar(dbCond,"conductivity_mgL",1,traps,obs.eff.df,xwalk,oursitevar)                # <--- not sure on the UnitID.
-    obs.eff.df <- estCovar(dbBaro,"barometer_inHg",1,traps,obs.eff.df,xwalk,oursitevar)                  # <--- not sure on the UnitID.    
-    obs.eff.df <- estCovar(dbWeat,"precipLevel_qual",2,traps,obs.eff.df,xwalk,oursitevar)
-  
     obs.eff.df <- obs.eff.df[order(obs.eff.df$TrapPositionID,obs.eff.df$batchDate),]
 
   }
@@ -390,6 +416,55 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
 
    
+  
+  
+  
+  
+
+  
+  
+  
+  
+
+
+  
+  
+  uniqueQ <- uniqueQ[!duplicated(uniqueQ),]
+  uniqueQ$Q <- uniqueQ$flow_cfs*86400/43560
+  
+  percQ <- merge(num2,uniqueQ,by.x=c("Group.1"),by.y=c("batchDate"),all.x=TRUE)
+  
+  percQ$percQ <- percQ$x / percQ$Q
+  
+  par(mfrow=c(4,1))
+  plot(num2$Group.1,num2$x)
+  plot(uniqueQ$batchDate,uniqueQ$flow_cfs)
+  plot(count2$Group.1,count2$x)
+  plot(percQ$Group.1,percQ$percQ)
+  par(mfrow=c(1,1))
+  
+  
+  percQ[as.POSIXlt(percQ$Group.1)$year == 112 & as.POSIXlt(percQ$Group.1)$mon == 8,]
+  
+  
+  ch <- dbConnect(Postgres(),
+                  dbname='EnvCovDB',
+                  host='streamdata.west-inc.com',
+                  port=5432,
+                  user="jmitchell",
+                  password="G:hbtr@RPH5M.")
+  res <- dbSendQuery(ch,paste0("SELECT * FROM tblu WHERE oursiteid = 13;"))
+  nGood <- dbFetch(res)
+  dbClearResult(res)
+  dbDisconnect(ch)
+  
+  
+  site13u <- nGood
+  site13u$date <- strptime(site13u$date,format="%Y-%m-%d %H:%M:%S",tz=time.zone)
+  
+  #plot(site13u$date,site13u$value)
+  
+  site13u92012 <- site13u[as.POSIXlt(site13u$date)$year == 112 & as.POSIXlt(site13u$date)$mon == 8,]
   
   
   
@@ -576,7 +651,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       
       #   ---- There are enough observations to estimate B-spline model.
       covarString <- "1"
-      m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline)
+      m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline,eff.inside.dates)
       
       cat("\nTemporal-only efficiency model for trap: ", trap, "\n")
       print(summary(m0$fit, disp=sum(residuals(m0$fit, type="pearson")^2)/m0$fit$df.residual)  )
@@ -615,6 +690,12 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   # } 
   
   
+    
+    #   ---- Fit the full model with all possible covariates that made it.  Object fit.tmp.bs is from the last kept run.
+    method <- "likeType3SS"    # "pVal"    
+    distn <- "binomial"   # "binomial"
+    pCutOff <- 0.10
+    covarString <- tmp.df$covar[1]
   
     
     #   ---- Clean up the duplicate variable situation. 
@@ -658,11 +739,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       cat("I have removed variable discharge_cfs because flow_cfs is already present.\n\n")
     }
       
-    #   ---- Fit the full model with all possible covariates that made it.  Object fit.tmp.bs is from the last kept run.
-    method <- "likeType3SS"    # "pVal"    
-    distn <- "binomial"   # "binomial"
-    pCutOff <- 0.10
-    covarString <- tmp.df$covar[1]
+
     
     #   ---- Save a record of the variables we care about for plotting below.  
     covarStringPlot <- covarString
@@ -671,7 +748,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     if( !(m.i < eff.min.spline.samp.size) | (sum(tmp.df$nCaught) == 0) ){
         
 
-      m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,distn,max.df.spline)
+      m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,distn,max.df.spline,eff.inside.dates)
       fit0 <- m0$fit
       tmp.bs <- m0$bspl[!is.na(df$efficiency[eff.ind.inside]),]
       disp <- m0$disp
@@ -812,7 +889,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           if(covarString != ""){
           
             
-            m2 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,distn,max.df.spline)
+            m2 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,distn,max.df.spline,eff.inside.dates)
             fit2 <- m2$fit
             tmp.bs <- m2$bspl[!is.na(df$efficiency[eff.ind.inside]),]
             disp <- m2$disp
@@ -839,7 +916,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
             
             #   ---- If we are here, we are back to the temporal spline-only model.  No covariate works.  
             covarString <- "1"
-            m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline)
+            m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline,eff.inside.dates)
             
             cat("\nTemporal-only (after consideration of covariates) efficiency model for trap: ", trap, "\n")
             print(summary(m0$fit, disp=sum(residuals(m0$fit, type="pearson")^2)/m0$fit$df.residual)  )
