@@ -1,5 +1,5 @@
 
-fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df){
+fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df,eff.inside.dates){
 
   # covarString <- covarString   #covarString,df,eff.ind.inside,tmp.df
   # df <- df
@@ -7,16 +7,13 @@ fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df){
   # tmp.df <- tmp.df
   # dist <- "binomial"
   # max.df <- max.df.spline
+  # eff.inside.dates <- eff.inside.dates
   
   #   ---- Record the dates we actually do the spline.  Tricky because bd2 is the mapped set of dates.
   #   ---- I specifically use tz = "UTC" to get out of daylight savings madness.  
   s.beg <- as.POSIXct(strftime(min(df[eff.ind.inside,]$batchDate2),tz="UTC"),format="%Y-%m-%d",tz="UTC")
   s.end <- as.POSIXct(strftime(max(df[eff.ind.inside,]$batchDate2),tz="UTC"),format="%Y-%m-%d",tz="UTC")
-  
-  
-  
-  
-  
+
   #   ---- At least one efficiency trial "inside" for this trap.  Fit a "null" model.  
   fit <- glm( as.formula(paste0("nCaught / nReleased ~ ",covarString)), family=dist, data=tmp.df, weights=tmp.df$nReleased ) 
   fit.AIC <- AIC(fit)
@@ -65,9 +62,12 @@ fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df){
       tmp.bs <- tmp.bs
       cur.df <- cur.df + 1
       disp <- sum(residuals(cur.fit, type="pearson")^2)/cur.fit$df.residual
+      
+      #   ---- Make sure we have a bs fit for the winning model, and not the next evaluated one. 
+      cur.bsplF <- cur.bspl
     }
   }
   
-  ans <- list(fit=fit,fit.AIC=fit.AIC,bspl=bspl,tmp.bs=tmp.bs,cur.df=cur.df,disp=disp,s.beg=s.beg,s.end=s.end)
+  ans <- list(fit=fit,fit.AIC=fit.AIC,bspl=bspl,tmp.bs=tmp.bs,cur.df=cur.df,disp=disp,s.beg=s.beg,s.end=s.end,cur.bspl=cur.bsplF)
   return(ans)
 }
