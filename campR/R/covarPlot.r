@@ -48,6 +48,19 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
   df <- df[df$TrapPositionID == trap,]
   effdf <- df[!is.na(df$efficiency),]
   
+  
+  
+  
+  
+  # delete delete delete delete 
+  save(effdf,paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/effdf_",trap,".RData"))
+  
+  
+  
+  
+  
+  
+  
   #   ---- Plot of efficiency versus covariate.
   if(covar %in% names(effdf)){
     plot(effdf[,covar],100*effdf$efficiency,type="p",pch=19,xlab=NA,ylab='Efficiency (%)',main=paste0(covar," at ",effdf$TrapPositionID[1]))
@@ -73,9 +86,10 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
     ym <- min(yS[!is.na(yS)])
     yM <- max(yS[!is.na(yS)])
 
-    plot(xD,yD,xlab=NA,ylab=NA,xaxt='n',yaxt='n',xlim=c(xm,xM),ylim=c(ym,yM),type="p",cex=0.25,pch=19,main=paste0(covar," at ",df$TrapPositionID[1]))
-    par(new=TRUE)
-    plot(xS[eff.ind.inside],yS[eff.ind.inside],xlab='Date',ylab=covar,xlim=c(xm,xM),ylim=c(ym,yM),type="l",col="red")
+    #plot(xD,yD,xlab=NA,ylab=NA,xaxt='n',yaxt='n',xlim=c(xm,xM),ylim=c(ym,yM),type="p",cex=0.25,pch=19,main=paste0(covar," at ",df$TrapPositionID[1]))
+    plot(xD,yD,xlab='Date',ylab=covar,xlim=c(xm,xM),ylim=c(ym,yM),type="p",cex=0.25,pch=19,main=paste0(covar," at ",df$TrapPositionID[1]))
+    #par(new=TRUE)
+    #plot(xS[eff.ind.inside],yS[eff.ind.inside],xlab='Date',ylab=covar,xlim=c(xm,xM),ylim=c(ym,yM),type="l",col="red")
 
   } else {
     plot(1,1)

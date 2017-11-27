@@ -647,9 +647,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     if(length(splineCoef) == dim(X_t)[2]){message("Dimension of spline beta vector equals dimension of temporal basis column space.\n")}
     
     #   ---- TEMPORARY FILE SAVE.  
-    holding <- paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/splineSummary_",site,".RData")
-    save(X_t,splineCoef,splineDays,splineBegD,splineEndD,file=holding)
-  
+    holding <- paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/splineSummary_",site,"_",trap,".RData")
+    #save(X_t,splineCoef,splineDays,splineBegD,splineEndD,file=holding)
+    save(splineCoef,splineDays,splineBegD,splineEndD,file=holding)
  
     
 
