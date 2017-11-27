@@ -135,7 +135,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   sql.code.dir.pg <- get("sql.code.dir.pg", pos=.GlobalEnv)
   
   #   ---- Query for covariates.  This is a big function!
-  obs.eff.df <- getTogetherCovarData(obs.eff.df)
+  obs.eff.df <- getTogetherCovarData(obs.eff.df,min.date,max.date)
   
   #   ---- Look at how the full models work out with respect to different traps.  
   table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
