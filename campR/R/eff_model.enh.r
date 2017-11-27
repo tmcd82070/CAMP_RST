@@ -90,7 +90,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   # plot <- plot
   # max.df.spline <- 4
   # plot.file <- plot.file
-  
+
   option <- 2
   
   
@@ -134,14 +134,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   eff.min.spline.samp.size <- get("eff.min.spline.samp.size", pos=.GlobalEnv)
   sql.code.dir.pg <- get("sql.code.dir.pg", pos=.GlobalEnv)
   
-
-  
   #   ---- Query for covariates.  This is a big function!
   obs.eff.df <- getTogetherCovarData(obs.eff.df)
   
-  
-  
-    
   #   ---- Look at how the full models work out with respect to different traps.  
   table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
 
@@ -158,43 +153,50 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
 
 
   
-  
-  uniqueQ <- uniqueQ[!duplicated(uniqueQ),]
-  uniqueQ$Q <- uniqueQ$flow_cfs*86400/43560
-  
-  percQ <- merge(num2,uniqueQ,by.x=c("Group.1"),by.y=c("batchDate"),all.x=TRUE)
-  
-  percQ$percQ <- percQ$x / percQ$Q
-  
-  par(mfrow=c(4,1))
-  plot(num2$Group.1,num2$x)
-  plot(uniqueQ$batchDate,uniqueQ$flow_cfs)
-  plot(count2$Group.1,count2$x)
-  plot(percQ$Group.1,percQ$percQ)
-  par(mfrow=c(1,1))
-  
-  
-  percQ[as.POSIXlt(percQ$Group.1)$year == 112 & as.POSIXlt(percQ$Group.1)$mon == 8,]
-  
-  
-  ch <- dbConnect(Postgres(),
-                  dbname='EnvCovDB',
-                  host='streamdata.west-inc.com',
-                  port=5432,
-                  user="jmitchell",
-                  password="G:hbtr@RPH5M.")
-  res <- dbSendQuery(ch,paste0("SELECT * FROM tblu WHERE oursiteid = 13;"))
-  nGood <- dbFetch(res)
-  dbClearResult(res)
-  dbDisconnect(ch)
+  # THIS MIGHT BE OBSOLETE -- CHECK PERCq AND THEN DELETE. -- 11/21/2017
+  # uniqueQ <- uniqueQ[!duplicated(uniqueQ),]
+  # uniqueQ$Q <- uniqueQ$flow_cfs*86400/43560
+  # 
+  # percQ <- merge(num2,uniqueQ,by.x=c("Group.1"),by.y=c("batchDate"),all.x=TRUE)
+  # 
+  # percQ$percQ <- percQ$x / percQ$Q
+  # 
+  # par(mfrow=c(4,1))
+  # plot(num2$Group.1,num2$x)
+  # plot(uniqueQ$batchDate,uniqueQ$flow_cfs)
+  # plot(count2$Group.1,count2$x)
+  # plot(percQ$Group.1,percQ$percQ)
+  # par(mfrow=c(1,1))
+  # 
+  # 
+  # percQ[as.POSIXlt(percQ$Group.1)$year == 112 & as.POSIXlt(percQ$Group.1)$mon == 8,]
   
   
-  site13u <- nGood
-  site13u$date <- strptime(site13u$date,format="%Y-%m-%d %H:%M:%S",tz=time.zone)
+  # I THINK I CAN DELETE THIS SECTION -- 11/21/2017
+  # ch <- dbConnect(Postgres(),
+  #                 dbname='EnvCovDB',
+  #                 host='streamdata.west-inc.com',
+  #                 port=5432,
+  #                 user="jmitchell",
+  #                 password="G:hbtr@RPH5M.")
+  # res <- dbSendQuery(ch,paste0("SELECT * FROM tblu WHERE oursiteid = 13;"))
+  # nGood <- dbFetch(res)
+  # dbClearResult(res)
+  # dbDisconnect(ch)
+  # 
+  # 
+  # site13u <- nGood
+  # site13u$date <- strptime(site13u$date,format="%Y-%m-%d %H:%M:%S",tz=time.zone)
+  # 
+  # #plot(site13u$date,site13u$value)
+  # 
+  # site13u92012 <- site13u[as.POSIXlt(site13u$date)$year == 112 & as.POSIXlt(site13u$date)$mon == 8,]
   
-  #plot(site13u$date,site13u$value)
   
-  site13u92012 <- site13u[as.POSIXlt(site13u$date)$year == 112 & as.POSIXlt(site13u$date)$mon == 8,]
+  
+  
+  
+  
   
   
   
@@ -214,87 +216,22 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
   for( trap in traps ){
     
-    df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
-    ind <- !is.na(df$efficiency)
- 
-    initialVars <- c("(Intercept)",names(df)[!(names(df) %in% c("batchDate","nReleased","nCaught","efficiency","covar","batchDate2","fishDay"))])
-    initialVarsNum <- c(2,as.integer(possibleVars %in% initialVars))
+  
+    #   ---- 5. Reduce to the trials this trap cares about.  We do this to apply the 90% rule.  
+    reducedETrials <- reduceETrials(obs.eff.df)
     
-    # JASON PLAYS AROUND AND ENSURES A DATE REPEATS OVER TWO YEARS.
-    #df[!is.na(df$efficiency),]$batchDate[15] <- df[!is.na(df$efficiency),]$batchDate[1]
+    #   ---- Pull out the goodies.  
+    df <- reducedETrials$df
+    tmp.df <- reducedETrials$tmp.df
+    m.i <- reducedETrials$m.i
+    
+    #   ---- See if we have to deal with any covariates with missing data rows.  
+    tmp.df <- checkMissingCovars(tmp.df,m.i)
+    
+    #   ---- Update m.i in case we removed a row in the previous function. 
+    m.i <- nrow(tmp.df)
     
     
-    #   ---- Define these so we can model on (basically) fishing day of the season.  Do this with respect to 
-    #   ---- the year 1960 paradigm defined above.  We really only care about the number of days since the
-    #   ---- minimum start of fishing, over all years, so the year is immaterial.  Use 1960, or maybe 1959, 
-    #   ---- so we always keep this fact in mind.  Not sure this will always work... Need to check.  
-    sign <- as.numeric(strftime(df$batchDate,format="%j")) - as.numeric(strftime(bsplBegDt,format="%j"))
-    df$fishDay <- ifelse(sign == 0,0,
-                  ifelse(sign  < 0,sign + 365,as.numeric(strftime(df$batchDate,format="%j")))) 
-    #df$fishPeriod <- as.factor(as.POSIXlt(df$batchDate)$year + 1900)
-    
-    #firstYear <- min(as.POSIXlt(df$batchDate)$year + 1900)
-    firstYear <- min(bsplBegDt$year + 1900)
-    df$batchDate2 <- ifelse(sign >= 0,as.POSIXct(paste0(firstYear,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone),
-                     ifelse(sign < 0,as.POSIXct(paste0(firstYear + 1,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone),
-                     NA))
-    
-    #   ---- If we have a batchDate on 2/29, we have a problem, because 1970 wasn't a leap year.  Note that I could have 
-    #   ---- chosen 
-    df$batchDate2 <- as.POSIXct(df$batchDate2,format="%Y-%m-%d",tz="America/Los_Angeles",origin="1970-01-01 00:00:00 UTC")
-      
-    #df$batchDate2 <- as.POSIXct(paste0(firstYear,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone)
-
-    
-    #   ---- Find the "season", which is between first and last trials
-    #   ---- We look for 'inside' with respect to our 1959-1960 mapped year of trials.  
-    strt.dt <- bsplBegDt #min( df$batchDate[ind], na.rm=T )  # Earliest date with an efficiency trial
-    end.dt  <- bsplEndDt #max( df$batchDate[ind], na.rm=T )  # Latest date with efficiency trial
-    ind.inside <- (strt.dt <= df$batchDate2) & (df$batchDate2 <= end.dt)
-    inside.dates <- c(strt.dt, end.dt)
-    all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
-    
-    #   ---- The fitting data frame
-    tmp.df <- df[ind & ind.inside,]
-    m.i <- sum(ind & ind.inside)
-    
-    #   ---- With the inclusion of all CAMP covariates, the probability increases by a lot that we don't have all 
-    #   ---- the values over all time.  Chuck those that don't have at least ... 90% of the data rows, given a 
-    #   ---- trap.  Note that this considers NA WITHIN a column.  If we delete, we have to update tmp.df$covar.
-    # write.csv(tmp.df,"L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Mokelumne River--Golf RST Main Site/2006/Enhanced_Eff_Get_Betas/tmp.df.csv",row.names=FALSE)
-    atLeast <- floor(0.90*m.i) + 1
-    vars <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength",colnames(tmp.df[,(which(colnames(tmp.df) == "covar") + 1):ncol(tmp.df)]))
-    vars <- vars[!(vars %in% c("fishDay","batchDate2"))]
-    for(i in 1:length(vars)){
-      if(!(sum(!is.na(tmp.df[,vars[i]])) >= atLeast)){
-        cat(paste0("Trap ",trap," variable ",vars[i]," has only ",sum(!is.na(tmp.df[,vars[i]]))," points but needs ",atLeast," for inclusion.  Deleting.\n"))
-        tmp.df[,vars[i]] <- NULL
-        
-        #   ---- Have to now update the "+" situation.  Removed variable could be leading, in the middle, or 
-        #   ---- trailing.  So, consider all these.  
-        tmp.df$covar <- gsub(paste0(" + ",vars[i]),"",tmp.df$covar,fixed=TRUE)  # middle or trailing -- remove leading " + "
-        tmp.df$covar <- gsub(vars[i],"",tmp.df$covar,fixed=TRUE)                # leading -- remove var[i] alone
-      } else {
-        cat(paste0("Trap ",trap," variable ",vars[i]," has ",sum(!is.na(tmp.df[,vars[i]]))," points and only need ",atLeast," for inclusion.  Keeping.\n"))
-      }
-    }
-    
-    #   ---- See if we have any missing covars --- assumes all other values are not NA.  Note that this considers 
-    #   ---- NA OVER columns.  
-    tmp.df$allCovars <- apply(tmp.df,1,function(x) as.numeric(!(sum(is.na(x)) > 0)))
-    
-    #   ---- Could be that we have efficiency trials performed at times for which we have no covariate information.
-    #   ---- Delete out these trials in favor of data rows with all data present -- for now. Output when we do this.
-    #   ---- Also identify the trials we delete so that the basis matrix gets the right number of rows (valid trials).
-    #   ---- I do this via NA in efficiency, since that is the criterion used in fitSpline.R.  
-    dataDeficient <- tmp.df[tmp.df$allCovars == 0,]
-    cat( paste0("Trap ",trap," has ",nrow(dataDeficient)," rows of data-covariate deficient, out of ",nrow(tmp.df)," originally present.\n") )
-    write.csv(dataDeficient,paste0(plot.file,"-",trap,"dataDeficient.csv"),row.names=FALSE)
-    if(length(tmp.df[tmp.df$allCovars == 0,]$batchDate) > 0){
-      df[df$batchDate %in% tmp.df[tmp.df$allCovars == 0,]$batchDate,]$efficiency <- NA
-    }
-    tmp.df <- tmp.df[tmp.df$allCovars == 1,]
-    tmp.df$allCovars <- NULL     # This has served its purpose.  
     
     #   ---- We defined the start and end for the fishing season.  Need this to know when we need an efficiency estimate.
     #   ---- But we need to find the actual temporal range of efficiency dates, so the boundary points of the spline are
@@ -384,7 +321,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline,eff.inside.dates)
       
       cat("\nTemporal-only efficiency model for trap: ", trap, "\n")
-      print(summary(m0$fit, disp=sum(residuals(m0$fit, type="pearson")^2)/m0$fit$df.residual)  )
+      print(summary(m0$fit, disp=sum(residuals(m0$fit, type="pearson")^2)/m0$fit$df.residual))
         
       #   ---- Plot the spline.  
       png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",0,"mt.png"),width=7,height=7,units="in",res=600)
@@ -432,13 +369,13 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     #   ---- If we have water temperature from both EnvCovDB and CAMP, keep EnvCovDB.
     one <- sum(initialVars %in% "temp_c")
-    two <- as.numeric(sum(initialVars %in% c("waterTemp_C","waterTemp_F")) >= 1)
+    two <- as.numeric(sum(initialVars %in% c("waterTemp_C")) >= 1)
     interimVars1 <- initialVars
     interimVars1Num <- c(3,as.numeric(possibleVars %in% interimVars1))
     
     #   ---- If both conditions are true, we have both vars.  Get rid of CAMP.  
     if( (one == two) & (one == 1) ){
-      interimVars1 <- interimVars1[!(interimVars1 %in% c("waterTemp_C","waterTemp_F"))]
+      interimVars1 <- interimVars1[!(interimVars1 %in% c("waterTemp_C"))]
       interimVars1Num <- c(3,as.numeric(possibleVars %in% interimVars1))
       
       #   ---- Have to now update the "+" situation.  Removed var could be leading, middle, or trailing. 
@@ -479,6 +416,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
         
 
       m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,distn,max.df.spline,eff.inside.dates)
+      #MM <- m0
       fit0 <- m0$fit
       tmp.bs <- m0$bspl[!is.na(df$efficiency[eff.ind.inside]),]
       disp <- m0$disp
@@ -620,6 +558,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
           
             
             m2 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,distn,max.df.spline,eff.inside.dates)
+            #MM <- m2
             fit2 <- m2$fit
             tmp.bs <- m2$bspl[!is.na(df$efficiency[eff.ind.inside]),]
             disp <- m2$disp
@@ -647,6 +586,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
             #   ---- If we are here, we are back to the temporal spline-only model.  No covariate works.  
             covarString <- "1"
             m0 <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline,eff.inside.dates)
+            #MM <- m0     
             
             cat("\nTemporal-only (after consideration of covariates) efficiency model for trap: ", trap, "\n")
             print(summary(m0$fit, disp=sum(residuals(m0$fit, type="pearson")^2)/m0$fit$df.residual)  )
@@ -676,7 +616,55 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     cat(paste0("\n\n\n"))
           
     fit <- fit0
-        
+     
+    
+    
+    
+    
+    
+    
+    
+    #   ---- Run this again to get the cur.bspl from the final run.  It has the basis of ALL DATES, and not 
+    #   ---- just those tied to an efficiency trial.  We need ALL DATES for predicting.  
+    X_t <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline,eff.inside.dates)$cur.bspl
+    
+    
+    
+    # I THINK THIS IS ALL WE NEED TO SAVE.
+    splineDays <- df$batchDate2[eff.ind.inside]
+    splineCoef <- fit$coefficients[grepl("tmp",names(fit$coefficients))]
+    splineBegD <- bsplBegDt
+    splineEndD <- bsplEndDt
+    
+    #   ---- Compile the spline-specific stuff.  Julian-ish dates, start- and end-Julian dates, 
+    #   ---- and spline coefficients.  
+    # splineCoef <- fit$coefficients[grepl("tmp",names(fit$coefficients))]
+    # splineDays <- df$batchDate2[eff.ind.inside]
+    # splineBegD <- bsplBegDt
+    # splineEndD <- bsplEndDt
+
+    #   ---- Check to make sure dim(splineCoef) = dim(X_t)[2]
+    if(length(splineCoef) == dim(X_t)[2]){message("Dimension of spline beta vector equals dimension of temporal basis column space.\n")}
+    
+    #   ---- TEMPORARY FILE SAVE.  
+    holding <- paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/splineSummary_",site,".RData")
+    save(X_t,splineCoef,splineDays,splineBegD,splineEndD,file=holding)
+  
+ 
+    
+
+
+    
+    
+    
+    
+
+    
+    
+
+    
+    
+    
     #   ---- Summarize which variables for this subSiteID made it into the final model.  
     finalVars <- names(fit$coefficients)[!(names(fit$coefficients) %in% c(names(fit$coefficients)[c(grepl("tmp",names(fit$coefficients)))]))]
     finalVarsNum <- c(5,as.integer(possibleVars %in% finalVars))

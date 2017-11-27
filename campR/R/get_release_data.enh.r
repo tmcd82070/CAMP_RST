@@ -133,13 +133,24 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   trapVisits <- sqlQuery(ch,paste0("SELECT trapVisitID,
                                            trapPositionID,
                                            visitTime,
-                                           visitTime2
+                                           visitTime2,
+                                           visitTypeID
                                     FROM trapVisit
                                     WHERE visitTime <= #",as.Date(max.date2),"# 
                                       AND visitTime >= #",as.Date(min.date2),"# 
                                       AND ( (visitTypeID < 5 AND fishProcessedID <> 2)
                                        OR   (visitTypeID = 1 AND fishProcessedID = 2) )
                                     ORDER BY trapPositionID,visitTime"))
+  
+  #   ---- Need to make sure this table exists first, when this code is finalized.  
+  notFishing <- sqlQuery(ch,paste0("SELECT SampleDate,
+                                           StartTime,
+                                           EndTime,
+                                           oldtrapPositionID AS TrapPositionID,
+                                           SampleMinutes
+                                    FROM TempSumUnmarkedByTrap_Run_Final 
+                                    WHERE TrapStatus = 'Not Fishing'
+                                    ORDER BY oldTrapPositionID, EndTime"))
   
   close(ch)
 
@@ -205,6 +216,8 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   
   tmp$uniqueDate <- NA  
   
+  
+  
   #   ---- Check where we can.  Note that catch.df isn't read in by the function. 
   # connieSM <- unique(catch.df[,c("oldtrapPositionID","trapVisitID","SampleMinutes")])
   # names(connieSM)[names(connieSM) == "oldtrapPositionID"] <- "trapPositionID"
@@ -235,8 +248,9 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   tmp[!is.na(tmp$sunProp),]$nightMinutes <- as.numeric(tmp[!is.na(tmp$sunProp),]$SampleMinutes) - tmp[!is.na(tmp$sunProp),]$sunMinutes
   tmp$nightProp <- 1 - tmp$sunProp
   
-  
+
   forEffPlots <<- tmp[,c("trapVisitID","trapPositionID","StartTime","EndTime","wmForkLength","nForkLength","nightProp","moonProp")]
+  #forEffPlots <- forEffPlots[order(forEffPlots$trapPositionID,forEffPlots$EndTime),]
   
   #plot(forEffPlots$EndTime,forEffPlots$nightProp,col=c("red","orange","green","blue","black")[as.factor(forEffPlots$trapPositionID)],pch=19)
   #plot(forEffPlots$EndTime,forEffPlots$moonProp,col=c("red","orange","green","blue","black")[as.factor(forEffPlots$trapPositionID)],pch=19)
