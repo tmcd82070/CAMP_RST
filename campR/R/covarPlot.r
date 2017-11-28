@@ -53,7 +53,7 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
   
   
   # delete delete delete delete 
-  save(effdf,paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/effdf_",trap,".RData"))
+  save(effdf,file=paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/effdf_",trap,".RData"))
   
   
   
