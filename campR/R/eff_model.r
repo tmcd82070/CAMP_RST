@@ -105,7 +105,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   
   
   #   ---- Decide if we're going to use enhanced efficiency.  
-  if(useEnEff == TRUE){
+  if(useEnhEff == TRUE){
     
     #   ---- Get stuff we need to fit the enhanced efficiency models.  
     
@@ -114,7 +114,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     betas <- betas[betas$subsiteID %in% traps,]
     
     #   ----    It knows which days to run on because it pulls off a min.date and max.date from obs.eff.df.  
-    obs.eff.df <- getTogetherCovarData(obs.eff.df)
+    obs.eff.df <- getTogetherCovarData(obs.eff.df,min.date,max.date)
+    
+    #   ---- Look at how the full models work out with respect to different traps.  
+    table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
     
     #   ---- Run over individual traps.
     for(trap in traps){

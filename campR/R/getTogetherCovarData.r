@@ -190,9 +190,9 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date){
         #   ---- Build a dataframe like the CAMP covariates.  If we're running against the unit table, we have no statistic.  
         #   ---- For flow, call it 450L, for temp, 451L.
         if(!(nrow(nGood) > 0)){
-          dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=rep(450L,nrow(df[[ii]])))
+          dbFlPG <- data.frame(subSiteID=NA,measureDate=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=rep(450L,nrow(df[[ii]])))
         } else {
-          dbFlPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=df[[ii]]$flow_statistic)
+          dbFlPG <- data.frame(subSiteID=NA,measureDate=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=df[[ii]]$flow_statistic)
         }
         
         #    ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
@@ -237,9 +237,9 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date){
         #   ---- Build a dataframe like the CAMP covariates.  If we're running against the unit table, we have no statistic.  
         #   ---- For flow, call it 450L, for temp, 451L.  Recall that oursitevar >= 80 means EnvCovDB from unit table is used.
         if(!(nrow(nGood) > 0)){
-          dbTpPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=451L)       
+          dbTpPG <- data.frame(subSiteID=NA,measureDate=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=451L)       
         } else {
-          dbTpPG <- data.frame(subSiteID=NA,measureTime=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=df[[ii]]$temp_statistic)       
+          dbTpPG <- data.frame(subSiteID=NA,measureDate=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=df[[ii]]$temp_statistic)       
         }
         
         #   ---- See if we have any predicted values outside the range for which we have data.  Off by a day..?  Daylight savings?  So buffer.
@@ -273,5 +273,5 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date){
     
   }
   
-  return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,dbTurb=dbTurb,dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite))
+  return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,dbTurb=dbTurb,dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite,dbFlPG=dbFlPG,dbTpPG=dbTpPG))
 }

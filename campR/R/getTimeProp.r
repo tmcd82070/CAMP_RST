@@ -36,7 +36,7 @@
 #'   
 #'   The temporal \code{dates} table is defined via the earliest and 
 #'   latest efficiency trial date for the run in question.  To this, an 
-#'   additional month us appended at each end.
+#'   additional month is appended at each end.
 #'   
 #' @seealso \code{makeSkinnyTimes}
 #'   

@@ -2,7 +2,7 @@
 
 
 
-reduceETrials <- function(df,possibleVars,bsplBegDt,bsplEndDt){
+reduceETrials <- function(df,possibleVars,bsplBegDt,bsplEndDt,trap){
   
   # df <- obs.eff.df
 

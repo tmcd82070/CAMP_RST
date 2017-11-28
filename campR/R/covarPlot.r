@@ -38,28 +38,15 @@
 
 covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt,fit){
   
-  # covar <- "turbidity_ntu"
+  # covar <- "temp_c"
   # df <- obs.eff.df
-  # dbCovar <- dbTurb
+  # dbCovar <- dbTpPG
   # trap <- 57001
   # eff.ind.inside <- eff.ind.inside
   
   #   ---- We give the function all the data, so restrict to the trap.  
   df <- df[df$TrapPositionID == trap,]
   effdf <- df[!is.na(df$efficiency),]
-  
-  
-  
-  
-  
-  # delete delete delete delete 
-  save(effdf,file=paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/effdf_",trap,".RData"))
-  
-  
-  
-  
-  
-  
   
   #   ---- Plot of efficiency versus covariate.
   if(covar %in% names(effdf)){
