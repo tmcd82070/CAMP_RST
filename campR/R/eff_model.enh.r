@@ -171,11 +171,6 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     m.i <- return$tmp.df
     dataDeficient <- return$dataDeficient
     
-    #   ---- Update m.i in case we removed a row in the previous function. 
-    m.i <- nrow(tmp.df)
-    
-    
-    
     #   ---- We defined the start and end for the fishing season.  Need this to know when we need an efficiency estimate.
     #   ---- But we need to find the actual temporal range of efficiency dates, so the boundary points of the spline are
     #   ---- appropriate for efficiency effort.  Otherwise, the boundary points in the efficiency spline uses the 
