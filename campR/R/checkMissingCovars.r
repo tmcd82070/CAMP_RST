@@ -49,5 +49,5 @@ checkMissingCovars <- function(tmp.df,m.i,df,trap,plot.file){
   
   cat(paste0("I finished with ",nrow(tmp.df)," data rows.  So, I removed ",m.i - nrow(tmp.df),".\n"))
   
-  return(list(tmp.df=tmp.df,df=df,m.i=nrow(tmp.df),dataDeficient=dataDeficient))
+  return(list(tmp.df=tmp.df,df=df,m.i=nrow(tmp.df),dataDeficient=dataDeficient,atLeast=atLeast))
 }  
