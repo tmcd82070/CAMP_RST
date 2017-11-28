@@ -137,10 +137,20 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   #   ---- Query for covariates.  This is a big function!
   buildingEnhEff <- TRUE     # Make this very simple for now.  
   if(buildingEnhEff == TRUE){
-    obs.eff.df <- getTogetherCovarData(obs.eff.df,min.date=min.date2,max.date=max.date2)
+    stuff <- getTogetherCovarData(obs.eff.df,min.date=min.date2,max.date=max.date2)
   } else {
-    obs.eff.df <- getTogetherCovarData(obs.eff.df,min.date,max.date)
+    stuff <- getTogetherCovarData(obs.eff.df,min.date,max.date)
   }
+  
+  #   ---- Unpack 'stuff' so that we have the dbCovar dataframes available for plotting below.
+  obs.eff.df <- stuff$obs.eff.df
+  dbDisc <- stuff$dbDisc
+  dbDpcm <- stuff$dbDpcm
+  dbATpF <- stuff$dbATpF
+  dbTurb <- stuff$dbTurb
+  dbWVel <- stuff$dbWVel
+  dbWTpC <- stuff$dbWTpC
+  dbLite <- stuff$dbLite
   
   #   ---- Look at how the full models work out with respect to different traps.  
   table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
@@ -638,9 +648,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     if(exists("dbTpPG")) dbTpPG$subSiteID <- trap
         
     tt <- forEffPlots[forEffPlots$trapPositionID == trap,]
-    dbMoon <- data.frame(subSiteID=tt$trapPositionID,measureTime=tt$EndTime,moonProp=tt$moonProp,moonPropUnitID=-99)
-    dbNite <- data.frame(subSiteID=tt$trapPositionID,measureTime=tt$EndTime,nightProp=tt$nightProp,nightPropUnitID=-99)
-    dbFLen <- data.frame(subSiteID=tt$trapPositionID,measureTime=tt$EndTime,wmForkLength=tt$wmForkLength,wmForkLengthUnitID=-99)
+    dbMoon <- data.frame(subSiteID=tt$trapPositionID,measureDate=tt$EndTime,moonProp=tt$moonProp,moonPropUnitID=-99)
+    dbNite <- data.frame(subSiteID=tt$trapPositionID,measureDate=tt$EndTime,nightProp=tt$nightProp,nightPropUnitID=-99)
+    dbFLen <- data.frame(subSiteID=tt$trapPositionID,measureDate=tt$EndTime,wmForkLength=tt$wmForkLength,wmForkLengthUnitID=-99)
         
     DF <- model.info[[3]]
     DF <- DF[!duplicated(DF$batchDate2),]
@@ -654,15 +664,15 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       #   ---- Plot covariate-specific stuff.  
       if(nCovars > 0){
         for(cc in 1:nCovars){
-          covarPlot(plotCovars[cc],obs.eff.df,get(covarlu[plotCovars[cc]]),trap,eff.ind.inside,bsplBegDt)
+          covarPlot(plotCovars[cc],obs.eff.df,get(covarlu[plotCovars[cc]]),trap,eff.ind.inside,bsplBegDt,fit)
         }
       }
    
       #   ---- Get a plot of observed versus a prediction curve.  
       yM <- max(tmp.df$nCaught / tmp.df$nReleased)
-      plot(tmp.df$batchDate2,tmp.df$nCaught / tmp.df$nReleased,type="p",pch=19,col="red",ylim=c(0,yM),xaxt='n',yaxt='n',xlab=NA,ylab=NA,cex=(tmp.df$nReleased)/mean((tmp.df$nReleased)))
+      plot(tmp.df$batchDate2,100*(tmp.df$nCaught / tmp.df$nReleased),type="p",pch=19,col="red",ylim=c(0,100*yM),xaxt='n',yaxt='n',xlab=NA,ylab=NA,cex=(tmp.df$nReleased)/mean((tmp.df$nReleased)))
       par(new=TRUE)
-      plot(DF$batchDate2,DF$p,type="l",pch=19,col="blue",ylim=c(0,yM),xlab="Date",ylab='Efficiency (0.0 - 1.0)',main=attr(df,"site.name"))
+      plot(DF$batchDate2,100*DF$p,type="l",pch=19,col="blue",ylim=c(0,100*yM),xlab="Date",ylab='Efficiency (%)',main=attr(df,"site.name"))
       legend("topright",c("Observed","Predicted"),pch=c(19,NA),lwd=c(NA,1),col=c("red","blue"))
           
       #   ---- 'Plot' some statistics of interest.

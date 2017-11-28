@@ -36,7 +36,7 @@
 #' covarPlot("turbidity_ntu",obs.eff.df,dbTurb,57004,eff.ind.inside)
 #'}
 
-covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
+covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt,fit){
   
   # covar <- "turbidity_ntu"
   # df <- obs.eff.df
@@ -68,6 +68,13 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
     cols <- c("red","orange","yellow","green","blue","purple","brown","black")
     col.i <- as.factor(as.POSIXlt(effdf$batchDate)$year - min(as.POSIXlt(effdf$batchDate)$year) + 1)
     
+    # if(covar %in% names(fit$coefficients)){
+    #   covarGrid <- seq(min(df[!is.na(df$nCaught),covar]),max(df[!is.na(df$nCaught),covar]),length.out=100)
+    #   phat <- predict(fit,newdata=list(deparse(substitute(covar))=covarGrid))
+    #   
+    #   phat <- predict(fit,newdata=list(turbidity_ntu=covarGrid,bdMeanForkLength=rep(mean(df[!is.na(df$nCaught),]$bdMeanForkLength),length.out=length(covarGrid))))
+    # }
+    
     plot(effdf[,covar],100*effdf$efficiency,col=cols[col.i],type="p",pch=19,xlab=NA,ylab='Efficiency (%)',main=paste0(covar," at ",effdf$TrapPositionID[1]))
   } else {
     plot(1,1)
@@ -80,7 +87,7 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
     
     #   ---- Find the range with respect to the data we use.
     xS <- df$batchDate
-    yS <- df[,covar]
+    yS <- df[!is.na(df$nCaught),covar]
 
     #   ---- Find the range with respect to the data recorded.  
     xD <- dbCovar[dbCovar$subSiteID == trap,]$measureDate

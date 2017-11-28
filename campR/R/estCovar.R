@@ -51,8 +51,8 @@
 #'}
 estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   
-  # dbCov <- dbDisc #dbWVel
-  # covName <- "discharge_cfs" #"waterVel_fts"
+  # dbCov <- dbTurb #dbWVel
+  # covName <- "turbidity_ntu"   #discharge_cfs" #"waterVel_fts"
   # estType <- 1
   # traps <- traps
   # obs.eff.df <- obs.eff.df
@@ -94,6 +94,11 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
             m3 <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=FALSE)
           }
           
+          
+          
+          # plot(dbTurb$measureDate,dbTurb$turbidity,pch=19,cex=0.5,xlim=c(min(dbTurb$measureDate),max(dbTurb$measureDate)),ylim=c(0,30))
+          # par(new=TRUE)
+          # plot(m3$x,m3$y,xlim=c(min(dbTurb$measureDate),max(dbTurb$measureDate)),ylim=c(0,30),type="l",col="red")
           
           #   ---- Sometimes, there is an environmental observation on a day that doesn't correspond to an efficiency trial
           #   ---- batchDate.  This could be because we take the average of catch days as the defined efficiency-trial date.  

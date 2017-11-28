@@ -273,5 +273,5 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date){
     
   }
   
-  return(obs.eff.df)
+  return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,dbTurb=dbTurb,dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite))
 }
