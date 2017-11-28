@@ -10,7 +10,7 @@
 #' document me.
 
 
-getTogetherCovarData <- function(obs.eff.df,min.date,max.date){
+getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps){
   
   # obs.eff.df <- obs.eff.df
   

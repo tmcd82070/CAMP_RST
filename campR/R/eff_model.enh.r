@@ -137,9 +137,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   #   ---- Query for covariates.  This is a big function!
   buildingEnhEff <- TRUE     # Make this very simple for now.  
   if(buildingEnhEff == TRUE){
-    stuff <- getTogetherCovarData(obs.eff.df,min.date=min.date2,max.date=max.date2)
+    stuff <- getTogetherCovarData(obs.eff.df,min.date=min.date2,max.date=max.date2,traps)
   } else {
-    stuff <- getTogetherCovarData(obs.eff.df,min.date,max.date)
+    stuff <- getTogetherCovarData(obs.eff.df,min.date,max.date,traps)
   }
   
   #   ---- Unpack 'stuff' so that we have the dbCovar dataframes available for plotting below.
