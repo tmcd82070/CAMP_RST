@@ -135,81 +135,17 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   sql.code.dir.pg <- get("sql.code.dir.pg", pos=.GlobalEnv)
   
   #   ---- Query for covariates.  This is a big function!
-  obs.eff.df <- getTogetherCovarData(obs.eff.df,min.date,max.date)
+  buildingEnhEff <- TRUE     # Make this very simple for now.  
+  if(buildingEnhEff == TRUE){
+    obs.eff.df <- getTogetherCovarData(obs.eff.df,min.date=min.date2,max.date=max.date2)
+  } else {
+    obs.eff.df <- getTogetherCovarData(obs.eff.df,min.date,max.date)
+  }
   
   #   ---- Look at how the full models work out with respect to different traps.  
   table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
 
-   
-  
-  
-  
-  
-
-  
-  
-  
-  
-
-
-  
-  # THIS MIGHT BE OBSOLETE -- CHECK PERCq AND THEN DELETE. -- 11/21/2017
-  # uniqueQ <- uniqueQ[!duplicated(uniqueQ),]
-  # uniqueQ$Q <- uniqueQ$flow_cfs*86400/43560
-  # 
-  # percQ <- merge(num2,uniqueQ,by.x=c("Group.1"),by.y=c("batchDate"),all.x=TRUE)
-  # 
-  # percQ$percQ <- percQ$x / percQ$Q
-  # 
-  # par(mfrow=c(4,1))
-  # plot(num2$Group.1,num2$x)
-  # plot(uniqueQ$batchDate,uniqueQ$flow_cfs)
-  # plot(count2$Group.1,count2$x)
-  # plot(percQ$Group.1,percQ$percQ)
-  # par(mfrow=c(1,1))
-  # 
-  # 
-  # percQ[as.POSIXlt(percQ$Group.1)$year == 112 & as.POSIXlt(percQ$Group.1)$mon == 8,]
-  
-  
-  # I THINK I CAN DELETE THIS SECTION -- 11/21/2017
-  # ch <- dbConnect(Postgres(),
-  #                 dbname='EnvCovDB',
-  #                 host='streamdata.west-inc.com',
-  #                 port=5432,
-  #                 user="jmitchell",
-  #                 password="G:hbtr@RPH5M.")
-  # res <- dbSendQuery(ch,paste0("SELECT * FROM tblu WHERE oursiteid = 13;"))
-  # nGood <- dbFetch(res)
-  # dbClearResult(res)
-  # dbDisconnect(ch)
-  # 
-  # 
-  # site13u <- nGood
-  # site13u$date <- strptime(site13u$date,format="%Y-%m-%d %H:%M:%S",tz=time.zone)
-  # 
-  # #plot(site13u$date,site13u$value)
-  # 
-  # site13u92012 <- site13u[as.POSIXlt(site13u$date)$year == 112 & as.POSIXlt(site13u$date)$mon == 8,]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  # plot(obs.eff.df[!is.na(obs.eff.df$efficiency),]$temp_c,
-  #      obs.eff.df[!is.na(obs.eff.df$efficiency),]$waterTemp_C,
-  #      col=c("red","orange","green","blue","black")[as.factor(obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)],pch=19)
-  # lines(c(-50000,50000),c(-50000,50000),col="black")
-  # 
-  # cor(obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57001",]$temp_c,
-  #     obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57001",]$waterTemp_C)
-  # cor(obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57004",]$temp_c,
-  #     obs.eff.df[!is.na(obs.eff.df$efficiency) & obs.eff.df$TrapPositionID == "57004",]$waterTemp_C)
-  
+ 
   varSummary <- NULL
   possibleVars <- c("(Intercept)","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
 
@@ -218,15 +154,20 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
   
     #   ---- 5. Reduce to the trials this trap cares about.  We do this to apply the 90% rule.  
-    reducedETrials <- reduceETrials(obs.eff.df)
+    reducedETrials <- reduceETrials(obs.eff.df,possibleVars,bsplBegDt,bsplEndDt)
     
     #   ---- Pull out the goodies.  
     df <- reducedETrials$df
     tmp.df <- reducedETrials$tmp.df
     m.i <- reducedETrials$m.i
+    initialVars <- reducedETrials$initialVars
+    initialVarsNum <- reducedETrials$initialVarsNum
     
     #   ---- See if we have to deal with any covariates with missing data rows.  
-    tmp.df <- checkMissingCovars(tmp.df,m.i)
+    return <- checkMissingCovars(tmp.df,m.i)
+    
+    tmp.df <- return$tmp.df
+    dataDeficient <- return$dataDeficient
     
     #   ---- Update m.i in case we removed a row in the previous function. 
     m.i <- nrow(tmp.df)
@@ -241,7 +182,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- efficiency 1959-1960-time-period construct, this is a problem.  
     eff.strt.dt <- min(tmp.df$batchDate2)
     eff.end.dt <- max(tmp.df$batchDate2)
-    eff.ind.inside <- (eff.strt.dt <= df$batchDate2) & (df$batchDate2 <= eff.end.dt)
+    
+    #   ---- The long criteria here turns 'off' those trials lacking a covariate value from inclusion.  
+    eff.ind.inside <- (eff.strt.dt <= df$batchDate2) & (df$batchDate2 <= eff.end.dt) & 
+                      !(df$batchDate2 %in% dataDeficient$batchDate2 & df$nReleased %in% dataDeficient$nReleased & df$nCaught %in% dataDeficient$nCaught)
     eff.inside.dates <- c(eff.strt.dt,eff.end.dt)
     
     #   ---- At this point, have cleaned up the this trap's efficiency data.  NOW, define fish-start days, so that we can
@@ -628,20 +572,11 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- just those tied to an efficiency trial.  We need ALL DATES for predicting.  
     X_t <- fitSpline(covarString,df,eff.ind.inside,tmp.df,dist="binomial",max.df.spline,eff.inside.dates)$cur.bspl
     
-    
-    
     # I THINK THIS IS ALL WE NEED TO SAVE.
     splineDays <- df$batchDate2[eff.ind.inside]
     splineCoef <- fit$coefficients[grepl("tmp",names(fit$coefficients))]
     splineBegD <- bsplBegDt
     splineEndD <- bsplEndDt
-    
-    #   ---- Compile the spline-specific stuff.  Julian-ish dates, start- and end-Julian dates, 
-    #   ---- and spline coefficients.  
-    # splineCoef <- fit$coefficients[grepl("tmp",names(fit$coefficients))]
-    # splineDays <- df$batchDate2[eff.ind.inside]
-    # splineBegD <- bsplBegDt
-    # splineEndD <- bsplEndDt
 
     #   ---- Check to make sure dim(splineCoef) = dim(X_t)[2]
     if(length(splineCoef) == dim(X_t)[2]){message("Dimension of spline beta vector equals dimension of temporal basis column space.\n")}
@@ -687,7 +622,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
       
     #   ---- Save X, and the dates at which we predict, for bootstrapping.
     all.X[[trap]] <- X   
-    all.dts[[trap]] <- df$batchDate[ind.inside]   
+    #all.dts[[trap]] <- df$batchDate[ind.inside]   11/27/2017 locked in a function cause i dont push it out.  do i need this?
         
     #   ---- Standard logistic prediction equation.  
     #   ---- "Pred" is all efficiencies for dates between min and max of trials.
