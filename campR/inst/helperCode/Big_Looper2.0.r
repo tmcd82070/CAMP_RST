@@ -57,7 +57,7 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
 theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
 
-#theExcel <- theExcel[c(71),]
+theExcel <- theExcel[c(1),]
 
 
 #   ---- Tell the Big Looper where to put all the output.  
@@ -183,19 +183,23 @@ for(i in 1:nStreamNames){
       
       #   ---- Set up the db.file text string, so R knows where to find the database.
       if(theStreamName == 'Sacramento River'){
-        db.file <- paste0(theStem,"/Data/TestingDBs/CAMP_RBDD_19June20151/CAMP.mdb")
+        #db.file <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Data/TestingDBs/CAMP_RBDD_19June20151/CAMP.mdb"
+        #db.file <- paste0(theStem,"/Data/TestingDBs/newRBDDCAMP_17July2017/CAMP.mdb")
+        db.file <- "C:/Users/jmitchell/Desktop/Test/CAMP.mdb"
       } else if(theStreamName == 'American River'){
-        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPAmerican2013_2015Database_23June2015/CAMP.mdb")
+        db.file <- paste0(theStem,"/Data/TestingDBs/newAmericanCAMP_21July2017/CAMP.mdb")
+        #db.file <- "C:/Users/jmitchell/Desktop/Test/American/CAMP.mdb"
+        #db.file <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Data/oldTestingDBs/CAMPAmerican2013_2015Database_23June2015/CAMP.mdb"
       } else if(theStreamName == 'Feather River'){
-        db.file <- paste0(theStem,"/Data/TestingDBs/CAMP_Feather_8July2016/CAMP.mdb")
+        db.file <- paste0(theStem,"/Data/TestingDBs/newFeatherCAMP_21July2017/CAMP.mdb")
       } else if(theStreamName == 'Stanislaus River'){
-        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPStanislaus_08Oct2015/CAMP.mdb")
+        db.file <- paste0(theStem,"/Data/TestingDBs/newStanislausCAMP_21July2017/CAMP.mdb")
       } else if(theStreamName == 'Mokelumne River'){
-        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPMokelumne23Sept2015/CAMP.mdb")
+        db.file <- paste0(theStem,"/Data/TestingDBs/newMokelumneCAMP_10Aug2017/CAMP.mdb")
       } else if(theStreamName == "Knight's Landing"){
         db.file <- paste0(theStem,"/Data/TestingDBs/CAMPKnightsTinsdaleNEW_04Feb2016/CAMP.mdb")
       } else if(theStreamName == "Battle Clear"){
-        db.file <- paste0(theStem,"/Data/TestingDBs/CAMP_BattleClear_13Jan2016/CAMP.mdb")
+        db.file <- paste0(theStem,"/Data/TestingDBs/newClearBattleCAMP_20July2017/CAMP.mdb")
       }
       
       #   ---- Given the appropriate text string, connect to the database.  
@@ -214,8 +218,8 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "B" ){
         
         #   ---- Run function run.passage over the four possible temporal periods.  
-        for(byj in 1:4){
-               if(byj == 1){by <- 'day'  } 
+        for(byj in 1:1){
+                 if(byj == 1){by <- 'day'  } 
           # else if(byj == 2){by <- 'week' } 
           # else if(byj == 3){by <- 'month'} 
           # else if(byj == 4){by <- 'year' }
@@ -377,6 +381,7 @@ for(i in 1:nStreamNames){
         source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot.bs.spline.R")
         source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/fitSpline.R")
         source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/covarPlot.R")
+        source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")
         
         #   ---- Function run.passage.enh expects a 'by' that isn't used.   
         by <- 'year' 
