@@ -285,7 +285,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     }   
       
     #   ---- Fit a backwards-selection enhanced-efficiency model for this trap.  
-    theFit <- backEnhFit(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max.df.spline,eff.inside.dates,trap,model.info,fits,plot.file,option,bsplBegDt,bslpEndDt)
+    theFit <- backEnhFit(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max.df.spline,eff.inside.dates,trap,model.info,fits,plot.file,option,bsplBegDt,bsplEndDt)
     
     #   ---- Pull out the model stuff.  
     fit <- theFit$fit
