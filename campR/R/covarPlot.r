@@ -63,7 +63,12 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
   
   #   ---- Plot of efficiency versus covariate.
   if(covar %in% names(effdf)){
-    plot(effdf[,covar],100*effdf$efficiency,type="p",pch=19,xlab=NA,ylab='Efficiency (%)',main=paste0(covar," at ",effdf$TrapPositionID[1]))
+    
+    #   ---- Color points from different years.  Looking for interactions wrt to time. 
+    cols <- c("red","orange","yellow","green","blue","purple","brown","black")
+    col.i <- as.factor(as.POSIXlt(effdf$batchDate)$year - min(as.POSIXlt(effdf$batchDate)$year) + 1)
+    
+    plot(effdf[,covar],100*effdf$efficiency,col=cols[col.i],type="p",pch=19,xlab=NA,ylab='Efficiency (%)',main=paste0(covar," at ",effdf$TrapPositionID[1]))
   } else {
     plot(1,1)
   }
