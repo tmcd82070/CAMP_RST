@@ -290,8 +290,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- Pull out the model stuff.  
     fit <- theFit$fit
     model.info <- theFit$model.info
-    fits <- theFit$fits   # i think this works.
+    fits <- theFit$fits                                  # i think this works.
     covarStringPlot <- theFit$covarStringPlot
+    interimVars1Num <- theFit$interimVars1Num
+    interimVars2Num <- theFit$interimVars2Num
     
     #   ---- Run this again to get the cur.bspl from the final run.  It has the basis of ALL DATES, and not 
     #   ---- just those tied to an efficiency trial.  We need ALL DATES for predicting.  

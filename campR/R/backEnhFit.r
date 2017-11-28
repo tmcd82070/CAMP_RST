@@ -233,6 +233,6 @@ backEnhFit <- function(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max
   
   fit <- fit0
   
-  return(list(fit=fit,model.info=model.info,fits=fits,covarStringPlot=covarStringPlot))
+  return(list(fit=fit,model.info=model.info,fits=fits,covarStringPlot=covarStringPlot,interimVars1Num=interimVars1Num,interimVars2Num=interimVars2Num))
 
 }
