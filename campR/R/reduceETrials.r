@@ -2,7 +2,7 @@
 
 
 
-reduceETrials <- function(df,possibleVars,bsplBegDt,bsplEndDt,trap){
+reduceETrials <- function(df,possibleVars,bsplBegDt,bsplEndDt,trap,all.ind.inside){
   
   # df <- obs.eff.df
 
@@ -45,6 +45,6 @@ reduceETrials <- function(df,possibleVars,bsplBegDt,bsplEndDt,trap){
   tmp.df <- df[ind & ind.inside,]
   m.i <- sum(ind & ind.inside)
   
-  return(list(df=df,tmp.df=tmp.df,m.i=m.i,initialVars=initialVars,initialVarsNum=initialVarsNum))
+  return(list(df=df,tmp.df=tmp.df,m.i=m.i,initialVars=initialVars,initialVarsNum=initialVarsNum,all.ind.inside=all.ind.inside))
   
 }

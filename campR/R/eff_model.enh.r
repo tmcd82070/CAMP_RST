@@ -166,7 +166,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
   
     #   ---- 5. Reduce to the trials this trap cares about.  We do this to apply the 90% rule.  
-    reducedETrials <- reduceETrials(obs.eff.df,possibleVars,bsplBegDt,bsplEndDt,trap)
+    reducedETrials <- reduceETrials(obs.eff.df,possibleVars,bsplBegDt,bsplEndDt,trap,all.ind.inside)
     
     #   ---- Pull out the goodies.  
     df <- reducedETrials$df
@@ -174,6 +174,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     m.i <- reducedETrials$m.i
     initialVars <- reducedETrials$initialVars
     initialVarsNum <- reducedETrials$initialVarsNum
+    all.ind.inside <- reducedETrials$all.ind.inside
     
     #   ---- See if we have to deal with any covariates with missing data rows.  
     return <- checkMissingCovars(tmp.df,m.i,df,trap)
