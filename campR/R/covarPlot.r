@@ -41,7 +41,7 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
   # covar <- "turbidity_ntu"
   # df <- obs.eff.df
   # dbCovar <- dbTurb
-  # trap <- 57004
+  # trap <- 57001
   # eff.ind.inside <- eff.ind.inside
   
   #   ---- We give the function all the data, so restrict to the trap.  
@@ -78,7 +78,7 @@ covarPlot <- function(covar,df,dbCovar,trap,eff.ind.inside,bsplBegDt){
     yS <- df[,covar]
 
     #   ---- Find the range with respect to the data recorded.  
-    xD <- dbCovar[dbCovar$subSiteID == trap,]$measureTime
+    xD <- dbCovar[dbCovar$subSiteID == trap,]$measureDate
     yD <- dbCovar[dbCovar$subSiteID == trap,3]
     
     xm <- min(xD[!is.na(xD)])
