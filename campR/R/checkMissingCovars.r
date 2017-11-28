@@ -1,7 +1,7 @@
 
 
 
-checkMissingCovars <- function(tmp.df,m.i,df,trap){
+checkMissingCovars <- function(tmp.df,m.i,df,trap,plot.file){
   
   # tmp.df <- tmp.df
   # m.i <- m.i

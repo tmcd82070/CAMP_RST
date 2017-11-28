@@ -177,7 +177,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     all.ind.inside <- reducedETrials$all.ind.inside
     
     #   ---- See if we have to deal with any covariates with missing data rows.  
-    return <- checkMissingCovars(tmp.df,m.i,df,trap)
+    return <- checkMissingCovars(tmp.df,m.i,df,trap,plot.file)
     
     df <- return$df
     tmp.df <- return$tmp.df
