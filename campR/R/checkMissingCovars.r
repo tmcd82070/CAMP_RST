@@ -1,11 +1,11 @@
 
 
 
-checkMissingCovars <- function(tmp.df,m.i){
+checkMissingCovars <- function(tmp.df,m.i,df){
   
   # tmp.df <- tmp.df
   # m.i <- m.i
-  
+  # df <- df
   
   #   ---- With the inclusion of all CAMP covariates, the probability increases by a lot that we don't have all 
   #   ---- the values over all time.  Chuck those that don't have at least ... 90% of the data rows, given a 
@@ -45,5 +45,5 @@ checkMissingCovars <- function(tmp.df,m.i){
   tmp.df <- tmp.df[tmp.df$allCovars == 1,]
   tmp.df$allCovars <- NULL     # This has served its purpose.  
   
-  return(list(tmp.df=tmp.df,dataDeficient=dataDeficient))
+  return(list(tmp.df=tmp.df,df=df,m.i=nrow(tmp.df),dataDeficient=dataDeficient))
 }  

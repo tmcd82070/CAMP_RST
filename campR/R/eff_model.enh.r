@@ -164,9 +164,11 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     initialVarsNum <- reducedETrials$initialVarsNum
     
     #   ---- See if we have to deal with any covariates with missing data rows.  
-    return <- checkMissingCovars(tmp.df,m.i)
+    return <- checkMissingCovars(tmp.df,m.i,df)
     
+    df <- return$df
     tmp.df <- return$tmp.df
+    m.i <- return$tmp.df
     dataDeficient <- return$dataDeficient
     
     #   ---- Update m.i in case we removed a row in the previous function. 
@@ -184,8 +186,8 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     eff.end.dt <- max(tmp.df$batchDate2)
     
     #   ---- The long criteria here turns 'off' those trials lacking a covariate value from inclusion.  
-    eff.ind.inside <- (eff.strt.dt <= df$batchDate2) & (df$batchDate2 <= eff.end.dt) & 
-                      !(df$batchDate2 %in% dataDeficient$batchDate2 & df$nReleased %in% dataDeficient$nReleased & df$nCaught %in% dataDeficient$nCaught)
+    eff.ind.inside <- (eff.strt.dt <= df$batchDate2) & (df$batchDate2 <= eff.end.dt) # & 
+                      #!(df$batchDate2 %in% dataDeficient$batchDate2 & df$nReleased %in% dataDeficient$nReleased & df$nCaught %in% dataDeficient$nCaught)
     eff.inside.dates <- c(eff.strt.dt,eff.end.dt)
     
     #   ---- At this point, have cleaned up the this trap's efficiency data.  NOW, define fish-start days, so that we can
