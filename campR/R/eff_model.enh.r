@@ -168,7 +168,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     
     df <- return$df
     tmp.df <- return$tmp.df
-    m.i <- return$tmp.df
+    m.i <- return$m.i
     dataDeficient <- return$dataDeficient
     
     #   ---- We defined the start and end for the fishing season.  Need this to know when we need an efficiency estimate.
