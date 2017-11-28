@@ -45,5 +45,5 @@ checkMissingCovars <- function(tmp.df,m.i){
   tmp.df <- tmp.df[tmp.df$allCovars == 1,]
   tmp.df$allCovars <- NULL     # This has served its purpose.  
   
-  return(tmp.df)
+  return(list(tmp.df=tmp.df,dataDeficient=dataDeficient))
 }  
