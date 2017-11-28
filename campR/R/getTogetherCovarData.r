@@ -200,6 +200,8 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps){
           obs.eff.df[obs.eff.df$batchDate + 60*60 < min.date.flow | obs.eff.df$batchDate - 60*60 > max.date.flow,]$flow_cfs <- NA
         }
       }
+    } else {
+      dbFlPG <- NULL
     }
     
     dontDo <- FALSE
@@ -247,6 +249,8 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps){
           obs.eff.df[obs.eff.df$batchDate + 60*60 < min.date.temp | obs.eff.df$batchDate - 60*60 > max.date.temp,]$temp_c <- NA
         }
       }
+    } else {
+      dbTpPG <- NULL
     }
     
     #   ---- Next for data from the CAMP db, which could be collected per subSiteID.  Reduce to the set of subsiteIDs in this run.  This 
