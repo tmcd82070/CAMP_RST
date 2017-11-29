@@ -199,6 +199,20 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
                       #!(df$batchDate2 %in% dataDeficient$batchDate2 & df$nReleased %in% dataDeficient$nReleased & df$nCaught %in% dataDeficient$nCaught)
     eff.inside.dates <- c(eff.strt.dt,eff.end.dt)
     
+    
+    
+    #   ---- Very rarely, we will have all of a series of trap at a subsiteID return zero fish.  This screws with the 
+    #   ---- logistic regression of efficiency.  In this case, bump up the nCaught to 1 for the trial with the biggest
+    #   ---- number of nReleased fish.  This situation happened on trap 52004 of the Feather, with its trials on 
+    #   ---- 2017-01-26, 2017-01-31, and 2017-02-01.  
+    if(sum(tmp.df$nCaught) == 0){
+      message("There were no nCaught fish over the three e-trial traps on ",paste0(tmp.df$batchDate,collapse=", ")," for subSiteID = TrapPositionID = ",trap,
+              ".  Subbing in a '1' for nCaught for the trial with the largest number of nReleased fish.\n")
+      tmp.df <- tmp.df[order(tmp.df$nReleased,decreasing=TRUE),]
+      tmp.df[1,]$nCaught <- 1
+    }
+    
+    
     #   ---- At this point, have cleaned up the this trap's efficiency data.  NOW, define fish-start days, so that we can
     #   ---- model via the number of days from the start of fishing.  This puts efficiency years "on top of each other."  
     #   ---- I *could* have deleted, because of bad covariates, the *true* start of the fishing period for a certain 
