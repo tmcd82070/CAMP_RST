@@ -1,6 +1,6 @@
 
 
-buildAstroStats <- function(release.visit,visit.df){
+buildAstroStats <- function(release.visit,visit.df,needMeanFL=TRUE){
   
   
   #   ----- Define some convenient dates.  
@@ -14,8 +14,11 @@ buildAstroStats <- function(release.visit,visit.df){
   db <- get( "db.file", envir=.GlobalEnv )
   ch <- odbcConnectAccess(db)
   
-  max.date.eff <- max(release.visit$ReleaseDate) + 30*24*60*60  # 30-day buffer after
-  min.date.eff <- min(release.visit$ReleaseDate) - 30*24*60*60  # 30-day buffer before
+  # max.date.eff <- max(release.visit$ReleaseDate) + 30*24*60*60  # 30-day buffer after
+  # min.date.eff <- min(release.visit$ReleaseDate) - 30*24*60*60  # 30-day buffer before
+  
+  max.date.eff <- as.POSIXct(max.date,format="%Y-%m-%d",tz="UTC") + 30*24*60*60
+  min.date.eff <- as.POSIXct(min.date,format="%Y-%m-%d",tz="UTC") - 30*24*60*60
   
   #   ---- Get dates information for moon and sun info. 
   tblDates <- sqlQuery(ch,paste0("SELECT uniqueDate,
@@ -64,6 +67,7 @@ buildAstroStats <- function(release.visit,visit.df){
   
   #   ---- Bring in the mean forkLengths. 
   fl <- attr(visit.df,"fl")
+
   
   #   ---- Some trapVisitIDs are not in the final catch table, for whatever reason.  Find these 
   #   ---- missing trap instances so they can be zeroed out.  These trap visits often are found 
@@ -137,6 +141,36 @@ buildAstroStats <- function(release.visit,visit.df){
   tmp$nightMinutes <- NA
   tmp[!is.na(tmp$sunProp),]$nightMinutes <- as.numeric(tmp[!is.na(tmp$sunProp),]$SampleMinutes) - tmp[!is.na(tmp$sunProp),]$sunMinutes
   tmp$nightProp <- 1 - tmp$sunProp
+  
+  
+  
+  
+  # tmp2 <- F.assign.batch.date(tmp)
+  # 
+  # tmp.sun <- aggregate(tmp2$sunMinutes,list(trapPositionID=tmp2$trapPositionID,batchDate=tmp2$batchDate), function(x) sum(x))
+  # names(tmp.sun)[names(tmp.sun) == "x"] <- "sunMinutes"
+  # 
+  # tmp.moon <- aggregate(tmp2$moonMinutes,list(trapPositionID=tmp2$trapPositionID,batchDate=tmp2$batchDate), function(x) sum(x))
+  # names(tmp.moon)[names(tmp.moon) == "x"] <- "moonMinutes"
+  # 
+  # tmp.night <- aggregate(tmp2$nightMinutes,list(trapPositionID=tmp2$trapPositionID,batchDate=tmp2$batchDate), function(x) sum(x))
+  # names(tmp.night)[names(tmp.night) == "x"] <- "nightMinutes"
+  # 
+  # tmp.SampleMinutes <- aggregate(tmp2$SampleMinutes,list(trapPositionID=tmp2$trapPositionID,batchDate=tmp2$batchDate), function(x) sum(x))
+  # names(tmp.SampleMinutes)[names(tmp.SampleMinutes) == "x"] <- "SampleMinutes"
+  # 
+  # 
+  # one <- merge(tmp.sun,tmp.moon,by=c("batchDate","trapPositionID"))
+  # two <- merge(one,tmp.night,by=c("batchDate","trapPositionID"))
+  # thr <- merge(two,tmp.SampleMinutes,by=c("batchDate","trapPositionID"))
+  # 
+  # thr$nightProp <- thr$nightMinutes / thr$SampleMinutes
+  # thr$moonProp <- thr$moonMinutes / thre$SampleMinutes
+  # 
+  # test <- thr[thr$trapPositionID == "57001",]
+  
+  
+  
   
   
   forEffPlots <<- tmp[,c("trapVisitID","trapPositionID","StartTime","EndTime","wmForkLength","nForkLength","nightProp","moonProp")]
