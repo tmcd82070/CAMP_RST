@@ -57,7 +57,7 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
 theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
 
-theExcel <- theExcel[c(1),]
+theExcel <- theExcel[c(1,5),]
 #theExcel <- theExcel[c(2),]
 
 
@@ -393,6 +393,8 @@ for(i in 1:nStreamNames){
       #   ---- Create enhanced efficiency beta estimates and associated plots and output.  
       if( theReportLabel == "Q" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
+        
+        require(splines)
         
         #   ---- Function run.passage.enh expects a 'by' that isn't used.   
         by <- 'year' 
