@@ -60,21 +60,24 @@
 #' }
 
 F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plot.file=NA ){
-   
-  # release.df <- release.df
-  # batchDate <- bd
+  
+  # release.df <- release.df.enh
+  # batchDate <- bd.enh
   # df.spline <- 4
   # plot <- TRUE
   # plot.file <- file.root
   
   time.zone <- get("time.zone", envir=.GlobalEnv)
-
+  
   #   ---- Fix up the data frame.
   rel.df <- release.df[,c("releaseID","ReleaseDate","nReleased","HrsToFirstVisitAfter",
-  												"HrsToLastVisitAfter","trapPositionID","meanRecapTime","Recaps",'beg.date','end.date')]
+                          "HrsToLastVisitAfter","trapPositionID","meanRecapTime","Recaps",'beg.date','end.date',
+                          "allMoonMins","meanMoonProp",   # added this line for enhanced models for collapsing on batchDate.
+                          "allNightMins","meanNightProp", # added this line for enhanced models for collapsing on batchDate.
+                          "allfl","meanForkLength")]      # added this line for enhanced models for collapsing on batchDate.
   rel.df$batchDate <- rep(NA, nrow(rel.df))
   names(rel.df)[ names(rel.df) == "meanRecapTime" ] <- "EndTime"
-
+  
   #   ---- The meanRecapTime is NA if they did not catch anything from a release.
   #   ---- This is different from the check on line 36, where there was no catch
   #   ---- over ALL releases.  In this NA case, replace any NA meanEndTimes with 
@@ -82,36 +85,47 @@ F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plo
   #   ---- This will assign a batch date.  
   ind <- is.na( rel.df$EndTime )
   rel.df$EndTime[ind] <- rel.df$ReleaseDate[ind] + (rel.df$HrsToFirstVisitAfter[ind] + rel.df$HrsToLastVisitAfter[ind]) / 2 
-
+  
   #   ---- Assign batch date to efficiency trials based on meanEndTime (really weighted meanVisitTime).
   rel.df <- F.assign.batch.date( rel.df )
   rel.df$batchDate.str <- format(rel.df$batchDate,"%Y-%m-%d")
-
-  #   ---- Sum by batch dates.  This combines release and catches over trials that occured close in time.
+  
+  
+  rel.df[rel.df$releaseID %in% c(276,277),]
+  
+  #   ---- Sum by batch dates.  This combines release and catches over trials that occured close in time.  For enhanced
+  #   ---- efficiency models, need to collapse prop of moon and night and forklength as well over batchDate.
   ind <- list( TrapPositionID=rel.df$trapPositionID,batchDate=rel.df$batchDate.str )
   nReleased <- tapply( rel.df$nReleased,ind, sum )
   nCaught   <- tapply( rel.df$Recaps,ind, sum )
-
+  
+  #lapply(split(truc, truc$x), function(z) weighted.mean(z$y, z$w)) 
+  
+  bdMeanNightProp  <- sapply( split(rel.df, ind) ,function(z) weighted.mean(z$meanNightProp,z$allNightMins) )
+  bdMeanMoonProp   <- sapply( split(rel.df, ind) ,function(z) weighted.mean(z$meanMoonProp,z$allMoonMins) )
+  bdMeanForkLength <- sapply( split(rel.df, ind) ,function(z) weighted.mean(z$meanForkLength,z$allfl) )
+  
   eff.est <- cbind( expand.grid( TrapPositionID=dimnames(nReleased)[[1]],batchDate=dimnames(nReleased)[[2]]), 
-                nReleased=c(nReleased),nCaught=c(nCaught) )
+                    nReleased=c(nReleased),nCaught=c(nCaught),bdMeanNightProp=c(bdMeanNightProp),
+                    bdMeanMoonProp=c(bdMeanMoonProp),bdMeanForkLength=c(bdMeanForkLength) )
   eff.est$batchDate <- as.character(eff.est$batchDate)
-
+  
   #   ================== done with data manipulations ===========================
   #   ---- Compute efficiency.
   eff.est$nReleased[ eff.est$nReleased <= 0] <- NA  # don't think this can happen, but just in case.
   eff.est$efficiency <- (eff.est$nCaught)/(eff.est$nReleased)  # eff$efficiency not used in computation, but is plotted. 
   eff.est <- eff.est[ !is.na(eff.est$efficiency), ]
-
+  
   #   ---- Figure out which days have efficiency data.
   bd <- expand.grid(TrapPositionID=sort(unique(eff.est$TrapPositionID)),batchDate=format(batchDate,"%Y-%m-%d"),stringsAsFactors=F)
   eff <- merge( eff.est, bd, by=c("TrapPositionID","batchDate"),all.y=T)
   eff$batchDate <- as.POSIXct( eff$batchDate, format="%Y-%m-%d",tz=time.zone )
-
+  
   #   ---- Assign attributes for plotting.  
   ind <- !duplicated(release.df$TrapPosition)
   attr(eff,"subsites") <- data.frame(subSiteName=as.character(release.df$TrapPosition[ind]),subSiteID=release.df$trapPositionID[ind],stringsAsFactors=F)
   attr(eff, "site.name") <- release.df$siteName[1]
-
+  
   #   ---- If there are missing days, impute them.  
   missing.days <- is.na(eff$efficiency)
   if( any(missing.days) ){

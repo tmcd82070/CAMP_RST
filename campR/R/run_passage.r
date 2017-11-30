@@ -104,16 +104,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Start a progress bar
-  progbar <<- winProgressBar( "Production estimate for ALL runs", label="Fetching efficiency data" )
-  
-  #   ---- Fetch efficiency data
-  release.df <- F.get.release.data( site, taxon, min.date, max.date  )
-  
-  if( nrow(release.df) == 0 ){
-    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
-  }
-  
-  setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
+  progbar <<- winProgressBar( "Production estimate for ALL runs", label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
   
   #   ---- Fetch the catch and visit data
   tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date, output.file  )
@@ -138,6 +129,15 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   catch.df6 <- F.summarize.fish.visit( catch.df, 'unassignedCatch' )           # jason - 1/14/2016
   catch.df7 <- F.summarize.fish.visit( catch.df, 'modAssignedCatch' )          # jason - 1/14/2016
   catch.df8 <- F.summarize.fish.visit( catch.df, 'modUnassignedCatch' )        # jason - 1/14/2016
+  
+  
+  #   ---- Fetch efficiency data
+  setWinProgressBar( progbar, 0.1 , label="Fetching efficiency data" )
+  release.df <- F.get.release.data( site, taxon, min.date, max.date, visit.df )
+  
+  if( nrow(release.df) == 0 ){
+    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
+  }
   
   #   ---- Compute the unique runs we need to do
   runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    # get all instances over the two df.  jason change 4/17/2015 5/21/2015: don't think we need to worry about catch.df0.

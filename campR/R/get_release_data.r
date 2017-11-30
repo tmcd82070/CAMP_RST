@@ -74,108 +74,137 @@
 #' max.date <- "2013-06-01"
 #' df <- F.get.release.data(site,taxon,min.date,max.date)
 #' }
-F.get.release.data <- function( site, taxon, min.date, max.date ){
-
-  # site <- 1111
+F.get.release.data <- function( site, taxon, min.date, max.date, visit.df ){
+  
+  # site <- 34000
   # taxon <- 161980
-  # min.date <- "2006-01-01"
-  # max.date <- "2006-12-01"
+  # min.date <- min.date2#"2006-01-01"
+  # max.date <- max.date2#"2006-12-01"
+  # visit.df <- visit.df
   
   #   ---- Get global environment data. 
   halfConeMulti <- get("halfConeMulti",envir=.GlobalEnv)
-
+  
   #   ---- Run report criteria for trap visits. Build TempReportCriteria_Trapvisit.
   nvisits <- F.buildReportCriteria( site, min.date, max.date )
-
+  
   if( nvisits == 0 ){
     warning("Your criteria returned no trap visits.")
     return()
   }
-
+  
   #   ---- Run report criteria for efficiency releases. Build TempReportCriteria_Release.
   nreleases <- F.buildReportCriteriaRelease( site, min.date, max.date )
-
+  
   if( nreleases == 0 ){
     warning("Your criteria returned no releases.")
     return()
   }
-
+  
   #   ---- Open ODBC channel.
   db <- get( "db.file", envir=.GlobalEnv )
   ch <- odbcConnectAccess(db)
-
+  
   #   ---- Develop the TempSamplingSummary table.
   F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
-
+  
   #   ---- Develop the hours fished and TempSamplingSummary table.  
   F.run.sqlFile( ch, "QryEfficiencyTests.sql", R.TAXON=taxon )
-
+  
   #   ---- Now, fetch the result
   release.visit <- sqlFetch( ch, "TempRelRecap_final" )
   F.sql.error.check(release.visit)
-
+  
   close(ch)
-
+  
+  
+  #   ---- Compile astro statistics.  
+  astroStuff <- buildAstroStats(release.visit,visit.df)
+  release.visit <- astroStuff$release.visit
+  forEffPlots <- astroStuff$forEffPlots
+  fl0 <- astroStuff$fl0
+  
   #   ---- Assign time zones to date-time columns
   time.zone <- get( "time.zone", envir=.GlobalEnv )
   attr(release.visit$ReleaseDate, "tzone") <- time.zone
   attr(release.visit$VisitTime, "tzone") <- time.zone
-
+  
   #   ---- Drop any rows that are flagged as "Do not include."
   release.visit <- release.visit[ (release.visit$IncludeTest == "Yes") & (release.visit$IncludeCatch == "Yes"), ]
-
+  
   #   ---- Adjust for halfCone adjustment via the halfConeMulti global variable.
   release.visit$halfConeAdj <- ifelse(release.visit$HalfCone == 'Yes',(halfConeMulti - 1)*release.visit$Recaps,0)
   release.visit$oldRecaps <- release.visit$Recaps
   release.visit$Recaps <- release.visit$oldRecaps + release.visit$halfConeAdj
-
+  
+  
+  release.visit[is.na(release.visit$nForkLength),]$nForkLength <- fl0[match(release.visit[is.na(release.visit$nForkLength),]$trapVisitID,fl0$trapVisitID),]$nForkLength
+  
+  
+  
+  
   #   ---- Sum over trapVisits at a trapPosition.  
   by.list <- list(trapPositionID = release.visit$trapPositionID,
                   releaseID = release.visit$releaseID )
-
+  
   #   ---- Create indicator for unique groups below.
   ind  <- tapply( release.visit$Recaps, by.list, FUN=NULL)
-
+  
   #   ---- Calculate the mean recapture time.
   u.groups <- sort(unique(ind))
   ans <- NULL
   for( g in u.groups ){
     tmp <- release.visit[ ind == g, ]
     one.row <- tmp[1,]
-
-    #   ---- Number caught.
+    
+    #   ---- Number caught.  And number of night and moon minutes.  And total (Jason) fishing minutes.  
     one.row$Recaps <- sum(tmp$Recaps, na.rm=T)
-
+    one.row$allNightMins <- sum(tmp$nightMinutes)        
+    one.row$allMoonMins <- sum(as.numeric(tmp$moonMinutes))
+    one.row$allSampleMins <- sum(as.numeric(tmp$JasonSampleMinutes))
+    one.row$allfl <- sum(tmp[tmp$nForkLength > 0,]$wmForkLength*tmp[tmp$nForkLength > 0,]$nForkLength)
+    one.row$allNfl <- sum(tmp$nForkLength) 
+    
     #   ---- Compute time to first and last visit after release, even if they did not catch any marked fish. 
     tmp.hdiff <- as.numeric( difftime(tmp$VisitTime, tmp$ReleaseDate, units="hours") )
     one.row$HrsToFirstVisitAfter <-  min( tmp.hdiff )
     one.row$HrsToLastVisitAfter <-  max( tmp.hdiff )
-
+    
     #   ---- Mean time frame of released fish that were captured.
     if( one.row$Recaps == 0 ){
       one.row$meanRecapTime <- NA
       one.row$meanTimeAtLargeHrs <- NA   
+      
+      one.row$meanNightProp <- one.row$allNightMins / one.row$allSampleMins
+      one.row$meanMoonProp <- one.row$allMoonMins / one.row$allSampleMins
+      one.row$meanForkLength <- one.row$allfl / one.row$allNfl
     } else {
       tmp.v <- as.numeric(tmp$VisitTime)
       one.row$meanRecapTime <- sum(tmp.v * tmp$Recaps, na.rm=T) / one.row$Recaps
       one.row$meanTimeAtLargeHrs <- sum(tmp.hdiff * tmp$Recaps, na.rm=T) / one.row$Recaps 
+      
+      one.row$meanNightProp <- one.row$allNightMins / one.row$allSampleMins
+      one.row$meanMoonProp <- one.row$allMoonMins / one.row$allSampleMins
+      one.row$meanForkLength <- one.row$allfl / one.row$allNfl
     }
     
     #   ---- Drop the columns over which we are summing.
     one.row <- one.row[,-which( names(one.row) %in% c("VisitTime", "trapVisitID", "SampleMinutes")) ]   
     ans <- rbind(ans, data.frame(one.row))
   }
-
+  
   class(ans$meanRecapTime) <- class(release.visit$VisitTime)
   attr(ans$meanRecapTime, "tzone") <- attr(release.visit$VisitTime, "tzone")
-
+  
   cat("First 20 records of RELEASE table:\n")
   print( ans[1:min(nrow(ans),20),] )
-
+  
   #   ---- Store values of some header info as attribute.
   attr(ans, "taxonID" ) <- taxon
   attr(ans, "siteID" ) <- site
-
+  
   ans
-
+  #plot(tmp$sunProp[!is.na(tmp$sunProp)],tmp$moonProp[!is.na(tmp$moonProp)])
+  #plot(ans$meanNightProp[!is.na(ans$meanNightProp)],ans$meanMoonProp[!is.na(ans$meanMoonProp)])
+  
 }
