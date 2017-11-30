@@ -130,6 +130,22 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   catch.df7 <- F.summarize.fish.visit( catch.df, 'modAssignedCatch' )          # jason - 1/14/2016
   catch.df8 <- F.summarize.fish.visit( catch.df, 'modUnassignedCatch' )        # jason - 1/14/2016
   
+  #   ---- I calculate mean forklength here and attach via an attribute on visit.df.  This way, it gets into function 
+  #   ---- F.get.release.data.enh.  Note I make no consideration of FinalRun, or anything else.  I get rid of plus 
+  #   ---- count fish, and instances where forkLength wasn't measured.  Note that I do not restrict to RandomSelection == 
+  #   ---- 'yes'.  Many times, if there are few fish in the trap, they'll just measure everything, and record a 
+  #   ---- RandomSelection == 'no'.  
+  catch.df2 <- catch.df[catch.df$Unassd != "Unassigned" & !is.na(catch.df$forkLength),]
+  
+  #   ---- Get the weighted-mean forkLength, weighting on the number of that length of fish caught.  Return a vector
+  #   ---- of numeric values in millimeters, with entry names reflecting trapVisitIDs.  Also get the N for weighting. 
+  flVec <- sapply(split(catch.df2, catch.df2$trapVisitID), function(x) weighted.mean(x$forkLength, w = x$Unmarked)) 
+  flDF <- data.frame(trapVisitID=names(flVec),wmForkLength=flVec,stringsAsFactors=FALSE)
+  nVec <- aggregate(catch.df2$Unmarked,list(trapVisitID=catch.df2$trapVisitID),sum)
+  names(nVec)[names(nVec) == "x"] <- "nForkLength"
+  tmp <- merge(flDF,nVec,by=c("trapVisitID"),all.x=TRUE)
+  tmp <- tmp[order(as.integer(tmp$trapVisitID)),]
+  attr(visit.df,"fl") <- tmp
   
   #   ---- Fetch efficiency data
   setWinProgressBar( progbar, 0.1 , label="Fetching efficiency data" )

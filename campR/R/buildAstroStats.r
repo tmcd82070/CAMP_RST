@@ -1,6 +1,9 @@
 
 
-buildAstroStats <- function(release.visit,visit.df,needMeanFL=TRUE){
+buildAstroStats <- function(release.visit,visit.df){
+  
+  # release.visit <- release.visit
+  # visit.df <- visit.df
   
   
   #   ----- Define some convenient dates.  
