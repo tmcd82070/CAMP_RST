@@ -122,6 +122,7 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   astroStuff <- buildAstroStats(release.visit)
   release.visit <- astroStuff$release.visit
   forEffPlots <- astroStuff$forEffPlots
+  fl0 <- astroStuff$fl0
 
   #   ---- Assign time zones to date-time columns
   time.zone <- get( "time.zone", envir=.GlobalEnv )

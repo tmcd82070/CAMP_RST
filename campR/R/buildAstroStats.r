@@ -152,6 +152,6 @@ buildAstroStats <- function(release.visit){
   tmpAstro$trapPositionID <- NULL
   release.visit <- merge(release.visit,tmpAstro,by=c("trapVisitID"),all.x=TRUE)
 
-  return(list(release.visit=release.visit,forEffPlots=forEffPlots))
+  return(list(release.visit=release.visit,forEffPlots=forEffPlots,fl0=fl0))
   
 }
