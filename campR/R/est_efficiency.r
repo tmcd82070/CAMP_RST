@@ -61,8 +61,8 @@
 
 F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plot.file=NA ){
   
-  # release.df <- release.df.enh
-  # batchDate <- bd.enh
+  # release.df <- release.df
+  # batchDate <- bd
   # df.spline <- 4
   # plot <- TRUE
   # plot.file <- file.root

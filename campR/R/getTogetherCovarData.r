@@ -32,8 +32,11 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps){
   #   ---- Need to set an initial value for variable covar.  This holds the building string of 
   #   ---- a model statement.  Don't need to worry about if all the values for all efficiency 
   #   ---- trials are actually present -- we deal with that possibility below.  So... just add
-  #   ---- the simple text statement.  
-  obs.eff.df$covar <- "bdMeanNightProp + bdMeanMoonProp + bdMeanForkLength"
+  #   ---- the simple text statement.  But if we're calling this function for real passage 
+  #   ---- estimation, we don't want this.  
+  if( sum(c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength") %in% names(obs.eff.df)) == 3 ){
+    obs.eff.df$covar <- "bdMeanNightProp + bdMeanMoonProp + bdMeanForkLength"
+  }
   
   for(ii in 1:length(uniqueOurSiteIDsToQuery)){
     

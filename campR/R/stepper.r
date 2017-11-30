@@ -1,14 +1,29 @@
 stepper <- function(df,varVec){
   
-  # df <- test
-  # varVec <- c("meanNightProp","meanMoonProp","meanForkLength")
+  # df <- obs.eff.df[!is.na(obs.eff.df$nReleased) & obs.eff.df$TrapPosition == 57001,c("batchDate","TrapPositionID","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")]
+  # varVec <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")
   
-  traps <- unique(df$trapPositionID)
+  traps <- unique(df$TrapPositionID)
   
   df.new <- NULL
   for(trap in traps){
     
-    df.t <- df[df$trapPositionID == trap,]
+    df.t <- df[df$TrapPositionID == trap,]
+    
+    #   ---- The earliest batchDate in df.t reflect the first e-trial.  This doesn't correspond with start of 
+    #   ---- fishing.  This should use min.date, but that variable is not passed this deeply into 
+    #   ---- passage estimation routines.  So, just add in a full year of batchDates back in time.  The 
+    #   ---- merge of the dataframe resulting from this, along with the temporal spline batchDates (the real
+    #   ---- ones that matter) will clean up the resulting mess.  
+    earliestBatchDate <- min(df.t$batchDate) - 365*24*60*60
+    fakeFirstRow <- data.frame(batchDate=earliestBatchDate,
+                               TrapPositionID = trap,
+                               bdMeanNightProp = df.t[1,]$bdMeanNightProp,
+                               bdMeanMoonProp = df.t[1,]$bdMeanMoonProp,
+                               bdMeanForkLength = df.t[1,]$bdMeanForkLength)
+    
+    df.t <- rbind(fakeFirstRow,df.t)
+    
     df.t$batchDate  <- as.POSIXct(strptime(df.t$batchDate,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
     df.t$batchDateNext <- as.POSIXct(strptime(df.t$batchDate[c(2:nrow(df.t),NA)],format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
     
@@ -24,7 +39,7 @@ stepper <- function(df,varVec){
     df.t.new <- NULL
     for(i in 1:nrow(df.t)){
       
-      df.t.i <- data.frame(trapPositionID=trap,
+      df.t.i <- data.frame(TrapPositionID=trap,
                            batchDate=seq(df.t[i,"batchDate"],df.t[i,"batchDateNext"],by="1 day"))
       
       for(j in 1:length(varVec)){
@@ -49,8 +64,8 @@ stepper <- function(df,varVec){
 }
 
 # par(mfrow=c(5,1))
-# for(i in 1:length(unique(df.new$trapPositionID))){
-#   trap <- unique(df.new$trapPositionID)[i]
-#   plot(df.new[df.new$trapPositionID == trap,]$batchDate,df.new[df.new$trapPositionID == trap,]$meanForkLengthStep)
+# for(i in 1:length(unique(df.new$TrapPositionID))){
+#   trap <- unique(df.new$TrapPositionID)[i]
+#   plot(df.new[df.new$TrapPositionID == trap,]$batchDate,df.new[df.new$TrapPositionID == trap,]$meanForkLengthStep)
 # }
 # par(mfrow=c(1,1))
