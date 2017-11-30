@@ -119,7 +119,7 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   
 
   #   ---- Compile astro statistics.  
-  astroStuff <- buildAstroStats(release.visit)
+  astroStuff <- buildAstroStats(release.visit,visit.df)
   release.visit <- astroStuff$release.visit
   forEffPlots <- astroStuff$forEffPlots
   fl0 <- astroStuff$fl0

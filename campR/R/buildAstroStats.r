@@ -1,6 +1,6 @@
 
 
-buildAstroStats <- function(release.visit){
+buildAstroStats <- function(release.visit,visit.df){
   
   
   #   ----- Define some convenient dates.  
