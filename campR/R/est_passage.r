@@ -286,7 +286,9 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- Get all the batchDates for use in efficiency.
   bd <- strptime(sort( seq(as.Date(min(na.omit(release.df$ReleaseDate),na.omit(release.df$origBeg.date),unique(catch$batchDate))),as.Date(max(na.omit(release.df$ReleaseDate),na.omit(release.df$origEnd.date),unique(catch$batchDate))),"days")),format="%F",tz=time.zone)
 
-  #   ---- Estimate capture for every day of season.  
+  #   ---- Estimate capture for every day of season.  Add in min.date and max.date for enh eff.
+  attr(release.df,"min.date") <- min.date
+  attr(release.df,"max.date") <- max.date
   eff.and.fits <- F.est.efficiency( release.df, bd, df.spline=4, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)
