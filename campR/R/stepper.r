@@ -38,8 +38,7 @@ stepper <- function(df,varVec,min.date,max.date){
   df.new <- NULL
   for(i in 1:nrow(df)){
     df.i <- data.frame(TrapPositionID=trap,
-                       batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
-                                     as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
+                       batchDate=seq(df[i,"batchDate"],df[i,"batchDateNext"],by="1 DSTday"))
     for(j in 1:length(varVec)){
       df.i[,paste0(varVec[j],"Step")] <- ifelse(is.na(df[i,varVec[j]]) | is.nan(df[i,varVec[j]]),-99,df[i,varVec[j]])
     }
@@ -55,7 +54,6 @@ stepper <- function(df,varVec,min.date,max.date){
     means[i] <- mean(nums[nums != -99])
     df.new[df.new[,paste0(varVec[i],"Step")] == -99,paste0(varVec[i],"Step")] <- means[i]
   }
-    
-  df.new <- rbind(df.new,df.new)
+
   return(df.new)
 }
