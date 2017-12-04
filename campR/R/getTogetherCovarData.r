@@ -10,11 +10,13 @@
 #' document me.
 
 
-getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps){
+getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
   
   # obs.eff.df <- obs.eff.df
   # min.date <- min.date
   # max.date <- max.date
+  # traps <- traps
+  # useEnhEff <- TRUE
   
   #   ---- JASON SETS THIS UP BASED ON UPDATED PACKAGE.
   #   ---- We assemble all the unique ourSiteIDs we need for this run. 
@@ -34,16 +36,26 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps){
   #   ---- trials are actually present -- we deal with that possibility below.  So... just add
   #   ---- the simple text statement.  But if we're calling this function for real passage 
   #   ---- estimation, we don't want this.  
-  if( sum(c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength") %in% names(obs.eff.df)) == 3 ){
+  #if( sum(c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength") %in% names(obs.eff.df)) == 3 ){
     obs.eff.df$covar <- "bdMeanNightProp + bdMeanMoonProp + bdMeanForkLength"
-  }
+  #}
   
   for(ii in 1:length(uniqueOurSiteIDsToQuery)){
     
     #   ---- Get covariate data of interest.  
     oursitevar <- uniqueOurSiteIDsToQuery[ii]   
-    minEffDate <- as.character(min(obs.eff.df$batchDate))
-    maxEffDate <- as.character(max(obs.eff.df$batchDate))
+    
+    if(useEnhEff == TRUE){
+      
+      #   ---- Use these when constructing passage estimates.  Buff out a month each way.
+      minEffDate <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone) - 90*24*60*60
+      maxEffDate <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone) + 90*24*60*60
+    } else {
+      
+      #   ---- Use these when building enhanced efficiency trials.  
+      minEffDate <- as.character(min(obs.eff.df$batchDate))
+      maxEffDate <- as.character(max(obs.eff.df$batchDate))
+    }
     
     #   ---- See if we can get anything on tbld.  This is good for local runs.
     #ch <- odbcConnect("PostgreSQL30", uid = 'jmitchell', pwd = 'jmitchell')
