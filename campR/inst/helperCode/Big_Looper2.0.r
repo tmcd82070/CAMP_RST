@@ -1,8 +1,6 @@
 
 
 
-
-
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.3.2"
 TestingPlatform <- "CAMP_RST20161212-campR1.0.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
@@ -16,9 +14,8 @@ excelName <- "theExcel"
 reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
 reportRun <- c("A","B","C","D","E","F","G","H","I","J")
 reportRun <- c("K","L","M","N","O","P")
+reportRun <- c("B","R")
 reportRun <- c("Q")
-
-
 
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
@@ -33,10 +30,6 @@ if("Q" %in% reportRun){
 # require("RODBC",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 # require("mvtnorm",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 # require("splines",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
-
-
-
-
 
 #   ---- Install the working version of campR.  
 #   ---- Prior to running this step, make sure you install the zip folder.
@@ -55,10 +48,10 @@ rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
+#theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
 
-theExcel <- theExcel[c(1,5),]
-#theExcel <- theExcel[c(2),]
+theExcel <- theExcel[c(13,15,24,26,32),]
+#theExcel <- theExcel[c(1),]
 
 
 #   ---- Tell the Big Looper where to put all the output.  
@@ -68,27 +61,27 @@ outStem <- paste0(theStem,"/Outputs")
 #   ---- Identify the possible reports we can run, and folder stems we can create.  
 #   ---- This section should not be ameliorated.  
 nn <- c("label","folder","report","function")
-a <- c("A","EstProdAllRunsLSReport","ls.run.passage"              ,"passageWithLifeStageAssign")
-b <- c("B","EstProdAllRunsReport"  ,"run.passage"                 ,"F.run.passage")
-c <- c("C","PassageEst_FL_Fall"    ,"lifestage.passage.forkLength","F.lifestage.passage.forkLength")
-d <- c("D","AllCatchTable"         ,"all.catch"                   ,"F.allCatch.table")
-e <- c("E","ByCatchTable"          ,"by.catch"                    ,"F.byCatch.table")
-f <- c("F","ChinookByDate"         ,"chinook.by.date"             ,"F.chinookByDate.table")
-g <- c("G","ReleaseSummary"        ,"release.summary"             ,"F.release.summary")
-h <- c("H","SizeByDate"            ,"size.by.date"                ,"F.size.by.date")
-i <- c("I","LengthFreq"            ,"length.freq"                 ,"F.length.frequency")
-j <- c("J","WeeklyEffortReport"    ,"weekly.effort"               ,"F.weekly.effort")
-k <- c("K","AutoLS_2Group_YesWgt"  ,"auto.ls.2grp_yWgt"           ,"F.lifestage.passage.assignLS2group")
-l <- c("L","AutoLS_2Group_NoWgt"   ,"auto.ls.2grp_nWgt"           ,"F.lifestage.passage.assignLS2groupNoWeight")
-m <- c("M","AutoLS_3Group_YesWgt"  ,"auto.ls.3grp_yWgt"           ,"F.lifestage.passage.assignLS3group")
-n <- c("N","AutoLS_3Group_NoWgt"   ,"auto.ls.3grp_nWgt"           ,"F.lifestage.passage.assignLS3groupNoWeight")
-o <- c("O","AutoLS_2or3_AutoWgt"   ,"auto.ls.2or3grp_autoWgt"     ,"F.lifestage.passage.assignLS")
-p <- c("P","AutoLS_2or3_NoWgt"     ,"auto.ls.2or3grp_nWgt"        ,"F.lifestage.passage.assignLSNoWeight")
-q <- c("Q","Enhanced_Eff_Get_Betas","run.passage.enh"             ,"F.run.passage.enh")
-
+a <- c("A","EstProdAllRunsLSReport" ,"ls.run.passage"              ,"passageWithLifeStageAssign")
+b <- c("B","EstProdAllRunsReport"   ,"run.passage"                 ,"F.run.passage")
+c <- c("C","PassageEst_FL_Fall"     ,"lifestage.passage.forkLength","F.lifestage.passage.forkLength")
+d <- c("D","AllCatchTable"          ,"all.catch"                   ,"F.allCatch.table")
+e <- c("E","ByCatchTable"           ,"by.catch"                    ,"F.byCatch.table")
+f <- c("F","ChinookByDate"          ,"chinook.by.date"             ,"F.chinookByDate.table")
+g <- c("G","ReleaseSummary"         ,"release.summary"             ,"F.release.summary")
+h <- c("H","SizeByDate"             ,"size.by.date"                ,"F.size.by.date")
+i <- c("I","LengthFreq"             ,"length.freq"                 ,"F.length.frequency")
+j <- c("J","WeeklyEffortReport"     ,"weekly.effort"               ,"F.weekly.effort")
+k <- c("K","AutoLS_2Group_YesWgt"   ,"auto.ls.2grp_yWgt"           ,"F.lifestage.passage.assignLS2group")
+l <- c("L","AutoLS_2Group_NoWgt"    ,"auto.ls.2grp_nWgt"           ,"F.lifestage.passage.assignLS2groupNoWeight")
+m <- c("M","AutoLS_3Group_YesWgt"   ,"auto.ls.3grp_yWgt"           ,"F.lifestage.passage.assignLS3group")
+n <- c("N","AutoLS_3Group_NoWgt"    ,"auto.ls.3grp_nWgt"           ,"F.lifestage.passage.assignLS3groupNoWeight")
+o <- c("O","AutoLS_2or3_AutoWgt"    ,"auto.ls.2or3grp_autoWgt"     ,"F.lifestage.passage.assignLS")
+p <- c("P","AutoLS_2or3_NoWgt"      ,"auto.ls.2or3grp_nWgt"        ,"F.lifestage.passage.assignLSNoWeight")
+q <- c("Q","Enhanced_Eff_Get_Betas" ,"run.passage.enh"             ,"F.run.passage.enh")
+r <- c("R","EstProdAllRunsReportENH","run.passage.enheffT"         ,"F.run.passage")
 
 #   ---- Clean up our requested report list for use in making folders. 
-masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q),stringsAsFactors=FALSE)
+masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r),stringsAsFactors=FALSE)
 names(masterReports) <- nn
 rownames(masterReports) <- NULL
 masterReports <- masterReports[masterReports$label %in% reportRun,]
@@ -134,6 +127,18 @@ source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/ca
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkMissingCovars.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/backEnhFit.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/buildAstroStats.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/stepper.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/overDphi.r")
+
+#   ---- I have now updated a few of the core functions in the package.  Read these in explicitly, so they are used in 
+#   ---- lieu of the package version. 
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/get_release_data.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/bootstrap_passage.r")
 
 
 
@@ -159,7 +164,7 @@ source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/ca
 # passageRounder                  <<- 4
 # eff.min.spline.samp.size        <<- 10
 # unassd.sig.digit                <<- 1
-
+i <- j <- k <- 1
 #   ---- Given the 'theExcel', loop over the streams.  
 for(i in 1:nStreamNames){
   
@@ -241,7 +246,7 @@ for(i in 1:nStreamNames){
         F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file=outAll,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL)
       }
       
-      #   ---- Create the ALL runs report.  
+      #   ---- Create the ALL runs report -- NO ENHANCED EFFICIENCY.  
       if( theReportLabel == "B" ){
         
         #   ---- Run function run.passage over the four possible temporal periods.  
@@ -253,7 +258,7 @@ for(i in 1:nStreamNames){
 
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
-          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE)
+          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,useEnhEff=FALSE)
           
           #   ---- If desired, remove some of the output.  
           #theFiles <- dir(outFileStem)
@@ -395,12 +400,34 @@ for(i in 1:nStreamNames){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         
         require(splines)
+        require(mvtnorm)
         
         #   ---- Function run.passage.enh expects a 'by' that isn't used.   
         by <- 'year' 
         output.file <- outAll
         F.run.passage.enh(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE)
 
+      }
+      
+      #   ---- Create the ALL runs report -- WITH ENHANCED EFFICIENCY.  
+      if( theReportLabel == "R" ){
+        
+        #   ---- Run function run.passage over the four possible temporal periods.  
+        for(byj in 1:1){
+          if(byj == 1){by <- 'day'  } 
+          # else if(byj == 2){by <- 'week' } 
+          # else if(byj == 3){by <- 'month'} 
+          # else if(byj == 4){by <- 'year' }
+          
+          outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
+          output.file <- outAll
+          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,useEnhEff=TRUE)
+          
+          #   ---- If desired, remove some of the output.  
+          #theFiles <- dir(outFileStem)
+          #theFiles <- theFiles[grep("Late fall|Spring|Winter|Unassigned",theFiles)]
+          #file.remove(paste0(outFileStem,"/",theFiles))
+        }
       }
     }
   }
