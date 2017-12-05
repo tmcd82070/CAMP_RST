@@ -58,6 +58,9 @@ F.plot.eff.model <- function( df, file ){
   #   ---- Report filename string at this point.  Helps with checking.
   cat(paste0(file,"\n"))
   
+  #   ---- Identify which traps had which efficiency types. 
+  eff.type <- attr(df,"eff.type")
+  
   #   ---- Compute results from efficiency trials.  
   imputed <- df$imputed.eff == "Yes"
   pts <- !is.na(df$nReleased)
@@ -102,6 +105,11 @@ F.plot.eff.model <- function( df, file ){
   if(file.exists(paste0(file3,"_eff.png"))){file.remove(paste0(file3,"_eff.png"))}
   if(file.exists(paste0(file3,"_effTable.csv"))){file.remove(paste0(file3,"_effTable.csv"))}
   
+  #   ---- Identify the type of eff model used.
+  effTypedf <- data.frame(TrapPositionID=names(unlist(eff.type)),effType=unlist(eff.type))
+  effTypeVec <- effTypedf[match(df$trapPositionID,effTypedf$TrapPositionID),]$effType
+  df$enhEff <- ifelse(effTypeVec == 5,"Yes","No")
+    
   #   ---- Write out estimates.
   if( !is.na(file) & sum(grepl(paste(file3,"_effTable.csv"),dir(dirname(file)),fixed=TRUE)) == 0){
     out.pass.graphs.eff <- paste(file3, "_effTable.csv", sep="")
@@ -129,7 +137,7 @@ F.plot.eff.model <- function( df, file ){
     
     tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})
 
-    plot( range(df$batchDate,na.rm=T), range(eff,na.rm=T), type="n", xlab="Date", 
+    plot( range(df$batchDate,na.rm=T), range(c(eff,df$efficiency),na.rm=T), type="n", xlab="Date", 
           ylab="Efficiency proportion", xaxt="n" )
     lab.x.at <- pretty(df$batchDate)
     axis( side=1, at=lab.x.at, labels=format(lab.x.at, "%d%b%y"))

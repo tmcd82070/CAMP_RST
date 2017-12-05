@@ -554,6 +554,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
 
   attr(ans,"subsites") <- attr(obs.eff.df, "subsites")
   attr(ans,"site.name") <- attr(obs.eff.df, "site.name")
+  attr(ans,"eff.type") <- eff.type
 
   #   ---- Make a plot if called for.
   if( !is.na(plot.file) ) {
