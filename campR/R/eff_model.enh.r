@@ -137,9 +137,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   #   ---- Query for covariates.  This is a big function!
   buildingEnhEff <- TRUE     # Make this very simple for now.  
   if(buildingEnhEff == TRUE){
-    stuff <- getTogetherCovarData(obs.eff.df,min.date=min.date2,max.date=max.date2,traps)
+    stuff <- getTogetherCovarData(obs.eff.df,min.date=min.date2,max.date=max.date2,traps,useEnhEff=FALSE)
   } else {
-    stuff <- getTogetherCovarData(obs.eff.df,min.date,max.date,traps)
+    stuff <- getTogetherCovarData(obs.eff.df,min.date,max.date,traps,useEnhEff=FALSE)
   }
   
   #   ---- Unpack 'stuff' so that we have the dbCovar dataframes available for plotting below.
@@ -326,7 +326,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- TEMPORARY FILE SAVE.  
     holding <- paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/splineSummary_",site,"_",trap,".RData")
     #save(X_t,splineCoef,splineDays,splineBegD,splineEndD,file=holding)
-    save(splineCoef,splineDays,splineBegD,splineEndD,file=holding)
+    save(splineCoef,splineDays,splineBegD,splineEndD,fit,file=holding)
   
     
     
