@@ -315,12 +315,14 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
         #   ---- The e.X design matrix has columns in an order that was convenient in eff_model.r.  This 
         #   ---- order needs to be checked, to ensure alignment with the order in e.fit.  It is easier to
         #   ---- manipulate the column order in e.X (one matrix), than all the stuff in e.fit (a list).  
-        timeVar <- sort(colnames(e.X)[grepl("time",colnames(e.X),fixed=TRUE)])  
-        fit.Vars <- names(coef(e.fit))
-        notTimeVar <- fit.Vars[!(grepl("tmp.bs",fit.Vars,fixed=TRUE))]
-        notTimeVar <- notTimeVar[notTimeVar != "(Intercept)"]
-        thisOrder <- c("Intercept",timeVar,notTimeVar)
-        e.X <- e.X[,thisOrder]
+        if(ncol(e.X) > 1){
+          timeVar <- sort(colnames(e.X)[grepl("time",colnames(e.X),fixed=TRUE)])  
+          fit.Vars <- names(coef(e.fit))
+          notTimeVar <- fit.Vars[!(grepl("tmp.bs",fit.Vars,fixed=TRUE))]
+          notTimeVar <- notTimeVar[notTimeVar != "(Intercept)"]
+          thisOrder <- c("Intercept",timeVar,notTimeVar)
+          e.X <- e.X[,thisOrder]
+        }
       
         #   ---- This is a 2-vector of the first and last efficiency trials.
         e.ind <- eff.ind.inside[[ind]]  
