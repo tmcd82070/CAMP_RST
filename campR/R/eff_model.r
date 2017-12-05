@@ -316,7 +316,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       #   ---- Save X, and the dates at which we predict, for bootstrapping.
       all.X[[trap]] <- X     
-      all.dts[[trap]] <- sort(unique(splineDays)) #df$batchDate2[eff.ind.inside]  #df$batchDate[ind.inside]  translate to current year?????
+      all.dts[[trap]] <- df$batchDate[ind.inside]  # Can't use sort(unique(splineDays)) here because it has Feb 29th, by construction.  
       fits[[trap]] <- fit #B
       
       pred <- 1 / (1 + exp(-1*X %*% B))

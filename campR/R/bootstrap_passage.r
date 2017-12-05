@@ -254,7 +254,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
           #   ---- We have some gaps.
           
           #   ---- Estimate an overdispersion parameter.  
-          disp <- overDphi(fit=c.fit,family="poisson",type="pearson")
+          disp <- overDphi(model=c.fit,family="poisson",type="pearson")
 
           #   ---- Function vcov returns unscaled variance-covariance matrix, so scale by overdispersion.
           sig <- disp * vcov( c.fit )  
