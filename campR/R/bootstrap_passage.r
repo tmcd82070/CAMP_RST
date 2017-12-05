@@ -341,7 +341,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 
           #   ---- Variance matrix,
           #   ---- Check if less than eff.min.spline.samp.size.  
-          if( e.fit$df.residual == 0 ){
+          if( e.fit$df.residual == 0 | nrow(e.fit$data) < 10 ){
             disp <- 1
           } else {
             
@@ -404,19 +404,37 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 #             #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
 #             sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
             
-            X <- rep(1,length(eff.obs.data$nCaught))
-            p <- (sum(eff.obs.data$nCaught) + 1) / (sum(eff.obs.data$nReleased) + 1)
-            w <- eff.obs.data$nReleased*rep(p*(1 - p),length(X))
+            if(e.type == 5){
+              
+              #   ---- Do the bias adjustment based on the data that went into the enh eff estimation.  
+              X <- rep(1,length(e.X))
+              p <- (sum(e.fit$data$nCaught) + 1) / (sum(e.fit$data$nReleased) + 1)
+              w <- e.fit$data$nReleased*rep(p*(1 - p),length(X))
+              
+              diagonal <- matrix(rep(0,length(X)*length(X)),length(X),length(X))
+              for(i in 1:length(X)){
+                diagonal[i,i] <- w[i]
+              }
+              
+              #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
+              sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
+              rbeta <- rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
+
             
-            diagonal <- matrix(rep(0,length(X)*length(X)),length(X),length(X))
-            for(i in 1:length(X)){
-              diagonal[i,i] <- w[i]
+            } else {
+              X <- rep(1,length(eff.obs.data$nCaught))
+              p <- (sum(eff.obs.data$nCaught) + 1) / (sum(eff.obs.data$nReleased) + 1)
+              w <- eff.obs.data$nReleased*rep(p*(1 - p),length(X))
+              
+              diagonal <- matrix(rep(0,length(X)*length(X)),length(X),length(X))
+              for(i in 1:length(X)){
+                diagonal[i,i] <- w[i]
+              }
+              
+              #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
+              sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
+              rbeta <- rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
             }
-            
-            #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
-            sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
-            rbeta <- rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
-            
 #             #   ---- Bootstrap on the observed efficiency trials.
 #             bsDF <- lapply(1:100000, function(x) eff.obs.data[sample(seq(1:length(eff.obs.data$nReleased)),replace=TRUE),])
 #             bsp <- sapply(bsDF, function(x) (sum(x$nCaught) + 1) / (sum(x$nReleased) + 1))
@@ -471,8 +489,18 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
     #   ---- Matrices c.pred and e.pred are the same size, so just divide.
     test <- ifelse(grand.df$imputed.catch > 0 & grand.df$imputed.catch < 1,grand.df$totalEstimatedCatch - grand.df$imputedCatch,0)
     c.pred <- apply(c.pred,2,function(x) x + test)
-    c.pred <- c.pred / e.pred    # Re-use the c.pred matrix to save space
+    c.pred2 <- c.pred / e.pred    # Re-use the c.pred matrix to save space
 
+    
+    grand.df[as.Date(grand.df$batchDate) == "2013-04-12",]
+    
+    c.pred2[c(79,229,300),]
+    e.pred[c(79,229,300),]
+    
+    hist(apply(c.pred2[c(79,229,300),],2,mean))
+    
+    hist(c.pred2[c(300),])
+    mean(c.pred2[c(300),])
     #   ---- Now, average over traps
     #   ---- At this point, c.pred is a (n.batch.day*n.trap) X R matrix, with each cell containing the passage estimated
     #   ---- at a particular trap at the site for a particular batch day for a particular iteration of the bootstrap.
@@ -502,7 +530,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
       n <- F.summarize.passage( df, s.by )
       n$passage
     }
-    pass <- apply( c.pred, 2, f.sumize.pass, s.by=sum.by, bd=grand.df$batchDate)
+    pass <- apply( c.pred2, 2, f.sumize.pass, s.by=sum.by, bd=grand.df$batchDate)
     pass <- matrix( unlist(pass), n.len, R )
 
     #   ---- Compute bias corrected bootstrap CIs by applying 
