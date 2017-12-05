@@ -102,8 +102,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   names(obs.data) <- traps
   names(eff.type) <- traps
   
-  min.date <- attr(eff,"min.date")
-  max.date <- attr(eff,"max.date")
+  min.date <- attr(obs.eff.df,"min.date")
+  max.date <- attr(obs.eff.df,"max.date")
+  useEnhEff <- attr(obs.eff.df,"useEnhEff")
   
   #   ---- Decide if we're going to use enhanced efficiency.  
   if(useEnhEff == TRUE){

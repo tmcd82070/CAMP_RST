@@ -105,10 +105,10 @@ F.plot.eff.model <- function( df, file ){
   #   ---- Write out estimates.
   if( !is.na(file) & sum(grepl(paste(file3,"_effTable.csv"),dir(dirname(file)),fixed=TRUE)) == 0){
     out.pass.graphs.eff <- paste(file3, "_effTable.csv", sep="")
-    df2 <- df[!is.na(df$nReleased),]
+    #df2 <- df[!is.na(df$nReleased),]
     #sink(paste0(file3,'_effTable.csv'))
     #write.table( df2, file=paste0(file3,'_effTable.csv'), sep=",", append=FALSE, row.names=FALSE, col.names=TRUE)
-    write.csv( df2, row.names=FALSE, file=paste0(file3,'_effTable.csv'))
+    write.csv( df, row.names=FALSE, file=paste0(file3,'_effTable.csv'))
     #sink()
   }
   

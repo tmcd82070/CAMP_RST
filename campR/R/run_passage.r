@@ -78,7 +78,7 @@
 #' output.file <- "Feather"
 #' ci <- TRUE
 #' }
-F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE ){
+F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE, useEnhEff=TRUE ){
   
   #   site <- 12345
   #   taxon <- 161980
@@ -87,6 +87,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   #   by <- "week"
   #   output.file <- NA
   #   ci <- TRUE
+  #   useEnhEff <- TRUE
   
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
@@ -262,7 +263,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       #   ---- Set these attributes so they can be passed along.
       attr(catch.df.ls,"min.date") <- min.date
       attr(catch.df.ls,"max.date") <- max.date
-      
+      attr(catch.df.ls,"useEnhEff") <- useEnhEff
       #   ---- Compute passage
       if(by == 'year'){
         pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
