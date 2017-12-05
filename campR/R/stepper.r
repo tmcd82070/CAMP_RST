@@ -11,6 +11,7 @@ stepper <- function(df,varVec,min.date,max.date){
   time.zone <- get( "time.zone", envir=.GlobalEnv )
   
   df.new <- NULL
+  trap <- df$TrapPositionID[1]
  
   #   ---- Start the sequence of days.  
   earliestBatchDate <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone)
