@@ -4,7 +4,7 @@ overDphi <- function(model,family="binomial",type){
   # family <- "binomial"
   # type <- "pearson"
   
-  resids <- residuals(fit,type)
+  resids <- residuals(model,type)
 
   #   ---- For binomial overdispersion, there are not very many efficiency trials.
   #   ---- So, I do not want to toss the top 2.5% (or other) residuals in magintude, 
@@ -23,7 +23,6 @@ overDphi <- function(model,family="binomial",type){
     #   ---- We must cut down the over-dispersion parameter to avoid obvious
     #   ---- a-typical residuals.  My approach is to toss the largest and smallest
     #   ---- 20% of residuals, then compute overdispersion.
-    resids <- residuals(model, type)
     qrds <- quantile( resids, p=c(.2, .8))
     toss.ind <- (resids < qrds[1]) | (qrds[2] < resids)
     resids <- resids[!toss.ind]
