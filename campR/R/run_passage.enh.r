@@ -107,7 +107,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
   progbar <<- winProgressBar( "Production estimate for ALL runs", label="Fetching efficiency data" )
   
   #   ---- Fetch efficiency data
-  release.df <- F.get.release.data( site, taxon, min.date, max.date  )
+  #release.df <- F.get.release.data( site, taxon, min.date, max.date  )
 
   
   setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
@@ -276,7 +276,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
       
       #   ---- Compute passage
       if(by == 'year'){
-        pass <- F.est.passage.enh( catch.df.ls, release.df, "year", out.fn.root, ci )
+        pass <- F.est.passage.enh( catch.df.ls, release.df.enh, "year", out.fn.root, ci )
         #passby <- pass
       } #else if(by != 'year'){
         #pass <- F.est.passage.enh( catch.df.ls, release.df, "year", out.fn.root, ci )
