@@ -431,7 +431,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- present) and summarizes by 'summarize.by'.
   n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
                 catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside,
-                eff.and.fits$X.dates, eff.and.fits$obs.data, summarize.by, 100, ci )
+                eff.and.fits$X.dates, eff.and.fits$obs.data, eff.and.fits$eff.type, summarize.by, 100, ci )
   
   if(usepb){
     tmp <- getWinProgressBar(progbar)
