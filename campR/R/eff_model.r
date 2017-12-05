@@ -160,6 +160,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #splineCoef ...came from... fit$coefficients[grepl("tmp",names(fit$coefficients))]
       #splineBegD ...came from... bsplBegDt
       #splineEndD ...came from... bsplEndDt
+      #fit        ...came from... fit
       
       #   ---- Find the "season", which is between first and last OVERALL efficiency trials.  This is different
       #   ---- than "regular" eff models, where we define the "season" as first and last eff trials, as defined
@@ -315,7 +316,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #   ---- Save X, and the dates at which we predict, for bootstrapping.
       all.X[[trap]] <- X     
       all.dts[[trap]] <- sort(unique(splineDays)) #df$batchDate2[eff.ind.inside]  #df$batchDate[ind.inside]  translate to current year?????
-      fits[[trap]] <- B
+      fits[[trap]] <- fit #B
       
       pred <- 1 / (1 + exp(-1*X %*% B))
       #plot(allDates$batchDate,allDates$pred)
