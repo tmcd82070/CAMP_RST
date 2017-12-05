@@ -315,7 +315,8 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
         #   ---- The e.X design matrix has columns in an order that was convenient in eff_model.r.  This 
         #   ---- order needs to be checked, to ensure alignment with the order in e.fit.  It is easier to
         #   ---- manipulate the column order in e.X (one matrix), than all the stuff in e.fit (a list).  
-        if(ncol(e.X) > 1){
+        if(ncol(e.X) > 1 & e.type == 5){
+          cat(paste0("Sorting variables ",colnames(e.X),"for e.X in bootstrap.\n"))
           timeVar <- sort(colnames(e.X)[grepl("time",colnames(e.X),fixed=TRUE)])  
           fit.Vars <- names(coef(e.fit))
           notTimeVar <- fit.Vars[!(grepl("tmp.bs",fit.Vars,fixed=TRUE))]
@@ -491,16 +492,10 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
     c.pred <- apply(c.pred,2,function(x) x + test)
     c.pred2 <- c.pred / e.pred    # Re-use the c.pred matrix to save space
 
+    # grand.df[as.Date(grand.df$batchDate) == "2013-04-12",]
+    # c.pred2[c(79,229,300),]
+    # e.pred[c(79,229,300),]
     
-    grand.df[as.Date(grand.df$batchDate) == "2013-04-12",]
-    
-    c.pred2[c(79,229,300),]
-    e.pred[c(79,229,300),]
-    
-    hist(apply(c.pred2[c(79,229,300),],2,mean))
-    
-    hist(c.pred2[c(300),])
-    mean(c.pred2[c(300),])
     #   ---- Now, average over traps
     #   ---- At this point, c.pred is a (n.batch.day*n.trap) X R matrix, with each cell containing the passage estimated
     #   ---- at a particular trap at the site for a particular batch day for a particular iteration of the bootstrap.
