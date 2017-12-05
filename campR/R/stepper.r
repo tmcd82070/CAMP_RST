@@ -26,19 +26,22 @@ stepper <- function(df,varVec,min.date,max.date){
   df$batchDateNext <- as.POSIXct(strptime(df$batchDate[c(2:nrow(df),NA)],format="%Y-%m-%d"),format="%Y-%m-%d",tz=time.zone)
     
   #   ---- Put in a value that is one month after the last batchDate for batchDateNext.
-  df[nrow(df),]$batchDateNext <- max.date #df[nrow(df),]$batchDate + 30*24*60*60
+  df[nrow(df),]$batchDateNext <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone) 
     
   #   ---- Get rid of rows where batchDate = batchDateNext
   df <- df[df$batchDate != df$batchDateNext,]
     
   #   ---- Slide batchDateNext back by one day, so as to prevent duplication of batchDate in expansion. Daylight savings?
-  df$batchDateNext <- df$batchDateNext - 24*60*60
+  #df$batchDateNext <- df$batchDateNext - 24*60*60
     
   #   ---- Actually assign values for each "step."  
   df.new <- NULL
   for(i in 1:nrow(df)){
-    df.i <- data.frame(TrapPositionID=trap,
-                       batchDate=seq(df[i,"batchDate"],df[i,"batchDateNext"],by="1 DSTday"))
+    if(i < nrow(df)){
+      df.i <- data.frame(TrapPositionID=trap,batchDate=seq(df[i,"batchDate"],df[i,"batchDateNext"] - 24*60*60,by="1 DSTday"))
+    } else {   # Last of them all, so don't slide back a day.  Otherwise, we lose the last max.date. 
+      df.i <- data.frame(TrapPositionID=trap,batchDate=seq(df[i,"batchDate"],df[i,"batchDateNext"],by="1 DSTday"))
+    }
     for(j in 1:length(varVec)){
       df.i[,paste0(varVec[j],"Step")] <- ifelse(is.na(df[i,varVec[j]]) | is.nan(df[i,varVec[j]]),-99,df[i,varVec[j]])
     }
