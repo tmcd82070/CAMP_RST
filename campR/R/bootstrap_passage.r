@@ -29,6 +29,8 @@
 #'   must be estimated, for each trap.
 #' @param eff.X.obs.data A list containing the raw observed efficiency data used
 #'   to fit efficiency models and estimate bias-corrected efficiencies.
+#' @param eff.type A list containing the type of efficiency model utilized for 
+#'   each trap.  See \code{eff_model.r} for details.  
 #' @param sum.by A text string indicating the temporal unit over which daily 
 #'   estimated catch is to be summarized.  Can be one of \code{day}, 
 #'   \code{week}, \code{month}, \code{year}.
@@ -157,21 +159,22 @@
 #'   catch.bDates.miss,eff.fits,eff.X,eff.ind.inside,eff.X.dates,
 #'   sum.by,R,ci=T)
 #' }
-F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, eff.X.obs.data, sum.by, R, ci=T ){
+F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLens, catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates, eff.X.obs.data, eff.type, sum.by, R, ci=T ){
 
-#   grand.df <- grand.df
-#   catch.fits <- catch.and.fits$fits
-#   catch.Xmiss <- catch.and.fits$X.miss
-#   catch.gapLens <- catch.and.fits$gaps
-#   catch.bDates.miss <- catch.and.fits$bDates.miss
-#   eff.fits <- eff.and.fits$fits
-#   eff.X <- eff.and.fits$X
-#   eff.ind.inside <- eff.and.fits$ind.inside
-#   eff.X.dates <- eff.and.fits$X.dates
-#   eff.X.obs.data <- eff.and.fits$obs.data
-#   sum.by <- summarize.by
-#   R <- 100
-#   ci <- T
+  # grand.df <- grand.df
+  # catch.fits <- catch.and.fits$fits
+  # catch.Xmiss <- catch.and.fits$X.miss
+  # catch.gapLens <- catch.and.fits$gaps
+  # catch.bDates.miss <- catch.and.fits$bDates.miss
+  # eff.fits <- eff.and.fits$fits
+  # eff.X <- eff.and.fits$X
+  # eff.ind.inside <- eff.and.fits$ind.inside
+  # eff.X.dates <- eff.and.fits$X.dates
+  # eff.X.obs.data <- eff.and.fits$obs.data
+  # eff.type <- eff.and.fits$eff.type
+  # sum.by <- summarize.by
+  # R <- 100
+  # ci <- T
 
 
   #   ---- Set the confidence level of the intervals.
@@ -249,25 +252,9 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
         if( all(!is.na(bd.miss)) ){
           
           #   ---- We have some gaps.
-
-          #   ---- Variance matrix.
-          #   ---- We must cut down the over-dispersion parameter to avoid obvious
-          #   ---- a-typical residuals.  My approach is to toss the largest and smallest 
-          #   ---- 20% of residuals, then compute overdispersion.
-          resids <- residuals(c.fit, type="pearson")
-          qrds <- quantile( resids, p=c(.2, .8))
-          toss.ind <- (resids < qrds[1]) | (qrds[2] < resids)
-          resids <- resids[!toss.ind]
-          disp <- sum( resids*resids ) / (c.fit$df.residual - sum(toss.ind))
-          if( disp < 1.0 ){
-            disp <- 1.0
-          }
-
-          #   ---- Visually examine the residuals.  
-          # plot(predict(c.fit,type="response"), residuals(c.fit, type="pearson"))
-
-          #   ---- Uncomment the following line to include all residuals in overdispersion.
-          # disp <- sum(residuals(c.fit, type="pearson")^2) / c.fit$df.residual
+          
+          #   ---- Estimate an overdispersion parameter.  
+          disp <- overDphi(fit=c.fit,family="poisson",type="pearson")
 
           #   ---- Function vcov returns unscaled variance-covariance matrix, so scale by overdispersion.
           sig <- disp * vcov( c.fit )  
@@ -323,6 +310,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
         e.fit <- eff.fits[[ind]]
         e.X <- eff.X[[ind]]
         eff.obs.data <- eff.X.obs.data[[ind]]
+        e.type <- eff.type[[ind]]
             
         #   ---- This is a 2-vector of the first and last efficiency trials.
         e.ind <- eff.ind.inside[[ind]]  
@@ -334,8 +322,8 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
         #   ---- line up with catches because catch seasons vary.
         e.dts <- eff.X.dates[[ind]] 
 
-        #   ---- Check if there are no efficiency trials.  
-        if( !is.list(e.fit) | length(e.fit) == 0 ){
+        #   ---- Check if there are no efficiency trials.  Not sure what this is enh eff framework.  
+        if( (!is.list(e.fit) & e.type != 5) | length(e.fit) == 0 | (e.type == 5 & length(e.fit) == 0) ){
           e.pred <- matrix( NA, nrow(c.pred), ncol(c.pred) )
         } else {
 
@@ -344,22 +332,10 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
           if( e.fit$df.residual == 0 ){
             disp <- 1
           } else {
-            resids <- residuals(e.fit, type="pearson")
+            
+            #   ---- Estimate an overdispersion parameter. 
+            disp <- overDphi(model=e.fit,family="binomial",type="pearson")
 
-            # qrds <- quantile( resids, p=c(.025, .975))
-            # toss.ind <- (resids < qrds[1]) | (qrds[2] < resids)
-
-            #   ---- For binomial overdispersion, there are not very many efficiency trials.
-            #   ---- So, I do not want to toss the top 2.5% (or other) residuals in magintude, 
-            #   ---- like I did for the catches.  However, we need to ensure that there are 
-            #   ---- not some very very large residuals.  Thus, any greater than a cut off 
-            #   ---- will be eliminated.
-            toss.ind <- (abs(resids) > 8)
-            resids <- resids[!toss.ind]
-            disp <- sum( resids*resids ) / (e.fit$df.residual - sum(toss.ind))
-            if( disp < 1.0 ){
-              disp <- 1.0
-            }
           }
 
           cat(paste("...Binomial over-dispersion in efficiency model for trap ", as.character(round(as.numeric(trapID),0)), " = ", disp, "\n"))
