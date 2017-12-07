@@ -1,3 +1,39 @@
+#' @export
+#' 
+#' @title overDphi
+#'   
+#' @description For a set of covariates for which estimates have been obtained
+#'   on non-continguous dates, expand recorded data values to fill in all dates,
+#'   so as to create a step-like function.
+#'   
+#' @param model A \code{glm} object resulting from a call to function
+#'   \code{glm}.  Typically either a catch Poisson model or efficiency binomial
+#'   model.
+#'   
+#' @param family The family of exponential distributions.  Currently allows
+#'   either of \code{family="binomial"} or \code{family="poisson"}.
+#'   
+#' @param type The type of residual to calculate.  Currently allows only
+#'   \code{"pearson"}.
+#'   
+#' @return An estimate of the overdispersion \eqn{\phi} statistic from the
+#'   fitting of either a \code{family="binomial"} or \code{family="poisson"}
+#'   generlized linear model.
+#'   
+#' @details The \code{overDphi} function excludes Pearson residuals larger in
+#'   magnitude of 8 in the case of binomial fits.  In the case of Poisson fits,
+#'   only the residuals falling within the 20% and 80% percentiles are retained.
+#'   
+#'   Estimates of the overdispersion less than one are set to one.  
+#'   
+#' @author WEST Inc.
+#'   
+#' @examples
+#' \dontrun{
+#' disp <- overDphi(model=fit,
+#'                  family="binomial",
+#'                  type="pearson")
+#' }
 overDphi <- function(model,family="binomial",type){
   
   # model <- fit
