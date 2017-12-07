@@ -1,3 +1,46 @@
+#' @export
+#' 
+#' @title stepper
+#'   
+#' @description For a set of covariates for which estimates have been obtained
+#'   on non-continguous dates, expand recorded data values to fill in all dates,
+#'   so as to create a step-like function.
+#'   
+#' @param df A data frame containing variables recorded via non-continguous
+#'   \code{batchDate}s.  Argument \code{df} should include \code{"batchDate"}
+#'   and \code{"TrapPositionID"{} in addition to the variables for which
+#'   step-expansion is required.
+#'   
+#' @param varVec A string vector containing the names of variables for which
+#'   step-expansion is required.  Typically set to
+#'   \code{c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")} for most
+#'   CAMP applications.
+#'   
+#' @param min.date The start date for data to include. This is a text string in 
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
+#' @param max.date The end date for data to include.  Same format as 
+#'   \code{min.date}.
+#'   
+#' @return A dataframe with one row for all unique \code{batchDates} included 
+#'   within \code{min.date} and \code{max.date}, inclusive.  All variables, as 
+#'   provided via \code{varVec}, have a non-\code{NA} value.
+#'   
+#' @details The \code{stepper} function is usually only called within
+#'   \code{eff_model} when applying previously obtained enhanced efficiency
+#'   model results.
+#'   
+#' @seealso \code{eff_model}
+#'   
+#' @author WEST Inc.
+#'   
+#' @examples
+#' \dontrun{
+#' df <- stepper(df=df,
+#'               varVec=c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"),
+#'               min.date=min.date,
+#'               max.date=max.date)
+#' }
 stepper <- function(df,varVec,min.date,max.date){
   
   # df <- tmp.df[,c("batchDate","TrapPositionID","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")]
