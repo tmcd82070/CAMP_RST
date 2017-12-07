@@ -1,5 +1,59 @@
-
-
+#' @export
+#' 
+#' @title buildAstroStats
+#'   
+#' @description Given a particular trap sequence, calculate the proportion of
+#'   time spent fishing during nighttime and while the moon was up.
+#' 
+#' @param release.visit A data frame containing release data obtained from the
+#'   release-data SQL sequence.
+#'   
+#' @param visit.df A data frame containing visits obtained from the catch-data
+#'   SQL sequence.
+#'   
+#' @return A dataframe with one row for all unique \code{batchDates} included 
+#'   within \code{min.date} and \code{max.date}, inclusive.  All variables, as 
+#'   provided via \code{varVec}, have a non-\code{NA} value.
+#'   
+#' @details The \code{buildAstronStats} function first queries the CAMP database
+#'   for all relevant visits via the \code{Visits} table, as well as the 
+#'   astronomical sun and moon rise and set times, contained within table 
+#'   \code{Dates}.  The "Not Fishing" data are also obtained, via a query to 
+#'   table \code{TempSumUnmarkedByTrap_Run_Final} in the underlying CAMP 
+#'   \code{mdb}.  Because of this, the catch SQL sequence must be run prior to 
+#'   the same of the efficiency.
+#'   
+#'   The function emulates the calculation of \code{SampleMinutes} performed by 
+#'   the catch SQL sequence.  This is done in order to calculate denominators 
+#'   for calculation of the proportion of time spent fishing at night and while 
+#'   the moon is up.  The \code{SampleMinutes} field from 
+#'   \code{TempSumUnmarkedByTrap_Run_Final} was not utilized because the 
+#'   astronomical metrics need to calculate fishing with respect to the included
+#'   fishing instances in the calculation of efficiency.  These include fishing 
+#'   instances regardless of the value of the \code{includeCatchID} field.  The 
+#'   value of \code{SampleMinutes} in the \code{TempSumUnmarkedByTrap_Run_Final}
+#'   calculated for catch estimation excludes bad fishing, as identified via the
+#'   \code{includecatchID} field.  Therefore, re-estimation of 
+#'   \code{SampleMinutes}, based on efficiency concerns, must be performed. 
+#'   These \code{SampleMinutes} are called \code{JasonSampleMinutes}, so as to 
+#'   differentiate. Values of this variable equals \code{-99} for the first 
+#'   visit of a trapping sequence, and \code{-88} in the case of a time frame 
+#'   greater than the gap in fishing length. Currently, the fishing-gap length 
+#'   is set via global variable \code{fishingGapMinutes}, and equals 
+#'   \code{10080} minutes.
+#'   
+#'   Calculation of astronomical proportions utilized \code{campR} functions 
+#'   \code{makeSkinnyTimes} and \code{getTimeProp}.
+#'   
+#' @seealso  \code{makeSkinnyTimes}, \code{getTimeProp}
+#'   
+#' @author WEST Inc.
+#'   
+#' @examples
+#' \dontrun{
+#' df <- buildAstroStats(release.visit=release.visit,
+#'                       visit.df=visit.df)
+#' }
 buildAstroStats <- function(release.visit,visit.df){
   
   # release.visit <- release.visit
@@ -172,11 +226,7 @@ buildAstroStats <- function(release.visit,visit.df){
   # 
   # test <- thr[thr$trapPositionID == "57001",]
   
-  
-  
-  
-  
-  forEffPlots <<- tmp[,c("trapVisitID","trapPositionID","StartTime","EndTime","wmForkLength","nForkLength","nightProp","moonProp")]
+  forEffPlots <- tmp[,c("trapVisitID","trapPositionID","StartTime","EndTime","wmForkLength","nForkLength","nightProp","moonProp")]
   #forEffPlots <- forEffPlots[order(forEffPlots$trapPositionID,forEffPlots$EndTime),]
   
   #plot(forEffPlots$EndTime,forEffPlots$nightProp,col=c("red","orange","green","blue","black")[as.factor(forEffPlots$trapPositionID)],pch=19)
