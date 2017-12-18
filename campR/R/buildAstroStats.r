@@ -74,8 +74,8 @@ buildAstroStats <- function(release.visit,visit.df){
   # max.date.eff <- max(release.visit$ReleaseDate) + 30*24*60*60  # 30-day buffer after
   # min.date.eff <- min(release.visit$ReleaseDate) - 30*24*60*60  # 30-day buffer before
   
-  max.date.eff <- as.POSIXct(max.date,format="%Y-%m-%d",tz="UTC") + 30*24*60*60
-  min.date.eff <- as.POSIXct(min.date,format="%Y-%m-%d",tz="UTC") - 30*24*60*60
+  max.date.eff <- as.POSIXct(max.date2,format="%Y-%m-%d",tz="UTC") + 30*24*60*60
+  min.date.eff <- as.POSIXct(min.date2,format="%Y-%m-%d",tz="UTC") - 30*24*60*60
   
   #   ---- Get dates information for moon and sun info. 
   tblDates <- sqlQuery(ch,paste0("SELECT uniqueDate,
