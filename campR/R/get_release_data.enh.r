@@ -202,6 +202,7 @@ F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
   #   ---- Store values of some header info as attribute.
   attr(ans, "taxonID" ) <- taxon
   attr(ans, "siteID" ) <- site
+  attr(ans, "forEffPlots" ) <- forEffPlots
 
   ans
   #plot(tmp$sunProp[!is.na(tmp$sunProp)],tmp$moonProp[!is.na(tmp$moonProp)])

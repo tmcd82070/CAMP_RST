@@ -1,3 +1,66 @@
+#' @export
+#' 
+#' @title backEnhFit
+#'   
+#' @description For a given set of covariates, fit a genearlized additive model
+#'   via a backwards-selection paradigm, allowing for both selection of
+#'   confounding covariates, as well as variable temporal B-splines.
+#'   
+#' @param tmp.df
+#' 
+#' @param df
+#' 
+#' @param initialVars
+#' 
+#' @param possibleVars
+#' 
+#' @param m.i
+#' 
+#' @param eff.ind.inside
+#' 
+#' @param max.df.spline
+#' 
+#' @param eff.inside.dates
+#' 
+#' @param trap
+#' 
+#' @param model.info
+#' 
+#' @param fits
+#' 
+#' @param plot.file
+#' 
+#' @param option
+#' 
+#' @param bsplBegDt
+#' 
+#' @param bsplEndDt
+#' 
+#'   
+#' @return A dataframe with one row for all unique \code{batchDates} included 
+#'   within \code{min.date} and \code{max.date}, inclusive.  All variables, as 
+#'   provided via \code{varVec}, have a non-\code{NA} value.
+#'   
+#' @details The \code{stepper} function is usually only called within
+#'   \code{eff_model} when applying previously obtained enhanced efficiency
+#'   model results.
+#'   
+#' @seealso \code{eff_model}
+#'   
+#' @author WEST Inc.
+#'   
+#' @examples
+#' \dontrun{
+#' df <- stepper(df=df,
+#'               varVec=c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"),
+#'               min.date=min.date,
+#'               max.date=max.date)
+#' }
+
+
+
+
+
 
 backEnhFit <- function(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max.df.spline,eff.inside.dates,trap,model.info,fits,plot.file,option,bsplBegDt,bsplEndDt){
   

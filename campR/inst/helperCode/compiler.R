@@ -4,10 +4,11 @@
 dir <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding"
 files <- dir(dir,pattern=".RData")
 
+varFiles <- files[grepl("var",files,fixed=FALSE)]
 
 allStreams <- NULL
-for(i in 1:length(files)){
-  load(paste0(dir,"/",files[i]))
+for(i in 1:length(varFiles)){
+  load(paste0(dir,"/",varFiles[i]))
   allStreams <- rbind(allStreams,varSummary)
 }
 
@@ -17,7 +18,7 @@ if(is.factor(allStreams$subsiteID)){
 
 #   ---- (Put betas in the campr package.)
 betas <- allStreams[allStreams$Stage == "Final Model Betas",]
-devtools::use_data(betas)
+devtools::use_data(betas,overwrite=TRUE)
 
 
 

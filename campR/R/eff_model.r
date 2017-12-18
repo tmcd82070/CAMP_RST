@@ -174,7 +174,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       end.dt$year <- yr                        # Latest date with an efficiency trial truth paradigm
       
       #   ---- Check to make sure we grabbed the correct year yr.  
-      yearUp0 <- 0
+      yearUp1 <- 0
       if( !((strt.dt <= df[!is.na(df$nReleased),]$batchDate[1]) & (df[!is.na(df$nReleased),]$batchDate[1] <= end.dt)) ){
         strt.dt$year <- strt.dt$year + 1
         end.dt$year <- end.dt$year + 1

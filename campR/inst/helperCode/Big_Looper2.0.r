@@ -16,6 +16,7 @@ reportRun <- c("A","B","C","D","E","F","G","H","I","J")
 reportRun <- c("K","L","M","N","O","P")
 reportRun <- c("B","R")
 reportRun <- c("Q")
+reportRun <- c("R")
 
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
@@ -41,6 +42,9 @@ require(campR)
 detach("package:EnvCovDBpostgres", unload=TRUE)
 require(EnvCovDBpostgres)
 
+require(splines)
+require(mvtnorm)
+
 #   ---- Read in the desired Excel scheme.  This is kept in the helperCode folder of the inst folder
 #   ---- in the campR package development folder in CAMP_RST20160601.  
 theExcel <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/",excelName,".csv"))
@@ -51,7 +55,7 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 #theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
 
 theExcel <- theExcel[c(13,15,24,26,32),]
-#theExcel <- theExcel[c(1),]
+#theExcel <- theExcel[c(1,2,3,4),]
 
 
 #   ---- Tell the Big Looper where to put all the output.  
@@ -127,9 +131,9 @@ source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/ca
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkMissingCovars.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/backEnhFit.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/buildAstroStats.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/stepper.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/overDphi.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/buildAstroStats.r")       # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/stepper.r")               # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/overDphi.r")              # roxygenized
 
 #   ---- I have now updated a few of the core functions in the package.  Read these in explicitly, so they are used in 
 #   ---- lieu of the package version. 
@@ -137,10 +141,10 @@ source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/ca
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/get_release_data.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/bootstrap_passage.r")
-
-
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
 
 #   ---- Set all the global variables away from the default that you want.  
 
@@ -164,7 +168,7 @@ source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/ca
 # passageRounder                  <<- 4
 # eff.min.spline.samp.size        <<- 10
 # unassd.sig.digit                <<- 1
-i <- j <- k <- 1
+#i <- j <- k <- 1
 #   ---- Given the 'theExcel', loop over the streams.  
 for(i in 1:nStreamNames){
   
