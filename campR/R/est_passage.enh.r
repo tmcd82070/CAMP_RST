@@ -99,6 +99,7 @@ F.est.passage.enh <- function( catch.df, release.df, summarize.by, file.root, ci
   #   ---- max.date entered as attribute variables.  
   min.date <- attr(catch.df,"min.date")
   max.date <- attr(catch.df,"max.date")
+  forEffPlots <- attr(catch.df,"forEffPlots")
   
   #   ---- Get global variable values.
   max.ok.gap <- get("max.ok.gap",envir=.GlobalEnv)
@@ -297,6 +298,7 @@ F.est.passage.enh <- function( catch.df, release.df, summarize.by, file.root, ci
   # efficiency <- eff.and.fits$eff
 
   #   ---- Estimate efficiency for every day of all seasons over all time.
+  attr(release.df.enh,"forEffPlots") <- forEffPlots
   eff.and.fits.enh <- F.est.efficiency.enh( release.df.enh, bd.enh, df.spline=4, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)

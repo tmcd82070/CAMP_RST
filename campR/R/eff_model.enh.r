@@ -92,8 +92,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   # plot.file <- plot.file
 
   option <- 2
-  
-  
+  forEffPlots <- attr(obs.eff.df,"forEffPlots")
   
   #   ---- Read in table of fishing seasons.  These are derived from taking the minimum 
   #   ---- start period of fishing, based on month and date, for all fishing seasons 

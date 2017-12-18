@@ -150,6 +150,8 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
 
   release.df.enh <<- F.get.release.data.enh( site, taxon, min.date2, max.date2, visit.df)
   
+  forEffPlots <- attr(release.df.enh,"forEffPlots")
+  
   if( nrow(release.df.enh) == 0 ){
     stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
   }
@@ -273,6 +275,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
       #   ---- Set these attributes so they can be passed along.
       attr(catch.df.ls,"min.date") <- min.date
       attr(catch.df.ls,"max.date") <- max.date
+      attr(catch.df.ls,"forEffPlots") <- forEffPlots
       
       #   ---- Compute passage
       if(by == 'year'){
