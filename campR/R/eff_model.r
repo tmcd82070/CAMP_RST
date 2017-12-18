@@ -173,6 +173,14 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
       end.dt$year <- yr                        # Latest date with an efficiency trial truth paradigm
       
+      #   ---- Check to make sure we grabbed the correct year yr.  
+      yearUp0 <- 0
+      if( !((strt.dt <= df[!is.na(df$nReleased),]$batchDate[1]) & (df[!is.na(df$nReleased),]$batchDate[1] <= end.dt)) ){
+        strt.dt$year <- strt.dt$year + 1
+        end.dt$year <- end.dt$year + 1
+        yearUp1 <- 1
+      } 
+      
       ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
       inside.dates <- c(strt.dt, end.dt)
       all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
@@ -278,7 +286,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     
       #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
       bd2.lt <- as.POSIXlt(c0$batchDate2)
-      c0$batchDate <- ISOdate(substr(min.date,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+      if(yearUp1 == 1){
+        c0$batchDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+      } else {
+        c0$batchDate <- ISOdate(substr(min.date,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+      }
       
       #   ---- Allow for all days in the spline enh eff trial period. 
       allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
