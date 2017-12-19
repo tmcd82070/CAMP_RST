@@ -179,19 +179,49 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       strt.dt <- as.POSIXlt(min(splineDays))   # Earliest date with an efficiency trial 1960 paradigm
       end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
       
-      #   ---- If the month and day of min.date is before the same of strt.dt, we push strt.dt to one minus yr.m.
-      if(format(min.date.p,"%j") < format(strt.dt,"%j")){
-        strt.dt$year <- yr.m        # Earliest date with an efficiency trial truth paradigm
-      } else {
-        strt.dt$year <- yr.m + 1    # Earliest date with an efficiency trial truth paradigm
+      
+      
+      #   ---- Re-map 1959-1960 data to the correct year we care about.  
+      #   ---- Spline data all in 1960.  
+      if(strt.dt$year == 60 & end.dt$year == 60){
+        if(yr.m == yr.M){
+          strt.dt$year <- yr.m
+          end.dt$year <- yr.M
+        } else if(yr.m != yr.M){
+          strt.dt$year <- yr.m
+          end.dt$year <- yr.M
+        }
+      }
+    
+      #   ---- Spline data start in 1959, but end in 1960.
+      if(strt.dt$year == 59 & end.dt$year == 60){
+        if(yr.m == yr.M){
+          strt.dt$year <- yr.m + 1      # Make up the missing 1 year, because starting in 1959.
+          end.dt$year <- yr.M
+        } else if(yr.m != yr.M){
+          strt.dt$year <- yr.m          # Do not make up the missing year, because we don't need to.
+          end.dt$year <- yr.M
+        }
       }
       
-      #   ---- If the month and day of max.date is after the same of end.dt, we push strt.dt to yr.M.
-      if(format(max.date.p,"%j") > format(end.dt,"%j")){
-        end.dt$year <- yr.M         # Latest date with an efficiency trial truth paradigm 
-      } else {
-        end.dt$year <- yr.M - 1     # Latest date with an efficiency trial truth paradigm -- minus 1 correct?
-      }
+      #   ---- By design, can only have the two spline 59/60 paradigms coded above.  
+      
+      
+      #   ---- Older attempts to get the re-map correct.  Delete eventually.  
+      
+      # #   ---- If the month and day of min.date is before the same of strt.dt, we push strt.dt to one minus yr.m.
+      # if(format(min.date.p,"%j") < format(strt.dt,"%j")){
+      #   strt.dt$year <- yr.m        # Earliest date with an efficiency trial truth paradigm
+      # } else {
+      #   strt.dt$year <- yr.m + 1    # Earliest date with an efficiency trial truth paradigm
+      # }
+      # 
+      # #   ---- If the month and day of max.date is after the same of end.dt, we push strt.dt to yr.M.
+      # if(format(max.date.p,"%j") > format(end.dt,"%j")){
+      #   end.dt$year <- yr.M         # Latest date with an efficiency trial truth paradigm 
+      # } else {
+      #   end.dt$year <- yr.M - 1     # Latest date with an efficiency trial truth paradigm -- minus 1 correct?
+      # }
       
       #   ---- Check to make sure we grabbed the correct year yr.  Still needed after two ifs above?  
       # yearUp1 <- 0
