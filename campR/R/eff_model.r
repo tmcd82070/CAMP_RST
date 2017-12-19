@@ -148,6 +148,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     
     #   ---- Create a means to identify traps for which we end up lacking data.  
     doOldEff <- rep(FALSE,length(traps))
+    names(doOldEff) <- traps
     
     #   ---- Run over individual traps.
     for(trap in traps){
@@ -187,9 +188,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       #   ---- If the month and day of max.date is after the same of end.dt, we push strt.dt to yr.M.
       if(format(max.date.p,"%j") > format(end.dt,"%j")){
-        end.dt$year <- yr.M + 1     # Latest date with an efficiency trial truth paradigm  --- maybe a minus on the other condition?
+        end.dt$year <- yr.M         # Latest date with an efficiency trial truth paradigm 
       } else {
-        end.dt$year <- yr.M         # Latest date with an efficiency trial truth paradigm
+        end.dt$year <- yr.M - 1     # Latest date with an efficiency trial truth paradigm -- minus 1 correct?
       }
       
       #   ---- Check to make sure we grabbed the correct year yr.  Still needed after two ifs above?  
@@ -245,173 +246,180 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       df <- checkCovarValidity$df
       doEnhEff <- checkCovarValidity$doEnhEff
       
-      #   ---- I have identified variables I care about.  Get them together, for all batchDates.
-      covarC <- c("discharge_cfs","waterDepth_cm","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","lightPenetration_ntu")#,"dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
-      covarE <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")
-    
-      if(sum(grepl("tmp",names(splineCoef))) > 0){
-      
-        #   ---- Build the basis matrix.  This does includes the intercept.  
-        N <- nrow(bs(splineDays, df=length(splineCoef)))
-        tB <- c(covarI,splineCoef)
-        timeX <- cbind(rep(1,N),bs( splineDays, df=length(splineCoef))) 
-        timeDF <- data.frame(timeX=timeX,batchDate2=splineDays)
-        names(timeDF)[names(timeDF) == "timeX.V1"] <- "Intercept"
-        c0 <- timeDF[!duplicated(timeDF$batchDate2),]
-        
+      #   ---- If doEnhEff == FALSE, I exit the loop for this trap.  I'll run regular eff below.
+      if(doEnhEff == FALSE){
+        doOldEff[names(doOldEff) == trap] <- TRUE
       } else {
-        
-        #   ---- If we're here, the temporal spline was fit as a simple intercept.  We still 
-        #   ---- need to be sure we grab the 1960 batchDate2 dates, so do that here. 
-        tB <- c(covarI)
-        timeDF <- data.frame(Intercept=rep(1,length(splineDays)),batchDate2=splineDays)
-        c0 <- timeDF[!duplicated(timeDF$batchDate2),]
-      }
-    
-      #   ---- Get the environmental covariate data.  
-      if(sum(c("temp_c","flow_cfs") %in% names(covarB)) > 0){
-        c1 <- df[,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
-        c1 <- c1[,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
-        
-        #   ---- The times are off, probably because c1 originates from obs.eff.df, which has been used with dates recorded
-        #   ---- in the CAMP mdb.  These dates don't record time zones, so POSIX gets tricky.  
-        c1$batchDate <-  as.POSIXct(strptime(c1$batchDate,format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
-      } else {
-        c1 <- NULL
-      }
-      
-      #   ---- Get the CAMP environmental covariate data.  
-      if(sum(c("waterDepth_cm","turbidity_ntu","waterVel_fts","waterTemp_C") %in% names(covarB)[names(covarB) %in% covarC]) > 0){
-        c2 <- df[,c("batchDate",names(covarB)[names(covarB) %in% covarC])]
-      } else {
-        c2 <- NULL
-      }
-         
-      #   ---- Get the percent-Q covariate data.
-      if(sum(c("percQ_") %in% names(covarB)) > 0){
-        #do stuff
-        #c3 <- thedf
-      } else {
-        c3 <- NULL
-      }
-      
-      #   ---- Get the e-trial data.  
-      if(sum(c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength") %in% names(covarB)) > 0){
-        
-        #   ---- Variable batchDate doesn't include all dates, since releases average over days.  Fill in the missing 
-        #   ---- dates.  This creates a step function ish for meanNightProp, meanMoonProp, and meanForkLength.  
-        c4 <- stepper(tmp.df[,c("batchDate","TrapPositionID","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")],
-                      c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"),
-                      min.date,
-                      max.date)
-        
-        #   ---- Function stepper designed to run over non-unique TrapPositionIDs.  Get rid of this variable. 
-        c4$TrapPositionID <- NULL
-        
-        #   ---- I like that the stepper function renames variables with a "Step" suffix, but that is not useful here.
-        #   ---- So, rename those variables to get rid of that suffix.  
-        names(c4) <- sapply(names(c4),function(x) gsub("Step","",x))
-        c4 <- c4[,c("batchDate",names(covarB)[names(covarB) %in% c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")])]
-      } else {
-        c4 <- NULL
-      } 
-    
-      #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
-      bd2.lt <- as.POSIXlt(c0$batchDate2)
-      if(yearUp1 == 1){
-        c0$batchDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-      } else {
-        c0$batchDate <- ISOdate(substr(min.date,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-      }
-      
-      #   ---- Allow for all days in the spline enh eff trial period. 
-      allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
-                                           as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
-      # allDates$EndTime <- NULL
-      # allDates <- data.frame(batchDate=unique(allDates$batchDate))
-      
-      #   ---- The documentation indicates that allDates$batchDate should have tz="UTC", because I set it 
-      #   ---- in the from of the seq call.  I suspect that my then placing it in a data.frame loses the 
-      #   ---- tz specification, which is forcing it as "PDT".  Force it to "UTC"...again.
-      allDates$batchDate <- as.POSIXct(allDates$batchDate,format="%Y-%m-%d",tz=time.zone)
-      
-      #   ---- We use allDates as the backbone for bringing in all the different pieces. 
-                          allDates <- merge(allDates,c0   ,by=c("batchDate"),all.x=TRUE)
-      if(!is.null(c1   )) allDates <- merge(allDates,c1   ,by=c("batchDate"),all.x=TRUE)
-      if(!is.null(c2   )) allDates <- merge(allDates,c2   ,by=c("batchDate"),all.x=TRUE)
-      if(!is.null(c3   )) allDates <- merge(allDates,c3   ,by=c("batchDate"),all.x=TRUE)
-      if(!is.null(c4   )) allDates <- merge(allDates,c4   ,by=c("batchDate"),all.x=TRUE)                   
-                          
-      #   ---- We used the enhanced efficiency dates batchDate2 to drive this.  If, in the result of 
-      #   ---- allDates here, batchDate2 is NA, this means the user put in a set of dates in the 
-      #   ---- Platform that span outside the real range of e-trials encapsulated by batchDate2. 
-      #   ---- Put in a boring intercept estimate for these, so we report something.  
-      allDates[is.na(allDates$batchDate2),]$Intercept <- 1
-      
-      #   ---- If we're outside the splineDays for this trap (strt.dt and end.dt), we just use the
-      #   ---- intercept estimate.  We don't know what happens outside the enh eff temporal range.
-      allDates$inSplineDays <- 0
-      allDates[(allDates$batchDate) < strt.dt | (allDates$batchDate > end.dt),names(allDates)[!(names(allDates) %in% c("batchDate","batchDate2","Intercept"))]  ] <- 0
-      allDates[(allDates$batchDate) >= strt.dt & (allDates$batchDate <= end.dt),]$inSplineDays <- 1                  
 
-      #   ---- MAKE THE EFF ESTIMATE.  Don't forget that tB includes the intercept already.  
-      X <- as.matrix(allDates[allDates$inSplineDays == 1,names(allDates)[!(names(allDates) %in% c("batchDate","batchDate2","inSplineDays"))]],ncol=(1 + length(splineCoef) + length(covarB)))
-      B <- as.matrix(unlist(c(tB,covarB[colnames(X)[colnames(X) %in% names(covarB)]])),ncol=1)  # <--- Make sure B in same order as cols in X.
+        #   ---- We good to go.  
       
-      #   ---- Save X, and the dates at which we predict, for bootstrapping.
-      all.X[[trap]] <- X     
-      all.dts[[trap]] <- df$batchDate[ind.inside]  # Can't use sort(unique(splineDays)) here because it has Feb 29th, by construction.  
-      fits[[trap]] <- fit #B
+        #   ---- I have identified variables I care about.  Get them together, for all batchDates.
+        covarC <- c("discharge_cfs","waterDepth_cm","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","lightPenetration_ntu")#,"dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
+        covarE <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")
       
-      pred <- 1 / (1 + exp(-1*X %*% B))
-      #plot(allDates$batchDate,allDates$pred)
-
-      #   ---- Add in predicted values for enh eff spline days.  
-      df$efficiency[ind.inside] <- pred
+        if(sum(grepl("tmp",names(splineCoef))) > 0){
+        
+          #   ---- Build the basis matrix.  This does includes the intercept.  
+          N <- nrow(bs(splineDays, df=length(splineCoef)))
+          tB <- c(covarI,splineCoef)
+          timeX <- cbind(rep(1,N),bs( splineDays, df=length(splineCoef))) 
+          timeDF <- data.frame(timeX=timeX,batchDate2=splineDays)
+          names(timeDF)[names(timeDF) == "timeX.V1"] <- "Intercept"
+          c0 <- timeDF[!duplicated(timeDF$batchDate2),]
+          
+        } else {
+          
+          #   ---- If we're here, the temporal spline was fit as a simple intercept.  We still 
+          #   ---- need to be sure we grab the 1960 batchDate2 dates, so do that here. 
+          tB <- c(covarI)
+          timeDF <- data.frame(Intercept=rep(1,length(splineDays)),batchDate2=splineDays)
+          c0 <- timeDF[!duplicated(timeDF$batchDate2),]
+        }
       
-      #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
-      mean.p <- mean(pred, na.rm=T)
-      df$efficiency[!ind.inside] <- mean.p
+        #   ---- Get the environmental covariate data.  
+        if(sum(c("temp_c","flow_cfs") %in% names(covarB)) > 0){
+          c1 <- df[,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
+          c1 <- c1[,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
+          
+          #   ---- The times are off, probably because c1 originates from obs.eff.df, which has been used with dates recorded
+          #   ---- in the CAMP mdb.  These dates don't record time zones, so POSIX gets tricky.  
+          c1$batchDate <-  as.POSIXct(strptime(c1$batchDate,format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
+        } else {
+          c1 <- NULL
+        }
+        
+        #   ---- Get the CAMP environmental covariate data.  
+        if(sum(c("waterDepth_cm","turbidity_ntu","waterVel_fts","waterTemp_C") %in% names(covarB)[names(covarB) %in% covarC]) > 0){
+          c2 <- df[,c("batchDate",names(covarB)[names(covarB) %in% covarC])]
+        } else {
+          c2 <- NULL
+        }
+           
+        #   ---- Get the percent-Q covariate data.
+        if(sum(c("percQ_") %in% names(covarB)) > 0){
+          #do stuff
+          #c3 <- thedf
+        } else {
+          c3 <- NULL
+        }
+        
+        #   ---- Get the e-trial data.  
+        if(sum(c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength") %in% names(covarB)) > 0){
+          
+          #   ---- Variable batchDate doesn't include all dates, since releases average over days.  Fill in the missing 
+          #   ---- dates.  This creates a step function ish for meanNightProp, meanMoonProp, and meanForkLength.  
+          c4 <- stepper(tmp.df[,c("batchDate","TrapPositionID","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")],
+                        c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"),
+                        min.date,
+                        max.date)
+          
+          #   ---- Function stepper designed to run over non-unique TrapPositionIDs.  Get rid of this variable. 
+          c4$TrapPositionID <- NULL
+          
+          #   ---- I like that the stepper function renames variables with a "Step" suffix, but that is not useful here.
+          #   ---- So, rename those variables to get rid of that suffix.  
+          names(c4) <- sapply(names(c4),function(x) gsub("Step","",x))
+          c4 <- c4[,c("batchDate",names(covarB)[names(covarB) %in% c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")])]
+        } else {
+          c4 <- NULL
+        } 
       
-      #   ---- We added in fake days before and after the start of e-trials, so as to query for env covars
-      #   ---- correctly.  Reduce df back to what it should be, based on min.date and max.date. 
-      orig.dates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
+        #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
+        bd2.lt <- as.POSIXlt(c0$batchDate2)
+        if(yearUp1 == 1){
+          c0$batchDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+        } else {
+          c0$batchDate <- ISOdate(substr(min.date,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+        }
+        
+        #   ---- Allow for all days in the spline enh eff trial period. 
+        allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
                                              as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
-      df <- df[df$batchDate %in% orig.dates$batchDate,]
+        # allDates$EndTime <- NULL
+        # allDates <- data.frame(batchDate=unique(allDates$batchDate))
+        
+        #   ---- The documentation indicates that allDates$batchDate should have tz="UTC", because I set it 
+        #   ---- in the from of the seq call.  I suspect that my then placing it in a data.frame loses the 
+        #   ---- tz specification, which is forcing it as "PDT".  Force it to "UTC"...again.
+        allDates$batchDate <- as.POSIXct(allDates$batchDate,format="%Y-%m-%d",tz=time.zone)
+        
+        #   ---- We use allDates as the backbone for bringing in all the different pieces. 
+                            allDates <- merge(allDates,c0   ,by=c("batchDate"),all.x=TRUE)
+        if(!is.null(c1   )) allDates <- merge(allDates,c1   ,by=c("batchDate"),all.x=TRUE)
+        if(!is.null(c2   )) allDates <- merge(allDates,c2   ,by=c("batchDate"),all.x=TRUE)
+        if(!is.null(c3   )) allDates <- merge(allDates,c3   ,by=c("batchDate"),all.x=TRUE)
+        if(!is.null(c4   )) allDates <- merge(allDates,c4   ,by=c("batchDate"),all.x=TRUE)                   
+                            
+        #   ---- We used the enhanced efficiency dates batchDate2 to drive this.  If, in the result of 
+        #   ---- allDates here, batchDate2 is NA, this means the user put in a set of dates in the 
+        #   ---- Platform that span outside the real range of e-trials encapsulated by batchDate2. 
+        #   ---- Put in a boring intercept estimate for these, so we report something.  
+        allDates[is.na(allDates$batchDate2),]$Intercept <- 1
+        
+        #   ---- If we're outside the splineDays for this trap (strt.dt and end.dt), we just use the
+        #   ---- intercept estimate.  We don't know what happens outside the enh eff temporal range.
+        allDates$inSplineDays <- 0
+        allDates[(allDates$batchDate) < strt.dt | (allDates$batchDate > end.dt),names(allDates)[!(names(allDates) %in% c("batchDate","batchDate2","Intercept"))]  ] <- 0
+        allDates[(allDates$batchDate) >= strt.dt & (allDates$batchDate <= end.dt),]$inSplineDays <- 1                  
+  
+        #   ---- MAKE THE EFF ESTIMATE.  Don't forget that tB includes the intercept already.  
+        X <- as.matrix(allDates[allDates$inSplineDays == 1,names(allDates)[!(names(allDates) %in% c("batchDate","batchDate2","inSplineDays"))]],ncol=(1 + length(splineCoef) + length(covarB)))
+        B <- as.matrix(unlist(c(tB,covarB[colnames(X)[colnames(X) %in% names(covarB)]])),ncol=1)  # <--- Make sure B in same order as cols in X.
+        
+        #   ---- Save X, and the dates at which we predict, for bootstrapping.
+        all.X[[trap]] <- X     
+        all.dts[[trap]] <- df$batchDate[ind.inside]  # Can't use sort(unique(splineDays)) here because it has Feb 29th, by construction.  
+        fits[[trap]] <- fit #B
+        
+        pred <- 1 / (1 + exp(-1*X %*% B))
+        #plot(allDates$batchDate,allDates$pred)
+  
+        #   ---- Add in predicted values for enh eff spline days.  
+        df$efficiency[ind.inside] <- pred
+        
+        #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
+        mean.p <- mean(pred, na.rm=T)
+        df$efficiency[!ind.inside] <- mean.p
+        
+        #   ---- We added in fake days before and after the start of e-trials, so as to query for env covars
+        #   ---- correctly.  Reduce df back to what it should be, based on min.date and max.date. 
+        orig.dates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
+                                               as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
+        df <- df[df$batchDate %in% orig.dates$batchDate,]
+        
+        #   ---- We are done with the covariates, so get rid of them so that subsequent code doesn't get hung
+        #   ---- up on them.  
+        df <- df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
+        
+        #   ---- Save the fit for bootstrapping.
+        #fits[[trap]] <- fit  
+        
+        #   ---- Save the raw efficiency data.  
+        obs.data[[trap]] <- tmp.df  
+        eff.type[[trap]] <- 5
+        
+        #   ---- Uncomment the following line if using imputed value for all days.  Otherwise, comment it out, 
+        #   ---- and imputed.eff will tell which are observed.  With the following uncommented, you can find 
+        #   ---- efficiency trials in grand.df with !is.na(grand.df$nReleased).
+        ind <- rep(F, nrow(df))   
+        
+        df$imputed.eff <- factor( !ind, levels=c(T,F), labels=c("Yes", "No"))
+        df$trapPositionID <- trap
+        #plot(df$batchDate,df$efficiency)
+        ans <- rbind(ans, df)
+      }
       
-      #   ---- We are done with the covariates, so get rid of them so that subsequent code doesn't get hung
-      #   ---- up on them.  
-      df <- df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
-      
-      #   ---- Save the fit for bootstrapping.
-      #fits[[trap]] <- fit  
-      
-      #   ---- Save the raw efficiency data.  
-      obs.data[[trap]] <- tmp.df  
-      eff.type[[trap]] <- 5
-      
-      #   ---- Uncomment the following line if using imputed value for all days.  Otherwise, comment it out, 
-      #   ---- and imputed.eff will tell which are observed.  With the following uncommented, you can find 
-      #   ---- efficiency trials in grand.df with !is.na(grand.df$nReleased).
-      ind <- rep(F, nrow(df))   
-      
-      df$imputed.eff <- factor( !ind, levels=c(T,F), labels=c("Yes", "No"))
-      df$trapPositionID <- trap
-      #plot(df$batchDate,df$efficiency)
-      ans <- rbind(ans, df)
+      # par(mfrow=c(5,1))
+      # for(trap in traps){
+      #   x <- ans[ans$TrapPositionID == trap,]$batchDate
+      #   y <- ans[ans$TrapPositionID == trap,]$efficiency
+      #   plot(x,y,type="b")
+      # }
+      # par(mfrow=c(1,1))
     }
-    
-    # par(mfrow=c(5,1))
-    # for(trap in traps){
-    #   x <- ans[ans$TrapPositionID == trap,]$batchDate
-    #   y <- ans[ans$TrapPositionID == trap,]$efficiency
-    #   plot(x,y,type="b")
-    # }
-    # par(mfrow=c(1,1))
-    
   } 
   
-  if( useEnhEff == FALSE | sum(doOldEff) > 0) {
+  if( useEnhEff == FALSE | sum(doOldEff) > 0 ){
     
     #   ---- Just do it the old way.  
 

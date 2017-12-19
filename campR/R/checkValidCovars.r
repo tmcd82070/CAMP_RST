@@ -84,7 +84,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
   doEnhEff <- TRUE
   if( sum(names(covarB) %in% names(df)) != length(covarB) ){
     missingVars <- names(covarB)[!(names(covarB) %in% names(df))]
-    cat(paste0("\nMissing variable(s) ",paste0(missingVars,collapse=", ")," in queried set of covariate information, when comparing to required data.  Cannot use enhanced efficiency.\n"))
+    cat(paste0("\nPROBELM:  Missing variable(s) ",paste0(missingVars,collapse=", ")," in queried set of covariate information, when comparing to required data.  Cannot use enhanced efficiency.\n"))
     doEnhEff <- FALSE
   }
 
@@ -171,6 +171,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
     } else if(sum(good2) < C){
       
       #   ---- We have a problem, and cannot fit enhanced efficiency trials. 
+      cat(paste0("PROBELM:  I'm missing data on at least one variable inside the efficiency-trial data range.  Cannot use enhanced efficiency.\n"))
       doEnhEff <- FALSE
     }
   } 
