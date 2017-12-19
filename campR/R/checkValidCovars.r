@@ -111,11 +111,10 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
   
   
   #   ---- PART 2:  Evaluate what we have, and what we don't.  
+  cat(paste0("\n"))
   
   #   ---- Check if all covariates have data on all dates, given by min.date and max.date from user.  
   if(sum(good1) == C){
-    
-    cat(paste0("\n\n"))
     
     #   ---- No problem!
     cat(paste0("All batchDates contain data for all necessary covariates, given the requested time frame.  Use of enhanced efficiency models will proceed.\n"))
@@ -125,12 +124,12 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
   } else if(sum(good2) == C){
     
     #   ---- Minor problem.  Fill in missing dates with the mean of the covariate.  Tell user I'm doing this.  
-    cat(paste0("All batchDates contain data for all necessary covariates, given min.date and max.date.  Use of enhanced efficiency models will proceed.\n"))
+    cat(paste0("All batchDates contain data for all necessary covariates, given the first and last efficiency trials in the requested time frame.  Use of enhanced efficiency models will proceed.\n"))
     
     for(c in 1:length(good1[good1 == 0])){
       covar <- names(good1[good1 == 0])[c]
       covarMean <- mean(df[!is.na(df[,covar]),covar])
-      cat(paste0("First, however, I'm filling in some missing ",covar," data with a mean of ",covarMean," outside the range of eff trials, but within the range of the provided timeframe.\n"))
+      cat(paste0("First, however, I'm filling in some missing ",covar," data outside the range of eff trials, but within the range of the provided timeframe, with a mean of ",covarMean,".\n"))
       
       #   ---- Actually fill in with the mean for NA.  These NAs probably extend before min.date and after 
       #   ---- max.date, but I don't care, because I made df bigger than it needs to be, to fit the covariate

@@ -146,6 +146,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     dbFlPG <- stuff$dbFlPG
     dbTpPG <- stuff$dbTpPG
     
+    #   ---- Create a means to identify traps for which we end up lacking data.  
+    doOldEff <- rep(FALSE,length(traps))
+    
     #   ---- Run over individual traps.
     for(trap in traps){
     
@@ -173,8 +176,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       strt.dt$year <- yr.m                     # Earliest date with an efficiency trial truth paradigm
       end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
       end.dt$year <- yr.M                      # Latest date with an efficiency trial truth paradigm
-      
-      #   ---- At this point, strt.dt and end.dt should be inside min.date and max.date.  true?
       
       #   ---- Check to make sure we grabbed the correct year yr.  
       yearUp1 <- 0
@@ -216,6 +217,14 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       } else {
         cat(paste0("Enhanced efficiency model for trap ",trap," seeks no recorded data -- it's an intercept-only model.\n"))
       }
+      
+      #   ---- Check to make sure we have the data we need to fit enhanced efficiency trials.  
+      checkCovarValidity <- checkValidCovars(df,tmp.df,min.date,max.date,covarB)
+      df <- checkCovarValidity$df
+      doEnhEff <- checkCovarValidity$doEnhEff
+      
+      
+      
       #   ---- I have identified variables I care about.  Get them together, for all batchDates.
       covarC <- c("discharge_cfs","waterDepth_cm","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","lightPenetration_ntu")#,"dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
       covarE <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")
@@ -241,7 +250,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     
       #   ---- Get the environmental covariate data.  
       if(sum(c("temp_c","flow_cfs") %in% names(covarB)) > 0){
-        c1 <- obs.eff.df[obs.eff.df$TrapPositionID == trap,c("batchDate","temp_c","flow_cfs")]
+        c1 <- obs.eff.df[obs.eff.df$TrapPositionID == trap,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
         c1 <- c1[,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
         
         #   ---- The times are off, probably because c1 originates from obs.eff.df, which has been used with dates recorded
@@ -380,10 +389,19 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     # }
     # par(mfrow=c(1,1))
     
-  } else {
+  } 
+  
+  if(useEnhEff == FALSE | sum(doOldEff) > 0) {
+    
+    
     
     #   ---- Just do it the old way.  
   
+    
+    #   ---- If sum(doOldEff) > 0, then we have at least one trap for which we lack the requisite data.
+    #   ---- Redefine vector traps to only include those for which the old way is necessary. 
+    oldTraps <- traps
+    traps <- traps[doOldEff]
  
     # 	---- If number of trials at a trap less than this number, 
     #        assume constant and use ROM+1 estimator
@@ -571,7 +589,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   attr(ans,"site.name") <- attr(obs.eff.df, "site.name")
   attr(ans,"eff.type") <- eff.type
 
-  #   ---- Make a plot if called for.
+  #   ---- Make a plot if called for.  
   if( !is.na(plot.file) ) {
     out.fn <- F.plot.eff.model( ans, plot.file )
   } else {
