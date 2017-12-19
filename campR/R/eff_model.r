@@ -169,21 +169,36 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #   ---- Find the "season", which is between first and last OVERALL efficiency trials.  This is different
       #   ---- than "regular" eff models, where we define the "season" as first and last eff trials, as defined
       #   ---- within the provided min.date and max.date.  
+      min.date.p <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
+      max.date.p <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
+      
       yr.m <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
       yr.M <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
       
       strt.dt <- as.POSIXlt(min(splineDays))   # Earliest date with an efficiency trial 1960 paradigm
-      strt.dt$year <- yr.m                     # Earliest date with an efficiency trial truth paradigm
       end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
-      end.dt$year <- yr.M                      # Latest date with an efficiency trial truth paradigm
       
-      #   ---- Check to make sure we grabbed the correct year yr.  
-      yearUp1 <- 0
-      if( !((strt.dt <= df[!is.na(df$nReleased),]$batchDate[1]) & (df[!is.na(df$nReleased),]$batchDate[1] <= end.dt)) ){
-        strt.dt$year <- strt.dt$year + 1
-        end.dt$year <- end.dt$year + 1
-        yearUp1 <- 1
-      } 
+      #   ---- If the month and day of min.date is before the same of strt.dt, we push strt.dt to one minus yr.m.
+      if(format(min.date.p,"%j") < format(strt.dt,"%j")){
+        strt.dt$year <- yr.m        # Earliest date with an efficiency trial truth paradigm
+      } else {
+        strt.dt$year <- yr.m + 1    # Earliest date with an efficiency trial truth paradigm
+      }
+      
+      #   ---- If the month and day of max.date is after the same of end.dt, we push strt.dt to yr.M.
+      if(format(max.date.p,"%j") > format(end.dt,"%j")){
+        end.dt$year <- yr.M + 1     # Latest date with an efficiency trial truth paradigm  --- maybe a minus on the other condition?
+      } else {
+        end.dt$year <- yr.M         # Latest date with an efficiency trial truth paradigm
+      }
+      
+      #   ---- Check to make sure we grabbed the correct year yr.  Still needed after two ifs above?  
+      # yearUp1 <- 0
+      # if( !((strt.dt <= df[!is.na(df$nReleased),]$batchDate[1]) & (df[!is.na(df$nReleased),]$batchDate[1] <= end.dt)) ){
+      #   strt.dt$year <- strt.dt$year + 1
+      #   end.dt$year <- end.dt$year + 1
+      #   yearUp1 <- 1
+      # } 
       
       #   ---- Identify dates for which we have splined information.  
       # ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
