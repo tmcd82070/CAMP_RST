@@ -71,7 +71,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
   check1 <- check2 <- good1 <- good2 <- rep(0,length(covarB))
   names(check1) <- names(check2) <- names(good1) <- names(good2) <- names(covarB)
   C <- length(covarB)
-  cat("Checking presence of daily enhanced efficiency covariates against your requested time frame.\n")
+  cat(paste0("\nChecking presence of daily enhanced efficiency covariates against your requested time frame for trap ",unique(df$TrapPositionID)[1],".\n"))
   cat("If that doesn't work, I'll at least try to find daily covariate data in your returned set of efficiency trials, in your requested time frame.\n\n")
   for(c in 1:C){
     
@@ -137,7 +137,6 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
       #   ---- specified by the start and end of eff trials, given the provided min.date and max.date.  
       df[is.na(df[,covar]),covar] <- covarMean
       doEnhEff <- TRUE
-      
     }
   } else if(sum(good2) < C){
     
@@ -145,4 +144,5 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
     doEnhEff <- FALSE
   }
   ans <- list(df=df,doEnhEff=doEnhEff)
+  return(ans)
 }

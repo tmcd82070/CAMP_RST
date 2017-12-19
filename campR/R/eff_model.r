@@ -185,8 +185,15 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         yearUp1 <- 1
       } 
       
-      ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
-      inside.dates <- c(strt.dt, end.dt)
+      #   ---- Identify dates for which we have splined information.  
+      # ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
+      # inside.dates <- c(strt.dt, end.dt)
+      # all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
+      min.date.p <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone)
+      max.date.p <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone)
+      
+      ind.inside <- (max(min.date.p,as.POSIXct(strt.dt)) <= df$batchDate) & (df$batchDate <= min(max.date.p,as.POSIXct(end.dt)))
+      inside.dates <- c(max(min.date.p,as.POSIXct(strt.dt)), min(max.date.p,as.POSIXct(end.dt)))
       all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
       
       #  ---- The fitting data frame
@@ -213,17 +220,15 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       covarB <- thisB3
       if(length(names(covarB)) > 0){
-        cat(paste0("Enhanced efficiency model for trap ",trap," seeks recorded data on covariates ",paste0(names(covarB),collapse=", "),".\n"))
+        cat(paste0("\n\nEnhanced efficiency model for trap ",trap," seeks recorded data on covariates ",paste0(names(covarB),collapse=", "),".\n"))
       } else {
-        cat(paste0("Enhanced efficiency model for trap ",trap," seeks no recorded data -- it's an intercept-only model.\n"))
+        cat(paste0("\n\nEnhanced efficiency model for trap ",trap," seeks no recorded data -- it's an intercept-only model.\n"))
       }
       
       #   ---- Check to make sure we have the data we need to fit enhanced efficiency trials.  
       checkCovarValidity <- checkValidCovars(df,tmp.df,min.date,max.date,covarB)
       df <- checkCovarValidity$df
       doEnhEff <- checkCovarValidity$doEnhEff
-      
-      
       
       #   ---- I have identified variables I care about.  Get them together, for all batchDates.
       covarC <- c("discharge_cfs","waterDepth_cm","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","lightPenetration_ntu")#,"dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
@@ -250,7 +255,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     
       #   ---- Get the environmental covariate data.  
       if(sum(c("temp_c","flow_cfs") %in% names(covarB)) > 0){
-        c1 <- obs.eff.df[obs.eff.df$TrapPositionID == trap,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
+        c1 <- df[,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
         c1 <- c1[,c("batchDate",names(covarB)[names(covarB) %in% c("temp_c","flow_cfs")])]
         
         #   ---- The times are off, probably because c1 originates from obs.eff.df, which has been used with dates recorded
@@ -262,7 +267,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       #   ---- Get the CAMP environmental covariate data.  
       if(sum(c("waterDepth_cm","turbidity_ntu","waterVel_fts","waterTemp_C") %in% names(covarB)[names(covarB) %in% covarC]) > 0){
-        c2 <- obs.eff.df[obs.eff.df$TrapPositionID == trap,c("batchDate",names(covarB)[names(covarB) %in% covarC])]
+        c2 <- df[,c("batchDate",names(covarB)[names(covarB) %in% covarC])]
       } else {
         c2 <- NULL
       }
@@ -348,7 +353,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
 
       #   ---- Add in predicted values for enh eff spline days.  
       df$efficiency[ind.inside] <- pred
-
+      
       #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
       mean.p <- mean(pred, na.rm=T)
       df$efficiency[!ind.inside] <- mean.p
@@ -391,17 +396,17 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     
   } 
   
-  if(useEnhEff == FALSE | sum(doOldEff) > 0) {
-    
-    
+  if( useEnhEff == FALSE | sum(doOldEff) > 0) {
     
     #   ---- Just do it the old way.  
-  
-    
-    #   ---- If sum(doOldEff) > 0, then we have at least one trap for which we lack the requisite data.
-    #   ---- Redefine vector traps to only include those for which the old way is necessary. 
-    oldTraps <- traps
-    traps <- traps[doOldEff]
+
+    #   ---- If sum(doOldEff) > 0, then we have at least one trap for which we lack the requisite data from attempt to do enh eff models.
+    #   ---- Redefine vector traps to only include those for which the old way is necessary. Of course,
+    #   ---- only do this redefining if we really hoped for Enh Eff.  
+    if( useEnhEff == TRUE ){
+      oldTraps <- traps
+      traps <- traps[doOldEff]
+    }
  
     # 	---- If number of trials at a trap less than this number, 
     #        assume constant and use ROM+1 estimator
