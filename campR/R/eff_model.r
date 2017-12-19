@@ -166,12 +166,15 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #   ---- Find the "season", which is between first and last OVERALL efficiency trials.  This is different
       #   ---- than "regular" eff models, where we define the "season" as first and last eff trials, as defined
       #   ---- within the provided min.date and max.date.  
-      yr <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
+      yr.m <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
+      yr.M <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
       
       strt.dt <- as.POSIXlt(min(splineDays))   # Earliest date with an efficiency trial 1960 paradigm
-      strt.dt$year <- yr                       # Earliest date with an efficiency trial truth paradigm
+      strt.dt$year <- yr.m                     # Earliest date with an efficiency trial truth paradigm
       end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
-      end.dt$year <- yr                        # Latest date with an efficiency trial truth paradigm
+      end.dt$year <- yr.M                      # Latest date with an efficiency trial truth paradigm
+      
+      #   ---- At this point, strt.dt and end.dt should be inside min.date and max.date.  true?
       
       #   ---- Check to make sure we grabbed the correct year yr.  
       yearUp1 <- 0
