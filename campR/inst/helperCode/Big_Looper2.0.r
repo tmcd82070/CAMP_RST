@@ -54,8 +54,8 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
 #theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
 
-theExcel <- theExcel[c(13,15,24,26,32),]
-#theExcel <- theExcel[c(1,2,3,4),]
+theExcel <- theExcel[52:70,]
+#theExcel <- theExcel[c(2,3,4),]
 
 
 #   ---- Tell the Big Looper where to put all the output.  
@@ -134,6 +134,7 @@ source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/ca
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/buildAstroStats.r")       # roxygenized
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/stepper.r")               # roxygenized
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/overDphi.r")              # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.r")      # roxygenized
 
 #   ---- I have now updated a few of the core functions in the package.  Read these in explicitly, so they are used in 
 #   ---- lieu of the package version. 
@@ -417,11 +418,11 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "R" ){
         
         #   ---- Run function run.passage over the four possible temporal periods.  
-        for(byj in 1:1){
-          if(byj == 1){by <- 'day'  } 
-          # else if(byj == 2){by <- 'week' } 
-          # else if(byj == 3){by <- 'month'} 
-          # else if(byj == 4){by <- 'year' }
+        for(byj in 1:4){
+               if(byj == 1){by <- 'day'  } 
+          else if(byj == 2){by <- 'week' }
+          else if(byj == 3){by <- 'month'}
+          else if(byj == 4){by <- 'year' }
           
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
