@@ -179,8 +179,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       strt.dt <- as.POSIXlt(min(splineDays))   # Earliest date with an efficiency trial 1960 paradigm
       end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
       
-      
-      
       #   ---- Re-map 1959-1960 data to the correct year we care about.  
       #   ---- Spline data all in 1960.  
       if(strt.dt$year == 60 & end.dt$year == 60){
@@ -188,7 +186,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
           strt.dt$year <- yr.m
           end.dt$year <- yr.M
         } else if(yr.m != yr.M){
-          strt.dt$year <- yr.m
+          strt.dt$year <- yr.m + 1      # We know spline start and end have same year, so min.date must be back one.
           end.dt$year <- yr.M
         }
       }
@@ -205,6 +203,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       }
       
       #   ---- By design, can only have the two spline 59/60 paradigms coded above.  
+      
       
       
       #   ---- Older attempts to get the re-map correct.  Delete eventually.  
