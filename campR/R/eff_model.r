@@ -270,10 +270,15 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         cat(paste0("\n\nEnhanced efficiency model for trap ",trap," seeks no recorded data -- it's an intercept-only model.\n"))
       }
       
-      #   ---- Check to make sure we have the data we need to fit enhanced efficiency trials.  
-      checkCovarValidity <- checkValidCovars(df,tmp.df,min.date,max.date,covarB)
-      df <- checkCovarValidity$df
-      doEnhEff <- checkCovarValidity$doEnhEff
+      #   ---- Check to make sure we have the data we need to fit enhanced efficiency trials.  Not necessary
+      #   ---- if we have an intercept-only model.  
+      if(length(covarB) > 0){
+        checkCovarValidity <- checkValidCovars(df,tmp.df,min.date,max.date,covarB)
+        df <- checkCovarValidity$df
+        doEnhEff <- checkCovarValidity$doEnhEff
+      } else {
+        doEnhEff <- TRUE
+      }
       
       #   ---- If doEnhEff == FALSE, I exit the loop for this trap.  I'll run regular eff below.
       if(doEnhEff == FALSE){
