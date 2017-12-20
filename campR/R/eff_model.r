@@ -202,7 +202,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         }
       }
       
-      #   ---- By design, can only have the two spline 59/60 paradigms coded above.  
+      #   ---- By design, can only have the two spline 59/60 60/60 paradigms coded above.  
       
       
       
@@ -383,7 +383,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- allDates here, batchDate2 is NA, this means the user put in a set of dates in the 
         #   ---- Platform that span outside the real range of e-trials encapsulated by batchDate2. 
         #   ---- Put in a boring intercept estimate for these, so we report something.  
-        allDates[is.na(allDates$batchDate2),]$Intercept <- 1
+        if(sum(is.na(allDates$batchDate2)) > 0){
+          allDates[is.na(allDates$batchDate2),]$Intercept <- 1
+        }
         
         #   ---- If we're outside the splineDays for this trap (strt.dt and end.dt), we just use the
         #   ---- intercept estimate.  We don't know what happens outside the enh eff temporal range.
