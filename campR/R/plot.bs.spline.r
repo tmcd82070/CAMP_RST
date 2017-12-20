@@ -6,9 +6,12 @@
 #' 
 #' @param X The basis b-spline matrix resulting from a call to function
 #'   \code{bs}.
+#'   
 #' @param fit The generalized linear model resulting from a call to function
 #'   \code{glm}.
+#'   
 #' @param beg.x The POSIX-formatted start date to use for plotting.
+#' 
 #' @param end.x The POSIX-formatted end date to use for plotting.
 #'   
 #' @return A plot of the fitted cubic spline, its originating data points, and

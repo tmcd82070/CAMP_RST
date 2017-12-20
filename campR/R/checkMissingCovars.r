@@ -1,6 +1,46 @@
-
-
-
+#' @export
+#' 
+#' @title checkMissingCovars
+#'   
+#' @description Identify potential covariates that fail to have data for at
+#'   least 90% of available efficiency trials.
+#'   
+#' @param tmp.df The reduced data frame originating from \code{df} containing 
+#'   only efficiency-trial dates; i.e., those with non-\code{NA}
+#'   \code{nReleased} values.
+#' 
+#' @param m.i An integer containing the number of rows in data frame 
+#'   \code{tmp.df}.
+#' 
+#' @param df The data frame for a specific \code{TrapPositionID} containing 
+#'   efficiency-trial information and covariates, if available, at the time of 
+#'   fitting enhanced efficiency trials in \code{eff_model.r} (or 
+#'   \code{F.efficiency.model }).
+#' 
+#' @param trap A trap for which efficiency data are available. 
+#' 
+#' @param plot.file The name of the file prefix under which output is to be 
+#'   saved.  Set to \code{NA} to plot to the plot window.
+#'   
+#' @details Function \code{checkMissingCovars}, surprisingly, checks for
+#'   covariates with missing data. It outputs a \code{csv} or data rows with
+#'   missing data.  Generally, the function applies a 90\% rule, meaning that
+#'   90\% of the efficency trials in \code{tmp.df} must have covariate data
+#'   available for ultimate consideration in enhanced efficiency models.  
+#' 
+#' @return A list containing several objects.  
+#' 
+#' \describe{
+#'   \item{tmp.df}{A copy of the \code{tmp.df} initially provided to the function with rows (efficiency trials) missing covariate data possibly removed.}
+#'   \item{df}{A copy of the \code{df} initially provided to the function.}
+#'   \item{m.i}{The number of efficiency trials with full rows of data.  Necessarily less than or equal to the \code{m.i} provided to the function.}
+#'   \item{dataDeficient}{The dataframe identifying the e-trial rows removed from \code{tmp.df}.  Output as a \code{csv}.}
+#'   \item{atLeast}{The threshold indicating the number of e-trial rows that must be non-missing for covariate inclusion.  Equal to \eqn{floor(0.90*m.i) + 1}.}
+#' 
+#' @examples
+#' \dontrun{
+#' ans <- checkMissingCovars(tmp.df,m.i,df,trap,plot.file)
+#' }
 checkMissingCovars <- function(tmp.df,m.i,df,trap,plot.file){
   
   # tmp.df <- tmp.df

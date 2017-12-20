@@ -1,4 +1,74 @@
-
+#' @export
+#' 
+#' @title fitSpline
+#'   
+#' @description Fit a temporal spline with a given set of covariates; i.e., fit
+#'   a generalized additive model (GAM).
+#'   
+#' @param covarString A character string of length one housing all covariates to
+#'   be considered, with all covariates collapsed via \code{" + "}.
+#'   
+#' @param df The data frame for a specific \code{TrapPositionID} containing 
+#'   efficiency-trial information and covariates, if available, at the time of 
+#'   fitting enhanced efficiency trials in \code{eff_model.r} (or 
+#'   \code{F.efficiency.model }).
+#'   
+#' @param eff.ind.inside A vector of length equal to the number of rows in data 
+#'   frame \code{df} set equal to \code{TRUE} when the \code{df} 
+#'   \code{batchDate} is inside the data range specified by 
+#'   \code{eff.inside.dates}.
+#'   
+#' @param tmp.df The reduced data frame originating from \code{df} containing 
+#'   only efficiency-trial dates; i.e., those with non-\code{NA} 
+#'   \code{nReleased} values.
+#'   
+#' @param dist The distributional family used in calls to function \code{glm}. 
+#'   Almost always set to \code{"binomial"}.
+#'   
+#' @param max.df The highest number of degrees of freedom to be used in the 
+#'   fitting of temporal-dimension splines.  Set by \code{max.df.spline}, which 
+#'   is \code{4} in function \code{eff.models}.
+#'   
+#' @param eff.inside.dates A temporal \code{POSIX} vector of length two 
+#'   indicating the first and last \code{batchDate} efficiency trials.
+#'   
+#' @return A list containing several different objects.  
+#' 
+#' \describe{
+#'   \item{fit}{The \code{glm}-type object resulting from the fit.}
+#'   \item{fit.AIC}{The AIC of \code{fit}.}
+#'   \item{bspl}{The matrix of ALL \code{batchDate}s within \code{eff.inside.dates} of the final evaluated model. }
+#'   \item{tmp.bs}{The matrix of REDUCED \code{batchDates}s from \code{bspl} tied to efficiency-trial dates.}
+#'   \item{cur.df}{The final number of degrees-of-freedom used in the final temporal spline fit.}
+#'   \item{disp}{}
+#'   \item{s.beg}{The first date housed within the 1960-spline paradigm variable \code{batchDate2}.}
+#'   \item{s.end}{The last date housed within the 1960-spline paradigm variable \code{batchDate2}.}
+#'   \item{cur.bspl}{The matrix of ALL \code{batchDate}s within \code{eff.inside.dates} of \code{fit} model. }
+#' }
+#' 
+#' @details Note that returned object \code{bspl} is not the same as 
+#'   \code{cur.bspl}.  In order to stop, the loop that evaluates temporal 
+#'   splines must first evaluate the next model.  In the case that the next 
+#'   model fails to be better than the current model, the current model is the 
+#'   winner. Object \code{cur.bspl} is the basis matrix associated with the 
+#'   winning current model, while \code{bspl} is the basis maxtri associated 
+#'   with that (non-winning) next model.
+#'   
+#'   The overdispersion parameter is fit in the traditional way, i.e., via
+#'   Pearson residuals.
+#'   
+#' @seealso 
+#'   
+#' @examples  
+#' \dontrun{
+#' fit <- fitSpline(covarString,
+#'                  df,
+#'                  eff.ind.inside,
+#'                  tmp.df,
+#'                  dist,
+#'                  max.df,
+#'                  eff.inside.dates)
+#' }
 fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df,eff.inside.dates){
 
   # covarString <- covarString   #covarString,df,eff.ind.inside,tmp.df

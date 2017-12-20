@@ -6,68 +6,110 @@
 #'   via a backwards-selection paradigm, allowing for both selection of
 #'   confounding covariates, as well as variable temporal B-splines.
 #'   
-#' @param tmp.df
+#' @param tmp.df The reduced data frame originating from \code{df} containing 
+#'   only efficiency-trial dates; i.e., those with non-\code{NA}
+#'   \code{nReleased} values.
 #' 
-#' @param df
+#' @param df The data frame for a specific \code{TrapPositionID} containing 
+#'   efficiency-trial information and covariates, if available, at the time of 
+#'   fitting enhanced efficiency trials in \code{eff_model.r} (or 
+#'   \code{F.efficiency.model }).
+#'   
+#' @param initialVars The set of possible variables available for model
+#'   inclusion, following application of the 90% presence rule.  These variables
+#'   form a subset of the \code{possibleVars}.
+#'   
+#' @param possibleVars The set of all available variables for possible inclusion
+#'   to the fitting of an enhanced efficiency model.  Usually include
+#'   efficiency-trial variables, environmental covariate variables, and
+#'   CAMP-collected variables.
+#'   
+#' @param m.i An integer containing the number of rows in data frame 
+#'   \code{tmp.df}.
+#'   
+#' @param eff.ind.inside A logical vector of length equal to the number of rows
+#'   of data frame \code{df}, expressing which \code{batchDates} fall within the
+#'   temporal data-range for which estimation occurs.
+#'   
+#' @param max.df.spline An integer expressing the highest allowable spline
+#' degree.
 #' 
-#' @param initialVars
+#' @param eff.inside.dates A \code{POXIX}-type vector of length 2, housing the 
+#'   first and last \code{batchDates} for which vector \code{eff.ind.inside} is 
+#'   \code{TRUE}.
+#'   
+#' @param trap An alphanumeric \code{TrapPositionID} value, as itemized within
+#'   \code{df} (and \code{tmp.df}).
+#'   
+#' @param model.info A list containing information derived from an immediate
+#'   preceding call to function \code{plot.bs.spline}.  Used to help get the
+#'   current fit iteration going.
+#'   
+#' @param fits A list object of length equal to the number of 
+#'   \code{TrapPositionID}s requiring a model fit.  Ultimate passed to the 
+#'   boostrapping routine.
+#'   
+#' @param plot.file The name of the file prefix under which output is to be 
+#'   saved.  Set to \code{NA} to plot to the plot window.
 #' 
-#' @param possibleVars
+#' @param option A graphical option for displaying spline fits.  Typically (and hard-coded) set to \code{2}. 
 #' 
-#' @param m.i
-#' 
-#' @param eff.ind.inside
-#' 
-#' @param max.df.spline
-#' 
-#' @param eff.inside.dates
-#' 
-#' @param trap
-#' 
-#' @param model.info
-#' 
-#' @param fits
-#' 
-#' @param plot.file
-#' 
-#' @param option
-#' 
-#' @param bsplBegDt
-#' 
-#' @param bsplEndDt
+#' @param bsplBegDt The first date, via the spline-1959-1960 paradigm, to which
+#'   all efficiency years and dates collapse.
+#'   
+#' @param bsplEndDt The last date, via the spline-1959-1960 paradigm, to which
+#'   all efficiency years and dates collapse.
 #' 
 #'   
-#' @return A dataframe with one row for all unique \code{batchDates} included 
-#'   within \code{min.date} and \code{max.date}, inclusive.  All variables, as 
-#'   provided via \code{varVec}, have a non-\code{NA} value.
+#' @return Several objects, all housed within a list.  
+#' 
+#' \describe{
+#'   \item{fit}{The final fit for the current \code{TrapPositionID} of interest.}  
+#'   \item{model.info}{List of model information resulting from the application of \code{backEnhFit} to each unique \code{TrapPositionID} in \code{df}.}  
+#'   \item{fits}{List of fits resulting from the application of \code{backEnhFit} to each unique \code{TrapPositionID} in \code{df}.}  
+#'   \item{covarStringPlot}{A record of considered variables necessary model plotting outside of the function.  }
+#'   \item{interimVars1Num}{Set of variables remaining for model inclusion when both CAMP \code{waterTemp_C} and Environmental-covariate {temp_C} are present.}  
+#'   \item{interimVars2Num}{Set of variables remaining for model inclusion when both CAMP \code{discharge_cfs} and Environmental-covariate \code{flow_cfs} are present.}
+#' }
 #'   
-#' @details The \code{stepper} function is usually only called within
-#'   \code{eff_model} when applying previously obtained enhanced efficiency
-#'   model results.
+#' @details Function \code{bachEnhFit} is the workhorse function that fits the
+#'   backwards-fitting algorithm for enhanced-efficiency splines.  It utilizes
+#'   tests of deviances to identify variables for possible exclusion from an
+#'   initial model containing all avalabile covariates, and smaller subets
+#'   following the removal of the most non-significant covariate identified on
+#'   the most recent preceding model fitting.
 #'   
-#' @seealso \code{eff_model}
+#'   An \eqn{alpha} value of 0.10 is used to test for possible stopping of the
+#'   model;  i.e., if all included covariates in a model have p-values less than
+#'   0.10, all covariates are retained, and the model-fitting procedure stops. 
+#'   Note that the value of 0.10 is set within the function via initial
+#'   parameter \code{pCutOff}.
+#'   
+#' @seealso \code{eff_model_enh}, \code{plot.bs.spline}
 #'   
 #' @author WEST Inc.
 #'   
 #' @examples
 #' \dontrun{
-#' df <- stepper(df=df,
-#'               varVec=c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"),
-#'               min.date=min.date,
-#'               max.date=max.date)
+#' out <- backEnhFit(tmp.df,
+#'                   df,
+#'                   initialVars,
+#'                   possibleVars,
+#'                   m.i,
+#'                   eff.ind.inside,
+#'                   max.df.spline,
+#'                   eff.inside.dates,
+#'                   trap,
+#'                   model.info,
+#'                   fits,
+#'                   plot.file,
+#'                   option,
+#'                   bsplBegDt,
+#'                   bsplEndDt)
 #' }
-
-
-
-
-
-
 backEnhFit <- function(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max.df.spline,eff.inside.dates,trap,model.info,fits,plot.file,option,bsplBegDt,bsplEndDt){
   
 
-  
-  
-  
   eff.min.spline.samp.size <- get("eff.min.spline.samp.size", pos=.GlobalEnv)
   
   #   ---- Fit the full model with all possible covariates that made it.  Object fit.tmp.bs is from the last kept run.

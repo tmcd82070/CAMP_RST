@@ -8,9 +8,12 @@
 #' @param obs.eff.df A data frame with at least variables \code{batchDate} and 
 #'   \code{efficiency}, where \code{efficiency} is \code{NA} for all days 
 #'   requiring an estimate.
+#'   
 #' @param plot A logical indicating if raw efficiencies and the model(s)
 #' should be plotted.
+#' 
 #' @param max.df.spline The maximum degrees of freedom allowed for splines.
+#' 
 #' @param plot.file The name of the file prefix under which output is to be 
 #'   saved.  Set to \code{NA} to plot to the plot window.
 #'   
