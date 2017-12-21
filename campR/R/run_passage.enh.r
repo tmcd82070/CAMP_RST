@@ -1,71 +1,91 @@
 #' @export
 #' 
-#' @title F.run.passage
+#' @title F.run.passage.enh
 #'   
 #' @description Estimate production by life stage and run for all days within a
 #'   date range.
 #'   
 #' @param site The identification number of the site for which estimates are 
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param run The text seasonal identifier.  This is a one of \code{"Spring"},
 #'   \code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.
+#'   
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
+#'   
 #' @param by A text string indicating the temporal unit over which daily 
 #'   estimated catch is to be summarized.  Can be one of \code{day}, 
 #'   \code{week}, \code{month}, \code{year}.
+#'   
 #' @param output.file A text string indicating a prefix to append to all output.
+#' 
 #' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
 #'   
-#' @return A \code{csv} table of passage estimates over the specified date 
-#'   range, with runs across the columns.  A \code{csv} of daily passage 
-#'   estimates for all traps operating at least one day, and catching at least 
-#'   one fish, for all days within the specified date range. An additional 
-#'   \code{csv} summarizing passage via the temporal unit specified via 
-#'   \code{by}.  A \code{png} of catch versus time, for all inclusive traps. A
-#'   \code{png} of daily efficiency estimates, and accompanying \code{csv} for 
-#'   all traps operating at least one day, and catching at least one fish, for 
-#'   all days within the specified time period.  Finally, for each run, a bar
-#'   chart of passage summarizing catch over the time period specified via
-#'   \code{by}.
+#' @return Results from running the enhanced efficiency model fitting process 
+#'   include \code{csv}s of efficiency trials missing a covariate, for each
+#'   \code{TrapPositionID} at a \code{subSiteID}.  This prevents these
+#'   efficiency trials from inclusion in the model fitting process.
 #'   
-#' @details Function \code{F.run.passage} is the main workhorse function for 
-#'   estimating passage with respect to each of run and life stage.  As such, it
-#'   calls several separate functions, some of which contain queries designed to
-#'   run against an Access database.
+#'   Each \code{TrapPositionID} also results in a series of plots depicting the
+#'   fitted temporal spline, at each point of the backwards-fitting process. 
+#'   These could number many, depending on the number of covariates available
+#'   for possible exlcusion.
 #'   
-#'   Generally, queries against a database comprise two main efforts.  The first
-#'   involves a query for efficiency trial data, generally called "release" 
-#'   data, and conducted via function \code{F.get.release.data}, while the 
-#'   second queries for catch data via function \code{F.get.catch.data}.
+#'   Each \code{trapPositionID} also outputs a \code{png} containing model
+#'   fitting information, including plots of efficiency versus each considered
+#'   covariate, along with plotted temporal trends of each covariate against
+#'   time.  Additional plots include the final fitted temporal spline (along
+#'   with an prediction "curve" derived from the available data), as well as a
+#'   final "plot" depicting model summary statistics, obtained via the
+#'   \code{summary} function against the logistic efficiency-trial model fits.
 #'   
-#'   Once catch data are obtained, fish are partitioned as to whether or not 
-#'   they were assigned and caught during a half-cone operation.  Function 
-#'   \code{F.est.passage} wraps the functions that conduct the actual passage 
-#'   estimation, which involves statistical fits of each of catch and efficiency
-#'   over time.
+#'   Note that no passage estimates result from the fitting of enhanced
+#'   efficiency models.  This is because bootstrapping does not occur, but also
+#'   because estimation of passage is not the goal of the model fitting process.
+#'   Use the regular function sequence; i.e., functions without the
+#'   \code{".enh"} to estimation passage for one-year intervals of interest.
 #'   
-#'   All calls to function \code{F.run.passage} result in daily passage 
-#'   estimates, and courser temporal estimates, based on the value specified via
-#'   \code{by}.  Regardless of the temporal partitioning, estimates are always 
-#'   additionally summarized by year.  Function runs with \code{by} specified 
-#'   as \code{year} output only one set of annual estimates.
+#' @section Five programs make up the specialized procedure for fitting enhanced
+#'   efficiency models.  This means actually compiling the data of efficiency 
+#'   trials obtained over several years, and then fitting a generalized additive
+#'   model (GAM) to those data.  All five programs have suffixes of 
+#'   \code{".enh"}, and originated with the program versions without the suffix.
+#'   As such, they are very similar to the originals.
 #'   
-#'   The difference between the specified \code{max.date} and \code{min.date}
-#'   must be less than or equal to 366 days, as calculated via function
-#'   \code{difftime}.
+#'   The first, \code{run_passage.enh} corrals the fitting.  It is different 
+#'   from \code{run_passage} in that all of the passage summary that is usually 
+#'   created has been suppressed.  This is because there is no need to 
+#'   bootstrap, once enhanced efficiency models have been obtained.
 #'   
-#'   Selection of \code{week} for input variable \code{by} results in weeks 
-#'   displayed as customized Julian weeks, where weeks number 1-53.  The 
-#'   specific mapping of days to weeks can be found within the "\code{Dates}" 
-#'   table of any associated Access database.
+#'   The second, \code{get_release_data.enh} modifies the obtaining of release 
+#'   data, so as to obtain astrological data and mean fork-length.  It is very 
+#'   similar to its originator.
 #'   
-#' @seealso \code{F.get.release.data}, \code{F.get.catch.data}
+#'   The third, \code{est_passage.enh}, corrals the data from 
+#'   \code{get_release_data.enh} for use in \code{est_efficiency.enh}.  It too 
+#'   should be very similar to its originator.
+#'   
+#'   The fourth, \code{est_efficiency.enh}, ensures the calculation of weighted 
+#'   averages for the three efficiency-trial covariates have to do with mean 
+#'   fork-lengths, and percent of fishing performed at night, or while the moon 
+#'   is up.  It also emulates closely its originator.
+#'   
+#'   Finally, the fifth, \code{eff_model.enh}, fits the enhanced efficiency 
+#'   models.  It follows a backwards selection procedure, allowing for both 
+#'   variable covariate selection, as well as variable temporal spline 
+#'   complexity.  It creates graphical output, for each trap, so as to provide 
+#'   further hypothesis generation.
+#' 
+#' @seealso \code{run_passage.enh}, \code{get_release_data},
+#'   \code{est_passage.enh}, \code{est_efficiency.enh}, \code{eff_model.enh}
 #'   
 #' @examples  
 #' \dontrun{

@@ -1,6 +1,6 @@
 #' @export
 #' 
-#' @title F.efficiency.model
+#' @title F.efficiency.model.enh
 #'   
 #' @description Estimate the efficiency model from a data frame containing 
 #' efficiency trials.
@@ -8,76 +8,75 @@
 #' @param obs.eff.df A data frame with at least variables \code{batchDate} and 
 #'   \code{efficiency}, where \code{efficiency} is \code{NA} for all days 
 #'   requiring an estimate.
+#'   
 #' @param plot A logical indicating if raw efficiencies and the model(s)
 #' should be plotted.
+#' 
 #' @param max.df.spline The maximum degrees of freedom allowed for splines.
+#' 
 #' @param plot.file The name of the file prefix under which output is to be 
 #'   saved.  Set to \code{NA} to plot to the plot window.
 #'   
-#' @return A data frame with all observed and imputed \code{efficiency} values, 
-#'   where variable \code{gam.estimated} identifies days with imputed values.
+#' @return Results from running the enhanced efficiency model fitting process 
+#'   include \code{csv}s of efficiency trials missing a covariate, for each
+#'   \code{TrapPositionID} at a \code{subSiteID}.  This prevents these
+#'   efficiency trials from inclusion in the model fitting process.
+#'   
+#'   Each \code{TrapPositionID} also results in a series of plots depicting the
+#'   fitted temporal spline, at each point of the backwards-fitting process. 
+#'   These could number many, depending on the number of covariates available
+#'   for possible exlcusion.
+#'   
+#'   Each \code{trapPositionID} also outputs a \code{png} containing model
+#'   fitting information, including plots of efficiency versus each considered
+#'   covariate, along with plotted temporal trends of each covariate against
+#'   time.  Additional plots include the final fitted temporal spline (along
+#'   with an prediction "curve" derived from the available data), as well as a
+#'   final "plot" depicting model summary statistics, obtained via the
+#'   \code{summary} function against the logistic efficiency-trial model fits.
+#'   
+#'   Note that no passage estimates result from the fitting of enhanced
+#'   efficiency models.  This is because bootstrapping does not occur, but also
+#'   because estimation of passage is not the goal of the model fitting process.
+#'   Use the regular function sequence; i.e., functions without the
+#'   \code{".enh"} to estimation passage for one-year intervals of interest.
 #' 
-#' @section Efficiency model method:
-#'
+#' @section Five programs make up the specialized procedure for fitting enhanced
+#'   efficiency models.  This means actually compiling the data of efficiency 
+#'   trials obtained over several years, and then fitting a generalized additive
+#'   model (GAM) to those data.  All five programs have suffixes of 
+#'   \code{".enh"}, and originated with the program versions without the suffix.
+#'   As such, they are very similar to the originals.
 #'   
-#'   \itemize{ 
-#'   \item{Less than \code{eff.min.spline.samp.size} trials : 
-#'   A "weighted average constant model with bias correction."  This model 
-#'   uses constant efficiency over the season, and estimates it 
-#'   using a ratio-of-means bias-corrected ("ROM+1") average. For each 
-#'   trap, estimated efficiency is \deqn{\frac{(\sum nCaught)
-#'   + 1}{(\sum nReleased) + 1}{(sum(nCaught) + 1) / (sum(nReleased) + 1)}}.  Values
-#'   for \code{nCaught} and \code{nReleased} come from function
-#'   \code{F.get.releases}. }
+#'   The first, \code{run_passage.enh} corrals the fitting.  It is different 
+#'   from \code{run_passage} in that all of the passage summary that is usually 
+#'   created has been suppressed.  This is because there is no need to 
+#'   bootstrap, once enhanced efficiency models have been obtained.
 #'   
+#'   The second, \code{get_release_data.enh} modifies the obtaining of release 
+#'   data, so as to obtain astrological data and mean fork-length.  It is very 
+#'   similar to its originator.
 #'   
-#'   \item{\code{eff.min.spline.samp.size} trials or more : A "B-spline model." 
-#'   This model starts by estimating a constant logistic regression where
-#'   recaptures (i.e., \code{nCaught}) is the number of "successes" and releases
-#'   (i.e.,  \code{nReleased}) is number of "trials". Assuming this constant
-#'   model is successful, the method estimates a series of increasingly complex
-#'   b-spline logistic regression models until AIC is minimized or model
-#'   estimation fails (failure to converge or estimates at boundary). B-spline
-#'   models, in general, divide the date range into intervals by adding 'knots'.
-#'   Between 'knots', b-spline models fit cubic polynomials in a way that 
-#'   connects smoothly at knots (refer to b-spline methods for details).
+#'   The third, \code{est_passage.enh}, corrals the data from 
+#'   \code{get_release_data.enh} for use in \code{est_efficiency.enh}.  It too 
+#'   should be very similar to its originator.
 #'   
-#'   The first (lowest order) b-spline model fitted contains zero knots and
-#'   therefore estimates a cubic model. Assuming that model was successful and
-#'   that AIC improved relative to the constant model, the method adds one knot
-#'   at the median date and re-estimates. If that model was successful and AIC
-#'   improved relative to the previous model, the method adds another knot at 
-#'   the (1/(knots+1))-th quantiles of date and re-estimates.  The method 
-#'   containues to add knots until one or more of the following conditions
-#'   happen: (1) AIC does not improve, (2) estimation fails somehow, or (3) the
-#'   maximum number of knots (i.e., \code{max.df.spline-3}) is fitted.
+#'   The fourth, \code{est_efficiency.enh}, ensures the calculation of weighted 
+#'   averages for the three efficiency-trial covariates have to do with mean 
+#'   fork-lengths, and percent of fishing performed at night, or while the moon 
+#'   is up.  It also emulates closely its originator.
 #'   
-#'   Using the default value of \code{max.df.spline}, the efficiency model is
-#'   either constant (intercept-only), cubic, or b-spline with one interval
-#'   knot.
-#'   
-#'   When the best logistic regression model is constant (intercept-only), 
-#'   estimated efficiency is the ratio-of-means estimator WITHOUT the "+1" bias
-#'   correction.  With many efficiency trial, the "+1" bias correction is tiny
-#'   and inconsequential. The exact efficiency model used at each subsite is
-#'   listed in the campR log file.
-#'   
-#'   The \eqn{\beta}s from the final logistic regression are saved for use in 
-#'   bootstrapping by function \code{F.boostrap.passage}.  Modeled efficiencies 
-#'   are used for all days, even if a particular day contained an efficiency
-#'   trial.
-#'   
-#'   All dates outside the efficiency trial season use the mean of estimates
-#'   within the season.  This means the efficiency model can vary within a
-#'   season, but is always constant before the first and after the last
-#'   efficiency trial.}
-#'   
-#'   }
-#'   
-#' @seealso \code{F.get.releases}, \code{F.bootstrap.passage}
+#'   Finally, the fifth, \code{eff_model.enh}, fits the enhanced efficiency 
+#'   models.  It follows a backwards selection procedure, allowing for both 
+#'   variable covariate selection, as well as variable temporal spline 
+#'   complexity.  It creates graphical output, for each trap, so as to provide 
+#'   further hypothesis generation.
 #' 
+#' @seealso \code{run_passage.enh}, \code{get_release_data},
+#'   \code{est_passage.enh}, \code{est_efficiency.enh}, \code{eff_model.enh}
+#'   
 #' @author WEST Inc.
-#' 
+#'   
 #' @examples 
 #' \dontrun{
 #' #   ---- Fit an efficiency model for each unique trapPositionID 

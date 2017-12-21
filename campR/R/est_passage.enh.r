@@ -1,81 +1,83 @@
 #' @export
 #' 
-#' @title F.est.passage
+#' @title F.est.passage.enh
 #'   
 #' @description Compute passage estimates, given catch and efficiency trial
 #'   data.
 #'   
 #' @param catch.df A data frame with one row per \code{trapvisitID} for a 
 #'   particular \code{FinalRun} and \code{lifeStage}.
+#'   
 #' @param release.df A data frame resulting from a call to function 
 #'   \code{F.get.release.data}.  Contains efficiency data.
+#'   
 #' @param summarize.by A text string indicating the temporal unit over which 
 #'   daily estimated catch is to be summarized.  Can be one of \code{"day"}, 
 #'   \code{"week"}, \code{"month"}, or \code{"year"}.
+#'   
 #' @param file.root  A text string indicating a prefix to append to all output.
+#' 
 #' @param ci A logical indicating if bootstrapped confidence intervals should be
 #'   estimated along with passage estimates.  The default is 95\%, although
 #'   levels other than 95\% can be set in function \code{F.bootstrap.passage}.
 #'   
-#' @return A data frame containing daily passage estimates, corrected for times 
-#'   not fishing, along with associated standard errors.
+#' @return Results from running the enhanced efficiency model fitting process 
+#'   include \code{csv}s of efficiency trials missing a covariate, for each
+#'   \code{TrapPositionID} at a \code{subSiteID}.  This prevents these
+#'   efficiency trials from inclusion in the model fitting process.
 #'   
-#' @details Two main steps comprise the estimation of passage.  The first 
-#'   fetches and formats all the necessary data.  The second performs 
-#'   statistical analysis on those processed data.  Function 
-#'   \code{F.est.passage} is the workhorse function for all statistical analysis
-#'   associated with the estimation of passage.  As such, it calls functions 
-#'   responsible for catch modeling (\code{F.est.catch}), efficiency modeling 
-#'   (\code{F.est.efficiency}), and the bootstrapping of passage
-#'   (\code{F.bootstrap.passage}).
+#'   Each \code{TrapPositionID} also results in a series of plots depicting the
+#'   fitted temporal spline, at each point of the backwards-fitting process. 
+#'   These could number many, depending on the number of covariates available
+#'   for possible exlcusion.
 #'   
-#'   Function \code{F.est.passage} brings together catch and efficiency data. 
-#'   Called the "grand merge," resulting data frame \code{grand.df} forms the 
-#'   basis of all passage estimation.  Merging takes places on unique 
-#'   combinations of \code{trapPositionID} and \code{batchDate}.  Trap matches 
-#'   respect decimal suffixes appended due to gaps in fishing.  See the section
-#'   Fishing Gaps under the Structured Query Language (SQL) header in \code{F.sqlFile}.
+#'   Each \code{trapPositionID} also outputs a \code{png} containing model
+#'   fitting information, including plots of efficiency versus each considered
+#'   covariate, along with plotted temporal trends of each covariate against
+#'   time.  Additional plots include the final fitted temporal spline (along
+#'   with an prediction "curve" derived from the available data), as well as a
+#'   final "plot" depicting model summary statistics, obtained via the
+#'   \code{summary} function against the logistic efficiency-trial model fits.
 #'   
-#'   In processing prior to the creation of the \code{grand.df}, the dates 
-#'   outside the first and last date of valid fishing are dropped from each
-#'   trap. In reality however, the season for each trap is identified as non-missing 
-#'   catch.  In other words, the grand merge inserts every date for all
-#'   traps because the underlying efficiency data frame has all dates.  For those
-#'   dates for which a trap was not fishing, the resulting catch (and thus passage)
-#'   is essentially considered zero.  
+#'   Note that no passage estimates result from the fitting of enhanced
+#'   efficiency models.  This is because bootstrapping does not occur, but also
+#'   because estimation of passage is not the goal of the model fitting process.
+#'   Use the regular function sequence; i.e., functions without the
+#'   \code{".enh"} to estimation passage for one-year intervals of interest.
 #'   
-#'   Function \code{F.bootstrap.passage} summarizes the daily passage estimates 
-#'   housed in \code{grand.df} to the temporal units specified via 
-#'   \code{summarize.by}, and then compiles all statistics for eventual 
-#'   reporting.  Statistics include weighted mean forklength, standard deviation
-#'   of forklength, and fish counts \eqn{N}.
+#' @section Five programs make up the specialized procedure for fitting enhanced
+#'   efficiency models.  This means actually compiling the data of efficiency 
+#'   trials obtained over several years, and then fitting a generalized additive
+#'   model (GAM) to those data.  All five programs have suffixes of 
+#'   \code{".enh"}, and originated with the program versions without the suffix.
+#'   As such, they are very similar to the originals.
 #'   
-#'   Function calls resulting in non-zero catch, but zero efficiency, due to no 
-#'   valid efficiency trials, result in warnings of zero efficiency.  The 
-#'   function will continue, but all passage estimates will be \code{NA}.
+#'   The first, \code{run_passage.enh} corrals the fitting.  It is different 
+#'   from \code{run_passage} in that all of the passage summary that is usually 
+#'   created has been suppressed.  This is because there is no need to 
+#'   bootstrap, once enhanced efficiency models have been obtained.
 #'   
-#' @section Fish Accounting: Passage estimation results in the partitioning of 
-#'   fish into different groups. For example, a fish could be assigned/not 
-#'   assigned, measured/not measured, half-cone/full-cone, plus-count, imputed, 
-#'   or inflated. Function \code{F.est.passage} organizes all of
-#'   these different types of fish following their initial partitioning in 
-#'   function \code{F.get.catch.data}. Fish accounting on a daily basis ensures 
-#'   that the counts of these different types of fish collapse back to their 
-#'   original totals following analytic processing.  Said another way, fish 
-#'   accounting ensures that no fish are mysteriously gained or lost during the 
-#'   passage estimation process.
+#'   The second, \code{get_release_data.enh} modifies the obtaining of release 
+#'   data, so as to obtain astrological data and mean fork-length.  It is very 
+#'   similar to its originator.
 #'   
-#'   Three types of daily checks are performed for each individual trap, with the
-#'   function stopping in any case for which accounting fails.  
+#'   The third, \code{est_passage.enh}, corrals the data from 
+#'   \code{get_release_data.enh} for use in \code{est_efficiency.enh}.  It too 
+#'   should be very similar to its originator.
 #'   
-#'   \enumerate{ 
-#'   \item{\eqn{totalCatch =  assignedCatch + unassignedCatch +
-#'   imputedCatch}} 
-#'   \item{\eqn{inflatedCatch =  assignedCatch + unassignedCatch}}
-#'   \item{\eqn{totalCatch =  inflatedCatch + imputedCatch}} }
+#'   The fourth, \code{est_efficiency.enh}, ensures the calculation of weighted 
+#'   averages for the three efficiency-trial covariates have to do with mean 
+#'   fork-lengths, and percent of fishing performed at night, or while the moon 
+#'   is up.  It also emulates closely its originator.
 #'   
-#' @seealso \code{F.get.release.data}, \code{F.bootstrap.passage},
-#'   \code{F.est.catch}, \code{F.est.efficiency}
+#'   Finally, the fifth, \code{eff_model.enh}, fits the enhanced efficiency 
+#'   models.  It follows a backwards selection procedure, allowing for both 
+#'   variable covariate selection, as well as variable temporal spline 
+#'   complexity.  It creates graphical output, for each trap, so as to provide 
+#'   further hypothesis generation.
+#' 
+#' @seealso \code{run_passage.enh}, \code{get_release_data},
+#'   \code{est_passage.enh}, \code{est_efficiency.enh}, \code{eff_model.enh}
 #'   
 #' @author WEST Inc.
 #'   

@@ -1,66 +1,78 @@
 #' @export
 #' 
-#' @title F.get.release.data 
+#' @title F.get.release.data.enh
 #' 
 #' @description Fetch data on efficiency trials from an Access database. 
 #' 
 #' @param site The identification number of the site for which estimates are
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param min.date The start date for data to include. This is a text string in
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as
 #'   \code{min.date}.
 #'   
-#' @return A data frame summarizing efficiency trials for the site of interest
-#'   for all traps between the dates indicated.  Data include \code{Recaps}
-#'   numerators and \code{nReleased} denominators.
+#' @return Results from running the enhanced efficiency model fitting process 
+#'   include \code{csv}s of efficiency trials missing a covariate, for each
+#'   \code{TrapPositionID} at a \code{subSiteID}.  This prevents these
+#'   efficiency trials from inclusion in the model fitting process.
 #'   
-#' @details Function \code{F.get.release.data} utilizes query sequences Build 
-#'   Report Criteria and Build Report Criteria Release to obtain all results 
-#'   within the specified \code{min.date} and \code{max.date}.  See section
-#'   Structured Query Language (SQL) Queries in function 
-#'   \code{F.run.sqlFile} for more details.
+#'   Each \code{TrapPositionID} also results in a series of plots depicting the
+#'   fitted temporal spline, at each point of the backwards-fitting process. 
+#'   These could number many, depending on the number of covariates available
+#'   for possible exlcusion.
 #'   
-#'   Query results include one record for every trap visit within a 
-#'   \code{releaseTime}, say 7 days, even if the trap visit did not catch any 
-#'   marked fish.  In this case, zeros are recorded for all combinations of 
-#'   \code{releaseID}, \code{trapPositionID}, and \code{trapVisitID}.
+#'   Each \code{trapPositionID} also outputs a \code{png} containing model
+#'   fitting information, including plots of efficiency versus each considered
+#'   covariate, along with plotted temporal trends of each covariate against
+#'   time.  Additional plots include the final fitted temporal spline (along
+#'   with an prediction "curve" derived from the available data), as well as a
+#'   final "plot" depicting model summary statistics, obtained via the
+#'   \code{summary} function against the logistic efficiency-trial model fits.
 #'   
-#'   Given a specific release, the resulting data frame tells how many fish from
-#'   the release were captured on subsequent trap visits, for each trap.  These 
-#'   result from collapsing all trap visits and computing the total number of 
-#'   each release's captured fish.  Note that generally, at any one time, more
-#'   than one release can "go," and so a single trap visit may catch fish from
-#'   multiple releases.  Total recaptures are summarized over unique
-#'   combinations of trap visits and positions, via variables \code{releaseID}
-#'   and \code{trapPositionID}.
+#'   Note that no passage estimates result from the fitting of enhanced
+#'   efficiency models.  This is because bootstrapping does not occur, but also
+#'   because estimation of passage is not the goal of the model fitting process.
+#'   Use the regular function sequence; i.e., functions without the
+#'   \code{".enh"} to estimation passage for one-year intervals of interest.
 #'   
-#'   Release records need to have both variables \code{IncludeTest} and 
-#'   \code{IncludeCatch} flagged as \code{"Yes"} for inclusion in efficiency 
-#'   estimation. Recaptures that took place during half-cone operations are 
-#'   multiplied by the value of the \code{halfConeMulti} global variable, which is set 
-#'   at 2. Half cone operations are identified by variable \code{HalfCone} 
-#'   having a value of \code{"Yes"}.
+#' @section Five programs make up the specialized procedure for fitting enhanced
+#'   efficiency models.  This means actually compiling the data of efficiency 
+#'   trials obtained over several years, and then fitting a generalized additive
+#'   model (GAM) to those data.  All five programs have suffixes of 
+#'   \code{".enh"}, and originated with the program versions without the suffix.
+#'   As such, they are very similar to the originals.
 #'   
-#'   Variables \code{HrsToFirstVisitAfter} and \code{HrsToLastVisitAfter} are 
-#'   used in function \code{F.est.efficiency} as helper variables to derive a 
-#'   batch date when the \code{meanEndTime} variable is \code{NA}.
+#'   The first, \code{run_passage.enh} corrals the fitting.  It is different 
+#'   from \code{run_passage} in that all of the passage summary that is usually 
+#'   created has been suppressed.  This is because there is no need to 
+#'   bootstrap, once enhanced efficiency models have been obtained.
 #'   
-#' @section Mean Recapture Time: The mean recapture time is estimated for each 
-#'   unique grouping of \code{releaseID} and \code{trapPositionID}.  In the case
-#'   of no recaptures, the mean recapture time is recorded as \code{NA}.  In all
-#'   other cases, the mean recapture time is calculated as the weighted mean of 
-#'   recapture times, weighting on the number of caught fish.  For example, 
-#'   suppose fishing takes place at a particular trap over 7 consecutive days. 
-#'   If the bulk of fish were caught on day 7, then the mean recapture time 
-#'   would be near that 7th day of fishing.  This is in contrast to a "straight"
-#'   mean recapture time, which would estimate a mean recapture time 3.5 days
-#'   after the start of fishing, regardless of the temporal distribution of 
-#'   captured fish over the entire 7-day period.
+#'   The second, \code{get_release_data.enh} modifies the obtaining of release 
+#'   data, so as to obtain astrological data and mean fork-length.  It is very 
+#'   similar to its originator.
 #'   
-#' @seealso \code{F.run.sqlFile}, \code{F.summarize.releases}, \code{F.release.summary}
+#'   The third, \code{est_passage.enh}, corrals the data from 
+#'   \code{get_release_data.enh} for use in \code{est_efficiency.enh}.  It too 
+#'   should be very similar to its originator.
+#'   
+#'   The fourth, \code{est_efficiency.enh}, ensures the calculation of weighted 
+#'   averages for the three efficiency-trial covariates have to do with mean 
+#'   fork-lengths, and percent of fishing performed at night, or while the moon 
+#'   is up.  It also emulates closely its originator.
+#'   
+#'   Finally, the fifth, \code{eff_model.enh}, fits the enhanced efficiency 
+#'   models.  It follows a backwards selection procedure, allowing for both 
+#'   variable covariate selection, as well as variable temporal spline 
+#'   complexity.  It creates graphical output, for each trap, so as to provide 
+#'   further hypothesis generation.
+#' 
+#' @seealso \code{run_passage.enh}, \code{get_release_data},
+#'   \code{est_passage.enh}, \code{est_efficiency.enh}, \code{eff_model.enh}
 #' 
 #' @author WEST Inc. 
 #' 
