@@ -197,8 +197,13 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #   ---- Spline data start in 1959, but end in 1960.
       if(strt.dt$year == 59 & end.dt$year == 60){
         if(yr.m == yr.M){
-          strt.dt$year <- yr.m + 1      # Make up the missing 1 year, because starting in 1959.
-          end.dt$year <- yr.M
+          if(min.date.p$mon < strt.dt$mon){
+            strt.dt$year <- yr.m - 1
+            end.dt$year <- yr.M
+          } else {
+            strt.dt$year <- yr.m + 1      # Make up the missing 1 year, because starting in 1959.
+            end.dt$year <- yr.M
+          }
         } else if(yr.m != yr.M){
           strt.dt$year <- yr.m          # Do not make up the missing year, because we don't need to.
           end.dt$year <- yr.M
