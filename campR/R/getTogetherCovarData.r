@@ -125,22 +125,22 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     #library(RPostgres)
     
     #   ---- Query the PostgreSQL database for information on temperature and flow.  
-    ch <- dbConnect(Postgres(),
-                    dbname='EnvCovDB',
-                    host='streamdata.west-inc.com',
-                    port=5432,
-                    user="jmitchell",
-                    password="G:hbtr@RPH5M.")
-    res <- dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
-    nGood <- dbFetch(res)
-    dbClearResult(res)
-    dbDisconnect(ch)
+    # ch <- dbConnect(dbDriver('PostgreSQL'),#RPostgres::Postgres(),    ##
+    #                 dbname='dbname=EnvCovDB sslmode=require',
+    #                 host='streamdata.west-inc.com',
+    #                 port=5432,
+    #                 user="jmitchell",
+    #                 password="G:hbtr@RPH5M.")
+    # res <- dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
+    # nGood <- dbFetch(res)
+    # dbClearResult(res)
+    # dbDisconnect(ch)
     
     if(nrow(nGood) > 0){
-      df[[ii]] <- queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
+     # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
       df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
     } else {
-      df[[ii]] <- queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
+      #df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
       
       if(sum(!is.na(df[[ii]]$flow_cfs)) > 0 & (sum(df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs)) > 0) ){
         df[[ii]][df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs),]$flow_cfs <- NA
