@@ -171,11 +171,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #campRDir <- find.package("campR")
       #data(paste0(campRDir,"R/sysdata.rda",))  # <---- FIX ME FIX ME FIX ME.
       
-      load(paste0(holding,"_splineCoef.RData"))
-      load(paste0(holding,"_splineDays.RData"))
-      load(paste0(holding,"_splineBegD.RData"))
-      load(paste0(holding,"_splineEndD.RData"))
-      load(paste0(holding,"_fit.RData"))
+      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_splineCoef.RData"))
+      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_splineDays.RData"))
+      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_splineBegD.RData"))
+      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_splineEndD.RData"))
+      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_fit.RData"))
       
       #   ---- Stuff we just loaded.  
       #splineDays ...came from... df$batchDate2[eff.ind.inside]
