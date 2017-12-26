@@ -62,10 +62,9 @@ be a blue triangle.
 
 }
 }
-\author{
-Jared Studyvin WEST Inc.
-}
 \seealso{
 \code{\link{assignLifeStage}}
 }
-
+\author{
+Jared Studyvin WEST Inc.
+}

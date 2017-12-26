@@ -46,4 +46,3 @@ df <- F.allCatch.table(site,min.date,max.date,output.file)
 \seealso{
 \code{F.chinookByDate.table}, \code{F.get.all.fish.data}
 }
-

@@ -165,15 +165,13 @@ the outcome axis.
   the loglikelihood is reconstructed;  to estimate the value of \eqn{log(n!)}
   inherent to the calculation, the method of Nemes (2007) is used.
 }
+
 \examples{
 \dontrun{
 #   ---- Fit splines and impute for missing data for each unique
 #   ---- trapPositionID in data frame catch.df.
 fitCatch <- F.catch.model(catch.df)
 }
-}
-\author{
-WEST Inc.
 }
 \references{
 Nemes, G. (2010) "New asymptotic expansion for the Gamma
@@ -182,4 +180,6 @@ Nemes, G. (2010) "New asymptotic expansion for the Gamma
 \seealso{
 \code{F.efficiency.model}
 }
-
+\author{
+WEST Inc.
+}

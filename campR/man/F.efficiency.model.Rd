@@ -86,6 +86,7 @@ efficiency trials.
   
   }
 }
+
 \examples{
 \dontrun{
 #   ---- Fit an efficiency model for each unique trapPositionID 
@@ -93,10 +94,9 @@ efficiency trials.
 F.efficiency.model( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.releases}, \code{F.bootstrap.passage}
 }
-
+\author{
+WEST Inc.
+}

@@ -29,4 +29,3 @@ capwords("CAMP",strict=TRUE)
 \author{
 WEST Inc.
 }
-

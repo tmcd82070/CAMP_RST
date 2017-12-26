@@ -64,10 +64,9 @@ attribute of the \code{release.df} data frame.
 theEff <- F.est.efficiency(release.df,batchDate,df.spline=4,plot=TRUE,plots.file=NA)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.release.data}, \code{F.assign.batch.date}
 }
-
+\author{
+WEST Inc.
+}

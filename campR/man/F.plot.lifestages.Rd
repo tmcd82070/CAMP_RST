@@ -41,11 +41,10 @@ Function \code{F.plot.lifestages} works on both life stages and
 F.plot.lifestages(df=allCatch,file.root="PassageResults",plot.pies=FALSE)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.run.passage}, \code{passageWithLifeStageAssign}, 
   \code{F.lifestage.passage.forkLength}
 }
-
+\author{
+WEST Inc.
+}

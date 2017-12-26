@@ -48,4 +48,3 @@ nreleases <- F.buildReportCriteriaRelease( site, min.date, max.date )
 }
 
 }
-

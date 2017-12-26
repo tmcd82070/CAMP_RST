@@ -4,7 +4,7 @@
 \alias{F.get.release.data}
 \title{F.get.release.data}
 \usage{
-F.get.release.data(site, taxon, min.date, max.date)
+F.get.release.data(site, taxon, min.date, max.date, visit.df)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are
@@ -72,6 +72,7 @@ Function \code{F.get.release.data} utilizes query sequences Build
   after the start of fishing, regardless of the temporal distribution of 
   captured fish over the entire 7-day period.
 }
+
 \examples{
 \dontrun{
 #   ---- Fetch all Chinook salmon efficiency data on the American River 
@@ -83,10 +84,9 @@ max.date <- "2013-06-01"
 df <- F.get.release.data(site,taxon,min.date,max.date)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.run.sqlFile}, \code{F.summarize.releases}, \code{F.release.summary}
 }
-
+\author{
+WEST Inc.
+}

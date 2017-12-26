@@ -69,10 +69,9 @@ Data frame \code{catch} contains records with missing data for one
 newCatch <- F.expand.plus.counts(catch)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.assign.1dim}, \code{F.assign.2dim}
 }
-
+\author{
+WEST Inc.
+}

@@ -40,10 +40,9 @@ Function \code{F.est.catch.trapN} performs exactly the same
 ans <- F.est.catch.trapN(catch.df, plot=TRUE, plot.file="raw_catch.pdf")
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.est.catch}
 }
-
+\author{
+WEST Inc.
+}

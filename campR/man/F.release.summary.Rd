@@ -55,4 +55,3 @@ df <- F.release.summary(site,taxon,min.date,max.date,output.file)
 \seealso{
 \code{F.get.release.data}, \code{F.summarize.releases}
 }
-

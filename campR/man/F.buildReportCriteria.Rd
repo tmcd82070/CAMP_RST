@@ -48,10 +48,9 @@ max.date <- "2013-06-08"
 nvisits <- F.buildReportCriteria( site, min.date, max.date )
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{sqlQuery}, \code{F.run.sqlFile}, \code{F.sql.error.check}
 }
-
+\author{
+WEST Inc.
+}

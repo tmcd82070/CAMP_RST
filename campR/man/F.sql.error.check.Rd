@@ -44,10 +44,9 @@ F.sql.error.check(ans)                           # Check for validity.
                                                  #  --> Results in error message.  
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{sqlQuery}
 }
-
+\author{
+WEST Inc.
+}

@@ -62,10 +62,9 @@ by.lifestage <- TRUE
 F.length.frequency(site,taxon,run,min.date,max.date,output.file,by.lifestage)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.indiv.fish.data}
 }
-
+\author{
+WEST Inc.
+}

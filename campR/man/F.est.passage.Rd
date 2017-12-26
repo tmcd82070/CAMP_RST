@@ -87,6 +87,7 @@ Two main steps comprise the estimation of passage.  The first
   \item{\eqn{inflatedCatch =  assignedCatch + unassignedCatch}}
   \item{\eqn{totalCatch =  inflatedCatch + imputedCatch}} }
 }
+
 \examples{
 \dontrun{
 #   ---- Estimate passage based on a given set of 
@@ -94,11 +95,10 @@ Two main steps comprise the estimation of passage.  The first
 thePassage <- F.est.passage(catch.df, release.df, "week", "myFileRoot", ci=TRUE )
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.release.data}, \code{F.bootstrap.passage},
   \code{F.est.catch}, \code{F.est.efficiency}
 }
-
+\author{
+WEST Inc.
+}

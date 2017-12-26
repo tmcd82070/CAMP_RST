@@ -67,4 +67,3 @@ newDate <- F.assign.batch.date(origDate)
 \author{
 WEST Inc.
 }
-

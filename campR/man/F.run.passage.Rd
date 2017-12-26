@@ -4,7 +4,8 @@
 \alias{F.run.passage}
 \title{F.run.passage}
 \usage{
-F.run.passage(site, taxon, min.date, max.date, by, output.file, ci = TRUE)
+F.run.passage(site, taxon, min.date, max.date, by, output.file, ci = TRUE,
+  useEnhEff = TRUE)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -96,4 +97,3 @@ ci <- TRUE
 \seealso{
 \code{F.get.release.data}, \code{F.get.catch.data}
 }
-

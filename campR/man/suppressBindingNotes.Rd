@@ -29,4 +29,3 @@ A helper function to assist in meeting R package devtools::check()
 Tyler Rinker
 }
 \keyword{internal}
-

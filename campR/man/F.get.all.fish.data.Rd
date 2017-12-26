@@ -40,10 +40,9 @@ max.date <- "2013-06-01"
 F.get.all.fish.data(site,min.date,max.date)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.indiv.fish.data}
 }
-
+\author{
+WEST Inc.
+}

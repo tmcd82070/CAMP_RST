@@ -43,10 +43,9 @@ max.date <- "2013-05-30"
 dfWeight <- getCatchDataWeight(taxon,site,min.date,max.date)
 }
 }
-\author{
-Jared Studyvin WEST Inc.
-}
 \seealso{
 \code{assignLifeStage}
 }
-
+\author{
+Jared Studyvin WEST Inc.
+}

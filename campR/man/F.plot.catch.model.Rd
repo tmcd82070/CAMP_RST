@@ -67,10 +67,9 @@ attr(df,"life.stage") <- "Fry"
 F.plot.catch.model( df, file=NA )
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.catch.model}
 }
-
+\author{
+WEST Inc.
+}

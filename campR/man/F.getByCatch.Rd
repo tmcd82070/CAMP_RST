@@ -37,10 +37,9 @@ max.date <- "2013-06-01"
 df <- F.getByCatch(site,min.date,max.date)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.run.sqlFile}
 }
-
+\author{
+WEST Inc.
+}

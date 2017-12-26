@@ -47,4 +47,3 @@ visit <- F.get.all.catch.data(site,taxon,min.date,max.date)
 \seealso{
 \code{F.all.catch.table}
 }
-

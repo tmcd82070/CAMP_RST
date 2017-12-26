@@ -79,10 +79,9 @@ output.file <- "American River"
 F.weekly.effort(site,taxon,min.date,max.date,output.file)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.run.sqlFile}
 }
-
+\author{
+WEST Inc.
+}

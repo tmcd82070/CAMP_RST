@@ -62,10 +62,9 @@ Function \code{F.assign.2dim} makes a new variable with joint
 catch2 <- F.assign.2dim(catch, FinalRun, lifeStage)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.expand.plus.counts}, \code{F.assign1.dim}
 }
-
+\author{
+WEST Inc.
+}

@@ -58,10 +58,9 @@ F.get.indiv.fish.data(site,taxon,run,min.date,max.date,keep)
 
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.size.by.date}
 }
-
+\author{
+WEST Inc.
+}

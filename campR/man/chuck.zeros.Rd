@@ -52,10 +52,9 @@ Manipulation of the \code{b} and \code{e} variables specifies the
 df <- chuck.zeros(0,0,4,12,catch.df)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{max.buff.days}
 }
-
+\author{
+WEST Inc.
+}

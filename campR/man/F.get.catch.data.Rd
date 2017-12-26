@@ -193,6 +193,7 @@ Function \code{F.get.catch.data} fetches all appropriate catch data
   \code{TrapStatus}, which is set equal to \code{"Not fishing"}.  Equivalently,
   variable \code{trapVisitID} is missing.
 }
+
 \examples{
  
 \dontrun{
@@ -217,4 +218,3 @@ catch <- F.get.catch.data(site,taxon,min.date,max.date,
   \code{assignLifeStage.R}, \code{assignLSCompare.R} for life stage
   reassignment.
 }
-

@@ -279,6 +279,7 @@ clause must have preceding and antecedent \code{#}-signs added to them.
   
 }
 }
+
 \examples{
 \dontrun{
 #   ---- Open ODBC channel.
@@ -291,10 +292,9 @@ F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
 }
  
 }
-\author{
-WEST Inc., Connie Shannon
-}
 \seealso{
 \code{sqlQuery}, \code{sqlFetch}
 }
-
+\author{
+WEST Inc., Connie Shannon
+}

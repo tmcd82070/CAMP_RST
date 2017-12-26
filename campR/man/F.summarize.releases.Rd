@@ -30,10 +30,9 @@ The multiplicative expansion of caught fish due to half-cone
 df <- F.summarize.releases(release.df)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.release.data}
 }
-
+\author{
+WEST Inc.
+}

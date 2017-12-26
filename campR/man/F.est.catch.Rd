@@ -105,11 +105,10 @@ Function \code{F.est.catch} assumes that only species and life
 ans <- F.est.catch(catch.df, plot=TRUE, plot.file="raw_catch.pdf")
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.catch.data}, \code{F.est.catch.trapN}, 
   \code{chuck.zeros}, \code{max.buff.days}
 }
-
+\author{
+WEST Inc.
+}

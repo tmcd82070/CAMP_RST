@@ -41,4 +41,3 @@ catchWithNewLifeStageCats <- reclassifyLS(catch)
 \seealso{
 \code{GlobalVars}, \code{F.get.catch.data}, \code{F.assign.1dim}
 }
-

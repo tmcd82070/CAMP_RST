@@ -124,11 +124,10 @@ F.lifestage.passage.forkLength(site,taxon,min.date,max.date,by,
   output.file,ci,nls,weightuse,autols,reclassify)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.release.data}, \code{F.get.catch.data},
   \code{F.est.passage}
 }
-
+\author{
+WEST Inc.
+}

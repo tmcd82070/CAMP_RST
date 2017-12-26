@@ -61,10 +61,9 @@ output.file <- "American"
 F.size.by.date(site,taxon,run,min.date,max.date,output.file)
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.indiv.fish.data}
 }
-
+\author{
+WEST Inc.
+}

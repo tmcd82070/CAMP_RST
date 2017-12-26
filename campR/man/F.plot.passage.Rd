@@ -46,10 +46,9 @@ It is assumed that data frame \code{df} contains at the least
 F.plot.passage( df, out.file=NA )
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.est.passage}
 }
-
+\author{
+WEST Inc.
+}

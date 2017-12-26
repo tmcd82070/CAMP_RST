@@ -101,10 +101,9 @@ assignLifeStage(DATA,groupN,USEWeight)
 
 }
 }
-\author{
-Jared Studyvin, WEST Inc.
-}
 \seealso{
 \code{\link{assignLSCompare}}, \code{\link{GlobalVars}}
 }
-
+\author{
+Jared Studyvin, WEST Inc.
+}

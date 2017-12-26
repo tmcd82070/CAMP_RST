@@ -37,10 +37,9 @@ Function \code{max_buff_days} is a helper function utilized in the
 vec <- max.buff.days(df,"12345")
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.chuck.zeros}
 }
-
+\author{
+WEST Inc.
+}

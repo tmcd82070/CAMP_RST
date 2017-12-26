@@ -35,10 +35,9 @@ Plot per-trap efficiency values for all days between specified
 F.plot.eff.model( df, file=NA )
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.efficiency.model}
 }
-
+\author{
+WEST Inc.
+}

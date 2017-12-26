@@ -6,7 +6,7 @@
 \usage{
 F.bootstrap.passage(grand.df, catch.fits, catch.Xmiss, catch.gapLens,
   catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates,
-  eff.X.obs.data, sum.by, R, ci = T)
+  eff.X.obs.data, eff.type, sum.by, R, ci = T)
 }
 \arguments{
 \item{grand.df}{A data frame containing both daily estimated passage and 
@@ -42,6 +42,9 @@ must be estimated, for each trap.}
 
 \item{eff.X.obs.data}{A list containing the raw observed efficiency data used
 to fit efficiency models and estimate bias-corrected efficiencies.}
+
+\item{eff.type}{A list containing the type of efficiency model utilized for 
+each trap.  See \code{eff_model.r} for details.}
 
 \item{sum.by}{A text string indicating the temporal unit over which daily 
 estimated catch is to be summarized.  Can be one of \code{day}, 
@@ -154,6 +157,7 @@ In order to bootstrap the estimated passage for a particular trap,
   observed catch to create a full day-based temporal fishing record for each
   trap.
 }
+
 \examples{
 \dontrun{
 grand.df <- grand.df
@@ -173,9 +177,6 @@ df <- F.bootstrap.passage(grand.df,catch.fits,catch.Xmiss,catch.gapLens,
   sum.by,R,ci=T)
 }
 }
-\author{
-WEST Inc.
-}
 \references{
 Manly, B. F. J.  Randomization, Bootstrap and Monte Carlo Methods
   in Biology, Third Edition, 2006.  Chapman and Hall/CRC.
@@ -186,4 +187,6 @@ Manly, B. F. J.  Randomization, Bootstrap and Monte Carlo Methods
 \seealso{
 \code{F.est.catch}, \code{F.est.eff}, \code{F.summarize.passage}, \code{F.efficiency.model}
 }
-
+\author{
+WEST Inc.
+}

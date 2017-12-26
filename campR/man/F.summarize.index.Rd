@@ -58,10 +58,9 @@ list.month <- F.summarize.index( batchDate, "month" )
 
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.summarize.passage}
 }
-
+\author{
+WEST Inc.
+}

@@ -189,4 +189,3 @@ GlobalVars(ouput.dir="~/Camp_output" )
 \author{
 WEST Inc.
 }
-

@@ -75,10 +75,9 @@ catch.df0 <- F.summarize.fish.visit(catch,"unassigned")
 }
 
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.get.catch.data}
 }
-
+\author{
+WEST Inc.
+}

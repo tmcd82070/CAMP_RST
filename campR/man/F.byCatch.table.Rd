@@ -43,10 +43,9 @@ Query sequence Build Report Criteria builds the appropriate time
 F.byCatch.table(57000,"2013-01-16","2013-06-08",output.file="American River")
 }
 }
-\author{
-WEST Inc.
-}
 \seealso{
 \code{F.run.sqlFile}, \code{F.getByCatch}
 }
-
+\author{
+WEST Inc.
+}

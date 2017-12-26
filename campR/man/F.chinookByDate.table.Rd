@@ -50,4 +50,3 @@ F.chinookByDate.table(site,min.date,max.date,output.file)
 \seealso{
 \code{F.get.catch.data}
 }
-
