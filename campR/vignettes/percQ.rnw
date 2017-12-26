@@ -1,5 +1,6 @@
 
-
+%\VignetteEngine{knitr::knitr} 
+%\VignetteIndexEntry{} 
 
 
 \documentclass{article}
