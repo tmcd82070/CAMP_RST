@@ -32,6 +32,9 @@ if("Q" %in% reportRun){
 # require("mvtnorm",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 # require("splines",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 
+#   ---- Tell the BigLooper 2.0 where to store spline basis matrices resulting from fitting Enhanced Efficiency Models.  
+
+
 #   ---- Install the working version of campR.  
 #   ---- Prior to running this step, make sure you install the zip folder.
 detach("package:campR", unload=TRUE)
@@ -54,7 +57,9 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
 #theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
 
-theExcel <- theExcel[52:70,]
+theExcel <- theExcel[theExcel$streamName == "American River",]     # American
+theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
+theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
 #theExcel <- theExcel[c(2,3,4),]
 
 
@@ -118,19 +123,19 @@ source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4
 source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.enh.R")
 source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.enh.R")
 
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeSkinnyTimes.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTimeProp.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot.bs.spline.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeSkinnyTimes.R")       # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTimeProp.R")           # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")         # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")              # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot.bs.spline.R")        # roxygenized
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/fitSpline.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/covarPlot.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/covarPlot.R")             # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")         # roxygenized
 
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reduceETrials.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkMissingCovars.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/backEnhFit.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reduceETrials.r")         # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkMissingCovars.r")    # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.r")  # roxygenized
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/backEnhFit.r")            # roxygenized
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/buildAstroStats.r")       # roxygenized
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/stepper.r")               # roxygenized
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/overDphi.r")              # roxygenized
