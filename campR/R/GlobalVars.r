@@ -124,6 +124,10 @@
 #'   \code{unassd.sig.digit=1}, plus-count fish are rounded to the nearest tenth. 
 #'   Setting \code{unassd.sig.digit=0} rounds to the nearest whole fish.
 #'   
+#' @param packageBuild_sysdata.rda The location of the \code{sysdata.rda} folder
+#'   on the WEST, Inc. \code{git} working directory into which model fitting 
+#'   output from enhanced efficiency fits are stored.  
+#'   
 #' @details One additional global variable is defined. \code{table.names} is a 
 #'   list containing the mapping of table names in Access to table names in R. 
 #'   This was set up to facilitate painless table name changes in Access.  This 
@@ -190,7 +194,8 @@ GlobalVars <- function(
 	forkLengthCutPoints = data.frame(lifeStage=c("FL1 leq 41mm","FL2 42-72mm","FL3 73-110mm","FL4 geq 111mm"),cutPoints=c(41,72,110,9999)),
 	passageRounder = 4,
 	eff.min.spline.samp.size = 10,
-	unassd.sig.digit = 1
+	unassd.sig.digit = 1,
+	packageBuild_sysdata.rda = "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/sysdata.rda"
 	){
 
 	  # DB file -------
@@ -254,6 +259,10 @@ GlobalVars <- function(
 	  
 	  # Set number of significant digits for unassigned fish during plus counting.
 	  assign("unassd.sig.digit", unassd.sig.digit, pos=.GlobalEnv)
+	  
+	  # Set folder to store enhanced efficiency model stuff in. 
+	  assign("packageBuild_sysdata.rda", packageBuild_sysdata.rda, pos=.GlobalEnv)
+
     
     # Table names is a special global variable that we intentionally make harder ----
     # to change.  I.e., must change code here and re-compile. 

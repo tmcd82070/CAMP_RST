@@ -126,7 +126,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     
     #   ---- Query the PostgreSQL database for information on temperature and flow.  
     ch <- dbConnect(RPostgres::Postgres(),    
-                    dbname='dbname=EnvCovDB sslmode=require',
+                    dbname='EnvCovDB',
                     host='streamdata.west-inc.com',
                     port=5432,
                     user="jmitchell",
@@ -137,7 +137,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     dbDisconnect(ch)
     
     if(nrow(nGood) > 0){
-     # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
+      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
       df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
     } else {
       #df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)

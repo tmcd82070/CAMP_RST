@@ -94,6 +94,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   option <- 2
   forEffPlots <- attr(obs.eff.df,"forEffPlots")
   
+  #   ---- Obtain necessary variables from the global environment.  
+  packageBuild_sysdata.rda <- get("packageBuild_sysdata.rda",envir=.GlobalEnv)
+  
+  
   #   ---- Read in table of fishing seasons.  These are derived from taking the minimum 
   #   ---- start period of fishing, based on month and date, for all fishing seasons 
   #   ---- recorded in "theExcel" used for Big-Looping.  Similar logic applies for the
@@ -323,9 +327,17 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #if(length(splineCoef) == dim(X_t)[2]){message("Dimension of spline beta vector equals dimension of temporal basis column space.\n")}
     
     #   ---- TEMPORARY FILE SAVE.  
-    holding <- paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/splineSummary_",site,"_",trap,".RData")
-    #save(X_t,splineCoef,splineDays,splineBegD,splineEndD,file=holding)
-    save(splineCoef,splineDays,splineBegD,splineEndD,fit,file=holding)
+    #holding <- paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/splineSummary_",site,"_",trap,".RData")
+    #save(splineCoef,splineDays,splineBegD,splineEndD,fit,file=holding)
+    
+    #   ---- Specify packageBuildData in Big Looper 2.0.  
+    holding <- paste0(packageBuild_sysdata.rda,"/",site,"_",trap)
+    
+    save(splineCoef,file=paste0(holding,"_splineCoef.RData"))
+    save(splineDays,file=paste0(holding,"_splineDays.RData"))
+    save(splineBegD,file=paste0(holding,"_splineBegD.RData"))
+    save(splineEndD,file=paste0(holding,"_splineEndD.RData"))
+    save(fit,file=paste0(holding,"_fit.RData"))
   
     
     
@@ -407,20 +419,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     dev.off()
     par(mfcol=c(1,1))
         
-        
-    #   ---- JASON TURNS OFF FOR ENHANCED MODEL BETA OBTAINMENT.        
-    # #   ---- If you want to use observed efficiency on days when efficiency trials were run, uncomment.
-    # #miss.eff.inside <- ind.inside & !ind  # missing efficiencies inside first and last trials, sized same as df
-    # #miss.eff <- miss.eff.inside[ind.inside]      # missing efficiencies inside first and last trials, sized same as pred
-    # #df$efficiency[miss.eff.inside] <- pred[miss.eff]
-    # 
-    # #   ---- If, however, you want to use the modeled efficiency for all days, even when a trial was done, use these. 
-    # df$efficiency[ind.inside] <- pred
-    # 
-    # #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
-    # mean.p <- mean(pred, na.rm=T)
-    # df$efficiency[!ind.inside] <- mean.p
-        
+    
     #   ---- Save the fit for bootstrapping.
     fits[[trap]] <- fit  
         
@@ -486,25 +485,12 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   rownames(varSummary) <- NULL
   
   #   ---- Export these data in a special spot, ready to go for more R processing.
-  here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/"
-  save(varSummary,file=paste0(here,"varSummary_",site,".RData"))
-  
-  
-  # #   ---- Make a plot if called for.
-  # if( !is.na(plot.file) ) {
-  #   out.fn <- F.plot.eff.model( ans, plot.file )
-  # } else {
-  #   out.fn <- NULL
-  # }
+  save(varSummary,file=paste0(packageBuild_sysdata.rda,"/varSummary_",site,".RData"))
   
   cat("Observed efficiency data used in efficiency models.\n")
   print(obs.data)
   cat("\n")
-  
-  #ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts, obs.data=obs.data, eff.type=eff.type)
-  #attr(ans, "out.fn.list") <- out.fn
-  
+ 
   save("fits",file=paste0(plot.file,".RData"))
-  #ans
-  
+
 }

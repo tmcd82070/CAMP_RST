@@ -108,6 +108,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   min.date <- attr(obs.eff.df,"min.date")
   max.date <- attr(obs.eff.df,"max.date")
   useEnhEff <- attr(obs.eff.df,"useEnhEff")
+  site <- attr(obs.eff.df,"site")
   
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
