@@ -1,8 +1,8 @@
 Package: campR
 Type: Package
 Title: CAMP RST R Routines
-Version: 1.0.0
-Date: 2016-08-19
+Version: 1.1.0
+Date: 2018-01-15
 Author: Trent McDonald [aut, cre],
   Jason Mitchell [aut],
   Jared Studyvin [aut],
@@ -10,7 +10,7 @@ Author: Trent McDonald [aut, cre],
 Maintainer: Trent McDonald <tmcdonald@west-inc.com>
 Description: R routines for the CAMP R platform. 
 License: GNU General Public License
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Depends: RODBC
 Imports:
  quantreg, 
@@ -28,7 +28,9 @@ Imports:
  magrittr,
  Rcpp,
  ellipse,
- tidyr
+ tidyr,
+ EnvCovDBpostgres,
+ RPostgres
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
