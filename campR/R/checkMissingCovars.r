@@ -36,6 +36,7 @@
 #'   \item{m.i}{The number of efficiency trials with full rows of data.  Necessarily less than or equal to the \code{m.i} provided to the function.}
 #'   \item{dataDeficient}{The dataframe identifying the e-trial rows removed from \code{tmp.df}.  Output as a \code{csv}.}
 #'   \item{atLeast}{The threshold indicating the number of e-trial rows that must be non-missing for covariate inclusion.  Equal to \eqn{floor(0.90*m.i) + 1}.}
+#' }
 #' 
 #' @examples
 #' \dontrun{

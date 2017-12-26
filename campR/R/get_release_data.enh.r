@@ -40,7 +40,8 @@
 #'   Use the regular function sequence; i.e., functions without the
 #'   \code{".enh"} to estimation passage for one-year intervals of interest.
 #'   
-#' @section Five programs make up the specialized procedure for fitting enhanced
+#' @section Functions Used to Fit Enhanced Efficiency Models: 
+#'   Five programs make up the specialized procedure for fitting enhanced
 #'   efficiency models.  This means actually compiling the data of efficiency 
 #'   trials obtained over several years, and then fitting a generalized additive
 #'   model (GAM) to those data.  All five programs have suffixes of 

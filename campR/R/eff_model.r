@@ -109,6 +109,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   max.date <- attr(obs.eff.df,"max.date")
   useEnhEff <- attr(obs.eff.df,"useEnhEff")
   
+  #   ---- Obtain necessary variables from the global environment.  
+  time.zone <- get("time.zone",envir=.GlobalEnv)
+  
   #   ---- Decide if we're going to use enhanced efficiency.  
   if(useEnhEff == TRUE){
     

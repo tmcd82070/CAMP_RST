@@ -8,7 +8,7 @@
 #'   
 #' @param df A data frame containing variables recorded via non-continguous
 #'   \code{batchDate}s.  Argument \code{df} should include \code{"batchDate"}
-#'   and \code{"TrapPositionID"{} in addition to the variables for which
+#'   and \code{"TrapPositionID"} in addition to the variables for which
 #'   step-expansion is required.
 #'   
 #' @param varVec A string vector containing the names of variables for which
