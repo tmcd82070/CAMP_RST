@@ -128,6 +128,7 @@ F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plo
   attr(eff, "min.date") <- attr(release.df,"min.date")
   attr(eff, "max.date") <- attr(release.df,"max.date")
   attr(eff, "useEnhEff") <- attr(release.df,"useEnhEff")
+  attr(eff, "site") <- release.df$siteID[1]
   
   #   ---- If there are missing days, impute them.  
   missing.days <- is.na(eff$efficiency)

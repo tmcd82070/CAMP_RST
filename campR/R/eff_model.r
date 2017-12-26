@@ -112,6 +112,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
+  packageBuild_sysdata.rda <- get("packageBuild_sysdata.rda",envir=.GlobalEnv)
   
   #   ---- Decide if we're going to use enhanced efficiency.  
   if(useEnhEff == TRUE){
@@ -165,7 +166,16 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       ind <- !is.na(df$efficiency)
       
       #   ---- Get the temporal spline basis matrix.  
-      load(paste0("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/","splineSummary_",site,"_",trap,".RData"))
+      #load(paste0("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/","splineSummary_",site,"_",trap,".RData"))
+      
+      #campRDir <- find.package("campR")
+      #data(paste0(campRDir,"R/sysdata.rda",))  # <---- FIX ME FIX ME FIX ME.
+      
+      load(paste0(holding,"_splineCoef.RData"))
+      load(paste0(holding,"_splineDays.RData"))
+      load(paste0(holding,"_splineBegD.RData"))
+      load(paste0(holding,"_splineEndD.RData"))
+      load(paste0(holding,"_fit.RData"))
       
       #   ---- Stuff we just loaded.  
       #splineDays ...came from... df$batchDate2[eff.ind.inside]
