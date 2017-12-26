@@ -75,8 +75,8 @@
 getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
   
   # obs.eff.df <- obs.eff.df
-  # min.date <- min.date
-  # max.date <- max.date
+  # min.date <- min.date2
+  # max.date <- max.date2
   # traps <- traps
   # useEnhEff <- TRUE
   
@@ -279,7 +279,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
           obs.eff.df[obs.eff.df$batchDate + 60*60 < min.date.flow | obs.eff.df$batchDate - 60*60 > max.date.flow,]$flow_cfs <- NA
         }
       }
-    } else {
+    } else if(!exists("dbFlPG")){
       dbFlPG <- NULL
     }
     
@@ -328,7 +328,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
           obs.eff.df[obs.eff.df$batchDate + 60*60 < min.date.temp | obs.eff.df$batchDate - 60*60 > max.date.temp,]$temp_c <- NA
         }
       }
-    } else {
+    } else if(!exists("dbTpPG")){
       dbTpPG <- NULL
     }
     
