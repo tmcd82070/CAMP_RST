@@ -331,11 +331,11 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #save(splineCoef,splineDays,splineBegD,splineEndD,fit,file=holding)
 
     
-    save(splineCoef,file=paste0(holding,"_splineCoef.RData"))
-    save(splineDays,file=paste0(holding,"_splineDays.RData"))
-    save(splineBegD,file=paste0(holding,"_splineBegD.RData"))
-    save(splineEndD,file=paste0(holding,"_splineEndD.RData"))
-    save(fit,file=paste0(holding,"_fit.RData"))
+    save(splineCoef,file=paste0(holding,site,"_",trap,"_splineCoef.RData"),compress=TRUE,compression_level="xz")
+    save(splineDays,file=paste0(holding,site,"_",trap,"_splineDays.RData"),compress=TRUE,compression_level="xz")
+    save(splineBegD,file=paste0(holding,site,"_",trap,"_splineBegD.RData"),compress=TRUE,compression_level="xz")
+    save(splineEndD,file=paste0(holding,site,"_",trap,"_splineEndD.RData"),compress=TRUE,compression_level="xz")
+    save(fit,file=paste0(holding,site,"_",trap,"_fit.RData"),compress=TRUE,compression_level="xz")
   
     
     
