@@ -11,7 +11,8 @@ Maintainer: Trent McDonald <tmcdonald@west-inc.com>
 Description: R routines for the CAMP R platform. 
 License: GNU General Public License
 RoxygenNote: 6.0.1
-Depends: RODBC
+Depends: RODBC, 
+ R (>= 2.10)
 Imports:
  quantreg, 
  splines, 
@@ -33,4 +34,5 @@ Imports:
  RPostgres
 Suggests: knitr,
     rmarkdown
+LazyData: true
 VignetteBuilder: knitr
