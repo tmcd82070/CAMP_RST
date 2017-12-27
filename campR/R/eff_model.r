@@ -169,7 +169,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       #campRDir <- find.package("campR")
       #data(paste0(campRDir,"R/sysdata.rda",))  # <---- FIX ME FIX ME FIX ME.
-      here <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/forPackage"
+      here <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding"#/forPackage"
       
       load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"))
       load(paste0(here,"/",site,"_",trap,"_splineDays.RData"))

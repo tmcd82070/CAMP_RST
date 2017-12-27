@@ -32,8 +32,8 @@ if("Q" %in% reportRun){
 # require("mvtnorm",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 # require("splines",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 
-#   ---- Tell the BigLooper 2.0 where to store spline basis matrices resulting from fitting Enhanced Efficiency Models.  
-
+#   ---- Don't forget that GlobalVars variable packageBuild_sysdata.rda tells R where to store enh eff output.  
+#   ---- I put them in sysdata.rda because I don't intend to document them.  
 
 #   ---- Install the working version of campR.  
 #   ---- Prior to running this step, make sure you install the zip folder.
@@ -55,13 +55,13 @@ rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-#theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,71),]
+#theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]
 
 theExcel <- theExcel[theExcel$streamName == "American River",]     # American
-theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
-theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
+# theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
+# theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
 #theExcel <- theExcel[c(2,3,4),]
-
+theExcel <- theExcel[!theExcel$streamName == "Sacramento River",]
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
@@ -151,6 +151,7 @@ source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/ca
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/bootstrap_passage.r")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/GlobalVars.r")
 
 #   ---- Set all the global variables away from the default that you want.  
 
@@ -444,6 +445,20 @@ for(i in 1:nStreamNames){
 }
 
 
+
+
+
+
+dir <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/for_sysdata.rda"
+
+enhEffDf <- dir(dir)
+E <- length(enhEffDf)
+X <- vector("list", ) 
+for(i in 1:E){
+  x <- enhEffDf[i]
+  e <- load(paste0(dir,"/",x))
+  devtools::use_data(e,internal=TRUE)
+}
 
 
 

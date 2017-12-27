@@ -328,11 +328,11 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #save(splineCoef,splineDays,splineBegD,splineEndD,fit,file=holding)
 
     
-    save(splineCoef,file=paste0(holding,site,"_",trap,"_splineCoef.RData"),compress=TRUE,compression_level="xz")
-    save(splineDays,file=paste0(holding,site,"_",trap,"_splineDays.RData"),compress=TRUE,compression_level="xz")
-    save(splineBegD,file=paste0(holding,site,"_",trap,"_splineBegD.RData"),compress=TRUE,compression_level="xz")
-    save(splineEndD,file=paste0(holding,site,"_",trap,"_splineEndD.RData"),compress=TRUE,compression_level="xz")
-    save(fit,file=paste0(holding,site,"_",trap,"_fit.RData"),compress=TRUE,compression_level="xz")
+    save(splineCoef,file=paste0(holding,site,"_",trap,"_splineCoef.RData"),compress="xz",compression_level=9)
+    save(splineDays,file=paste0(holding,site,"_",trap,"_splineDays.RData"),compress="xz",compression_level=9)
+    save(splineBegD,file=paste0(holding,site,"_",trap,"_splineBegD.RData"),compress="xz",compression_level=9)
+    save(splineEndD,file=paste0(holding,site,"_",trap,"_splineEndD.RData"),compress="xz",compression_level=9)
+    save(fit,file=paste0(holding,site,"_",trap,"_fit.RData"),compress="xz",compression_level=9)
   
     
     
@@ -480,7 +480,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   rownames(varSummary) <- NULL
   
   #   ---- Export these data in a special spot, ready to go for more R processing.
-  save(varSummary,file=paste0(packageBuild_sysdata.rda,"/varSummary_",site,".RData"))
+  save(varSummary,file=paste0(holding,"/varSummary_",site,".RData"))
   
   cat("Observed efficiency data used in efficiency models.\n")
   print(obs.data)
