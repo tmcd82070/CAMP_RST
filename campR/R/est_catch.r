@@ -7,8 +7,10 @@
 #' @param catch.df A data frame restricted to a single \code{FinalRun}, and 
 #'   possibly one \code{lifeStage} as well, resulting from a call to 
 #'   \code{F.get.catch.data}.  Run season is an attribute of this data frame.
+#'   
 #' @param plot A logical indicating if catch is to be plotted over time, per 
 #'   trap.
+#'   
 #' @param plot.file The name to which a graph of catch is to be output, if 
 #'   \code{plot=TRUE}.
 #'   

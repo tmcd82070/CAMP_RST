@@ -7,22 +7,30 @@
 #' 
 #' @param site The identification number of the site for which estimates are
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
+#'   
 #' @param output.file A text string indicating a prefix to append to all output.
+#' 
 #' @param autols A logical indicating whether or not lifestage assignment should
 #'   be decided by the computer via a mixture distribution/clustering analysis.
+#'   
 #' @param nls A numeric communicating the number of new lifestages to assign. 
 #'   Values can be \code{2} or \code{3}.
+#'   
 #' @param weightuse A logical indicating if weight data are to be incorporated 
 #'   in the assigning of lifestage.  \code{useWeight=NULL}, ignored if 
 #'   \code{autols} is \code{FALSE}, \code{NULL} leads to the program deciding if
 #'   weight should be used, \code{FALSE} lead to the program not using weight to
 #'   assign lifestage.
+#'   
 #' @param reclassifyFL A logical indicating if passage should be estimated via 
 #'   forklength-based class groups.
 #' 

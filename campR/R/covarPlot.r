@@ -1,35 +1,40 @@
-#' @export
-#' 
-#' @title covarPlot
-#'   
-#' @description For a trap, plot efficiency against an environmental covariate 
-#'   and the covariate against time.
-#'   
-#' @param covar A unit-length character specifying the covariate of interest
-#'   with its associated unit, e.g., \code{turbidity_ntu}.
-#'   
-#' @param df A data frame containing at least numerator and denominator
-#'   efficiency information, i.e., variables \code{nCaught} and
-#'   \code{nReleased}.
-#'   
-#' @param dbCovar A data frame containing queried data from a CAMP database for 
-#'   one environmental covariate.
-#'   
-#' @param trap A unit-length numeric corresponding to a \code{trapPositionID}.
-#'   
-#' @param eff.ind.inside A logical vector identifying which visit dates
-#'   correspond to dates within a fishing period, as defined by when efficiency
-#'   trials took place.
+#'@export
+#'
+#'@title covarPlot
 #'  
-#' @return Plots to screen, as described in the description.  
+#'@description For a trap, plot efficiency against an environmental covariate 
+#'  and the covariate against time.
 #'  
-#' @details The function is intended to be called as part of a larger script.  
-#' As such, the function itself doesn't include any \code{png} statements or 
-#' \code{dev.off()} of the same.  
+#'@param covar A unit-length character specifying the covariate of interest with
+#'  its associated unit, e.g., \code{turbidity_ntu}.
 #'  
-#' @seealso \code{estCovar}
+#'@param df A data frame containing at least numerator and denominator 
+#'  efficiency information, i.e., variables \code{nCaught} and \code{nReleased}.
 #'  
-#' @author WEST Inc.
+#'@param dbCovar A data frame containing queried data from a CAMP database for 
+#'  one environmental covariate.
+#'  
+#'@param trap A unit-length numeric corresponding to a \code{trapPositionID}.
+#'  
+#'@param eff.ind.inside A logical vector identifying which visit dates 
+#'  correspond to dates within a fishing period, as defined by when efficiency 
+#'  trials took place.
+#'  
+#'@param bsplBegDt The first date, via the spline-1959-1960 paradigm, to which 
+#'  all efficiency years and dates collapse.
+#'  
+#'@param fit An enhanced-efficiency model fit object resulting from function
+#'  \code{glm}.
+#'  
+#'@return Plots to screen, as described in the description.
+#'  
+#'@details The function is intended to be called as part of a larger script. As
+#'  such, the function itself doesn't include any \code{png} statements or 
+#'  \code{dev.off()} of the same.
+#'  
+#'@seealso \code{estCovar}
+#'  
+#'@author WEST Inc.
 #'  
 #' @examples
 #' \dontrun{

@@ -6,12 +6,19 @@
 #' 
 #' @param site The identification number of the site for which estimates are
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param min.date The start date for data to include. This is a text string in
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as
 #'   \code{min.date}.
+#'   
+#' @param visit.df A data frame resulting from the catch SQL sequence,
+#'   specially adapted to have an attribute data frame \code{fl0} attached,
+#'   containing \code{trapVisitID}-specific mean fork lengths.
 #'   
 #' @return A data frame summarizing efficiency trials for the site of interest
 #'   for all traps between the dates indicated.  Data include \code{Recaps}
@@ -72,7 +79,8 @@
 #' taxon <- 161980
 #' min.date <- "2013-01-01"
 #' max.date <- "2013-06-01"
-#' df <- F.get.release.data(site,taxon,min.date,max.date)
+#' visit.df <- visitDF
+#' df <- F.get.release.data(site,taxon,min.date,max.date,visit.df=visit.df)
 #' }
 F.get.release.data <- function( site, taxon, min.date, max.date, visit.df ){
   

@@ -15,6 +15,10 @@
 #'   
 #' @param max.date The end date for data to include.  Same format as
 #'   \code{min.date}.
+#' 
+#' @param visit.df A data frame resulting from the catch SQL sequence,
+#'   specially adapted to have an attribute data frame \code{fl0} attached,
+#'   containing \code{trapVisitID}-specific mean fork lengths.
 #'   
 #' @return Results from running the enhanced efficiency model fitting process 
 #'   include \code{csv}s of efficiency trials missing a covariate, for each
@@ -85,7 +89,8 @@
 #' taxon <- 161980
 #' min.date <- "2013-01-01"
 #' max.date <- "2013-06-01"
-#' df <- F.get.release.data(site,taxon,min.date,max.date)
+#' visit.df <- visitDF
+#' df <- F.get.release.data(site,taxon,min.date,max.date,visit.df)
 #' }
 F.get.release.data.enh <- function( site, taxon, min.date, max.date, visit.df ){
 

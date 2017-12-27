@@ -7,20 +7,30 @@
 #'   
 #' @param site The identification number of the site for which estimates are 
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param run The text seasonal identifier.  This is a one of \code{"Spring"},
 #'   \code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.
+#'   
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
+#'   
 #' @param by A text string indicating the temporal unit over which daily 
 #'   estimated catch is to be summarized.  Can be one of \code{day}, 
 #'   \code{week}, \code{month}, \code{year}.
+#'   
 #' @param output.file A text string indicating a prefix to append to all output.
+#' 
 #' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
-#'   should be estimated along with passage estimates.
+#'   should be estimated along with passage estimates..  Default is \code{TRUE}.  
+#'   
+#' @param useEnhEff A logical indicating if enhanced efficiency models should 
+#'   be used to estimate trap efficiencies.  Default is \code{TRUE}.  
 #'   
 #' @return A \code{csv} table of passage estimates over the specified date 
 #'   range, with runs across the columns.  A \code{csv} of daily passage 

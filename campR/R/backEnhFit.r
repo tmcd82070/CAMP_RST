@@ -46,7 +46,7 @@
 #'   current fit iteration going.
 #'   
 #' @param fits A list object of length equal to the number of 
-#'   \code{TrapPositionID}s requiring a model fit.  Ultimate passed to the 
+#'   \code{TrapPositionID}s requiring a model fit.  Ultimately passed to the 
 #'   boostrapping routine.
 #'   
 #' @param plot.file The name of the file prefix under which output is to be 

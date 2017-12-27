@@ -7,12 +7,16 @@
 #'   
 #' @param catch.df A data frame with one row per \code{trapvisitID} for a 
 #'   particular \code{FinalRun} and \code{lifeStage}.
+#'   
 #' @param release.df A data frame resulting from a call to function 
 #'   \code{F.get.release.data}.  Contains efficiency data.
+#'   
 #' @param summarize.by A text string indicating the temporal unit over which 
 #'   daily estimated catch is to be summarized.  Can be one of \code{"day"}, 
 #'   \code{"week"}, \code{"month"}, or \code{"year"}.
+#'   
 #' @param file.root  A text string indicating a prefix to append to all output.
+#' 
 #' @param ci A logical indicating if bootstrapped confidence intervals should be
 #'   estimated along with passage estimates.  The default is 95\%, although
 #'   levels other than 95\% can be set in function \code{F.bootstrap.passage}.
