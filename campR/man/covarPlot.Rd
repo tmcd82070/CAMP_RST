@@ -7,33 +7,38 @@
 covarPlot(covar, df, dbCovar, trap, eff.ind.inside, bsplBegDt, fit)
 }
 \arguments{
-\item{covar}{A unit-length character specifying the covariate of interest
-with its associated unit, e.g., \code{turbidity_ntu}.}
+\item{covar}{A unit-length character specifying the covariate of interest with
+its associated unit, e.g., \code{turbidity_ntu}.}
 
-\item{df}{A data frame containing at least numerator and denominator
-efficiency information, i.e., variables \code{nCaught} and
-\code{nReleased}.}
+\item{df}{A data frame containing at least numerator and denominator 
+efficiency information, i.e., variables \code{nCaught} and \code{nReleased}.}
 
 \item{dbCovar}{A data frame containing queried data from a CAMP database for 
 one environmental covariate.}
 
 \item{trap}{A unit-length numeric corresponding to a \code{trapPositionID}.}
 
-\item{eff.ind.inside}{A logical vector identifying which visit dates
-correspond to dates within a fishing period, as defined by when efficiency
+\item{eff.ind.inside}{A logical vector identifying which visit dates 
+correspond to dates within a fishing period, as defined by when efficiency 
 trials took place.}
+
+\item{bsplBegDt}{The first date, via the spline-1959-1960 paradigm, to which 
+all efficiency years and dates collapse.}
+
+\item{fit}{An enhanced-efficiency model fit object resulting from function
+\code{glm}.}
 }
 \value{
 Plots to screen, as described in the description.
 }
 \description{
 For a trap, plot efficiency against an environmental covariate 
-  and the covariate against time.
+ and the covariate against time.
 }
 \details{
-The function is intended to be called as part of a larger script.  
-As such, the function itself doesn't include any \code{png} statements or 
-\code{dev.off()} of the same.
+The function is intended to be called as part of a larger script. As
+ such, the function itself doesn't include any \code{png} statements or 
+ \code{dev.off()} of the same.
 }
 \examples{
 \dontrun{

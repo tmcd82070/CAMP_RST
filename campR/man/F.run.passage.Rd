@@ -27,7 +27,10 @@ estimated catch is to be summarized.  Can be one of \code{day},
 \item{output.file}{A text string indicating a prefix to append to all output.}
 
 \item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
-should be estimated along with passage estimates.}
+should be estimated along with passage estimates..  Default is \code{TRUE}.}
+
+\item{useEnhEff}{A logical indicating if enhanced efficiency models should 
+be used to estimate trap efficiencies.  Default is \code{TRUE}.}
 
 \item{run}{The text seasonal identifier.  This is a one of \code{"Spring"},
 \code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.}

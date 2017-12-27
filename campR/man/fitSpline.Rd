@@ -78,6 +78,3 @@ fit <- fitSpline(covarString,
                  eff.inside.dates)
 }
 }
-\seealso{
-
-}

@@ -45,11 +45,11 @@ first and last \code{batchDates} for which vector \code{eff.ind.inside} is
 \code{df} (and \code{tmp.df}).}
 
 \item{model.info}{A list containing information derived from an immediate
-preceding call to function \code{plot.bs.spline}.  Used to help get the
+preceding call to function \code{plotbsSpline}.  Used to help get the
 current fit iteration going.}
 
 \item{fits}{A list object of length equal to the number of 
-\code{TrapPositionID}s requiring a model fit.  Ultimate passed to the 
+\code{TrapPositionID}s requiring a model fit.  Ultimately passed to the 
 boostrapping routine.}
 
 \item{plot.file}{The name of the file prefix under which output is to be 
@@ -114,7 +114,7 @@ out <- backEnhFit(tmp.df,
 }
 }
 \seealso{
-\code{eff_model_enh}, \code{plot.bs.spline}
+\code{eff_model_enh}, \code{plotbsSpline}
 }
 \author{
 WEST Inc.

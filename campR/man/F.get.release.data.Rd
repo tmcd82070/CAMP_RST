@@ -18,6 +18,10 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
 \item{max.date}{The end date for data to include.  Same format as
 \code{min.date}.}
+
+\item{visit.df}{A data frame resulting from the catch SQL sequence,
+specially adapted to have an attribute data frame \code{fl0} attached,
+containing \code{trapVisitID}-specific mean fork lengths.}
 }
 \value{
 A data frame summarizing efficiency trials for the site of interest
@@ -81,7 +85,8 @@ site <- 57000
 taxon <- 161980
 min.date <- "2013-01-01"
 max.date <- "2013-06-01"
-df <- F.get.release.data(site,taxon,min.date,max.date)
+visit.df <- visitDF
+df <- F.get.release.data(site,taxon,min.date,max.date,visit.df=visit.df)
 }
 }
 \seealso{
