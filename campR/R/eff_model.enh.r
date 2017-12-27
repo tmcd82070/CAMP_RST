@@ -94,9 +94,6 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   option <- 2
   forEffPlots <- attr(obs.eff.df,"forEffPlots")
   
-  #   ---- Obtain necessary variables from the global environment.  
-  packageBuild_sysdata.rda <- get("packageBuild_sysdata.rda",envir=.GlobalEnv)
-  
   
   #   ---- Read in table of fishing seasons.  These are derived from taking the minimum 
   #   ---- start period of fishing, based on month and date, for all fishing seasons 

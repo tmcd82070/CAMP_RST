@@ -112,7 +112,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
-  packageBuild_sysdata.rda <- get("packageBuild_sysdata.rda",envir=.GlobalEnv)
   
   #   ---- Decide if we're going to use enhanced efficiency.  
   if(useEnhEff == TRUE){
@@ -170,12 +169,13 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       #campRDir <- find.package("campR")
       #data(paste0(campRDir,"R/sysdata.rda",))  # <---- FIX ME FIX ME FIX ME.
+      here <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/forPackage"
       
-      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_splineCoef.RData"))
-      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_splineDays.RData"))
-      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_splineBegD.RData"))
-      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_splineEndD.RData"))
-      load(paste0(packageBuild_sysdata.rda,"/",site,"_",trap,"_fit.RData"))
+      load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"))
+      load(paste0(here,"/",site,"_",trap,"_splineDays.RData"))
+      load(paste0(here,"/",site,"_",trap,"_splineBegD.RData"))
+      load(paste0(here,"/",site,"_",trap,"_splineEndD.RData"))
+      load(paste0(here,"/",site,"_",trap,"_fit.RData"))
       
       #   ---- Stuff we just loaded.  
       #splineDays ...came from... df$batchDate2[eff.ind.inside]
