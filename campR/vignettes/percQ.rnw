@@ -1,6 +1,5 @@
 
-%\VignetteEngine{knitr::knitr} 
-%\VignetteIndexEntry{} 
+
 
 
 \documentclass{article}
@@ -11,6 +10,8 @@
 
 \begin{document}
 
+\VignetteEngine{knitr::knitr} 
+\VignetteIndexEntry{A Summary of Percent Q} 
 
 \section{Calculating Daily Percent $Q_d$, or $\text{perc } Q_d$}
 
