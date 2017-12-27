@@ -1,6 +1,6 @@
 #' @export
 #' 
-#' @title plot.bs.spline
+#' @title plotbsSpline
 #'   
 #' @description Plot the results of fitting a temporal b-spline.
 #'   
@@ -23,10 +23,12 @@
 #' @param bd2 The \code{batchDate2} column, typically from data frame \code{df},
 #'   containing the \code{batchDate}s mapped to the 1959-1960 spline paradigm.
 #'   
+#' @param ... Additional plotting control. 
+#'   
 #' @return A plot of the fitted cubic spline, its originating data points, and 
 #'   the knots utilized to achive the fit.
 #'   
-#' @details Function \code{plot.bs.spline} simply organizes all the pieces 
+#' @details Function \code{plotbsSpline} simply organizes all the pieces 
 #'   necessary to graph the prediction cubic piecewise polynomial resulting from
 #'   the use of a b-spline.  It plots not only the (necessarily) smooth spline, 
 #'   but also the original points used to estimate it.  It also plots all knots,
@@ -46,9 +48,9 @@
 #' \dontrun{
 #' #   ---- Plot results from an efficiency model.  Note that no parameter
 #' #   ---- is provided for argument bd2 (batchDate2).   
-#' plot.bs.spline(X,fit,beg.x,end.x,tmp.df)
+#' plotbsSpline(X,fit,beg.x,end.x,tmp.df)
 #' }
-plot.bs.spline <- function(X,fit,beg.x,end.x,eff0=tmp.df,option,bd2){
+plotbsSpline <- function(X,fit,beg.x,end.x,eff0,option,bd2,...){
   
   # X <- m0$bspl
   # fit <- fit1#m2$fit

@@ -42,7 +42,7 @@
 #'   \code{df} (and \code{tmp.df}).
 #'   
 #' @param model.info A list containing information derived from an immediate
-#'   preceding call to function \code{plot.bs.spline}.  Used to help get the
+#'   preceding call to function \code{plotbsSpline}.  Used to help get the
 #'   current fit iteration going.
 #'   
 #' @param fits A list object of length equal to the number of 
@@ -85,7 +85,7 @@
 #'   Note that the value of 0.10 is set within the function via initial
 #'   parameter \code{pCutOff}.
 #'   
-#' @seealso \code{eff_model_enh}, \code{plot.bs.spline}
+#' @seealso \code{eff_model_enh}, \code{plotbsSpline}
 #'   
 #' @author WEST Inc.
 #'   
@@ -179,7 +179,7 @@ backEnhFit <- function(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max
     
     #   ---- Plot the spline.  
     png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",1,"m0.png"),width=7,height=7,units="in",res=600)
-    model.info <- plot.bs.spline(m0$bspl,m0$fit,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
+    model.info <- plotbsSpline(m0$bspl,m0$fit,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
     dev.off()  
     
     
@@ -270,7 +270,7 @@ backEnhFit <- function(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max
         
         #   ---- Output visual impact of variable deletion.  Object new.bspl possibly has a bigger spline from below. 
         png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",model.i,"mc.png"),width=7,height=7,units="in",res=600)
-        model.info <- plot.bs.spline(new.bspl,fit1,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
+        model.info <- plotbsSpline(new.bspl,fit1,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
         dev.off()
         
         #   ---- We've now removed a covariate.  Reconsider the temporal spline.
@@ -291,7 +291,7 @@ backEnhFit <- function(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max
           
           #   ---- Plot the spline.  
           png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",model.i,"mt.png"),width=7,height=7,units="in",res=600)
-          model.info <- plot.bs.spline(m2$bspl,m2$fit,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
+          model.info <- plotbsSpline(m2$bspl,m2$fit,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
           dev.off()  
           
           #   ---- Report.  fit1 is from the covariate fit, while fit2 is from the subsequent temporal spline fit.
@@ -313,7 +313,7 @@ backEnhFit <- function(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max
           
           #   ---- Plot the spline.  
           png(filename=paste0(plot.file,"-EnhEff-O",option,"-",trap,"-f",model.i + 1,"mc.png"),width=7,height=7,units="in",res=600)
-          model.info <- plot.bs.spline(m0$bspl,m0$fit,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
+          model.info <- plotbsSpline(m0$bspl,m0$fit,bsplBegDt,bsplEndDt,tmp.df,option,df$batchDate2[eff.ind.inside])
           dev.off() 
           break
         }

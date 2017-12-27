@@ -171,11 +171,37 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #data(paste0(campRDir,"R/sysdata.rda",))  # <---- FIX ME FIX ME FIX ME.
       here <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding"#/forPackage"
       
-      load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"))
-      load(paste0(here,"/",site,"_",trap,"_splineDays.RData"))
-      load(paste0(here,"/",site,"_",trap,"_splineBegD.RData"))
-      load(paste0(here,"/",site,"_",trap,"_splineEndD.RData"))
+      
+      # isLoaded <- function(dataset) {
+      #   exists(dataset, .tmpDataEnv)
+      # }
+      # 
+      # getData <- function(dataset) {
+      #   if(!isLoaded(dataset)){
+      #     load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"))
+      #     #data(dataset,envir=GlobalEnv)
+      #     .tmpDataEnv[[dataset]]
+      #   }
+      # }
+      # 
+      # 
+      # 
+      # isLoaded("splineCoef")
+      # getData(splineCoef)
+      
+      .tmpDataEnv <- new.env(parent=emptyenv()) # not exported
+      
+      load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"),envir=.tmpDataEnv)
+      load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
+      load(paste0(here,"/",site,"_",trap,"_splineBegD.RData"),envir=.tmpDataEnv)
+      load(paste0(here,"/",site,"_",trap,"_splineEndD.RData"),envir=.tmpDataEnv)
       load(paste0(here,"/",site,"_",trap,"_fit.RData"))
+      
+      splineCoef <- .tmpDataEnv$splineCoef
+      splineDays <- .tmpDataEnv$splineCoef
+      splineBegD <- .tmpDataEnv$splineCoef
+      splineEndD <- .tmpDataEnv$splineCoef
+      fit <- .tmpDataEnv$fit
       
       #   ---- Stuff we just loaded.  
       #splineDays ...came from... df$batchDate2[eff.ind.inside]

@@ -66,6 +66,7 @@ buildAstroStats <- function(release.visit,visit.df){
   
   #   ---- Grab the time zone. 
   time.zone <- get( "time.zone", envir=.GlobalEnv )
+  fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
   
   #   ---- Open ODBC channel.
   db <- get( "db.file", envir=.GlobalEnv )

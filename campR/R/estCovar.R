@@ -59,6 +59,9 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   # xwalk <- xwalk
   # oursitevar <- oursitevar
   
+  #   ---- Obtain necessary variables from the global environment.  
+  time.zone <- get("time.zone",envir=.GlobalEnv)
+  
   CAMPCovName <- strsplit(covName,"_",fixed=TRUE)[[1]][1]
   
   if(nrow(dbCov) == 0 | sum(!is.na(dbCov[,CAMPCovName])) == 0){

@@ -57,8 +57,6 @@
 #'   The overdispersion parameter is fit in the traditional way, i.e., via
 #'   Pearson residuals.
 #'   
-#' @seealso 
-#'   
 #' @examples  
 #' \dontrun{
 #' fit <- fitSpline(covarString,

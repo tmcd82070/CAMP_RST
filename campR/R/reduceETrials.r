@@ -68,6 +68,9 @@ reduceETrials <- function(df,possibleVars,bsplBegDt,bsplEndDt,trap,all.ind.insid
   # trap <- trap
   # all.ind.inside <- all.ind.inside
 
+  #   ---- Obtain necessary variables from the global environment.  
+  time.zone <- get("time.zone",envir=.GlobalEnv)
+  
   df <- df[ is.na(df$TrapPositionID) | (df$TrapPositionID == trap), ]
   ind <- !is.na(df$efficiency)
   

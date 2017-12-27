@@ -80,6 +80,12 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
   # traps <- traps
   # useEnhEff <- TRUE
   
+  #   ---- Obtain necessary variables from the global environment.  
+  time.zone <- get("time.zone",envir=.GlobalEnv)
+  
+  #   ---- Get from dataframe. 
+  site <- attr(obs.eff.df,"site")
+  
   #   ---- JASON SETS THIS UP BASED ON UPDATED PACKAGE.
   #   ---- We assemble all the unique ourSiteIDs we need for this run. 
   TestingPlatform <- "CAMP_RST20161212-campR1.0.0"

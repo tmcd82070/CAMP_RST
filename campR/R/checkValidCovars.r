@@ -73,6 +73,8 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
   # max.date <- max.date
   # covarB <- covarB
   
+  #   ---- Obtain necessary variables from the global environment.  
+  time.zone <- get("time.zone",envir=.GlobalEnv)
   
   #   ---- Part 0:  Make sure all required covariates are actually in df.  It could be they're not in there 
   #   ---- because more than 90% of the covariate, over all years, was present, but for THIS YEAR, it's
