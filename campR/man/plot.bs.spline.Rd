@@ -7,18 +7,27 @@
 \method{plot}{bs.spline}(X, fit, beg.x, end.x, eff0 = tmp.df, option, bd2)
 }
 \arguments{
-\item{X}{The basis b-spline matrix resulting from a call to function
+\item{X}{The basis b-spline matrix resulting from a call to function 
 \code{bs}.}
 
-\item{fit}{The generalized linear model resulting from a call to function
+\item{fit}{The generalized linear model resulting from a call to function 
 \code{glm}.}
 
 \item{beg.x}{The POSIX-formatted start date to use for plotting.}
 
 \item{end.x}{The POSIX-formatted end date to use for plotting.}
+
+\item{eff0}{The default data frame containing efficiency trials for a
+particular \code{TrapPositionID}.  Typically \code{tmp.df}.}
+
+\item{option}{The plotting option.  Value \code{option=1} incorporates logic 
+surrounding spline knots, while \code{option=2} does not.}
+
+\item{bd2}{The \code{batchDate2} column, typically from data frame \code{df},
+containing the \code{batchDate}s mapped to the 1959-1960 spline paradigm.}
 }
 \value{
-A plot of the fitted cubic spline, its originating data points, and
+A plot of the fitted cubic spline, its originating data points, and 
   the knots utilized to achive the fit.
 }
 \description{
@@ -27,7 +36,7 @@ Plot the results of fitting a temporal b-spline.
 \details{
 Function \code{plot.bs.spline} simply organizes all the pieces 
   necessary to graph the prediction cubic piecewise polynomial resulting from
-  the use of a b-spline.  It plots not only the (necessarily) smooth spline,
+  the use of a b-spline.  It plots not only the (necessarily) smooth spline, 
   but also the original points used to estimate it.  It also plots all knots,
   i.e., both boundary and interior.  It calculates the prediction via matrix 
   multiplication of the provided matrix basis \eqn{X} and the vector of 

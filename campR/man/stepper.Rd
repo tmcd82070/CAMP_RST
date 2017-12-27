@@ -7,6 +7,11 @@
 stepper(df, varVec, min.date, max.date)
 }
 \arguments{
+\item{df}{A data frame containing variables recorded via non-continguous
+\code{batchDate}s.  Argument \code{df} should include \code{"batchDate"}
+and \code{"TrapPositionID"} in addition to the variables for which
+step-expansion is required.}
+
 \item{varVec}{A string vector containing the names of variables for which
 step-expansion is required.  Typically set to
 \code{c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")} for most

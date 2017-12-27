@@ -14,7 +14,8 @@ GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb", output.dir = "..\\\\outputs",
   seed = 884, forkLengthCutPoints = data.frame(lifeStage = c("FL1 leq 41mm",
   "FL2 42-72mm", "FL3 73-110mm", "FL4 geq 111mm"), cutPoints = c(41, 72, 110,
   9999)), passageRounder = 4, eff.min.spline.samp.size = 10,
-  unassd.sig.digit = 1)
+  unassd.sig.digit = 1,
+  packageBuild_sysdata.rda = "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/sysdata.rda")
 }
 \arguments{
 \item{db.file}{Character string giving the full path and name of the CAMP 
@@ -136,6 +137,10 @@ representation of less common fish types (e.g., Winter or Smolt) during
 passage estimation.  For example, when
 \code{unassd.sig.digit=1}, plus-count fish are rounded to the nearest tenth. 
 Setting \code{unassd.sig.digit=0} rounds to the nearest whole fish.}
+
+\item{packageBuild_sysdata.rda}{The location of the \code{sysdata.rda} folder
+on the WEST, Inc. \code{git} working directory into which model fitting 
+output from enhanced efficiency fits are stored.}
 }
 \value{
 No return value.

@@ -24,6 +24,17 @@ fitting enhanced efficiency trials in \code{eff_model.r} (or
 \item{plot.file}{The name of the file prefix under which output is to be 
 saved.  Set to \code{NA} to plot to the plot window.}
 }
+\value{
+A list containing several objects.  
+
+\describe{
+  \item{tmp.df}{A copy of the \code{tmp.df} initially provided to the function with rows (efficiency trials) missing covariate data possibly removed.}
+  \item{df}{A copy of the \code{df} initially provided to the function.}
+  \item{m.i}{The number of efficiency trials with full rows of data.  Necessarily less than or equal to the \code{m.i} provided to the function.}
+  \item{dataDeficient}{The dataframe identifying the e-trial rows removed from \code{tmp.df}.  Output as a \code{csv}.}
+  \item{atLeast}{The threshold indicating the number of e-trial rows that must be non-missing for covariate inclusion.  Equal to \eqn{floor(0.90*m.i) + 1}.}
+}
+}
 \description{
 Identify potential covariates that fail to have data for at
   least 90% of available efficiency trials.

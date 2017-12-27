@@ -52,6 +52,40 @@ Results from running the enhanced efficiency model fitting process
 Compute passage estimates, given catch and efficiency trial
   data.
 }
+\section{Functions Used to Fit Enhanced Efficiency Models}{
+ 
+  Five programs make up the specialized procedure for fitting enhanced
+  efficiency models.  This means actually compiling the data of efficiency 
+  trials obtained over several years, and then fitting a generalized additive
+  model (GAM) to those data.  All five programs have suffixes of 
+  \code{".enh"}, and originated with the program versions without the suffix.
+  As such, they are very similar to the originals.
+  
+  The first, \code{run_passage.enh} corrals the fitting.  It is different 
+  from \code{run_passage} in that all of the passage summary that is usually 
+  created has been suppressed.  This is because there is no need to 
+  bootstrap, once enhanced efficiency models have been obtained.
+  
+  The second, \code{get_release_data.enh} modifies the obtaining of release 
+  data, so as to obtain astrological data and mean fork-length.  It is very 
+  similar to its originator.
+  
+  The third, \code{est_passage.enh}, corrals the data from 
+  \code{get_release_data.enh} for use in \code{est_efficiency.enh}.  It too 
+  should be very similar to its originator.
+  
+  The fourth, \code{est_efficiency.enh}, ensures the calculation of weighted 
+  averages for the three efficiency-trial covariates have to do with mean 
+  fork-lengths, and percent of fishing performed at night, or while the moon 
+  is up.  It also emulates closely its originator.
+  
+  Finally, the fifth, \code{eff_model.enh}, fits the enhanced efficiency 
+  models.  It follows a backwards selection procedure, allowing for both 
+  variable covariate selection, as well as variable temporal spline 
+  complexity.  It creates graphical output, for each trap, so as to provide 
+  further hypothesis generation.
+}
+
 \examples{
 \dontrun{
 #   ---- Estimate passage based on a given set of 
