@@ -132,7 +132,6 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   # 	---- If number of trials at a trap less than this number, 
   #        assume constant and use ROM+1 estimator
   eff.min.spline.samp.size <- get("eff.min.spline.samp.size", pos=.GlobalEnv)
-  sql.code.dir.pg <- get("sql.code.dir.pg", pos=.GlobalEnv)
   
   #   ---- Query for covariates.  This is a big function!
   buildingEnhEff <- TRUE     # Make this very simple for now.  
