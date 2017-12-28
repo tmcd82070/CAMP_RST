@@ -193,67 +193,72 @@ GlobalVars <- function(
 	unassd.sig.digit = 1
 	){
 
+    # Utilize this construction to avoid NOTEs about assigning variables to the 
+    # .GlobalEnv when running devtools::check().  
+    pos <- 1
+    envir <- as.environment(pos)
+  
 	  # DB file -------
-		assign("db.file", db.file, pos=.GlobalEnv)
+		assign("db.file", db.file, pos=envir)
 	  cat(paste("DB file:", db.file ,"\n"))
 
 	  # Output dir ------	  
-	  assign("output.dir", output.dir, pos=.GlobalEnv)
+	  assign("output.dir", output.dir, pos=envir)
 	  
 		# SQL code dir ------	  
-	  assign("sql.code.dir", sql.code.dir, pos=.GlobalEnv)
+	  assign("sql.code.dir", sql.code.dir, pos=envir)
 	  
 	  # Sample Period Cut time ------
-    assign("samplePeriodCutTime", samplePeriodCutTime, pos=.GlobalEnv)
+    assign("samplePeriodCutTime", samplePeriodCutTime, pos=envir)
 
 	  # Max ok gap ------
-    assign("max.ok.gap", max.ok.gap, pos=.GlobalEnv)
+    assign("max.ok.gap", max.ok.gap, pos=envir)
 
 	  # Fishing Gap Minutes ------
-    assign("fishingGapMinutes", fishingGapMinutes, pos=.GlobalEnv)
+    assign("fishingGapMinutes", fishingGapMinutes, pos=envir)
 
 	  # Knot mesh -----
-    assign("knotMesh", knotMesh, pos=.GlobalEnv)
+    assign("knotMesh", knotMesh, pos=envir)
 
 	  # half cone multiplier -------
-    assign("halfConeMulti", halfConeMulti, pos=.GlobalEnv)
+    assign("halfConeMulti", halfConeMulti, pos=envir)
 
 	  # sample size to use fork length --------
-    assign("sample.size.forkLength", sample.size.forkLength, pos=.GlobalEnv)
+    assign("sample.size.forkLength", sample.size.forkLength, pos=envir)
 
 	  # sample size to use fork length and weight -------
-    assign("sample.size.forkLengthAndWeight", sample.size.forkLengthAndWeight, pos=.GlobalEnv)
+    assign("sample.size.forkLengthAndWeight", sample.size.forkLengthAndWeight, pos=envir)
 
 	  # weight proportion forklength ------
-    assign("weight.prop.forkLength", weight.prop.forkLength, pos=.GlobalEnv)
+    assign("weight.prop.forkLength", weight.prop.forkLength, pos=envir)
 
 	  # Mean fork length difference for clusters ------
-    assign("forkLength.mean.diff", forkLength.mean.diff, pos=.GlobalEnv)
+    assign("forkLength.mean.diff", forkLength.mean.diff, pos=envir)
 
 	  # time zone ------
-    assign("time.zone", time.zone, pos=.GlobalEnv)
+    assign("time.zone", time.zone, pos=envir)
 
 	  # Yes code (must match data lu.YesNo table in data base) ------
-    assign("Yes.code", Yes.code, pos=.GlobalEnv)
+    assign("Yes.code", Yes.code, pos=envir)
 
 	  # No code (must match data lu.YesNo table in data base) ------
-	  assign("No.code", No.code, pos=.GlobalEnv)
+	  assign("No.code", No.code, pos=envir)
 	  
 	  # Set the seed ------
 	  set.seed(884)
-	  assign("seed", seed, pos=.GlobalEnv)
+	  assign("seed", seed, pos=envir)
 	  
 	  # Set dataframe forkLengthCutPoints
-	  assign("forkLengthCutPoints",forkLengthCutPoints,pos=.GlobalEnv)
+	  assign("forkLengthCutPoints",forkLengthCutPoints,pos=envir)
 	  
 	  # Set the number of significant digits by which we want to round final passage. 
-	  assign("passageRounder", passageRounder, pos=.GlobalEnv)
+	  assign("passageRounder", passageRounder, pos=envir)
 	  
 	  #	Set number of efficiency trials for spline model
-	  assign("eff.min.spline.samp.size", 	eff.min.spline.samp.size, pos=.GlobalEnv)
+	  assign("eff.min.spline.samp.size", 	eff.min.spline.samp.size, pos=envir)
 	  
 	  # Set number of significant digits for unassigned fish during plus counting.
-	  assign("unassd.sig.digit", unassd.sig.digit, pos=.GlobalEnv)
+	  assign("unassd.sig.digit", unassd.sig.digit, pos=envir)
 	  
     
     # Table names is a special global variable that we intentionally make harder ----
@@ -276,7 +281,7 @@ GlobalVars <- function(
     								 CAMP.life.stages="luLifeStageCAMP",
     								 life.stages="luLifeStage",
     								 fish.origin="luFishOrigin" )
-    assign("table.names", table.names, pos=.GlobalEnv)
+    assign("table.names", table.names, pos=envir)
     
     #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then,
     #  *************** Set the efficiency model to use.

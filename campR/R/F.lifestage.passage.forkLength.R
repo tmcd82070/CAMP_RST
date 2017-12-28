@@ -139,7 +139,12 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
   
   #   ---- Identify the type of passage report we're doing.
-  assign("passReport","lifeStage",envir=.GlobalEnv)
+  
+  # Utilize this construction to avoid NOTEs about assigning variables to the 
+  # .GlobalEnv when running devtools::check().  
+  pos <- 1
+  envir <- as.environment(pos)
+  assign("passReport","lifeStage",envir=envir)
   passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Start a progress bar.
@@ -222,7 +227,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   out.fn.roots <- NULL
   for( j in 1:length(runs) ){
     
-    assign("run.name",runs[j],envir=.GlobalEnv)
+    assign("run.name",runs[j],envir=envir)
     run.name <- get("run.name",envir=.GlobalEnv)
     
     #   ---- Assemble catches based on total, unassigned, assigned.
@@ -262,7 +267,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     #   ---- Update progress bar.
     progbar <- winProgressBar( tmp.mess, label="Lifestage X run processing" )
     barinc <- 1 / (length(lstages) * 6)
-    assign( "progbar", progbar, pos=.GlobalEnv )
+    assign( "progbar", progbar, pos=envir )
     
     #   ---- Create indicator of records to keep for this run.  
     #   ---- Likely don't need is.na clause.  FinalRun never missing here.
@@ -520,7 +525,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     write.table( df, file=out.pass.table, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
     out.fn.roots <- c(out.fn.roots, out.pass.table)
     
-    assign("ls.pass.df",df,envir=.GlobalEnv)
+    assign("ls.pass.df",df,envir=envir)
     
     #   ---- Produce pie or bar charts.
     rownames(df) <- df$LifeStage

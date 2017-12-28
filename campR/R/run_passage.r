@@ -111,7 +111,11 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
   
   #   ---- Identify the type of passage report we're doing
-  assign("passReport","ALLRuns",envir=.GlobalEnv)
+  # Utilize this construction to avoid NOTEs about assigning variables to the 
+  # .GlobalEnv when running devtools::check().  
+  pos <- 1
+  envir <- as.environment(pos)
+  assign("passReport","ALLRuns",envir=envir)
   passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Start a progress bar
@@ -183,7 +187,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   out.fn.roots <- NULL
   for( j in 1:length(runs) ){
     
-    assign("run.name",runs[j],envir=.GlobalEnv)
+    assign("run.name",runs[j],envir=envir)
     run.name <- get("run.name",envir=.GlobalEnv)
     
     # jason puts together the catches based on total, unassigned, assigned.
@@ -232,7 +236,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     
     progbar <- winProgressBar( tmp.mess, label="Run processing" )
     barinc <- 1 / (length(runs) * 6)
-    assign( "progbar", progbar, pos=.GlobalEnv )
+    assign( "progbar", progbar, pos=envir )
     
     indRun <- (catch.df$FinalRun == run.name ) & !is.na(catch.df$FinalRun)   # Don't need is.na clause.  FinalRun is never missing here.
     

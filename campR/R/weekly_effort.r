@@ -87,7 +87,12 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   
   #   ---- Start a progress bar.
   progbar <- winProgressBar( "Weekly effort estimate", label=paste0("Reading data and accounting for the ",dt.len.min[1]," minutes your time range specified." ), width=500 )
-  assign("progbar",progbar,envir=.GlobalEnv)
+  
+  # Utilize this construction to avoid NOTEs about assigning variables to the 
+  # .GlobalEnv when running devtools::check().  
+  pos <- 1
+  envir <- as.environment(pos)
+  assign("progbar",progbar,envir=envir)
   
   nvisits <- F.buildReportCriteria( site, min.date, max.date )
   

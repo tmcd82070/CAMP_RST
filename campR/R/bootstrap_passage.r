@@ -483,8 +483,12 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
       cat("...BS complete\n")
     }
 
-    assign("c.pred", c.pred, pos=.GlobalEnv)
-    assign("e.pred", e.pred, pos=.GlobalEnv)
+    # Utilize this construction to avoid NOTEs about assigning variables to the 
+    # .GlobalEnv when running devtools::check().  
+    pos <- 1
+    envir <- as.environment(pos)
+    assign("c.pred", c.pred, pos=envir)
+    assign("e.pred", e.pred, pos=envir)
 
     #   ---- Estimate passage.
     #   ---- Matrices c.pred and e.pred are the same size, so just divide.

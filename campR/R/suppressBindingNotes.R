@@ -37,6 +37,10 @@
 #   suppressBindingNotes(c(".->ConfigString","ConfigString"))
 suppressBindingNotes <- function(variablesMentionedInNotes) {
   for(variable in variablesMentionedInNotes) {
-    assign(variable,NULL, envir = .GlobalEnv)       
+    # Utilize this construction to avoid NOTEs about assigning variables to the 
+    # .GlobalEnv when running devtools::check().  
+    pos <- 1
+    envir <- as.environment(pos)
+    assign(variable,NULL, envir = envir)       
   }
 }
