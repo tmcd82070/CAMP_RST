@@ -119,7 +119,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     #   ---- Get stuff we need to fit the enhanced efficiency models.  
     
     #   ---- 1.  We know traps from immediately above.
-    data(betas)
+    data(betas,envir=environment())
     betas <- betas[betas$subsiteID %in% traps,]
     
     #   ---- Get together covariates.  We need to query for days before and after the first and last 
