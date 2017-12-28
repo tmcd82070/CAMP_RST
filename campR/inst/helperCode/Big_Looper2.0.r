@@ -3,37 +3,31 @@
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.3.2"
-TestingPlatform <- "CAMP_RST20161212-campR1.0.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
-#excelName <- "AmericanExcel"
-#excelName <- "FeatherExcel"
-#excelName <- "RBDDExcel"
-#excelName <- "StanislawExcel"
-#excelName <- "MokelumneExcel"
+TestingPlatform <- "CAMP_RST20170115-campR1.1.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 
-reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
-reportRun <- c("A","B","C","D","E","F","G","H","I","J")
-reportRun <- c("K","L","M","N","O","P")
-reportRun <- c("B","R")
+# reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
+# reportRun <- c("A","B","C","D","E","F","G","H","I","J")
+# reportRun <- c("K","L","M","N","O","P")
+# reportRun <- c("B","R")
 reportRun <- c("Q")
 reportRun <- c("R")
+reportRun <- c("Q","R")
 
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
 
-#   ---- Read in mapping of subSiteID to ourSiteID, if necessary.
-if("Q" %in% reportRun){
-  #luSubSiteID <<- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
-}
+# # I THINK THIS IS NOW OBSOLETE, AS OF V1.1.
+# #   ---- Read in mapping of subSiteID to ourSiteID, if necessary.
+# if("Q" %in% reportRun){
+#   #luSubSiteID <<- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
+# }
 
 #   ---- Get necessary packages in order.  
 # install.packages(c("RODBC","mvtnorm"))
 # require("RODBC",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 # require("mvtnorm",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 # require("splines",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
-
-#   ---- Don't forget that GlobalVars variable packageBuild_sysdata.rda tells R where to store enh eff output.  
-#   ---- I put them in sysdata.rda because I don't intend to document them.  
 
 #   ---- Install the working version of campR.  
 #   ---- Prior to running this step, make sure you install the zip folder.
@@ -42,11 +36,11 @@ require(campR)
 
 #   ---- Install the working version of EnvCovDBpostgres.  
 #   ---- Prior to running this step, make sure you install the zip folder.
-detach("package:EnvCovDBpostgres", unload=TRUE)
-require(EnvCovDBpostgres)
-
-require(splines)
-require(mvtnorm)
+# detach("package:EnvCovDBpostgres", unload=TRUE)
+# require(EnvCovDBpostgres)
+# 
+# require(splines)
+# require(mvtnorm)
 
 #   ---- Read in the desired Excel scheme.  This is kept in the helperCode folder of the inst folder
 #   ---- in the campR package development folder in CAMP_RST20160601.  
@@ -57,11 +51,11 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
 #theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]
 
-theExcel <- theExcel[theExcel$streamName == "American River",]     # American
+theExcel <- theExcel[theExcel$streamName == "American River",]       # American
 # theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
 # theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
 #theExcel <- theExcel[c(2,3,4),]
-theExcel <- theExcel[!theExcel$streamName == "Sacramento River",]
+#theExcel <- theExcel[!theExcel$streamName == "Sacramento River",]
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
@@ -116,43 +110,37 @@ makeTheDir <- function(theDir){
 
 
 
-#   ---- These adapted functions are not (currently) part of a package.
-source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/get_release_data.enh.R")
-source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/run_passage.enh.R")
-source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/est_passage.enh.R")
-source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/est_efficiency.enh.R")
-source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/eff_model.enh.R")
-source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/passageWithLifeStageAssign.enh.R")
-
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeSkinnyTimes.R")       # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTimeProp.R")           # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")         # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")              # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot.bs.spline.R")        # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/fitSpline.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/covarPlot.R")             # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")         # roxygenized
-
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reduceETrials.r")         # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkMissingCovars.r")    # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.r")  # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/backEnhFit.r")            # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/buildAstroStats.r")       # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/stepper.r")               # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/overDphi.r")              # roxygenized
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.r")      # roxygenized
-
-#   ---- I have now updated a few of the core functions in the package.  Read these in explicitly, so they are used in 
-#   ---- lieu of the package version. 
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/get_release_data.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/bootstrap_passage.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/GlobalVars.r")
+# #   ---- These adapted functions are not (currently) part of a package.
+# 
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeSkinnyTimes.R")       # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTimeProp.R")           # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")         # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")              # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot.bs.spline.R")        # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/fitSpline.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/covarPlot.R")             # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getCAMPEnvCov.R")         # roxygenized
+# 
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reduceETrials.r")         # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkMissingCovars.r")    # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.r")  # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/backEnhFit.r")            # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/buildAstroStats.r")       # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/stepper.r")               # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/overDphi.r")              # roxygenized
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.r")      # roxygenized
+# 
+# #   ---- I have now updated a few of the core functions in the package.  Read these in explicitly, so they are used in 
+# #   ---- lieu of the package version. 
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.r")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/get_release_data.r")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.r")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.r")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.r")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/bootstrap_passage.r")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_eff_model.r")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/GlobalVars.r")
 
 #   ---- Set all the global variables away from the default that you want.  
 
@@ -411,8 +399,17 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "Q" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         
-        require(splines)
-        require(mvtnorm)
+        #   ---- The fitting of enhanced efficiency models is assumed to be done in R directly; i.e., not via the Platform.  
+        #   ---- Read in the specialized functions for this task explicitly.  
+        #require(splines)
+        #require(mvtnorm)
+        
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/get_release_data.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/run_passage.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/est_passage.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/est_efficiency.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/eff_model.enh.R")
+        source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/passageWithLifeStageAssign.enh.R")
         
         #   ---- Function run.passage.enh expects a 'by' that isn't used.   
         by <- 'year' 
@@ -449,17 +446,17 @@ for(i in 1:nStreamNames){
 
 
 
-
-dir <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/for_sysdata.rda"
-
-enhEffDf <- dir(dir)
-E <- length(enhEffDf)
-X <- vector("list", ) 
-for(i in 1:E){
-  x <- enhEffDf[i]
-  e <- load(paste0(dir,"/",x))
-  devtools::use_data(e,internal=TRUE)
-}
+# OBSOLETE?
+# dir <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/for_sysdata.rda"
+# 
+# enhEffDf <- dir(dir)
+# E <- length(enhEffDf)
+# X <- vector("list", ) 
+# for(i in 1:E){
+#   x <- enhEffDf[i]
+#   e <- load(paste0(dir,"/",x))
+#   devtools::use_data(e,internal=TRUE)
+# }
 
 
 
