@@ -94,6 +94,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   # max.df.spline <- 4
   # plot.file <- plot.file
 
+  
   ans <- NULL
   traps <- as.character(droplevels(sort( unique(obs.eff.df$TrapPositionID))))
 
