@@ -32,7 +32,8 @@ Imports:
  tidyr,
  EnvCovDBpostgres,
  RPostgres
-Suggests: knitr,
+Suggests: R.rsp,
+    knitr,
     rmarkdown
 LazyData: true
-VignetteBuilder: knitr
+VignetteBuilder: R.rsp

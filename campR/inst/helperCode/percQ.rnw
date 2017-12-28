@@ -9,9 +9,10 @@
 \usepackage{booktabs}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
-\VignetteEngine{knitr::knitr} 
-\VignetteIndexEntry{A Summary of Percent Q} 
+%\VignetteEngine{knitr::knitr} 
+%\VignetteIndexEntry{A Summary of Percent Q} 
 
 \section{Calculating Daily Percent $Q_d$, or $\text{perc } Q_d$}
 
