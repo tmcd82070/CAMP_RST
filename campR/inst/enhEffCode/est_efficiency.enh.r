@@ -97,7 +97,7 @@ F.est.efficiency.enh <- function( release.df, batchDate, df.spline=4, plot=TRUE,
   
   time.zone <- get("time.zone", envir=.GlobalEnv)
   forEffPlots <- attr(release.df,"forEffPlots")
-  site <- attr(site,"site")
+  site <- attr(release.df,"site")
 
   #   ---- Fix up the data frame.
   rel.df <- release.df[,c("releaseID","ReleaseDate","nReleased","HrsToFirstVisitAfter",
@@ -159,7 +159,7 @@ F.est.efficiency.enh <- function( release.df, batchDate, df.spline=4, plot=TRUE,
   #   ---- If there are missing days, impute them.  
   missing.days <- is.na(eff$efficiency)
   attr(eff,"forEffPlots") <- forEffPlots
-  attr(site,"site") <- site
+  attr(eff,"site") <- site
   if( any(missing.days) ){
     
     #   ---- Run specific efficiency model, based on input. 

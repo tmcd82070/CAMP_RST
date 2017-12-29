@@ -173,6 +173,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
       ch <- odbcConnectAccess(db)
       
       #   ---- Develop the TempReportCriteria_TrapVisit table.
+      cat(paste0("2:  site is ",site,".\n"))
       F.buildReportCriteria( site, min.date, max.date )   # was min.date2, max.date2.  matter?
     
       #   ---- Run the clean-up query.
