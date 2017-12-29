@@ -171,3 +171,5 @@ campR.Rcheck/
 campR.pdf
 .Rd2pdf9324
 .Rd2pdf11532
+*.zip
+*.tar.gz
