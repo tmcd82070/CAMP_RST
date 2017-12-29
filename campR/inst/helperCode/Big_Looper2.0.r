@@ -2,7 +2,7 @@
 
 
 #   ---- Set variables necessary for Big Looper completion. 
-RVersion <- "3.3.2"
+RVersion <- "3.4.3"
 TestingPlatform <- "CAMP_RST20170115-campR1.1.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 
@@ -11,8 +11,8 @@ excelName <- "theExcel"
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 reportRun <- c("Q")
-reportRun <- c("R")
-reportRun <- c("Q","R")
+# reportRun <- c("R")
+
 
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
@@ -49,9 +49,9 @@ rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-#theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]
+#theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]                  # For Enh Eff development (no RBDD)
 
-theExcel <- theExcel[theExcel$streamName == "American River",]       # American
+# theExcel <- theExcel[theExcel$streamName == "American River",]     # American
 # theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
 # theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
 #theExcel <- theExcel[c(2,3,4),]
@@ -404,6 +404,7 @@ for(i in 1:nStreamNames){
         #require(splines)
         #require(mvtnorm)
         
+        #   ---- Git working directory.  
         source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/get_release_data.enh.R")
         source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/run_passage.enh.R")
         source("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffCode/est_passage.enh.R")
@@ -441,22 +442,4 @@ for(i in 1:nStreamNames){
     }
   }
 }
-
-
-
-
-
-# OBSOLETE?
-# dir <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/for_sysdata.rda"
-# 
-# enhEffDf <- dir(dir)
-# E <- length(enhEffDf)
-# X <- vector("list", ) 
-# for(i in 1:E){
-#   x <- enhEffDf[i]
-#   e <- load(paste0(dir,"/",x))
-#   devtools::use_data(e,internal=TRUE)
-# }
-
-
 
