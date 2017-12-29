@@ -12,6 +12,7 @@ Description: R routines for the CAMP R platform.
 License: GNU General Public License
 RoxygenNote: 6.0.1
 Depends: RODBC, 
+ EnvCovDBpostgres,
  R (>= 2.10)
 Imports:
  quantreg, 
@@ -30,8 +31,7 @@ Imports:
  Rcpp,
  ellipse,
  tidyr,
- RPostgres,
- EnvCovDBpostgres
+ RPostgres
 Suggests: R.rsp,
     knitr,
     rmarkdown
