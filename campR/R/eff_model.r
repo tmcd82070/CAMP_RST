@@ -165,13 +165,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
       ind <- !is.na(df$efficiency)
       
-      #   ---- Get the temporal spline basis matrix.  
-      #load(paste0("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/","splineSummary_",site,"_",trap,".RData"))
-      
-      #campRDir <- find.package("campR")
-      #data(paste0(campRDir,"R/sysdata.rda",))  # <---- FIX ME FIX ME FIX ME.
-      here <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding"#/forPackage"
-      
+      #   ---- Get the temporal spline basis matrix goods.  
+      #here <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding"
+      here <- paste0(find.package("campR"),"/enhEffStats")  # <- for when you have a package.
       
       # isLoaded <- function(dataset) {
       #   exists(dataset, .tmpDataEnv)
