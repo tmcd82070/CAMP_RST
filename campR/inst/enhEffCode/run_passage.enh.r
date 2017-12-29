@@ -297,7 +297,7 @@ F.run.passage.enh <- function( site, taxon, min.date, max.date, by, output.file,
       attr(catch.df.ls,"min.date") <- min.date
       attr(catch.df.ls,"max.date") <- max.date
       attr(catch.df.ls,"forEffPlots") <- forEffPlots
-      
+      attr(catch.df.ls,"site") <- site
       #   ---- Compute passage
       if(by == 'year'){
         pass <- F.est.passage.enh( catch.df.ls, release.df.enh, "year", out.fn.root, ci )

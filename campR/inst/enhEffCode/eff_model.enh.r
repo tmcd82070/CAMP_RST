@@ -93,6 +93,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
 
   option <- 2
   forEffPlots <- attr(obs.eff.df,"forEffPlots")
+  site <- attr(obs.eff.df,"site")
   
   
   #   ---- Read in table of fishing seasons.  These are derived from taking the minimum 
