@@ -5,7 +5,8 @@
 \title{F.lifestage.passage.forkLength}
 \usage{
 F.lifestage.passage.forkLength(site, taxon, min.date, max.date, by, output.file,
-  ci = TRUE, autols = FALSE, nls = NULL, weightuse = NULL)
+  ci = TRUE, autols = FALSE, nls = NULL, weightuse = NULL,
+  useEnhEff = FALSE)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -39,6 +40,9 @@ See Details.}
 \item{weightuse}{A logical indicating if variable \code{weight} should be used for
 the analytical life stage assignment;  the default is \code{NULL}. Ignored
 if \code{autols=FALSE}.  See Details.}
+
+\item{useEnhEff}{A logical indicating if enhanced efficiency models should 
+be used to estimate trap efficiencies.  Default is \code{TRUE}.}
 }
 \value{
 A \code{csv} table of passage estimates over the specified date 

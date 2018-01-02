@@ -7,26 +7,38 @@
 #' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
+#'   
 #' @param by A text string indicating the temporal unit over which daily 
 #'   estimated catch is to be summarized.  Can be one of \code{"day"}, 
 #'   \code{"week"}, \code{"month"}, \code{"year"}.
+#'   
 #' @param output.file A text string indicating a prefix to append to all output.
+#' 
 #' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
+#'   
 #' @param autols Default of \code{FALSE} leads to no assigning of no analytical
 #'   life stage. If \code{TRUE}, assignment of analytical life stage is performed. 
 #'   See Details.
+#'   
 #' @param nls Number of life stage groups to estimate. Ignored if 
 #'   \code{autols=FALSE}.  See Details.
+#'   
 #' @param weightuse A logical indicating if variable \code{weight} should be used for
 #'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
 #'   if \code{autols=FALSE}.  See Details.
+#'   
+#' @param useEnhEff A logical indicating if enhanced efficiency models should 
+#'   be used to estimate trap efficiencies.  Default is \code{TRUE}.  
 #' 
 #' @return A \code{csv} table of passage estimates over the specified date 
 #'   range, with fork-length groups down the rows, and Fall run across the columns.  A 
@@ -110,7 +122,7 @@
 #' F.lifestage.passage.forkLength(site,taxon,min.date,max.date,by,
 #'   output.file,ci,nls,weightuse,autols,reclassify)
 #' }
-F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL){
+F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,useEnhEff=FALSE){
 
   # site <- 1000
   # taxon <- 161980
@@ -148,21 +160,10 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Start a progress bar.
-  progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching efficiency data" )
-  
-  #   ---- Fetch efficiency data.
-  release.df <- F.get.release.data( site, taxon, min.date, max.date  )
-  
-  #   ---- Check if we can estimate an efficiency (denominator).  
-  if( nrow(release.df) == 0 ){
-    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
-  }
-  
-  #   ---- Start an indicator bar.  
-  setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
+  progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching catch data" )
   
   #   ---- Fetch the catch and visit data.  
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autols=FALSE,nls=nls,weightuse=weightuse,reclassifyFL=TRUE)
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autols=autols,nls=nls,weightuse=weightuse,reclassifyFL=TRUE)
   
   #   ---- All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   catch.df <- tmp.df$catch   
@@ -171,7 +172,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   visit.df <- tmp.df$visit  
   
   #   ---- Save for below.  Several dfs get named catch.df, so need to call this something else.
-  catch.dfX <- catch.df      
+  catch.dfX <- catch.df  
   
   #   ---- Check if we can estimate catch (numerator).  
   if( nrow(catch.df) == 0 ){
@@ -190,6 +191,31 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   catch.df6 <- F.summarize.fish.visit( catch.df, 'unassignedCatch' )
   catch.df7 <- F.summarize.fish.visit( catch.df, 'modAssignedCatch' )
   catch.df8 <- F.summarize.fish.visit( catch.df, 'modUnassignedCatch' )
+  
+  #   ---- I calculate mean forklength here and attach via an attribute on visit.df.  This way, it gets into function 
+  #   ---- F.get.release.data.enh.  Note I make no consideration of FinalRun, or anything else.  I get rid of plus 
+  #   ---- count fish, and instances where forkLength wasn't measured.  Note that I do not restrict to RandomSelection == 
+  #   ---- 'yes'.  Many times, if there are few fish in the trap, they'll just measure everything, and record a 
+  #   ---- RandomSelection == 'no'.  
+  catch.df2B <- catch.df[catch.df$Unassd != "Unassigned" & !is.na(catch.df$forkLength),]
+  
+  #   ---- Get the weighted-mean forkLength, weighting on the number of that length of fish caught.  Return a vector
+  #   ---- of numeric values in millimeters, with entry names reflecting trapVisitIDs.  Also get the N for weighting. 
+  flVec <- sapply(split(catch.df2B, catch.df2B$trapVisitID), function(x) weighted.mean(x$forkLength, w = x$Unmarked)) 
+  flDF <- data.frame(trapVisitID=names(flVec),wmForkLength=flVec,stringsAsFactors=FALSE)
+  nVec <- aggregate(catch.df2B$Unmarked,list(trapVisitID=catch.df2B$trapVisitID),sum)
+  names(nVec)[names(nVec) == "x"] <- "nForkLength"
+  tmp <- merge(flDF,nVec,by=c("trapVisitID"),all.x=TRUE)
+  tmp <- tmp[order(as.integer(tmp$trapVisitID)),]
+  attr(visit.df,"fl") <- tmp  
+  
+  #   ---- Fetch efficiency data
+  setWinProgressBar( progbar, 0.1 , label="Fetching efficiency data" )
+  release.df <- F.get.release.data( site, taxon, min.date, max.date, visit.df )
+  
+  if( nrow(release.df) == 0 ){
+    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
+  }
   
   #   ---- Compute the unique runs we need to do.
   runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    
@@ -324,6 +350,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
         #   ---- Set these attributes so they can be passed along.
         attr(catch.df.ls,"min.date") <- min.date
         attr(catch.df.ls,"max.date") <- max.date
+        attr(catch.df.ls,"useEnhEff") <- useEnhEff
         
         #   ---- Compute passage.
         if(nrow(catch.df.ls) > 0){# & sum(as.numeric(theSums)) > 0){

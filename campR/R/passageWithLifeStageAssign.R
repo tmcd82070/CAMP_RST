@@ -145,7 +145,7 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Start a progress bar.
-  progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching efficiency data" )
+  progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching catch data" )
   
   #   ---- Fetch the catch and visit data.  
   tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autols=autols,nls=nls,weightuse=weightuse,reclassifyFL=FALSE)

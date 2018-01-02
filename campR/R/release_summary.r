@@ -7,13 +7,18 @@
 #'   
 #' @param site The identification number of the site for which estimates are 
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param run The biologist-assigned seasonal run.
+#' 
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
+#'   
 #' @param output.file The name of the file prefix under which output is to be 
 #'   saved.  Set to NA to plot to the Plot window.
 #'   
@@ -50,7 +55,7 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   # output.file <- NA
 
   #   ---- Fetch efficiency data.
-  release.df <- F.get.release.data( site, taxon, min.date, max.date  )
+  release.df <- F.get.release.data.light( site, taxon, min.date, max.date )
 
   #   ---- Summarize the releases.
   release.sum <- F.summarize.releases( release.df )
