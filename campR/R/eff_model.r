@@ -114,6 +114,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
   
+  #   ---- Set this up here, so it can evaluated in the if below when useEnhEff == FALSE.  
+  doOldEff <- rep(TRUE,length(traps))
+  names(doOldEff) <- traps
+  
   #   ---- Decide if we're going to use enhanced efficiency.  
   if(useEnhEff == TRUE){
     
