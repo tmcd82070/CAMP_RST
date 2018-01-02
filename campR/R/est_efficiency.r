@@ -90,9 +90,6 @@ F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plo
   rel.df <- F.assign.batch.date( rel.df )
   rel.df$batchDate.str <- format(rel.df$batchDate,"%Y-%m-%d")
   
-  
-  rel.df[rel.df$releaseID %in% c(276,277),]
-  
   #   ---- Sum by batch dates.  This combines release and catches over trials that occured close in time.  For enhanced
   #   ---- efficiency models, need to collapse prop of moon and night and forklength as well over batchDate.
   ind <- list( TrapPositionID=rel.df$trapPositionID,batchDate=rel.df$batchDate.str )

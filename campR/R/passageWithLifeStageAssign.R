@@ -7,24 +7,35 @@
 #' 
 #' @param site The identification number of the site for which estimates are 
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
+#'   
 #' @param output.file The name of the file prefix under which output is to be 
 #'   saved.  Set to NA to plot to the Plot window.
+#'   
 #' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates.
+#'   
 #' @param autols Default of \code{FALSE} leads to no assigning of no analytical
 #'   life stage. If \code{TRUE}, assignment of analytical life stage is done. 
 #'   See Details.
+#'   
 #' @param nls Number of life stage groups to estimate. Ignored if 
 #'   \code{autols=FALSE}.  See Details.
+#'   
 #' @param weightuse A logical indicating if variable \code{weight} should be used for
 #'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
 #'   if \code{autols=FALSE}.  See Details.
+#'   
+#' @param useEnhEff A logical indicating if enhanced efficiency models should 
+#'   be used to estimate trap efficiencies.  Default is \code{TRUE}.  
 #'   
 #' @details The date range difference specified via \code{max.date} and
 #'   \code{min.date} must be less than or equal to 366 days.  Note that this
@@ -102,7 +113,7 @@
 #' }
 
 
-F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL){
+F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,useEnhEff=TRUE){
   
 #   site <- 12345
 #   taxon <- 161980
@@ -317,6 +328,7 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
         #   ---- Set these attributes so they can be passed along.
         attr(catch.df.ls,"min.date") <- min.date
         attr(catch.df.ls,"max.date") <- max.date
+        attr(catch.df.ls,"useEnhEff") <- useEnhEff
         
         #   ---- Compute passage
         if(nrow(catch.df.ls) > 0){#} & sum(as.numeric(theSums)) > 0){
