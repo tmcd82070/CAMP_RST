@@ -136,17 +136,6 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   #   ---- Start a progress bar.
   progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching efficiency data" )
   
-  #   ---- Fetch efficiency data.
-  release.df <- F.get.release.data( site, taxon, min.date, max.date  )
-  
-  #   ---- Check if we can estimate an efficiency (denominator).  
-  if( nrow(release.df) == 0 ){
-    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
-  }
-  
-  #   ---- Start an indicator bar.  
-  setWinProgressBar( progbar, 0.1 , label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap.") )
-  
   #   ---- Fetch the catch and visit data.  
   tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autols=autols,nls=nls,weightuse=weightuse,reclassifyFL=FALSE)
   
@@ -157,7 +146,7 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   visit.df <- tmp.df$visit  
   
   #   ---- Save for below.  Several dfs get named catch.df, so need to call this something else.
-  catch.dfX <- catch.df      
+  catch.dfX <- catch.df  
   
   #   ---- Check if we can estimate catch (numerator).  
   if( nrow(catch.df) == 0 ){
@@ -176,7 +165,32 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   catch.df6 <- F.summarize.fish.visit( catch.df, 'unassignedCatch' )
   catch.df7 <- F.summarize.fish.visit( catch.df, 'modAssignedCatch' )
   catch.df8 <- F.summarize.fish.visit( catch.df, 'modUnassignedCatch' )
-
+  
+  #   ---- I calculate mean forklength here and attach via an attribute on visit.df.  This way, it gets into function 
+  #   ---- F.get.release.data.enh.  Note I make no consideration of FinalRun, or anything else.  I get rid of plus 
+  #   ---- count fish, and instances where forkLength wasn't measured.  Note that I do not restrict to RandomSelection == 
+  #   ---- 'yes'.  Many times, if there are few fish in the trap, they'll just measure everything, and record a 
+  #   ---- RandomSelection == 'no'.  
+  catch.df2B <- catch.df[catch.df$Unassd != "Unassigned" & !is.na(catch.df$forkLength),]
+  
+  #   ---- Get the weighted-mean forkLength, weighting on the number of that length of fish caught.  Return a vector
+  #   ---- of numeric values in millimeters, with entry names reflecting trapVisitIDs.  Also get the N for weighting. 
+  flVec <- sapply(split(catch.df2B, catch.df2B$trapVisitID), function(x) weighted.mean(x$forkLength, w = x$Unmarked)) 
+  flDF <- data.frame(trapVisitID=names(flVec),wmForkLength=flVec,stringsAsFactors=FALSE)
+  nVec <- aggregate(catch.df2B$Unmarked,list(trapVisitID=catch.df2B$trapVisitID),sum)
+  names(nVec)[names(nVec) == "x"] <- "nForkLength"
+  tmp <- merge(flDF,nVec,by=c("trapVisitID"),all.x=TRUE)
+  tmp <- tmp[order(as.integer(tmp$trapVisitID)),]
+  attr(visit.df,"fl") <- tmp  
+  
+  #   ---- Fetch efficiency data
+  setWinProgressBar( progbar, 0.1 , label="Fetching efficiency data" )
+  release.df <- F.get.release.data( site, taxon, min.date, max.date, visit.df )
+  
+  if( nrow(release.df) == 0 ){
+    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
+  }
+  
   #   ---- Compute the unique runs we need to do.
   runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    
   runs <- runs[ !is.na(runs) ]
