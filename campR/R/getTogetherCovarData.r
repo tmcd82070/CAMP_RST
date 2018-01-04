@@ -393,7 +393,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     obs.eff.df[flowPresent,]$covar <- gsub("flow_cfs","percQ",obs.eff.df$covar[flowPresent],fixed=TRUE)
     
     #   ---- Always true?  Remove flow_cfs.  
-    if( "flow_cfs" %in% names(obs.eff.df2) ){
+    if( "flow_cfs" %in% names(obs.eff.df) ){
       obs.eff.df$flow_cfs <- NULL
     }
     
