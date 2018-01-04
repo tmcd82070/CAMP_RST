@@ -164,8 +164,8 @@ percQ <- function(hrflow){
   qQ$batchDate <- as.POSIXlt(qQ$batchDate)
   
   #   ---- Account for the two little diversions.  Read in daily 11-year-average canal diversion data.  
-  data(canal)
-
+  data(canal,envir=environment())
+  
   qQ$monthDay <- paste0(qQ$batchDate$mon + 1,"-",qQ$batchDate$mday)
   qQ <- merge(qQ,canal,by=c("monthDay"),all.x=TRUE)
   qQ <- qQ[order(qQ$batchDate),]
