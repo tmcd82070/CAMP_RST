@@ -121,6 +121,9 @@ fitSpline <- function(covarString,df,eff.ind.inside,tmp.df,dist,max.df,eff.insid
         tmp.bs <- tmp.bs
         cur.df <- NA
         disp <- sum(residuals(fit, type="pearson")^2)/fit$df.residual
+        
+        #   ---- Make sure we have a bs fit for the winning model, and not the next evaluated one. 
+        cur.bsplF <- cur.bspl
       }
       break
     } else {
