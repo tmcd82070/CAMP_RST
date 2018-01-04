@@ -7,14 +7,19 @@
 #'  
 #' @param site The identification number of the site for which estimates are 
 #'   required.
+#'   
 #' @param taxon The species identifier indicating the type of fish of interest. 
 #'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param run The text seasonal identifier.  This is a one of \code{"Spring"}, 
 #'   \code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.
+#'   
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
+#'   
 #' @param output.file The name of the file prefix under which output is to be 
 #'   saved.  Set to NA to plot to the Plot window.
 #'   
@@ -250,7 +255,7 @@ F.size.by.date <- function( site, taxon, run, min.date, max.date, output.file ){
   xx <- as.numeric(x) 
   x.bs <- bs( xx, df=6 )
 
-  #   ---- Sometimes the quantil regression can be singular, due to problems 
+  #   ---- Sometimes the quantile regression can be singular, due to problems 
   #   ---- in finding an inverse.  Capture this behavior.  
   rq.fit <- tryCatch(rq( y ~ x.bs, tau=c(0.05, 0.95) ), error = function(e) e)
   xpred <- seq(quantile(xx,.01),quantile(xx,.99),length=200)

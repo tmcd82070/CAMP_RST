@@ -367,7 +367,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
   #   ---- In the case of the RBDD, swap out flow_cfs for percQ.  Note empty dbperQ has Date
   #   ---- instead of POSIXct.  Don't think this matters.  
   dbperQ <- data.frame(subSiteID=integer(),measureDate=as.Date(character()),percQ=numeric(),percQUnitID=integer(),stringsAsFactors=FALSE)
-  if( attr(obs.eff.df,"site.name") == "RBDD RST" ){
+  if( site == 42000 ){
     dbPerQ <- percQ(hrflow=df[[2]])
     
     #   ---- The obs.eff.df batchDate is off by 8 hours; i.e., it's 8 hours earlier than what it should be.  This could be due 
@@ -381,6 +381,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     dbPerQ$tmpDate <- as.Date(dbPerQ$batchDate)
     
     obs.eff.df <- merge(obs.eff.df,dbPerQ[,c("tmpDate","TrapPositionID","percQ")],by=c("tmpDate","TrapPositionID"),all.x=TRUE)
+    obs.eff.df$tmpDate <- NULL
     
     #   ---- Put these back.
     names(dbPerQ)[names(dbPerQ) == "batchDate"] <- "measureDate"
