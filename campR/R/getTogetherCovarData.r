@@ -366,7 +366,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     
   #   ---- In the case of the RBDD, swap out flow_cfs for percQ.  Note empty dbperQ has Date
   #   ---- instead of POSIXct.  Don't think this matters.  
-  dbperQ <- data.frame(subSiteID=integer(),measureDate=as.Date(character()),percQ=numeric(),percQUnitID=integer(),stringsAsFactors=FALSE)
+  dbPerQ <- data.frame(subSiteID=integer(),measureDate=as.Date(character()),percQ=numeric(),percQUnitID=integer(),stringsAsFactors=FALSE)
   if( site == 42000 ){
     dbPerQ <- percQ(hrflow=df[[2]])
     
