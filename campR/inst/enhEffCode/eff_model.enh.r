@@ -157,8 +157,22 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   
   #   ---- Look at how the full models work out with respect to different traps.  
   table(obs.eff.df[!is.na(obs.eff.df$efficiency),]$covar,obs.eff.df[!is.na(obs.eff.df$efficiency),]$TrapPositionID)
-
- 
+  
+  
+  
+  
+  
+  
+  #sql.code.dir.pg <- file.path(find.package("EnvCovDBpostgres"),"sql")
+  save.image("L:/Jason/saveObjs/rbdd.RData")
+  load("L:/Jason/saveObjs/rbdd.RData")
+  require(campR)
+  
+  
+  
+  
+  
+  
   varSummary <- NULL
   possibleVars <- c("(Intercept)","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
 

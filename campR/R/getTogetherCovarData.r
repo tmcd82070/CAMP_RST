@@ -197,7 +197,6 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
       #dbBaro <- getCAMPEnvCov(dbCov,"barometer","barometerUnitID",33)    
       #dbWeat <- getCAMPEnvCov(dbCov,"weather",NA,NA)
       
-      
       #   ---- Put all database covariates into a list for easier processing.
       dbCovar <- list(dbDisc,dbDpcm,dbATpF,dbTurb,dbWVel,dbWTpC,dbLite)#,dbDOxy,dbCond,dbBaro,dbWeat)
       
@@ -363,6 +362,46 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     obs.eff.df <- obs.eff.df[order(obs.eff.df$TrapPositionID,obs.eff.df$batchDate),]
     
   }
+
+    
+  #   ---- In the case of the RBDD, swap out flow_cfs for percQ.  Note empty dbperQ has Date
+  #   ---- instead of POSIXct.  Don't think this matters.  
+  dbperQ <- data.frame(subSiteID=integer(),measureDate=as.Date(character()),percQ=numeric(),percQUnitID=integer(),stringsAsFactors=FALSE)
+  if( attr(obs.eff.df,"site.name") == "RBDD RST" ){
+    dbPerQ <- percQ(hrflow=df[[2]])
+    
+    #   ---- The obs.eff.df batchDate is off by 8 hours; i.e., it's 8 hours earlier than what it should be.  This could be due 
+    #   ---- to not setting tz = "UTC", which maybe up to now hasn't mattered.  I do not know how DST messes with this "8"-hour 
+    #   ---- difference.  To avoid that headache, merge on a Date type instead.  
+    obs.eff.df$tmpDate <- as.Date(obs.eff.df$batchDate)
+    
+    dbPerQ2 <- dbPerQ
+    names(dbPerQ)[names(dbPerQ) == "measureDate"] <- "batchDate"
+    names(dbPerQ)[names(dbPerQ) == "subSiteID"] <- "TrapPositionID"
+    dbPerQ$tmpDate <- as.Date(dbPerQ$batchDate)
+    
+    obs.eff.df <- merge(obs.eff.df,dbPerQ[,c("tmpDate","TrapPositionID","percQ")],by=c("tmpDate","TrapPositionID"),all.x=TRUE)
+    
+    #   ---- Put these back.
+    names(dbPerQ)[names(dbPerQ) == "batchDate"] <- "measureDate"
+    names(dbPerQ)[names(dbPerQ) == "TrapPositionID"] <- "subSiteID"
+    
+    #   ---- Adjust the covar variable in obs.eff.df.  Note that covar should have flow_cfs, because the RBDD should always 
+    #   ---- have flow.  Can this break if they request a super short min.date and max.date?
+    flowPresent <- grepl("flow_cfs",obs.eff.df$covar,fixed=TRUE)
+    obs.eff.df[flowPresent,]$covar <- gsub("flow_cfs","percQ",obs.eff.df$covar[flowPresent],fixed=TRUE)
+    
+    #   ---- Always true?  Remove flow_cfs.  
+    if( "flow_cfs" %in% names(obs.eff.df2) ){
+      obs.eff.df$flow_cfs <- NULL
+    }
+    
+  }
   
-  return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,dbTurb=dbTurb,dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite,dbFlPG=dbFlPG,dbTpPG=dbTpPG))
+  return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,dbTurb=dbTurb,dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite,dbFlPG=dbFlPG,dbTpPG=dbTpPG,dbPerQ=dbPerQ))
 }
+
+
+
+
+
