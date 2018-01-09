@@ -18,35 +18,16 @@ excelName <- "theExcel"
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
 
-# # I THINK THIS IS NOW OBSOLETE, AS OF V1.1.
-# #   ---- Read in mapping of subSiteID to ourSiteID, if necessary.
-# if("Q" %in% reportRun){
-#   #luSubSiteID <<- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
-# }
-
 #   ---- Get necessary packages in order.  
 # install.packages(c("RODBC","mvtnorm"))
 # require("RODBC",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 # require("mvtnorm",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 # require("splines",lib.loc=paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
-
-#   ---- Install the working version of campR.  
-#   ---- Prior to running this step, make sure you install the zip folder.
-
 unloadNamespace("campR")
 unloadNamespace("RODBC")
 detach("package:RPostgres",unload=TRUE)
 detach("package:campR", unload=TRUE)
 require(campR)
-#require(EnvCovDBpostgres)   # <---- Forcing this.  Works in Platform?
-
-#   ---- Install the working version of EnvCovDBpostgres.  
-#   ---- Prior to running this step, make sure you install the zip folder.
-# detach("package:EnvCovDBpostgres", unload=TRUE)
-# require(EnvCovDBpostgres)
-# 
-# require(splines)
-# require(mvtnorm)
 
 #   ---- Read in the desired Excel scheme.  This is kept in the helperCode folder of the inst folder
 #   ---- in the campR package development folder in CAMP_RST20160601.  
@@ -56,12 +37,12 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
 #theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]                  # For Enh Eff development (no RBDD)
+#theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,73),]               # For Enh Eff development (yes RBDD)
 
 # theExcel <- theExcel[theExcel$streamName == "American River",]     # American
 # theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
 # theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
-#theExcel <- theExcel[c(2,3,4),]
-#theExcel <- theExcel[!theExcel$streamName == "Sacramento River",]
+# theExcel <- theExcel[!theExcel$streamName == "Sacramento River",]
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
