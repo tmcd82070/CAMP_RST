@@ -28,7 +28,7 @@ if(is.factor(allStreams$subsiteID)){
 }
 
 #   ---- Make sure flow_cfs at least considered in all models.  
-allStreams[allStreams$Stage == "Initial",]   # <---- Column flow_cfs should be all 1s.
+allStreams[allStreams$Stage == "Initial",]   # <---- Column flow_cfs should be all 1s (except 42xxx -- RBDD).
 
 #   ---- (Put betas in the campr package.)
 betas <- allStreams[allStreams$Stage == "Final Model Betas",]
