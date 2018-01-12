@@ -109,14 +109,14 @@ percQ <- function(hrflow){
   
   #   ---- Adjust for varying cross-sectional area.  
   num$crossArea <- 24.6
-  num[num$coneDepthAtStart == 45,]$crossArea <- 22.7
-  num[num$coneDepthAtStart == 46,]$crossArea <- 23.3
-  num[num$coneDepthAtStart == 47,]$crossArea <- 24.0
-  num[num$coneDepthAtStart == 48,]$crossArea <- 24.6
-  num[num$coneDepthAtStart == 49,]$crossArea <- 25.3
-  num[num$coneDepthAtStart == 50,]$crossArea <- 26.0
-  num[num$coneDepthAtStart == 51,]$crossArea <- 26.6
-  num[num$coneDepthAtStart == 52,]$crossArea <- 24.6
+  if(sum(num$coneDepthAtStart == 45) > 0) num[num$coneDepthAtStart == 45,]$crossArea <- 22.7
+  if(sum(num$coneDepthAtStart == 46) > 0) num[num$coneDepthAtStart == 46,]$crossArea <- 23.3
+  if(sum(num$coneDepthAtStart == 47) > 0) num[num$coneDepthAtStart == 47,]$crossArea <- 24.0
+  if(sum(num$coneDepthAtStart == 48) > 0) num[num$coneDepthAtStart == 48,]$crossArea <- 24.6
+  if(sum(num$coneDepthAtStart == 49) > 0) num[num$coneDepthAtStart == 49,]$crossArea <- 25.3
+  if(sum(num$coneDepthAtStart == 50) > 0) num[num$coneDepthAtStart == 50,]$crossArea <- 26.0
+  if(sum(num$coneDepthAtStart == 51) > 0) num[num$coneDepthAtStart == 51,]$crossArea <- 26.6
+  if(sum(num$coneDepthAtStart == 52) > 0) num[num$coneDepthAtStart == 52,]$crossArea <- 24.6
   
   #   ---- Adjust for halfCone. 
   num$halfConeMultiplier <- 1
@@ -164,15 +164,10 @@ percQ <- function(hrflow){
   qQ$batchDate <- as.POSIXlt(qQ$batchDate)
   
   #   ---- Account for the two little diversions.  Read in daily 11-year-average canal diversion data.  
-  canal <- data(canal,envir=environment())
-  Canal <- canal
+  data(canal,envir=environment())
   
   qQ$monthDay <- paste0(qQ$batchDate$mon + 1,"-",qQ$batchDate$mday)
-  
-  cat(paste0("Testing for Canal: \n"))
-  print(head(Canal))
-  
-  qQ <- merge(qQ,Canal,by=c("monthDay"),all.x=TRUE)
+  qQ <- merge(qQ,canal,by=c("monthDay"),all.x=TRUE)
   qQ <- qQ[order(qQ$batchDate),]
   
   #   ---- Account for the flow from the diversions.  (This is minus flow.)
