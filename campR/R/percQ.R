@@ -120,7 +120,7 @@ percQ <- function(hrflow){
   
   #   ---- Adjust for halfCone. 
   num$halfConeMultiplier <- 1
-  num[num$halfConeID == 1 & !is.na(num$halfConeID),]$halfConeMultiplier <- 0.5
+  if(sum(num$halfConeID == 1 & !is.na(num$halfConeID)) > 0) num[num$halfConeID == 1 & !is.na(num$halfConeID),]$halfConeMultiplier <- 0.5
 
   #   ---- First, average over trap and day.
   waterVel <- aggregate(num$waterVel,list(trapPositionID=num$trapPositionID,batchDate=num$batchDate),function(x) mean(x))
