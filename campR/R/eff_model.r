@@ -124,8 +124,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     #   ---- Get stuff we need to fit the enhanced efficiency models.  
     
     #   ---- 1.  We know traps from immediately above.
-    load("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/data/betas.rda")
-    #data(betas,envir=environment())
+    #load("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/data/betas.rda")
+    data(betas,envir=environment())
     betas <- betas[betas$subsiteID %in% traps,]
     
     #   ---- Get together covariates.  We need to query for days before and after the first and last 
@@ -172,8 +172,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       ind <- !is.na(df$efficiency)
       
       #   ---- Get the temporal spline basis matrix goods.  
-      here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffStats"  # for testing before you have the package.
-      #here <- paste0(find.package("campR"),"/enhEffStats")  # <- for when you have a package.
+      #here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffStats"  # for testing before you have the package.
+      here <- paste0(find.package("campR"),"/enhEffStats")  # <- for when you have a package.
       
       # isLoaded <- function(dataset) {
       #   exists(dataset, .tmpDataEnv)
