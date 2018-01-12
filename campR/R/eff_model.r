@@ -124,6 +124,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     #   ---- Get stuff we need to fit the enhanced efficiency models.  
     
     #   ---- 1.  We know traps from immediately above.
+    #load("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/data/betas.rda")
     data(betas,envir=environment())
     betas <- betas[betas$subsiteID %in% traps,]
     
@@ -157,6 +158,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     dbLite <- stuff$dbLite
     dbFlPG <- stuff$dbFlPG
     dbTpPG <- stuff$dbTpPG
+    dbPerQ <- stuff$dbPerQ
     
     #   ---- Create a means to identify traps for which we end up lacking data.  
     doOldEff <- rep(FALSE,length(traps))
@@ -170,7 +172,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       ind <- !is.na(df$efficiency)
       
       #   ---- Get the temporal spline basis matrix goods.  
-      #here <- "//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding"
+      # here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffStats"  # for testing before you have the package.
       here <- paste0(find.package("campR"),"/enhEffStats")  # <- for when you have a package.
       
       # isLoaded <- function(dataset) {
@@ -314,6 +316,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         covarC <- c("discharge_cfs","waterDepth_cm","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","lightPenetration_ntu")#,"dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual")
         covarE <- c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")
       
+        #   ---- See if we have any temporal spline tmp bits.  
         if(sum(grepl("tmp",names(splineCoef))) > 0){
         
           #   ---- Build the basis matrix.  This does includes the intercept.  
@@ -331,6 +334,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
           tB <- c(covarI)
           timeDF <- data.frame(Intercept=rep(1,length(splineDays)),batchDate2=splineDays)
           c0 <- timeDF[!duplicated(timeDF$batchDate2),]
+          c0 <- c0[order(c0$batchDate2),]
         }
       
         #   ---- Get the environmental covariate data.  
@@ -353,9 +357,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         }
            
         #   ---- Get the percent-Q covariate data.
-        if(sum(c("percQ_") %in% names(covarB)) > 0){
+        if(sum(c("percQ") %in% names(covarB)) > 0){
           #do stuff
-          #c3 <- thedf
+          c3 <- df[,c("batchDate",names(covarB)[names(covarB) %in% "percQ"])]
         } else {
           c3 <- NULL
         }
@@ -391,7 +395,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
         #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
         bd2.lt <- as.POSIXlt(c0$batchDate2)
-        c0$batchDate <- ISOdate(substr(min.date,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+        if(substr(min.date,1,4) < (1900 + strt.dt$year)){  # This happens on the RBDD.
+          c0$batchDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+        } else {
+          c0$batchDate <- ISOdate(substr(min.date,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+        }
         
         #   ---- Allow for all days in the spline enh eff trial period. 
         allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
