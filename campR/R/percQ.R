@@ -165,6 +165,7 @@ percQ <- function(hrflow){
   
   #   ---- Account for the two little diversions.  Read in daily 11-year-average canal diversion data.  
   data(canal,envir=environment())
+  canal <- canal[is.numeric(canal$average_cfs),]
   
   qQ$monthDay <- paste0(qQ$batchDate$mon + 1,"-",qQ$batchDate$mday)
   qQ <- merge(qQ,canal,by=c("monthDay"),all.x=TRUE)
