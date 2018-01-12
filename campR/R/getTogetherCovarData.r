@@ -374,14 +374,14 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     #   ---- to not setting tz = "UTC", which maybe up to now hasn't mattered.  I do not know how DST messes with this "8"-hour 
     #   ---- difference.  To avoid that headache, merge on a Date type instead.  
     obs.eff.df$tmpDate <- as.Date(obs.eff.df$batchDate)
+    obs.eff.df$subSiteID <- as.numeric(levels(obs.eff.df$TrapPositionID))[obs.eff.df$TrapPositionID]
     
     dbPerQ2 <- dbPerQ
     names(dbPerQ)[names(dbPerQ) == "measureDate"] <- "batchDate"
-    names(dbPerQ)[names(dbPerQ) == "subSiteID"] <- "TrapPositionID"
     dbPerQ$tmpDate <- as.Date(dbPerQ$batchDate)
-    
-    obs.eff.df <- merge(obs.eff.df,dbPerQ[,c("tmpDate","TrapPositionID","percQ")],by=c("tmpDate","TrapPositionID"),all.x=TRUE)
-    obs.eff.df$tmpDate <- NULL
+
+    obs.eff.df <- merge(obs.eff.df,dbPerQ[,c("tmpDate","subSiteID","percQ")],by=c("tmpDate","subSiteID"),all.x=TRUE)
+    obs.eff.df$tmpDate <- obs.eff.df$subSiteID <- NULL
     
     #   ---- Put these back.
     names(dbPerQ)[names(dbPerQ) == "batchDate"] <- "measureDate"
