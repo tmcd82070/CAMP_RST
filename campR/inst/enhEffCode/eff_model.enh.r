@@ -91,6 +91,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   # max.df.spline <- 4
   # plot.file <- plot.file
 
+  #save.image("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/RBDDNew.RData")
+  #load("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/RBDDNew.RData")
+  
   option <- 2
   forEffPlots <- attr(obs.eff.df,"forEffPlots")
   site <- attr(obs.eff.df,"site")
