@@ -326,7 +326,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
           timeDF <- data.frame(timeX=timeX,batchDate2=splineDays)
           names(timeDF)[names(timeDF) == "timeX.V1"] <- "Intercept"
           c0 <- timeDF[!duplicated(timeDF$batchDate2),]
-          
+    
         } else {
           
           #   ---- If we're here, the temporal spline was fit as a simple intercept.  We still 
@@ -395,10 +395,22 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
         #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
         bd2.lt <- as.POSIXlt(c0$batchDate2)
-        if(substr(min.date,1,4) < (1900 + strt.dt$year)){  # This happens on the RBDD.
+        
+        #   ---- This gets tricky.  If batchDate2 has a 2-29, but our real dates don't, we have a problem.
+        bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]
+        
+        ISOdate(substr(bd2.lt,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+        
+        
+        
+        checkDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+          
+        #   ---- See if checkDate are inside min.date and max.date.  
+        if(sum(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone) <= checkDate & 
+               checkDate <= as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone)) == length(checkDate)){
+          c0$batchDate <- ISOdate(substr(checkDate,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
+        } else if(substr(min.date,1,4) < (1900 + strt.dt$year)) {
           c0$batchDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-        } else {
-          c0$batchDate <- ISOdate(substr(min.date,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
         }
         
         #   ---- Allow for all days in the spline enh eff trial period. 
