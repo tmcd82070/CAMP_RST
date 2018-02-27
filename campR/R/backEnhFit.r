@@ -159,6 +159,14 @@ backEnhFit <- function(tmp.df,df,initialVars,possibleVars,m.i,eff.ind.inside,max
     cat("I have removed variable discharge_cfs because flow_cfs is already present.\n\n")
   }
   
+  #   ---- In the case of the RBDD, we don't want to include waterVel_fts.  This is because 
+  #   ---- the calculation of percQ is directly dependent on it.  
+  if(substr(tmp.df$TrapPositionID,1,2) == '42' & grepl(" + waterVel_fts",tmp.df$covar[1],fixed=TRUE)){
+    tmp.df$covar <- gsub(" + waterVel_fts","",tmp.df$covar,fixed=TRUE)
+    #tmp.df$waterVel_fts <- NULL    # I don't believe this is necessary.
+    covarString <- gsub(" + waterVel_fts","",tmp.df$covar,fixed=TRUE)
+  }
+  
   #   ---- Save a record of the variables we care about for plotting below.  
   covarStringPlot <- covarString
   
