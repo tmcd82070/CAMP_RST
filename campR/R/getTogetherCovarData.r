@@ -188,7 +188,9 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
       dbDisc <- getCAMPEnvCov(dbCov,"discharge","dischargeUnitID",12)
       dbDpcm <- getCAMPEnvCov(dbCov,"waterDepth","waterDepthUnitID",3)
       dbATpF <- getCAMPEnvCov(dbCov,"airTemp","airTempUnitID",19)
-      dbTurb <- getCAMPEnvCov(dbCov,"turbidity","turbidityUnitID",20)
+      if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
+        dbTurb <- getCAMPEnvCov(dbCov,"turbidity","turbidityUnitID",20)
+      }
       dbWVel <- getCAMPEnvCov(dbCov,"waterVel","waterVelUnitID",8)
       dbWTpC <- getCAMPEnvCov(dbCov,"waterTemp","waterTempUnitID",18) 
       dbLite <- getCAMPEnvCov(dbCov,"lightPenetration","lightPenetrationUnitID",3)
@@ -198,7 +200,11 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
       #dbWeat <- getCAMPEnvCov(dbCov,"weather",NA,NA)
       
       #   ---- Put all database covariates into a list for easier processing.
-      dbCovar <- list(dbDisc,dbDpcm,dbATpF,dbTurb,dbWVel,dbWTpC,dbLite)#,dbDOxy,dbCond,dbBaro,dbWeat)
+      if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
+        dbCovar <- list(dbDisc,dbDpcm,dbATpF,dbTurb,dbWVel,dbWTpC,dbLite)#,dbDOxy,dbCond,dbBaro,dbWeat)
+      } else {
+        dbCovar <- list(dbDisc,dbDpcm,dbATpF,dbWVel,dbWTpC,dbLite)#,dbDOxy,dbCond,dbBaro,dbWeat)
+      }
       
       #   ---- Collapse all the UnitIDs we have. 
       dfUnitIDs <- NULL
@@ -349,7 +355,9 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
       obs.eff.df <- estCovar(dbDisc,"discharge_cfs",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbDpcm,"waterDepth_cm",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbATpF,"airTemp_F",1,traps,obs.eff.df,xwalk,oursitevar)
-      obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df,xwalk,oursitevar)
+      if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
+        obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df,xwalk,oursitevar)
+      }
       obs.eff.df <- estCovar(dbWVel,"waterVel_fts",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbWTpC,"waterTemp_C",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbLite,"lightPenetration_cm",1,traps,obs.eff.df,xwalk,oursitevar)
@@ -399,7 +407,11 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     
   }
   
-  return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,dbTurb=dbTurb,dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite,dbFlPG=dbFlPG,dbTpPG=dbTpPG,dbPerQ=dbPerQ))
+  if(substr(obs.eff.df$TrapPositionID[1],1,2) == "42"){
+    return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,              dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite,dbFlPG=dbFlPG,dbTpPG=dbTpPG,dbPerQ=dbPerQ))
+  } else {
+    return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,dbTurb=dbTurb,dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite,dbFlPG=dbFlPG,dbTpPG=dbTpPG,dbPerQ=dbPerQ))
+  }
 }
 
 

@@ -94,6 +94,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   # max.df.spline <- 4
   # plot.file <- plot.file
 
+  save.image("C:/Users/jmitchell/Desktop/save/rbdd.RData")
   
   ans <- NULL
   traps <- as.character(droplevels(sort( unique(obs.eff.df$TrapPositionID))))
@@ -163,6 +164,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     #   ---- Create a means to identify traps for which we end up lacking data.  
     doOldEff <- rep(FALSE,length(traps))
     names(doOldEff) <- traps
+    
+    
+    dat <- obs.eff.df[obs.eff.df$TrapPositionID == "42010",]
     
     #   ---- Run over individual traps.
     for(trap in traps){
@@ -397,12 +401,15 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         bd2.lt <- as.POSIXlt(c0$batchDate2)
         
         #   ---- This gets tricky.  If batchDate2 has a 2-29, but our real dates don't, we have a problem.
-        bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]
+        checkLeapDay <- as.POSIXlt(seq.POSIXt(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
+                                              as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
+                                              by="1 DSTday"))
         
-        ISOdate(substr(bd2.lt,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-        
-        
-        
+        #   ---- Check if we should have leap day in the map back to the min.date max.date range.
+        if( sum(checkLeapDay$mon == 1 & checkLeapDay$mday == 29) == 0 ){
+          bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]
+        }
+         
         checkDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
           
         #   ---- See if checkDate are inside min.date and max.date.  
