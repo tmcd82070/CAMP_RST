@@ -20,6 +20,14 @@ varFiles <- files[grepl("var",files,fixed=FALSE)]
 allStreams <- NULL
 for(i in 1:length(varFiles)){
   load(paste0(dir,"/",varFiles[i]))
+  
+  #   ---- In the case of the RBDD, may not have turbidity.  
+  #   ---- Add in zeros (not included in model) to make this go. 
+  if(!("turbidity_ntu" %in% names(varSummary))){
+    varSummary <- data.frame(varSummary[,c(1:12)],"turbidity_ntu"=rep(0,nrow(varSummary)),varSummary[,c(13:24)])
+    names(varSummary)[names(varSummary) == "X.Intercept."] <- "(Intercept)"
+  } 
+  
   allStreams <- rbind(allStreams,varSummary)
 }
 
@@ -32,7 +40,11 @@ allStreams[allStreams$Stage == "Initial",]   # <---- Column flow_cfs should be a
 
 #   ---- (Put betas in the campr package.)
 betas <- allStreams[allStreams$Stage == "Final Model Betas",]
-devtools::use_data(betas,overwrite=TRUE)
+devtools::use_data(pkg="L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR",betas,overwrite=TRUE)
+
+
+
+
 
 
 

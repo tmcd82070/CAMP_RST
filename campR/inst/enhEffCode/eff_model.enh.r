@@ -93,6 +93,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
 
   #save.image("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/RBDDNew.RData")
   #load("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/RBDDNew.RData")
+  #require(campR)
   
   option <- 2
   forEffPlots <- attr(obs.eff.df,"forEffPlots")
@@ -151,7 +152,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   dbDisc <- stuff$dbDisc
   dbDpcm <- stuff$dbDpcm
   dbATpF <- stuff$dbATpF
-  dbTurb <- stuff$dbTurb
+  if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
+    dbTurb <- stuff$dbTurb
+  }
   dbWVel <- stuff$dbWVel
   dbWTpC <- stuff$dbWTpC
   dbLite <- stuff$dbLite
@@ -170,7 +173,11 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   
   varSummary <- NULL
   possibleVars <- c("(Intercept)","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual","percQ")
-
+  if(substr(obs.eff.df$TrapPositionID[1],1,2) == "42"){
+    possibleVars <- possibleVars[possibleVars != "turbidity_ntu"]
+  }
+  
+  
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
   for( trap in traps ){
     
@@ -334,15 +341,15 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #if(length(splineCoef) == dim(X_t)[2]){message("Dimension of spline beta vector equals dimension of temporal basis column space.\n")}
     
     #   ---- TEMPORARY FILE SAVE.  
-    holding <- paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/")
+    holding <- paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/RBDD2/")
     #save(splineCoef,splineDays,splineBegD,splineEndD,fit,file=holding)
 
     
-    save(splineCoef,file=paste0(holding,site,"_",trap,"_splineCoef.RData"),compress="xz",compression_level=9)
-    save(splineDays,file=paste0(holding,site,"_",trap,"_splineDays.RData"),compress="xz",compression_level=9)
-    save(splineBegD,file=paste0(holding,site,"_",trap,"_splineBegD.RData"),compress="xz",compression_level=9)
-    save(splineEndD,file=paste0(holding,site,"_",trap,"_splineEndD.RData"),compress="xz",compression_level=9)
-    save(fit,file=paste0(holding,site,"_",trap,"_fit.RData"),compress="xz",compression_level=9)
+    save(splineCoef,file=paste0(holding,site,"_",trap,"_splineCoef.RData"),compress="bzip2",compression_level=9)
+    save(splineDays,file=paste0(holding,site,"_",trap,"_splineDays.RData"),compress="bzip2",compression_level=9)
+    save(splineBegD,file=paste0(holding,site,"_",trap,"_splineBegD.RData"),compress="bzip2",compression_level=9)
+    save(splineEndD,file=paste0(holding,site,"_",trap,"_splineEndD.RData"),compress="bzip2",compression_level=9)
+    save(fit,file=paste0(holding,site,"_",trap,"_fit.RData"),compress="bzip2",compression_level=9)
   
     
     
@@ -377,6 +384,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- Make a lookup vector.  
     dfs <- c("dbMoon","dbNite","dbFLen","dbFlPG","dbTpPG","dbDisc","dbDpcm","dbDpft","dbATpC","dbATpF","dbTurb","dbWVel","dbWTpC","dbWTmF","dbLite","dbDOxy","dbCond","dbBaro","dbWeat","dbPerQ")
     covars <- c("bdMeanMoonProp","bdMeanNightProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual","percQ")
+    if(substr(obs.eff.df$TrapPositionID[1],1,2) == "42"){
+      dfs <- dfs[dfs != "dbTurb"]
+      covars <- covars[covars != "turbidity_ntu"]
+    }
     covarlu <- dfs
     names(covarlu) <- covars
         
