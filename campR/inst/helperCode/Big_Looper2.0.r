@@ -42,7 +42,7 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 # theExcel <- theExcel[theExcel$streamName == "American River",]     # American
 # theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
 # theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
-# theExcel <- theExcel[!theExcel$streamName == "Sacramento River",]
+# theExcel <- theExcel[theExcel$streamName == "Sacramento River",]
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)

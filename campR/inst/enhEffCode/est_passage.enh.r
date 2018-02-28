@@ -91,11 +91,11 @@
 
 F.est.passage.enh <- function( catch.df, release.df, summarize.by, file.root, ci ){
  
-  # catch.df <- catch.df.ls
-  # release.df <- release.df.enh
-  # summarize.by <- by
-  # file.root <- out.fn.root
-  # ci <- ci
+  catch.df <- catch.df.ls
+  release.df <- release.df.enh
+  summarize.by <- by
+  file.root <- out.fn.root
+  ci <- ci
    
   
   #   ---- Data frame catch.df gets manipulated along the way.  Preserve the min.date and
