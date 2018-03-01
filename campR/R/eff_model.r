@@ -179,23 +179,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffStats"  # for testing before you have the package.
       here <- paste0(find.package("campR"),"/enhEffStats")  # <- for when you have a package.
       
-      # isLoaded <- function(dataset) {
-      #   exists(dataset, .tmpDataEnv)
-      # }
-      # 
-      # getData <- function(dataset) {
-      #   if(!isLoaded(dataset)){
-      #     load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"))
-      #     #data(dataset,envir=GlobalEnv)
-      #     .tmpDataEnv[[dataset]]
-      #   }
-      # }
-      # 
-      # 
-      # 
-      # isLoaded("splineCoef")
-      # getData(splineCoef)
-      
       .tmpDataEnv <- new.env(parent=emptyenv()) # not exported
       
       load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"),envir=.tmpDataEnv)
@@ -265,7 +248,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       # all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
       min.date.p <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone)
       max.date.p <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone)
-      
       ind.inside <- (max(min.date.p,as.POSIXct(strt.dt)) <= df$batchDate) & (df$batchDate <= min(max.date.p,as.POSIXct(end.dt)))
       inside.dates <- c(max(min.date.p,as.POSIXct(strt.dt)), min(max.date.p,as.POSIXct(end.dt)))
       all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
@@ -273,7 +255,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #  ---- The fitting data frame
       tmp.df <- df[ind & ind.inside,]
       m.i <- sum(ind & ind.inside)
-      
       
       #   ---- 4. Find out which covariates this trap cares about.  
       thisB1 <- betas[betas$subsiteID == trap,]                                                               # Restrict to trap.
@@ -388,14 +369,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         } else {
           c4 <- NULL
         } 
-      
-        # #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
-        # bd2.lt <- as.POSIXlt(c0$batchDate2)
-        # if(yearUp1 == 1){
-        #   c0$batchDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-        # } else {
-        #   c0$batchDate <- ISOdate(substr(min.date,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-        # }
         
         #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
         bd2.lt <- as.POSIXlt(c0$batchDate2)
@@ -407,24 +380,21 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
         #   ---- Check if we should have leap day in the map back to the min.date max.date range.
         if( sum(checkLeapDay$mon == 1 & checkLeapDay$mday == 29) == 0 ){
-          bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]
+          bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]   # Get rid of 2/29 -- don't need it.
         }
-         
-        checkDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-          
-        #   ---- See if checkDate are inside min.date and max.date.  
-        if(sum(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone) <= checkDate & 
-               checkDate <= as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone)) == length(checkDate)){
-          c0$batchDate <- ISOdate(substr(checkDate,1,4),bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-        } else if(substr(min.date,1,4) < (1900 + strt.dt$year)) {
-          c0$batchDate <- ISOdate(as.numeric(substr(min.date,1,4)) + 1,bd2.lt$mon + 1,bd2.lt$mday,0,tz=time.zone)
-        }
+        
+        #   ---- If the minimum year of bd2.lt is 1960, we've wrapped around to 1960, after starting
+        #   ---- in 1950.  If the minimum year of bs2.lt is 1959, we haven't wrapped around.  
+        thebd2Year <- min(bd2.lt$year)
+        
+        #   ---- By design, the min.date and max.date span at most one year.  Add exactly the 
+        #   ---- number of years between 1960 and the min(c0$batchDate$year) to the dates in bd2.lt.  
+        yearDiff <- min(as.POSIXlt(tmp.df$batchDate)$year) - thebd2Year   # Assumes all batchDates after 1960.
+        c0$batchDate <- as.POSIXct(bd2.lt + lubridate::years(yearDiff))
         
         #   ---- Allow for all days in the spline enh eff trial period. 
         allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
                                              as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
-        # allDates$EndTime <- NULL
-        # allDates <- data.frame(batchDate=unique(allDates$batchDate))
         
         #   ---- The documentation indicates that allDates$batchDate should have tz="UTC", because I set it 
         #   ---- in the from of the seq call.  I suspect that my then placing it in a data.frame loses the 
