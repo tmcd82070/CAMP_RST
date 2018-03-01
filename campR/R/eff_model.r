@@ -94,7 +94,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   # max.df.spline <- 4
   # plot.file <- plot.file
 
-  save.image("C:/Users/jmitchell/Desktop/save/rbdd.RData")
+  #save.image("C:/Users/jmitchell/Desktop/save/rbdd.RData")
   
   ans <- NULL
   traps <- as.character(droplevels(sort( unique(obs.eff.df$TrapPositionID))))
@@ -166,7 +166,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     names(doOldEff) <- traps
     
     
-    dat <- obs.eff.df[obs.eff.df$TrapPositionID == "42010",]
+    #dat <- obs.eff.df[obs.eff.df$TrapPositionID == "42010",]
     
     #   ---- Run over individual traps.
     for(trap in traps){

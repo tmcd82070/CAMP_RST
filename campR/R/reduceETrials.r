@@ -77,21 +77,33 @@ reduceETrials <- function(df,possibleVars,bsplBegDt,bsplEndDt,trap,all.ind.insid
   initialVars <- c("(Intercept)",names(df)[!(names(df) %in% c("batchDate","nReleased","nCaught","efficiency","covar","batchDate2","fishDay"))])
   initialVarsNum <- c(2,as.integer(possibleVars %in% initialVars))
   
-  #   ---- Define these so we can model on (basically) fishing day of the season.  Do this with respect to 
-  #   ---- the year 1960 paradigm defined above.  We really only care about the number of days since the
-  #   ---- minimum start of fishing, over all years, so the year is immaterial.  Use 1960, or maybe 1959, 
-  #   ---- so we always keep this fact in mind.  Not sure this will always work... Need to check.  
-  sign <- as.numeric(strftime(df$batchDate,format="%j")) - as.numeric(strftime(bsplBegDt,format="%j"))
-  df$fishDay <- ifelse(sign == 0,0,
-                       ifelse(sign  < 0,sign + 365,as.numeric(strftime(df$batchDate,format="%j")))) 
+  # #   ---- Define these so we can model on (basically) fishing day of the season.  Do this with respect to 
+  # #   ---- the year 1960 paradigm defined above.  We really only care about the number of days since the
+  # #   ---- minimum start of fishing, over all years, so the year is immaterial.  Use 1960, or maybe 1959, 
+  # #   ---- so we always keep this fact in mind.  Not sure this will always work... Need to check.  
+  # sign <- as.numeric(strftime(df$batchDate,format="%j")) - as.numeric(strftime(bsplBegDt,format="%j"))
+  # df$fishDay <- ifelse(sign == 0,0,
+  #                      ifelse(sign  < 0,sign + 365,as.numeric(strftime(df$batchDate,format="%j")))) 
+  # 
+  # firstYear <- min(bsplBegDt$year + 1900)
+  # df$batchDate2 <- ifelse(sign >= 0,as.POSIXct(paste0(firstYear,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone),
+  #                         ifelse(sign < 0,as.POSIXct(paste0(firstYear + 1,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone),
+  #                                NA))
   
-  firstYear <- min(bsplBegDt$year + 1900)
-  df$batchDate2 <- ifelse(sign >= 0,as.POSIXct(paste0(firstYear,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone),
-                          ifelse(sign < 0,as.POSIXct(paste0(firstYear + 1,"-",as.POSIXlt(df$batchDate)$mon + 1,"-",as.POSIXlt(df$batchDate)$mday),format="%Y-%m-%d",tz=time.zone),
-                                 NA))
+
   
+  #   ---- Find the difference in years between our efficiency setup in this run, as the mapped back-
+  #   ---- in-time 1959 (or maybe 1958 if the 1959 period starts early in the year, and has additionally
+  #   ---- been buffed to start in 1958.  This should be rare.) 
+  theYearNow <- as.POSIXlt(df$batchDate[1])$year 
+  theYearBeg <- as.POSIXlt(bsplBegDt)$year
+  theYearDif <- theYearNow - theYearBeg
+  
+  #   ---- This 'years' function makes everything so much better!
+  df$batchDate2 <- df$batchDate - lubridate::years(theYearDif)
+
   #   ---- If we have a batchDate on 2/29, we have a problem, because 1970 wasn't a leap year.  
-  df$batchDate2 <- as.POSIXct(df$batchDate2,format="%Y-%m-%d",tz="America/Los_Angeles",origin="1970-01-01 00:00:00 UTC")
+  #df$batchDate2 <- as.POSIXct(df$batchDate2,format="%Y-%m-%d",tz="America/Los_Angeles",origin="1970-01-01 00:00:00 UTC")
   
   #   ---- Find the "season", which is between first and last trials
   #   ---- We look for 'inside' with respect to our 1959-1960 mapped year of trials.  

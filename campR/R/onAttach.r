@@ -2,6 +2,7 @@
 #' @importFrom utils packageVersion memory.limit combn getWinProgressBar head setWinProgressBar tail winProgressBar write.csv read.csv write.table data
 #' @importFrom ellipse ellipse
 #' @importFrom EnvCovDBpostgres queryEnvCovDB buildStrings
+#' @importFrom lubridate years
 #' 
 .onAttach <- function(libname, pkgname){
 	
