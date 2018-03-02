@@ -100,8 +100,8 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
     red.eff.df <- df[tmp.df$batchDate[1] <= df$batchDate & df$batchDate <= tmp.df$batchDate[nrow(tmp.df)],]
     N.red.usr <- nrow(red.usr.df)
     N.red.eff <- nrow(red.eff.df)
-    check1 <- check2 <- good1 <- good2 <- rep(0,length(covarB))
-    names(check1) <- names(check2) <- names(good1) <- names(good2) <- names(covarB)
+    check0 <- check1 <- check2 <- good1 <- good2 <- rep(0,length(covarB))
+    names(check0) <- names(check1) <- names(check2) <- names(good1) <- names(good2) <- names(covarB)
     C <- length(covarB)
     cat(paste0("\nChecking presence of daily enhanced efficiency covariates against your requested time frame for trap ",unique(df$TrapPositionID)[1],".\n"))
     cat("If that doesn't work, I'll at least try to find daily covariate data in your returned set of efficiency trials, in your requested time frame.\n\n")
@@ -110,6 +110,20 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
       #   ---- Explicitly identify the covar on this loop.  
       covar <- names(covarB)[c]
       
+      #   ---- Case 0:  We have no efficiency trials for the given min.date and max.date.  This excludes most attempts 
+      #   ---- doing an enhanced efficiency model because they probably also then didn't collect CAMP covars.  
+      check0[c] <-  as.logical( (covar %in% names(tmp.df) & nrow(tmp.df) == 0) & (covar %in% names(df) & sum(df[!is.na(df[,covar]),covar]) == 0) )
+        
+      #   ---- If check0[c] is a zero, then we have no covariate data, due to no efficiency trials.  
+      if(check0[c] == 1){
+        
+        #   ---- Cut to the chase:  we have a problem, and cannot fit enhanced efficiency trials.  
+        cat(paste0("PROBELM:  I have no data on variable ",covar," inside the efficiency-trial data range.  Cannot use enhanced efficiency.\n"))
+        doEnhEff <- FALSE
+      }
+    }
+    for(c in 1:C){
+      
       #   ---- Case 1:  We have all data for this covar, in between provided min.date and max.date.  Keep in mind 
       #   ---- these are provided by the user.
       check1[c] <- sum( seq(min.date.p,max.date.p,by="DSTday") %in% red.usr.df[!is.na(red.usr.df[,covar]),"batchDate"] )
@@ -117,6 +131,9 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
       #   ---- Case 2:  We have a covar lacking all data for provided min.date and max.date, but with all data 
       #   ---- inside at least the efficiency-trial dates within min.date and max.date.
       check2[c] <- sum( seq(tmp.df$batchDate[1],tmp.df$batchDate[nrow(tmp.df)],by="DSTday") %in% red.eff.df[!is.na(covar),"batchDate"] )
+      
+      
+
       
       #   ---- Each evaluated covar gets a message, indicating the strength of the data variable, in terms of presence.  
       if(check1[c] == N.red.usr){
