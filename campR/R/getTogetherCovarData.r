@@ -152,8 +152,12 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
       if(sum(!is.na(df[[ii]]$flow_cfs)) > 0 & (sum(df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs)) > 0) ){
         df[[ii]][df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs),]$flow_cfs <- NA
       }
-      if(sum(!is.na(df[[ii]]$temp_c)) > 0 & (sum((df[[ii]]$temp_c >= 100 | df[[ii]]$temp_c <= 0) & !is.na(df[[ii]]$temp_c)) < 0)){
-        df[[ii]][(df[[ii]]$temp_c >= 100 | df[[ii]]$temp_c <= 0) & !is.na(df[[ii]]$temp_c),]$temp_c <- NA
+      if(sum(!is.na(df[[ii]]$temp_c)) > 0){
+        #   ---- If we have temps less than -17.8F, then the Celsius value was 0.00.  Chuck these -- they're probably bad values. 
+        #   ---- The value of 37.7778 corresponds to 100F.  
+        if( any( (df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c >= 37.7778) | (df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c <= -17.8) ) ){
+          df[[ii]][!is.na(df[[ii]]$temp_c) & ( df[[ii]]$temp_c >= 37.7778 | df[[ii]]$temp_c <= -17.8 ),]$temp_c <- NA
+        }
       }
     }  
     
