@@ -6,15 +6,16 @@ RVersion <- "3.4.3"
 TestingPlatform <- "CAMP_RST20170115-campR1.1.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 
+#   ---- Set the reports you want to run.  Use the key below. 
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J")
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
-# reportRun <- c("R")
+reportRun <- c("R")
 
-
+#   ---- Assign the version of R to use.  A real check uses the version of R CAMP people use.
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
 
@@ -42,7 +43,7 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 # theExcel <- theExcel[theExcel$streamName == "American River",]     # American
 # theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
 # theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
-# theExcel <- theExcel[theExcel$streamName == "Sacramento River",]
+# theExcel <- theExcel[theExcel$streamName == "Sacramento River",]   # Sacramento
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
@@ -126,6 +127,7 @@ makeTheDir <- function(theDir){
 # passageRounder                  <<- 4
 # eff.min.spline.samp.size        <<- 10
 # unassd.sig.digit                <<- 1
+
 #i <- j <- k <- 1
 #   ---- Given the 'theExcel', loop over the streams.  
 for(i in 1:nStreamNames){
@@ -393,7 +395,8 @@ for(i in 1:nStreamNames){
           
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
-          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,useEnhEff=TRUE)
+          useEnhEff <- TRUE
+          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,useEnhEff=useEnhEff)
           
           #   ---- If desired, remove some of the output.  
           #theFiles <- dir(outFileStem)
