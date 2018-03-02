@@ -426,7 +426,3 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
   }
 }
 
-
-
-
-
