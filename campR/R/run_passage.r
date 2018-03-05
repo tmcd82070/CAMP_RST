@@ -90,14 +90,14 @@
 #' }
 F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE, useEnhEff=TRUE ){
   
-  #   site <- 12345
-  #   taxon <- 161980
-  #   min.date <- "2005-01-01"
-  #   max.date <- "2005-06-30"
-  #   by <- "week"
-  #   output.file <- NA
-  #   ci <- TRUE
-  #   useEnhEff <- TRUE
+  # site <- 12345
+  # taxon <- 161980
+  # min.date <- "2005-01-01"
+  # max.date <- "2005-06-30"
+  # by <- "week"
+  # output.file <- NA
+  # ci <- TRUE
+  # useEnhEff <- TRUE
   
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)

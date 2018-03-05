@@ -91,7 +91,8 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
   #TestingPlatform <- "CAMP_RST20161212-campR1.0.0"
   #luSubSiteID <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
   luSubSiteID <- read.csv(paste0(find.package("EnvCovDBpostgres"),"/helperFiles/luSubSiteID.csv"))
-  xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"subsites")$subSiteID,]
+  xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"catch.subsites"),]   # Change to catch.subsites.  Does this affect eff beta estimation?
+ #xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"subsites")$subSiteID,]   
   uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2,xwalk$ourSiteIDChoice3)))
   
   df <- vector("list",length(uniqueOurSiteIDsToQuery))

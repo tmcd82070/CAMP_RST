@@ -97,8 +97,24 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   #save.image("C:/Users/jmitchell/Desktop/save/rbdd.RData")
   
   ans <- NULL
-  traps <- as.character(droplevels(sort( unique(obs.eff.df$TrapPositionID))))
-
+  
+  useEnhEff <- attr(obs.eff.df,"useEnhEff")
+  min.date <- attr(obs.eff.df,"min.date")
+  max.date <- attr(obs.eff.df,"max.date")
+  site <- attr(obs.eff.df,"site")
+  subsites <- attr(obs.eff.df,"subsites")
+  site.name <- attr(obs.eff.df,"site.name")
+  catch.subsites <- attr(obs.eff.df,"catch.subsites")
+  
+  # ---- If we are using enhanced efficiency trials, we should always have an efficiency model,
+  # ---- unless a trap is new for the year defined by original min.date and max.date.  Define
+  # ---- traps vector appropriately so the looping works appropriately.
+  if(useEnhEff == TRUE){
+    traps <- catch.subsites
+  } else {
+    traps <- as.character(droplevels(sort(unique(obs.eff.df$TrapPositionID))))
+  }
+  
   fits <- all.X <- all.ind.inside <- all.dts <- obs.data <- eff.type <- vector("list", length(traps))
   names(fits) <- traps
   names(all.X) <- traps
@@ -106,11 +122,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   names(all.ind.inside) <- traps
   names(obs.data) <- traps
   names(eff.type) <- traps
-  
-  min.date <- attr(obs.eff.df,"min.date")
-  max.date <- attr(obs.eff.df,"max.date")
-  useEnhEff <- attr(obs.eff.df,"useEnhEff")
-  site <- attr(obs.eff.df,"site")
   
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
@@ -380,7 +391,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
         #   ---- Check if we should have leap day in the map back to the min.date max.date range.
         if( sum(checkLeapDay$mon == 1 & checkLeapDay$mday == 29) == 0 ){
-          bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]   # Get rid of 2/29 -- don't need it.
+          
+          #   ---- Get rid of 2/29 -- don't need it.
+          bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]   
+          c0 <- c0[!(as.POSIXlt(c0$batchDate2)$mon + 1 == 2 & as.POSIXlt(c0$batchDate2)$mday == 29),]
         }
         
         #   ---- If the minimum year of bd2.lt is 1960, we've wrapped around to 1960, after starting
@@ -390,8 +404,15 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- By design, the min.date and max.date span at most one year.  Add exactly the 
         #   ---- number of years between 1960 and the min(c0$batchDate$year) to the dates in bd2.lt.  
         yearDiff <- min(as.POSIXlt(tmp.df$batchDate)$year) - thebd2Year   # Assumes all batchDates after 1960.
-        c0$batchDate <- as.POSIXct(bd2.lt + lubridate::years(yearDiff))
         
+        #   ---- Similar to the above with the strt.dt and end.dt, we need to be careful with the remap. 
+        c0 <- c0[order(c0$batchDate2),]
+        c0$batchDate <- seq.POSIXt(strt.dt,end.dt,by="1 DSTday")
+        
+        # c0$batchDate <- ifelse(bd2.lt$year == 59,as.POSIXct(bd2.lt + lubridate::years(yearDiff)),
+        #                        ifelse(bd2.lt$year == 60,as.POSIXct(bd2.lt + lubridate::years(yearDiff - 1)),-1000000))
+        # c0$batchDate <- as.POSIXct(c0$batchDate,format="%Y-%m-%d",tz="America/Los_Angeles",origin="1970-01-01 00:00:00 UTC")                                             
+
         #   ---- Allow for all days in the spline enh eff trial period. 
         allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
                                              as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
@@ -673,8 +694,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     }
   }
 
-  attr(ans,"subsites") <- attr(obs.eff.df, "subsites")
-  attr(ans,"site.name") <- attr(obs.eff.df, "site.name")
+  attr(ans,"subsites") <- subsites
+  attr(ans,"site.name") <- site.name
   attr(ans,"eff.type") <- eff.type
 
   #   ---- Make a plot if called for.  
