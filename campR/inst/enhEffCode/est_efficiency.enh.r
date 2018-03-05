@@ -160,6 +160,7 @@ F.est.efficiency.enh <- function( release.df, batchDate, df.spline=4, plot=TRUE,
   missing.days <- is.na(eff$efficiency)
   attr(eff,"forEffPlots") <- forEffPlots
   attr(eff,"site") <- site
+  attr(eff, "catch.subsites") <- attr(release.df,"catch.subsites")
   
   # save.image("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/RBDD.RData")
   # load("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Outputs/Holding/RBDD.RData")

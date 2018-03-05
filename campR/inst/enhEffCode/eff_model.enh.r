@@ -97,6 +97,7 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   
   option <- 2
   forEffPlots <- attr(obs.eff.df,"forEffPlots")
+  catch.subsites <- attr(obs.eff.df,"catch.subsites")
   site <- attr(obs.eff.df,"site")
   
   cat(paste0("1:  site is ",site,".\n"))

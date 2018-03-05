@@ -304,6 +304,7 @@ F.est.passage.enh <- function( catch.df, release.df, summarize.by, file.root, ci
   #   ---- Estimate efficiency for every day of all seasons over all time.
   attr(release.df.enh,"forEffPlots") <- forEffPlots
   attr(release.df.enh,"site") <- site
+  attr(release.df,"catch.subsites") <- sort(unique(substr(as.character(catch.df$trapPositionID),1,5)))
   eff.and.fits.enh <- F.est.efficiency.enh( release.df.enh, bd.enh, df.spline=4, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)
