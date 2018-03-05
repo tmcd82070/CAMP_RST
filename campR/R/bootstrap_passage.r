@@ -301,7 +301,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
       }
 
 
-      #   ---- Generate random realizations of efficiency.  We utilize the non-deciamal trapID, since we never fit 
+      #   ---- Generate random realizations of efficiency.  We utilize the non-decimal trapID, since we never fit 
       #   ---- efficiency on the decimal traps alone.  This maps decimal traps of catch to non-decimal traps of 
       #   ---- efficiency.  
       ind <- which( as.character(round(as.numeric(trapID),0)) == names(eff.fits) )
@@ -315,14 +315,16 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
         #   ---- The e.X design matrix has columns in an order that was convenient in eff_model.r.  This 
         #   ---- order needs to be checked, to ensure alignment with the order in e.fit.  It is easier to
         #   ---- manipulate the column order in e.X (one matrix), than all the stuff in e.fit (a list).  
-        if(ncol(e.X) > 1 & e.type == 5){
-          cat(paste0("Sorting variables ",colnames(e.X),"for e.X in bootstrap.\n"))
-          timeVar <- sort(colnames(e.X)[grepl("time",colnames(e.X),fixed=TRUE)])  
-          fit.Vars <- names(coef(e.fit))
-          notTimeVar <- fit.Vars[!(grepl("tmp.bs",fit.Vars,fixed=TRUE))]
-          notTimeVar <- notTimeVar[notTimeVar != "(Intercept)"]
-          thisOrder <- c("Intercept",timeVar,notTimeVar)
-          e.X <- e.X[,thisOrder]
+        if( (length(e.X) > 1) & !is.na(e.type) ){  # <--- Exclude cases when e.X == NA.  
+          if(ncol(e.X) > 1 & e.type == 5){
+            cat(paste0("Sorting variables ",colnames(e.X),"for e.X in bootstrap.\n"))
+            timeVar <- sort(colnames(e.X)[grepl("time",colnames(e.X),fixed=TRUE)])  
+            fit.Vars <- names(coef(e.fit))
+            notTimeVar <- fit.Vars[!(grepl("tmp.bs",fit.Vars,fixed=TRUE))]
+            notTimeVar <- notTimeVar[notTimeVar != "(Intercept)"]
+            thisOrder <- c("Intercept",timeVar,notTimeVar)
+            e.X <- e.X[,thisOrder]
+          }
         }
       
         #   ---- This is a 2-vector of the first and last efficiency trials.

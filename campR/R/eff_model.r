@@ -197,7 +197,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
         load(paste0(here,"/",site,"_",trap,"_splineBegD.RData"),envir=.tmpDataEnv)
         load(paste0(here,"/",site,"_",trap,"_splineEndD.RData"),envir=.tmpDataEnv)
-        load(paste0(here,"/",site,"_",trap,"_fit.RData"))
+        load(paste0(here,"/",site,"_",trap,"_fit.RData"),envir=.tmpDataEnv)
       
         splineCoef <- .tmpDataEnv$splineCoef
         splineDays <- .tmpDataEnv$splineDays
