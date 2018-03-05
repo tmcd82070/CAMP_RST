@@ -138,7 +138,7 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
               allCovar[allCovar$measureDate < min.date.cov | allCovar$measureDate > max.date.cov,paste0("pred_",covName)] <- NA
             }
             
-            #    ---- See if we have any predicted values outside the range for which we have data.  
+            #    ---- See if we have any predicted values outside the range for which we have data.
             if(sum(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate > max.date.cov) > 0){
               obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & (obs.eff.df$batchDate < min.date.cov | obs.eff.df$batchDate > max.date.cov),covName] <- NA
             }
@@ -147,14 +147,22 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
             #obs.eff.df[obs.eff.df$TrapPositionID == "1001" & !is.na(obs.eff.df$turbidity_ntu),]$turbidity_ntu
           } else {
             
-            #   ---- If we're here, we don't have an environmental observation on a date of an efficiency trial.  So, if 
-            #   ---- we have a column of all NA in obs.eff.df, get rid of it.  I think it can only be NA, or possibly
-            #   ---- non-NA on non-batchDates, which we don't want.
+            #   ---- If we're here, we don't have an environmental observation on a date of an efficiency trial.  
             if(covName %in% names(obs.eff.df)){
-              obs.eff.df[,covName] <- NULL
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],covName] <- NA
             }
           }
         }
+        
+
+        #   ---- If we have a column of all NA in obs.eff.df, get rid of it.  I think it can only be NA, or possibly
+        #   ---- non-NA on non-batchDates, which we don't want.
+        if(covName %in% names(obs.eff.df)){
+          if( sum(is.na(obs.eff.df[,covName])) == nrow(obs.eff.df)){
+            obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],covName] <- NULL
+          }
+        }
+        
       } else if(estType == 2){
         
         #   ---- Get rid of setting up the covariate that we did above.  We are going to merge in, and not match. 
