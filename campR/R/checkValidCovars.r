@@ -111,7 +111,10 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
       covar <- names(covarB)[c]
       
       #   ---- Case 0:  We have no efficiency trials for the given min.date and max.date.  This excludes most attempts 
-      #   ---- doing an enhanced efficiency model because they probably also then didn't collect CAMP covars.  
+      #   ---- doing an enhanced efficiency model because they probably also then didn't collect CAMP covars.  We would like 
+      #   ---- to still use enh eff in this case, but if the enh eff model has covariates, this is no go.  It is not 
+      #   ---- appropriate to simply take the temporal spline alone from the enh eff fit, because that was fit with covariates 
+      #   ---- as well.  The exception would be if the enh eff model was a temporal spline alone with no covariates.  
       check0[c] <-  as.logical( (covar %in% names(tmp.df) & nrow(tmp.df) == 0) & (covar %in% names(df) & sum(df[!is.na(df[,covar]),covar]) == 0) )
         
       #   ---- If check0[c] is a zero, then we have no covariate data, due to no efficiency trials.  
@@ -122,40 +125,39 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
         doEnhEff <- FALSE
       }
     }
-    for(c in 1:C){
-      
-      #   ---- Case 1:  We have all data for this covar, in between provided min.date and max.date.  Keep in mind 
-      #   ---- these are provided by the user.
-      check1[c] <- sum( seq(min.date.p,max.date.p,by="DSTday") %in% red.usr.df[!is.na(red.usr.df[,covar]),"batchDate"] )
-      
-      #   ---- Case 2:  We have a covar lacking all data for provided min.date and max.date, but with all data 
-      #   ---- inside at least the efficiency-trial dates within min.date and max.date.
-      check2[c] <- sum( seq(tmp.df$batchDate[1],tmp.df$batchDate[nrow(tmp.df)],by="DSTday") %in% red.eff.df[!is.na(covar),"batchDate"] )
-      
-      
-
-      
-      #   ---- Each evaluated covar gets a message, indicating the strength of the data variable, in terms of presence.  
-      if(check1[c] == N.red.usr){
-        good1[c] <- 1
-        if(good1[c] == 1){
-          cat(paste0("With min.date=",min.date," and max.date=",max.date,", covar ",covar," needs ",N.red.usr," batchDate values, and I see all ",check1[c]," of them.\n" ))
-        } else {
-          cat(paste0("With min.date=",min.date," and max.date=",max.date,", covar ",covar," needs ",N.red.usr," batchDate values, and I see only ",check1[c]," of them.\n" ))
-        }
-      }
-      
-      #   ---- Only print this message from the weaker check if we didn't already report status from the first check.  
-      if(check2[c] == N.red.eff){
-        good2[c] <- 1
-        if(good1[c] != 1){
-          if(good2[c] == 1){
-            cat(paste0("With earliest eff.date=",tmp.df$batchDate[1]," and latest eff.date=",tmp.df$batchDate[nrow(tmp.df)],", covar ",covar," needs ",N.red.eff," batchDate values, and I see all ",check2[c]," of them.\n" ))
+    if(all(check0 == 0)){
+      for(c in 1:C){
+        
+        #   ---- Case 1:  We have all data for this covar, in between provided min.date and max.date.  Keep in mind 
+        #   ---- these are provided by the user.
+        check1[c] <- sum( seq(min.date.p,max.date.p,by="DSTday") %in% red.usr.df[!is.na(red.usr.df[,covar]),"batchDate"] )
+         
+        #   ---- Case 2:  We have a covar lacking all data for provided min.date and max.date, but with all data 
+        #   ---- inside at least the efficiency-trial dates within min.date and max.date.
+        check2[c] <- sum( seq(tmp.df$batchDate[1],tmp.df$batchDate[nrow(tmp.df)],by="DSTday") %in% red.eff.df[!is.na(covar),"batchDate"] )
+        
+        #   ---- Each evaluated covar gets a message, indicating the strength of the data variable, in terms of presence.  
+        if(check1[c] == N.red.usr){
+          good1[c] <- 1
+          if(good1[c] == 1){
+            cat(paste0("With min.date=",min.date," and max.date=",max.date,", covar ",covar," needs ",N.red.usr," batchDate values, and I see all ",check1[c]," of them.\n" ))
           } else {
-            cat(paste0("With earliest eff.date=",tmp.df$batchDate[1]," and latest eff.date=",tmp.df$batchDate[nrow(tmp.df)],", covar ",covar," needs ",N.red.eff," batchDate values, and I see only ",check2[c]," of them.\n\n" ))
+            cat(paste0("With min.date=",min.date," and max.date=",max.date,", covar ",covar," needs ",N.red.usr," batchDate values, and I see only ",check1[c]," of them.\n" ))
           }
         }
-      } 
+        
+        #   ---- Only print this message from the weaker check if we didn't already report status from the first check.  
+        if(check2[c] == N.red.eff){
+          good2[c] <- 1
+          if(good1[c] != 1){
+            if(good2[c] == 1){
+              cat(paste0("With earliest eff.date=",tmp.df$batchDate[1]," and latest eff.date=",tmp.df$batchDate[nrow(tmp.df)],", covar ",covar," needs ",N.red.eff," batchDate values, and I see all ",check2[c]," of them.\n" ))
+            } else {
+              cat(paste0("With earliest eff.date=",tmp.df$batchDate[1]," and latest eff.date=",tmp.df$batchDate[nrow(tmp.df)],", covar ",covar," needs ",N.red.eff," batchDate values, and I see only ",check2[c]," of them.\n\n" ))
+            }
+          }
+        } 
+      }
     }
     
     
@@ -163,14 +165,14 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
     cat(paste0("\n"))
     
     #   ---- Check if all covariates have data on all dates, given by min.date and max.date from user.  
-    if(sum(good1) == C){
+    if(sum(good1) == C & all(check0 == 0)){
       
       #   ---- No problem!
       cat(paste0("All batchDates contain data for all necessary covariates, given the requested time frame.  Use of enhanced efficiency models will proceed.\n"))
       doEnhEff <- TRUE
       
       #   ---- Check if all covariates have data on at least all inclusive eff dates. 
-    } else if(sum(good2) == C){
+    } else if(sum(good2) == C & all(check0 == 0)){
       
       #   ---- Minor problem.  Fill in missing dates with the mean of the covariate.  Tell user I'm doing this.  
       cat(paste0("All batchDates contain data for all necessary covariates, given the first and last efficiency trials in the requested time frame.  Use of enhanced efficiency models will proceed.\n"))
@@ -187,7 +189,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
         df[is.na(df[,covar]),covar] <- covarMean
         doEnhEff <- TRUE
       }
-    } else if(sum(good2) < C){
+    } else if(sum(good2) < C | any(check0 == 1)){
       
       #   ---- We have a problem, and cannot fit enhanced efficiency trials. 
       cat(paste0("PROBELM:  I'm missing data on at least one variable inside the efficiency-trial data range.  Cannot use enhanced efficiency.\n"))
