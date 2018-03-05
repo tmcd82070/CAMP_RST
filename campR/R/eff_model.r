@@ -176,9 +176,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     doOldEff <- rep(FALSE,length(traps))
     names(doOldEff) <- traps
     
-    
-    #dat <- obs.eff.df[obs.eff.df$TrapPositionID == "42010",]
-    
+  
     #   ---- Run over individual traps.
     for(trap in traps){
     
@@ -192,113 +190,122 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       
       .tmpDataEnv <- new.env(parent=emptyenv()) # not exported
       
-      load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"),envir=.tmpDataEnv)
-      load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
-      load(paste0(here,"/",site,"_",trap,"_splineBegD.RData"),envir=.tmpDataEnv)
-      load(paste0(here,"/",site,"_",trap,"_splineEndD.RData"),envir=.tmpDataEnv)
-      load(paste0(here,"/",site,"_",trap,"_fit.RData"))
+      #   ---- If a trap is new this year, we won't have enhanced efficiency prior-fit info.  
+      #   ---- See if we have that stuff waiting around. 
+      if(file.exists(paste0(here,"/",site,"_",trap,"_splineCoef.RData"))){
+        load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"),envir=.tmpDataEnv)
+        load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
+        load(paste0(here,"/",site,"_",trap,"_splineBegD.RData"),envir=.tmpDataEnv)
+        load(paste0(here,"/",site,"_",trap,"_splineEndD.RData"),envir=.tmpDataEnv)
+        load(paste0(here,"/",site,"_",trap,"_fit.RData"))
       
-      splineCoef <- .tmpDataEnv$splineCoef
-      splineDays <- .tmpDataEnv$splineDays
-      splineBegD <- .tmpDataEnv$splineBegD
-      splineEndD <- .tmpDataEnv$splineEndD
-      fit <- .tmpDataEnv$fit
+        splineCoef <- .tmpDataEnv$splineCoef
+        splineDays <- .tmpDataEnv$splineDays
+        splineBegD <- .tmpDataEnv$splineBegD
+        splineEndD <- .tmpDataEnv$splineEndD
+        fit <- .tmpDataEnv$fit
       
-      #   ---- Stuff we just loaded.  
-      #splineDays ...came from... df$batchDate2[eff.ind.inside]
-      #splineCoef ...came from... fit$coefficients[grepl("tmp",names(fit$coefficients))]
-      #splineBegD ...came from... bsplBegDt
-      #splineEndD ...came from... bsplEndDt
-      #fit        ...came from... fit
-      
-      #   ---- Find the "season", which is between first and last OVERALL efficiency trials.  This is different
-      #   ---- than "regular" eff models, where we define the "season" as first and last eff trials, as defined
-      #   ---- within the provided min.date and max.date.  
-      min.date.p <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
-      max.date.p <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
-      
-      yr.m <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
-      yr.M <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
-      
-      strt.dt <- as.POSIXlt(min(splineDays))   # Earliest date with an efficiency trial 1960 paradigm
-      end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
-      
-      #   ---- Re-map 1959-1960 data to the correct year we care about.  
-      #   ---- Spline data all in 1960.  
-      if(strt.dt$year == 60 & end.dt$year == 60){
-        if(yr.m == yr.M){
-          strt.dt$year <- yr.m
-          end.dt$year <- yr.M
-        } else if(yr.m != yr.M){
-          strt.dt$year <- yr.m + 1      # We know spline start and end have same year, so min.date must be back one.
-          end.dt$year <- yr.M
-        }
-      }
-    
-      #   ---- Spline data start in 1959, but end in 1960.
-      if(strt.dt$year == 59 & end.dt$year == 60){
-        if(yr.m == yr.M){
-          if(min.date.p$mon < strt.dt$mon){
-            strt.dt$year <- yr.m - 1
+        #   ---- Stuff we just loaded.  
+        #splineDays ...came from... df$batchDate2[eff.ind.inside]
+        #splineCoef ...came from... fit$coefficients[grepl("tmp",names(fit$coefficients))]
+        #splineBegD ...came from... bsplBegDt
+        #splineEndD ...came from... bsplEndDt
+        #fit        ...came from... fit
+        
+        #   ---- Find the "season", which is between first and last OVERALL efficiency trials.  This is different
+        #   ---- than "regular" eff models, where we define the "season" as first and last eff trials, as defined
+        #   ---- within the provided min.date and max.date.  
+        min.date.p <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
+        max.date.p <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
+        
+        yr.m <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
+        yr.M <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
+        
+        strt.dt <- as.POSIXlt(min(splineDays))   # Earliest date with an efficiency trial 1960 paradigm
+        end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
+        
+        #   ---- Re-map 1959-1960 data to the correct year we care about.  
+        #   ---- Spline data all in 1960.  
+        if(strt.dt$year == 60 & end.dt$year == 60){
+          if(yr.m == yr.M){
+            strt.dt$year <- yr.m
             end.dt$year <- yr.M
-          } else {
-            strt.dt$year <- yr.m + 1      # Make up the missing 1 year, because starting in 1959.
+          } else if(yr.m != yr.M){
+            strt.dt$year <- yr.m + 1      # We know spline start and end have same year, so min.date must be back one.
             end.dt$year <- yr.M
           }
-        } else if(yr.m != yr.M){
-          strt.dt$year <- yr.m          # Do not make up the missing year, because we don't need to.
-          end.dt$year <- yr.M
         }
-      }
       
-      #   ---- By design, can only have the two spline 59/60 60/60 paradigms coded above.  
-      
-      #   ---- Identify dates for which we have splined information.  
-      # ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
-      # inside.dates <- c(strt.dt, end.dt)
-      # all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
-      min.date.p <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone)
-      max.date.p <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone)
-      ind.inside <- (max(min.date.p,as.POSIXct(strt.dt)) <= df$batchDate) & (df$batchDate <= min(max.date.p,as.POSIXct(end.dt)))
-      inside.dates <- c(max(min.date.p,as.POSIXct(strt.dt)), min(max.date.p,as.POSIXct(end.dt)))
-      all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
-      
-      #  ---- The fitting data frame
-      tmp.df <- df[ind & ind.inside,]
-      m.i <- sum(ind & ind.inside)
-      
-      #   ---- 4. Find out which covariates this trap cares about.  
-      thisB1 <- betas[betas$subsiteID == trap,]                                                               # Restrict to trap.
-      thisB2 <- thisB1[,names(thisB1)[sapply(thisB1,function(x) ifelse(is.numeric(x),sum(x),x)) != "0"]]      # Restrict to non-zero covariates.
-      
-      #   ---- Get the Intercept.  
-      covarI <- as.numeric(thisB2[names(thisB2) == "(Intercept)"])
-      
-      #   ---- Reduce down to a dataframe.  Handle the contingency when the "dataframe" is of length one, 
-      #   ---- and thus drops down to a vector.  
-      if(sum(!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))) > 1){
-        thisB3 <- thisB2[,!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))] # Restrict to covariates.
-      } else {
-        theName <- names(thisB2)[!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))] 
-        thisB3 <- data.frame(thisB2[,!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))])
-        names(thisB3) <- theName
-      }
-      
-      covarB <- thisB3
-      if(length(names(covarB)) > 0){
-        cat(paste0("\n\nEnhanced efficiency model for trap ",trap," seeks recorded data on covariates ",paste0(names(covarB),collapse=", "),".\n"))
-      } else {
-        cat(paste0("\n\nEnhanced efficiency model for trap ",trap," seeks no recorded data -- it's an intercept-only model.\n"))
-      }
-      
-      #   ---- Check to make sure we have the data we need to fit enhanced efficiency trials.  Not necessary
-      #   ---- if we have an intercept-only model.  
-      if(length(covarB) > 0){
-        checkCovarValidity <- checkValidCovars(df,tmp.df,min.date,max.date,covarB)
-        df <- checkCovarValidity$df
-        doEnhEff <- checkCovarValidity$doEnhEff
-      } else {
-        doEnhEff <- TRUE
+        #   ---- Spline data start in 1959, but end in 1960.
+        if(strt.dt$year == 59 & end.dt$year == 60){
+          if(yr.m == yr.M){
+            if(min.date.p$mon < strt.dt$mon){
+              strt.dt$year <- yr.m - 1
+              end.dt$year <- yr.M
+            } else {
+              strt.dt$year <- yr.m + 1      # Make up the missing 1 year, because starting in 1959.
+              end.dt$year <- yr.M
+            }
+          } else if(yr.m != yr.M){
+            strt.dt$year <- yr.m          # Do not make up the missing year, because we don't need to.
+            end.dt$year <- yr.M
+          }
+        }
+        
+        #   ---- By design, can only have the two spline 59/60 60/60 paradigms coded above.  
+        
+        #   ---- Identify dates for which we have splined information.  
+        # ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
+        # inside.dates <- c(strt.dt, end.dt)
+        # all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
+        min.date.p <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone)
+        max.date.p <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone)
+        ind.inside <- (max(min.date.p,as.POSIXct(strt.dt)) <= df$batchDate) & (df$batchDate <= min(max.date.p,as.POSIXct(end.dt)))
+        inside.dates <- c(max(min.date.p,as.POSIXct(strt.dt)), min(max.date.p,as.POSIXct(end.dt)))
+        all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
+        
+        #  ---- The fitting data frame
+        tmp.df <- df[ind & ind.inside,]
+        m.i <- sum(ind & ind.inside)
+        
+        #   ---- 4. Find out which covariates this trap cares about.  
+        thisB1 <- betas[betas$subsiteID == trap,]                                                               # Restrict to trap.
+        thisB2 <- thisB1[,names(thisB1)[sapply(thisB1,function(x) ifelse(is.numeric(x),sum(x),x)) != "0"]]      # Restrict to non-zero covariates.
+        
+        #   ---- Get the Intercept.  
+        covarI <- as.numeric(thisB2[names(thisB2) == "(Intercept)"])
+        
+        #   ---- Reduce down to a dataframe.  Handle the contingency when the "dataframe" is of length one, 
+        #   ---- and thus drops down to a vector.  
+        if(sum(!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))) > 1){
+          thisB3 <- thisB2[,!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))] # Restrict to covariates.
+        } else {
+          theName <- names(thisB2)[!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))] 
+          thisB3 <- data.frame(thisB2[,!(names(thisB2) %in% c("subsiteID","(Intercept)","threshold","available","Stage"))])
+          names(thisB3) <- theName
+        }
+        
+        covarB <- thisB3
+        if(length(names(covarB)) > 0){
+          cat(paste0("\n\nEnhanced efficiency model for trap ",trap," seeks recorded data on covariates ",paste0(names(covarB),collapse=", "),".\n"))
+        } else {
+          cat(paste0("\n\nEnhanced efficiency model for trap ",trap," seeks no recorded data -- it's an intercept-only model.\n"))
+        }
+        
+        #   ---- Check to make sure we have the data we need to fit enhanced efficiency trials.  Not necessary
+        #   ---- if we have an intercept-only model.  
+        if(length(covarB) > 0){
+          checkCovarValidity <- checkValidCovars(df,tmp.df,min.date,max.date,covarB)
+          df <- checkCovarValidity$df
+          doEnhEff <- checkCovarValidity$doEnhEff
+        } else {
+          doEnhEff <- TRUE
+        }
+      } else{
+        
+        #   ---- If we are here, we have a new trap with no previous enhanced efficiency model.  If there were efficiency trials
+        #   ---- this year, we could at least try to fit an eff model the old way.  So tell it to do just that.  
+        doEnhEff <- FALSE 
       }
       
       #   ---- If doEnhEff == FALSE, I exit the loop for this trap.  I'll run regular eff below.
@@ -485,9 +492,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         ind <- rep(F, nrow(df))   
         
         df$imputed.eff <- factor( !ind, levels=c(T,F), labels=c("Yes", "No"))
+        df$enhanced.eff <- rep("Yes",nrow(df))
         df$trapPositionID <- trap
         #plot(df$batchDate,df$efficiency)
         ans <- rbind(ans, df)
+        #plot(ans[ans$TrapPositionID == "42010",]$batchDate,ans[ans$TrapPositionID == "42010",]$efficiency)
       }
       
       # par(mfrow=c(5,1))
@@ -523,8 +532,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       ind <- !is.na(df$efficiency)
   
       #  ---- Find the "season", which is between first and last trials
-      strt.dt <- min( df$batchDate[ind], na.rm=T )  # Earliest date with an efficiency trial
-      end.dt  <- max( df$batchDate[ind], na.rm=T )  # Latest date with efficiency trial
+      strt.dt <- suppressWarnings(min( df$batchDate[ind], na.rm=T ))  # Earliest date with an efficiency trial
+      end.dt  <- suppressWarnings(max( df$batchDate[ind], na.rm=T ))  # Latest date with efficiency trial
       ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
       inside.dates <- c(strt.dt, end.dt)
       all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
@@ -690,11 +699,30 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       df$imputed.eff <- factor( !ind, levels=c(T,F), labels=c("Yes", "No"))
       df$trapPositionID <- trap
       
+      df$enhanced.eff <- rep("No",nrow(df))
+      df <- df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency","imputed.eff","enhanced.eff","trapPositionID")]
+      
       ans <- rbind(ans, df)
     }
   }
 
-  attr(ans,"subsites") <- subsites
+  
+  
+  #   ---- With enhanced efficiency models, could have traps in ans with NA entries.  This happens because
+  #   ---- we didn't have the covariates this year to fit a trap's enh eff model, and there were no efficiency
+  #   ---- trials at that trap.  But, we have catch at that trap.  Make sure we have the trap location's pretty 
+  #   ---- name by directly throwing unique values in ans against the originating CAMP database. 
+  db <- get( "db.file", envir=.GlobalEnv )
+  ch <- odbcConnectAccess(db)
+  newSubsites <- sqlQuery(ch, "SELECT DISTINCT subSiteName, subSiteID FROM SubSite;")             
+  F.sql.error.check(newSubsites)
+  close(ch)
+  newSubsites <- newSubsites[newSubsites$subSiteID %in% catch.subsites,]
+  if(is.factor(newSubsites$subSiteName)){
+    newSubsites$subSiteName <- as.character(droplevels(newSubsites$subSiteName))
+  }
+  
+  attr(ans,"subsites") <- newSubsites
   attr(ans,"site.name") <- site.name
   attr(ans,"eff.type") <- eff.type
 
