@@ -31,7 +31,8 @@ Imports:
  Rcpp,
  ellipse,
  tidyr,
- RPostgres
+ RPostgres,
+ lubridate
 Suggests: R.rsp,
     knitr,
     rmarkdown
