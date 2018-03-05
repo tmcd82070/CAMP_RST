@@ -128,6 +128,9 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
     if(all(check0 == 0)){
       for(c in 1:C){
         
+        #   ---- Explicitly identify the covar on this loop.  
+        covar <- names(covarB)[c]
+        
         #   ---- Case 1:  We have all data for this covar, in between provided min.date and max.date.  Keep in mind 
         #   ---- these are provided by the user.
         check1[c] <- sum( seq(min.date.p,max.date.p,by="DSTday") %in% red.usr.df[!is.na(red.usr.df[,covar]),"batchDate"] )
