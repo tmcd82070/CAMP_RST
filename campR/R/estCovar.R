@@ -51,8 +51,8 @@
 #'}
 estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   
-  # dbCov <- dbTurb #dbWVel
-  # covName <- "turbidity_ntu"   #discharge_cfs" #"waterVel_fts"
+  # dbCov <- dbDpcm
+  # covName <- "waterDepth_cm"
   # estType <- 1
   # traps <- traps
   # obs.eff.df <- obs.eff.df
@@ -66,9 +66,6 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   
   if(nrow(dbCov) == 0 | sum(!is.na(dbCov[,CAMPCovName])) == 0){
     #obs.eff.df[,covName] <- NA
-    
-    
-  
   } else {
     
     allCovar <- NULL
@@ -96,9 +93,7 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
             #   ---- I only keep the current.  So, after running, only the last jj is here.  Jason uses cv=FALSE due to (now duplicated) dates in measureDate (11/20/2017).
             m3 <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=FALSE)
           }
-          
-          
-          
+
           # plot(dbTurb$measureDate,dbTurb$turbidity,pch=19,cex=0.5,xlim=c(min(dbTurb$measureDate),max(dbTurb$measureDate)),ylim=c(0,30))
           # par(new=TRUE)
           # plot(m3$x,m3$y,xlim=c(min(dbTurb$measureDate),max(dbTurb$measureDate)),ylim=c(0,30),type="l",col="red")
@@ -145,7 +140,7 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
             
             #    ---- See if we have any predicted values outside the range for which we have data.  
             if(sum(obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate > max.date.cov) > 0){
-              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & (obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate < min.date.cov | obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],]$batchDate > max.date.cov),covName] <- NA
+              obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & (obs.eff.df$batchDate < min.date.cov | obs.eff.df$batchDate > max.date.cov),covName] <- NA
             }
             
             #   ---- Helpful in checking.  Eventually delete.  
