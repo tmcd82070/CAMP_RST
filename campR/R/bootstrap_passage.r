@@ -317,7 +317,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
         #   ---- manipulate the column order in e.X (one matrix), than all the stuff in e.fit (a list).  
         if( (length(e.X) > 1) & !is.na(e.type) ){  # <--- Exclude cases when e.X == NA.  
           if(ncol(e.X) > 1 & e.type == 5){
-            cat(paste0("Sorting variables ",colnames(e.X),"for e.X in bootstrap.\n"))
+            cat(paste0("Sorting variables ",colnames(e.X)," for e.X in bootstrap.\n"))
             timeVar <- sort(colnames(e.X)[grepl("time",colnames(e.X),fixed=TRUE)])  
             fit.Vars <- names(coef(e.fit))
             notTimeVar <- fit.Vars[!(grepl("tmp.bs",fit.Vars,fixed=TRUE))]
@@ -339,7 +339,11 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 
         #   ---- Check if there are no efficiency trials.  Not sure what this is enh eff framework.  
         if( (!is.list(e.fit) & e.type != 5) | length(e.fit) == 0 | (e.type == 5 & length(e.fit) == 0) ){
-          e.pred <- matrix( NA, nrow(c.pred), ncol(c.pred) )
+          #   ---- In this case, we have NA for efficiency.  Couldn't fit enhanced efficiency model, 
+          #   ---- probably because we lacked a covariate.  If there were additionally no efficiency 
+          #   ---- trials for the min.date and max.date period, there is not much we can do.  
+          #   ---- The commented out code below puts NA for ALL ROWS in e.pred.  This is not correct. 
+          #e.pred <- matrix( NA, nrow(c.pred), ncol(c.pred) )
         } else {
 
           #   ---- Variance matrix,
@@ -353,7 +357,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 
           }
 
-          cat(paste("...Binomial over-dispersion in efficiency model for trap ", as.character(round(as.numeric(trapID),0)), " = ", disp, "\n"))
+          cat(paste0("...Binomial over-dispersion in efficiency model for trap ",as.character(round(as.numeric(trapID),0))," = ",disp, ".\n"))
 
           #   ---- Function vcov returns unscaled variance-covariance matrix. 
           #   ---- Scale by overdispersion.
@@ -456,7 +460,10 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
           #   ---- for missing catches. There are R columns (sets of predictions).
           pred <- (e.X %*% t(rbeta))
           pred <- 1 / (1 + exp(-pred))                      # Pred is nrow(e.X) X R.
-
+          
+          # plot(seq(1,nrow(pred)),pred[,1])
+          # apply(pred,2,function(x) lines(seq(1,nrow(pred)),x))
+        
           #   ---- Use mean-predicted efficiency for times outside first and last trials.  
           ind.mat <- matrix( trap.ind, nrow=n.grand.df, ncol=R )
           e.means <- matrix( colMeans( pred ), byrow=T, nrow=sum(trap.ind), ncol=R )
