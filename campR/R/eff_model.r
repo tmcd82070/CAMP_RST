@@ -152,6 +152,29 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     otherCols <- names(obs.eff.df)[!(names(obs.eff.df) %in% c("TrapPositionID","batchDate"))]
     all.Dates[otherCols] <- NA
     
+    #   ---- It could be that all.Dates has more traps than obs.eff.df, if we have fish in catch 
+    #   ---- from a trap on which there were no eff trials this year.  Find these traps.   
+    extraTraps <- unique(all.Dates$TrapPositionID)[!(unique(all.Dates$TrapPositionID) %in% unique(obs.eff.df$TrapPositionID))]
+    
+    #   ---- If we have extraTraps, add in rows to obs.eff.df, so the rbind below creates the
+    #   ---- same number of rows for each trap, as expected. 
+    if(length(extraTraps) > 0){
+      theFirst <- obs.eff.df$TrapPositionID[1]
+      for(i in 1:length(extraTraps)){
+        extra.obs.eff.df <- data.frame(TrapPositionID=extraTraps[i],
+                                       batchDate=obs.eff.df[obs.eff.df$TrapPositionID == theFirst,]$batchDate,
+                                       nReleased=NA,
+                                       nCaught=NA,
+                                       bdMeanNightProp=NA,
+                                       bdMeanMoonProp=NA,
+                                       bdMeanForkLength=NA,
+                                       efficiency=NA)
+        obs.eff.df <- rbind(obs.eff.df,extra.obs.eff.df)
+      }
+    }
+  
+    #   ---- Combine the original obs.eff.df from eff with all.Dates, so we have bigger date ranges
+    #   ---- for use with splines.  
     obs.eff.df <- rbind(obs.eff.df,all.Dates)
     obs.eff.df <- obs.eff.df[order(obs.eff.df$TrapPositionID,obs.eff.df$batchDate),]
     
@@ -388,46 +411,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
           c4 <- NULL
         } 
         
-        #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
-        bd2.lt <- as.POSIXlt(c0$batchDate2)
-        
-        #   ---- This gets tricky.  If batchDate2 has a 2-29, but our real dates don't, we have a problem.
-        checkLeapDay <- as.POSIXlt(seq.POSIXt(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
-                                              as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
-                                              by="1 DSTday"))
-        
-        #   ---- Check if we should have leap day in the map back to the min.date max.date range.
-        if( sum(checkLeapDay$mon == 1 & checkLeapDay$mday == 29) == 0 ){
-          
-          #   ---- Get rid of 2/29 -- don't need it.
-          bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]   
-          c0 <- c0[!(as.POSIXlt(c0$batchDate2)$mon + 1 == 2 & as.POSIXlt(c0$batchDate2)$mday == 29),]
-        }
-        
-        #   ---- If the minimum year of bd2.lt is 1960, we've wrapped around to 1960, after starting
-        #   ---- in 1950.  If the minimum year of bs2.lt is 1959, we haven't wrapped around.  
-        thebd2Year <- min(bd2.lt$year)
-        
-        #   ---- By design, the min.date and max.date span at most one year.  Add exactly the 
-        #   ---- number of years between 1960 and the min(c0$batchDate$year) to the dates in bd2.lt.  
-        yearDiff <- min(as.POSIXlt(tmp.df$batchDate)$year) - thebd2Year   # Assumes all batchDates after 1960.
-        
-        #   ---- Similar to the above with the strt.dt and end.dt, we need to be careful with the remap. 
-        c0 <- c0[order(c0$batchDate2),]
-        c0$batchDate <- seq.POSIXt(strt.dt,end.dt,by="1 DSTday")
-        
-        # c0$batchDate <- ifelse(bd2.lt$year == 59,as.POSIXct(bd2.lt + lubridate::years(yearDiff)),
-        #                        ifelse(bd2.lt$year == 60,as.POSIXct(bd2.lt + lubridate::years(yearDiff - 1)),-1000000))
-        # c0$batchDate <- as.POSIXct(c0$batchDate,format="%Y-%m-%d",tz="America/Los_Angeles",origin="1970-01-01 00:00:00 UTC")                                             
-
-        #   ---- Allow for all days in the spline enh eff trial period. 
-        allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
-                                             as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
-        
-        #   ---- The documentation indicates that allDates$batchDate should have tz="UTC", because I set it 
-        #   ---- in the from of the seq call.  I suspect that my then placing it in a data.frame loses the 
-        #   ---- tz specification, which is forcing it as "PDT".  Force it to "UTC"...again.
-        allDates$batchDate <- as.POSIXct(allDates$batchDate,format="%Y-%m-%d",tz=time.zone)
+        #   ---- Map back to current time frame.  
+        reMapped <- reMap(c0,"batchDate2",min.date,max.date,tmp.df,strt.dt,end.dt)
+        c0 <- reMapped$c0
+        allDates <- reMapped$allDates
         
         #   ---- We use allDates as the backbone for bringing in all the different pieces. 
                             allDates <- merge(allDates,c0   ,by=c("batchDate"),all.x=TRUE)
@@ -463,7 +450,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #plot(allDates$batchDate,allDates$pred)
   
         #   ---- Add in predicted values for enh eff spline days.  
-        df$efficiency[ind.inside] <- pred
+        df[ind.inside,]$efficiency <- pred
         
         #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
         mean.p <- mean(pred, na.rm=T)
@@ -528,9 +515,87 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
     for( trap in traps ){
   
-      df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
+      
+      #   ---- No efficiency trials at this trap.  BUT!  If we have an enhanced efficiency model at 
+      #   ---- this trap, but lack a covariate's data, we can at least do it the old way, on the 1960 paradigm
+      #   ---- batchDate2, and at least bust out the temporal spline (with no covariates).  We use the old 
+      #   ---- data to refit the spline -- we do NOT use the temporal spline fit with the covariates.  
+      if(file.exists(paste0(here,"/",site,"_",trap,"_fit.RData"))){
+        
+        #   ---- Get the current trap enh eff fit back in memory.  
+        load(paste0(here,"/",site,"_",trap,"_fit.RData"),envir=.tmpDataEnv)
+        # load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
+        # load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"),envir=.tmpDataEnv)
+        
+        # splineDays <- .tmpDataEnv$splineDays
+        # splineCoef <- .tmpDataEnv$splineCoef
+        fit <- .tmpDataEnv$fit
+        
+        tmp.df <- fit$data
+        
+        #   ---- Could have the same month-day represent more than one e-trial, over more than one year. 
+        #   ---- Collapse these down to help with a merge below. 
+        nReleased <- aggregate(tmp.df$nReleased,list(batchDate2=tmp.df$batchDate2),sum)
+        names(nReleased)[names(nReleased) == "x"] <- "nReleased"
+        nCaught <- aggregate(tmp.df$nCaught,list(batchDate2=tmp.df$batchDate2),sum)
+        names(nCaught)[names(nCaught) == "x"] <- "nCaught"
+        tmp.df <- merge(nReleased,nCaught,by=c("batchDate2"))
+        
+        #   ---- Pluck off batchDate2.  
+        bd2 <- tmp.df$batchDate2
+        bd2 <- bd2[!is.na(bd2)]
+        
+        #   ---- Remap.  Build from the month-date information in batchDate2, and year in min.date.p.  
+        strt.tmp.mon <- as.POSIXlt(min(bd2))$mon + 1
+        strt.tmp.day <- as.POSIXlt(min(bd2))$mday
+        strt.tmp.yr <- as.POSIXlt(min.date.p)$year + 1900    # always exist here?
+        strt.tmp.dt <- ISOdate(strt.tmp.yr,strt.tmp.mon,strt.tmp.day,hour=0,tz=time.zone)
+        
+        #   ---- Remap.  Build from the month-date information in batchDate2, and year in max.date.p.  
+        end.tmp.mon <- as.POSIXlt(max(bd2))$mon + 1
+        end.tmp.day <- as.POSIXlt(max(bd2))$mday
+        end.tmp.yr <- as.POSIXlt(max.date.p)$year + 1900     # always exist here?
+        end.tmp.dt <- ISOdate(end.tmp.yr,end.tmp.mon,end.tmp.day,hour=0,tz=time.zone)
+        
+        #   ---- Build up a crosswalk between batchDate and batchDate2.  
+        date.seq.bd  <- data.frame(batchDate=seq(strt.tmp.dt,end.tmp.dt,by="1 DSTday"))
+        date.seq.bd2 <- data.frame(batchDate2=seq(min(tmp.df$batchDate2),max(tmp.df$batchDate2),by="1 DSTday"))
+        
+        #   ---- Make sure we agree on 2/29.  Default batchDate2 seq always has this, because it's 1960.
+        if(any(as.POSIXlt(date.seq.bd2$batchDate2)$mon == 1 & as.POSIXlt(date.seq.bd2$batchDate2)$mday == 29)){
+          date.seq.bd2 <- date.seq.bd2[!(as.POSIXlt(date.seq.bd2$batchDate2)$mon == 1 & as.POSIXlt(date.seq.bd2$batchDate2)$mday == 29),]
+          date.seq.bd2 <- data.frame(batchDate2=date.seq.bd2)
+        }
+        
+        #   ---- Make the batchDate crosswalk.  
+        bdxwalk <- data.frame(date.seq.bd,date.seq.bd2)
+        
+        #   ---- And now, disguise the data frame like the old efficiency code expects it. 
+        tmp.df <- merge(bdxwalk,tmp.df,by=c("batchDate2"),all.x=TRUE)
+        tmp.df$TrapPositionID <- trap
+        tmp.df$efficiency <- tmp.df$nCaught / tmp.df$nReleased
+        tmp.df <- tmp.df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
+        
+        #   ---- We need the dates from the original obs.eff.df for this trap, so it matches the other traps'
+        #   ---- temporal sequence.  
+        obs.eff.df.df <- obs.eff.df[obs.eff.df$TrapPositionID == trap,]
+        df <- merge(obs.eff.df.df[,!(names(obs.eff.df.df) %in% c("TrapPositionID","nReleased","nCaught","efficiency"))],
+                    tmp.df,
+                    by=c("batchDate"),
+                    all.x=TRUE)
+        
+        #   ---- In this part of the code, we don't care about covariates.  
+        df <- df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
+        df$TrapPositionID <- trap
+
+      } else {
+        
+        #   ---- We have a trap that is new this year -- no enhanced efficiency model exists.  
+        df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
+      }
+      
       ind <- !is.na(df$efficiency)
-  
+        
       #  ---- Find the "season", which is between first and last trials
       strt.dt <- suppressWarnings(min( df$batchDate[ind], na.rm=T ))  # Earliest date with an efficiency trial
       end.dt  <- suppressWarnings(max( df$batchDate[ind], na.rm=T ))  # Latest date with efficiency trial
@@ -543,16 +608,14 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       m.i <- sum(ind & ind.inside)
       
       if( m.i == 0 ){
-      	
-        #   ---- No efficiency trials at this trap.
-      	cat( paste("NO EFFICIENCY TRIALS FOR TRAP", trap, "\n") )
-      	cat( paste("Catches at this trap will not be included in production estimates.\n"))
-      	fits[[trap]] <- NA
-      	all.X[[trap]] <- NA
-      	df$efficiency <- NA
-      	obs.data[[trap]] <- NA
-      	eff.type[[trap]] <- 1
-      	
+          
+      	cat( paste("NO EFFICIENCY TRIALS FOR TRAP", trap, ".\n") )
+        cat( paste("Catches at this trap will not be included in production estimates.\n"))
+        fits[[trap]] <- NA
+        all.X[[trap]] <- NA
+        df$efficiency <- NA  
+        obs.data[[trap]] <- NA
+        eff.type[[trap]] <- 1
       } else if( (m.i < eff.min.spline.samp.size) | (sum(tmp.df$nCaught) == 0) ){
       	
         #   ---- Take simple average of efficiency trials:  constant over season.
@@ -593,7 +656,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- There are enough observations to estimate B-spline model.
       	
       	#   ---- Fit glm model, increasing degress of freedom, until minimize AIC or something goes wrong.  
-      	cat(paste("\n\n++++++Spline model fitting for trap:", trap, "\n Trials are:"))
+      	cat(paste("\n\n++++++Spline model fitting (no covariates) for trap:", trap, "\n Trials are:"))
         print(tmp.df)
           
         #   ---- At least one efficiency trial "inside" for this trap.
@@ -652,6 +715,15 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   	      cat("\nFinal Efficiency model for trap: ", trap, "\n")
   	      print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
         
+  	      
+  	      
+  	      # newpred <- suppressWarnings(stats::predict(cur.fit,newdata=data.frame(obs.eff.df[obs.eff.df$TrapPositionID == trap,]$batchDate)))
+  	      # 
+  	      # 
+  	      # 
+  	      # plot(obs.eff.df[obs.eff.df$TrapPositionID == trap,]$batchDate,newpred)
+  	      
+  	      
   	      #   ---- Make a design matrix for ease in calculating predictions.
   	      if( length(coef(fit)) <= 1 ){
   	        pred <- matrix( coef(fit), sum(ind.inside), 1 )
