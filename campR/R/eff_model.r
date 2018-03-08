@@ -160,7 +160,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     #   ---- If we have extraTraps, add in rows to obs.eff.df, so the rbind below creates the
     #   ---- same number of rows for each trap, as expected. 
     if(length(extraTraps) > 0){
-      theFirst <- obs.eff.df$TrapPositionID[1]
+      if(is.factor(obs.eff.df$TrapPositionID)){
+        theFirst <- as.character(droplevels(obs.eff.df$TrapPositionID[1]))
+      } else {
+        theFirst <- obs.eff.df$TrapPositionID[1]
+      }
       for(i in 1:length(extraTraps)){
         extra.obs.eff.df <- data.frame(TrapPositionID=extraTraps[i],
                                        batchDate=obs.eff.df[obs.eff.df$TrapPositionID == theFirst,]$batchDate,
