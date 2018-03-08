@@ -102,7 +102,9 @@ percQ <- function(hrflow){
   num <- numTest[,c("measureDate","visitTime","trapVisitID","trapPositionID","waterVel","coneDepthAtStart","halfConeID")]
 
   #   ---- Take care of NAs and other weird values.  
-  num[is.na(num$coneDepthAtStart) | !(num$coneDepthAtStart %in% seq(45,52,1)),]$coneDepthAtStart <- 48
+  if( any(is.na(num$coneDepthAtStart) | !(num$coneDepthAtStart %in% seq(45,52,1))) ){
+    num[is.na(num$coneDepthAtStart) | !(num$coneDepthAtStart %in% seq(45,52,1)),]$coneDepthAtStart <- 48
+  }
   
   #   ---- Average waterVel over days.
   num$batchDate <- as.POSIXct(strptime(num$measureDate,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC") 
