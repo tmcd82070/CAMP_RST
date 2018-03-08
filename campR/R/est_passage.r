@@ -97,7 +97,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   # summarize.by <- by
   # file.root <- out.fn.root
   # ci <- ci
-   
+
   
   #   ---- Data frame catch.df gets manipulated along the way.  Preserve the min.date and
   #   ---- max.date entered as attribute variables.  

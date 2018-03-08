@@ -76,9 +76,10 @@
 #'   efficiency trial.}
 #'   
 #'   }
-#'   
-#' @seealso \code{F.get.releases}, \code{F.bootstrap.passage}
 #' 
+#' @seealso \code{F.get.releases}, \code{F.bootstrap.passage}, \code{reMap},
+#'   \code{reMap2}
+#'   
 #' @author WEST Inc.
 #' 
 #' @examples 
@@ -235,45 +236,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #splineEndD ...came from... bsplEndDt
         #fit        ...came from... fit
         
-        #   ---- Find the "season", which is between first and last OVERALL efficiency trials.  This is different
-        #   ---- than "regular" eff models, where we define the "season" as first and last eff trials, as defined
-        #   ---- within the provided min.date and max.date.  
-        min.date.p <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
-        max.date.p <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")
-        
-        yr.m <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
-        yr.M <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
-        
-        strt.dt <- as.POSIXlt(min(splineDays))   # Earliest date with an efficiency trial 1960 paradigm
-        end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
-        
-        #   ---- Re-map 1959-1960 data to the correct year we care about.  
-        #   ---- Spline data all in 1960.  
-        if(strt.dt$year == 60 & end.dt$year == 60){
-          if(yr.m == yr.M){
-            strt.dt$year <- yr.m
-            end.dt$year <- yr.M
-          } else if(yr.m != yr.M){
-            strt.dt$year <- yr.m + 1      # We know spline start and end have same year, so min.date must be back one.
-            end.dt$year <- yr.M
-          }
-        }
-      
-        #   ---- Spline data start in 1959, but end in 1960.
-        if(strt.dt$year == 59 & end.dt$year == 60){
-          if(yr.m == yr.M){
-            if(min.date.p$mon < strt.dt$mon){
-              strt.dt$year <- yr.m - 1
-              end.dt$year <- yr.M
-            } else {
-              strt.dt$year <- yr.m + 1      # Make up the missing 1 year, because starting in 1959.
-              end.dt$year <- yr.M
-            }
-          } else if(yr.m != yr.M){
-            strt.dt$year <- yr.m          # Do not make up the missing year, because we don't need to.
-            end.dt$year <- yr.M
-          }
-        }
+        #   ---- Remap back to the present.  
+        reMap2list <- reMap2(min.date,max.date,splineDays)
+        strt.dt <- reMap2list$strt.dt
+        end.dt <- reMap2list$end.dt
         
         #   ---- By design, can only have the two spline 59/60 60/60 paradigms coded above.  
         
@@ -524,10 +490,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
         #   ---- Get the current trap enh eff fit back in memory.  
         load(paste0(here,"/",site,"_",trap,"_fit.RData"),envir=.tmpDataEnv)
-        # load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
+        load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
         # load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"),envir=.tmpDataEnv)
         
-        # splineDays <- .tmpDataEnv$splineDays
+        splineDays <- .tmpDataEnv$splineDays
         # splineCoef <- .tmpDataEnv$splineCoef
         fit <- .tmpDataEnv$fit
         
@@ -545,18 +511,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         bd2 <- tmp.df$batchDate2
         bd2 <- bd2[!is.na(bd2)]
         
-        #   ---- Remap.  Build from the month-date information in batchDate2, and year in min.date.p.  
-        strt.tmp.mon <- as.POSIXlt(min(bd2))$mon + 1
-        strt.tmp.day <- as.POSIXlt(min(bd2))$mday
-        strt.tmp.yr <- as.POSIXlt(min.date.p)$year + 1900    # always exist here?
-        strt.tmp.dt <- ISOdate(strt.tmp.yr,strt.tmp.mon,strt.tmp.day,hour=0,tz=time.zone)
-        
-        #   ---- Remap.  Build from the month-date information in batchDate2, and year in max.date.p.  
-        end.tmp.mon <- as.POSIXlt(max(bd2))$mon + 1
-        end.tmp.day <- as.POSIXlt(max(bd2))$mday
-        end.tmp.yr <- as.POSIXlt(max.date.p)$year + 1900     # always exist here?
-        end.tmp.dt <- ISOdate(end.tmp.yr,end.tmp.mon,end.tmp.day,hour=0,tz=time.zone)
-        
+        #   ---- Remap back to the current time frame we care about.  
+        reMap2list <- reMap2(min.date,max.date,splineDays)
+        strt.tmp.dt <- reMap2list$strt.dt
+        end.tmp.dt <- reMap2list$end.dt
+
         #   ---- Build up a crosswalk between batchDate and batchDate2.  
         date.seq.bd  <- data.frame(batchDate=seq(strt.tmp.dt,end.tmp.dt,by="1 DSTday"))
         date.seq.bd2 <- data.frame(batchDate2=seq(min(tmp.df$batchDate2),max(tmp.df$batchDate2),by="1 DSTday"))
@@ -603,6 +562,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       inside.dates <- c(strt.dt, end.dt)
       all.ind.inside[[trap]] <- inside.dates  # save season dates for bootstrapping
       
+      #   ---- Dataframe df possibly too big here, since we buffed it out up top temporally, so as to induce
+      #   ---- better fitting splines.  Knock it back down. 
+      min.date.p <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone)
+      max.date.p <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone)
+    
   		#  ---- The fitting data frame
       tmp.df <- df[ind & ind.inside,]
       m.i <- sum(ind & ind.inside)
@@ -714,16 +678,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
   	      cat("\nFinal Efficiency model for trap: ", trap, "\n")
   	      print(summary(fit, disp=sum(residuals(fit, type="pearson")^2)/fit$df.residual))
-        
-  	      
-  	      
-  	      # newpred <- suppressWarnings(stats::predict(cur.fit,newdata=data.frame(obs.eff.df[obs.eff.df$TrapPositionID == trap,]$batchDate)))
-  	      # 
-  	      # 
-  	      # 
-  	      # plot(obs.eff.df[obs.eff.df$TrapPositionID == trap,]$batchDate,newpred)
-  	      
-  	      
+
   	      #   ---- Make a design matrix for ease in calculating predictions.
   	      if( length(coef(fit)) <= 1 ){
   	        pred <- matrix( coef(fit), sum(ind.inside), 1 )
@@ -752,6 +707,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   	      #   ---- Use the mean of spline estimates for all dates outside efficiency trial season.  
   	      mean.p <- mean(pred, na.rm=T)
   	      df$efficiency[!ind.inside] <- mean.p
+  	      
+  	      #   ---- Reduce down to the set we know we need.  We upped temporally for splining way above.  
+  	      df <- df[df$batchDate >= min.date.p & df$batchDate <= max.date.p,]
   	
   	      #   ---- Save the fit for bootstrapping.
   	      fits[[trap]] <- fit  

@@ -71,6 +71,6 @@ reMap2 <- function(min.date,max.date,splineDays){
     }
   }
   
-  ans <- list(strt.dt,end.dt)
+  ans <- list(strt.dt=strt.dt,end.dt=end.dt)
   return(ans)
 }
