@@ -95,7 +95,8 @@ F.efficiency.model( obs.eff.df, plot=T, max.df.spline=4, plot.file=NA)
 }
 }
 \seealso{
-\code{F.get.releases}, \code{F.bootstrap.passage}
+\code{F.get.releases}, \code{F.bootstrap.passage}, \code{reMap},
+  \code{reMap2}
 }
 \author{
 WEST Inc.
