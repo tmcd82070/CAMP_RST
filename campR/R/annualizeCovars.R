@@ -45,7 +45,9 @@ annualizeCovars <- function(site,min.date,max.date,season){
   
   
   
-  #   ---- We assemble all the unique ourSiteIDs we need for this run. 
+  #   ---- We assemble all the unique ourSiteIDs we need for this run.  In this application, I assume that 
+  #   ---- I can query once (via information on a subSiteID), as being representative for the site in question. 
+  #   ---- This works because in luSubSiteID, ourSiteIDChoice1, etc. does not vary within a particular site.  
   luSubSiteID <- read.csv(paste0(find.package("EnvCovDBpostgres"),"/helperFiles/luSubSiteID.csv"))
   xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% sitesXwalk$subSiteID,]  
   uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2,xwalk$ourSiteIDChoice3)))
@@ -134,6 +136,11 @@ annualizeCovars <- function(site,min.date,max.date,season){
     }
   }
   
+  #   ---- Make sure we have something in the case we have no good flow.  
+  if(is.null(dischargeEnvCovMean)){
+    dischargeEnvCovMean <- NaN
+  }
+  
   ii.temp <- 1
   repeat{
     if(!is.null(m2[[ii.temp]]) | ii.temp == length(uniqueOurSiteIDsToQuery)){
@@ -142,6 +149,11 @@ annualizeCovars <- function(site,min.date,max.date,season){
     } else {
       ii.temp <- ii.temp + 1
     }
+  }
+  
+  #   ---- Make sure we have something in the case we have no good temp.  
+  if(is.null(tempEnvCovMean)){
+    tempEnvCovMean <- NaN
   }
   
   avg2 <- data.frame(site=site,
