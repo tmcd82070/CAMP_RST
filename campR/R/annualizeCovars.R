@@ -1,10 +1,28 @@
-
-
-
-
-
-# estimate annual covariates.  annual as defined by the big looper theExcel.
-
+#' @export
+#' 
+#' @title annualizeCovars
+#'   
+#' @description Estimate available covariates annually per site.
+#'   
+#' @param site The identification number of the site for which estimates are 
+#'   required.
+#'   
+#' @param min.date The start date for data to include. This is a text string in 
+#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
+#'   
+#' @param max.date The end date for data to include.  Same format as 
+#'   \code{min.date}.
+#'   
+#' @param theSeason Typicall a year related to the timeframe specified by 
+#'   \code{min.date} and \code{max.date}.
+#'   
+#' @return If successful, an updated data file in the thing.
+#'   
+#' @details Sites and "annual" are defined via the so-called 
+#'   \code{"TheExcel.csv"}, the listing of which forms the loops of the Big 
+#'   Looper.  Annual here corresponds to \code{"Season"}, although one year (or 
+#'   "annual" time period) only ever contains one Season.
+#'   
 annualizeCovars <- function(site,min.date,max.date,season){
   
   # site <- site
@@ -13,7 +31,7 @@ annualizeCovars <- function(site,min.date,max.date,season){
   # season <- theSeason
 
   #   ---- Connect to database. 
-  ch <- odbcConnectAccess(db.file)
+  ch <- rodbc::odbcConnectAccess(db.file)
   
   #   ---- Develop the TempReportCriteria_TrapVisit table.
   F.buildReportCriteria( site, min.date, max.date )
@@ -22,10 +40,10 @@ annualizeCovars <- function(site,min.date,max.date,season){
   F.run.sqlFile( ch, "QryCleanEnvCov.sql" )
     
   #   ---- Now, fetch the result.  
-  dbCov <- sqlFetch( ch, "EnvDataRaw_Standardized" )
+  dbCov <- rodbc::sqlFetch( ch, "EnvDataRaw_Standardized" )
   
   #   ---- While we're in here, get mapping if sites to subSites.
-  sitesXwalk <- sqlQuery( ch, "SELECT siteID, subSiteID FROM SubSite;" )
+  sitesXwalk <- rodbc::sqlQuery( ch, "SELECT siteID, subSiteID FROM SubSite;" )
     
   close(ch)
     
@@ -48,7 +66,7 @@ annualizeCovars <- function(site,min.date,max.date,season){
   #   ---- We assemble all the unique ourSiteIDs we need for this run.  In this application, I assume that 
   #   ---- I can query once (via information on a subSiteID), as being representative for the site in question. 
   #   ---- This works because in luSubSiteID, ourSiteIDChoice1, etc. does not vary within a particular site.  
-  luSubSiteID <- read.csv(paste0(find.package("EnvCovDBpostgres"),"/helperFiles/luSubSiteID.csv"))
+  luSubSiteID <- utils::read.csv(paste0(find.package("EnvCovDBpostgres"),"/helperFiles/luSubSiteID.csv"))
   xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% sitesXwalk$subSiteID,]  
   uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2,xwalk$ourSiteIDChoice3)))
   
@@ -67,16 +85,16 @@ annualizeCovars <- function(site,min.date,max.date,season){
     maxEffDate <- as.character(max.date)
     
     #   ---- Query the PostgreSQL database for information on temperature and flow.  
-    ch <- dbConnect(RPostgres::Postgres(),    
+    ch <- DBI::dbConnect(RPostgres::Postgres(),    
                     dbname='EnvCovDB',
                     host='streamdata.west-inc.com',
                     port=5432,
                     user="jmitchell",
                     password="G:hbtr@RPH5M.")
-    res <- dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
-    nGood <- dbFetch(res)
-    dbClearResult(res)
-    dbDisconnect(ch)
+    res <- DBI::dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
+    nGood <- DBI::dbFetch(res)
+    DBI::dbClearResult(res)
+    DBI::dbDisconnect(ch)
     
     if(nrow(nGood) > 0){
       df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
