@@ -20,9 +20,6 @@
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
 #'   
-#' @param tmp.df The release dataframe associated with a trap, or 
-#'   \code{TrapPositionID}, in which each row represets an efficiency trial.
-#'   
 #' @param strt.dt The remapped start date associated with the current trap's 
 #'   minimum (earliest) spline date.
 #'   
@@ -42,15 +39,14 @@
 #'   
 #' @examples 
 #' \dontrun{
-#' reMap(df,bd,min.date,max.date,tmp.df,strt.dt,end.dt)
+#' reMap(df,bd,min.date,max.date,strt.dt,end.dt)
 #' }
-reMap <- function(df,bd,min.date,max.date,tmp.df,strt.dt,end.dt){
+reMap <- function(df,bd,min.date,max.date,strt.dt,end.dt){
   
   # df <- c0
   # bd <- "batchDate2"
   # min.date <- min.date
   # max.date <- max.date
-  # tmp.df <- tmp.df   # must have variable batchDate
   # strt.dt <- strt.dt
   # end.dt <- end.dt
   
@@ -79,7 +75,8 @@ reMap <- function(df,bd,min.date,max.date,tmp.df,strt.dt,end.dt){
   
   #   ---- By design, the min.date and max.date span at most one year.  Add exactly the 
   #   ---- number of years between 1960 and the min(c0$batchDate$year) to the dates in bd2.lt.  
-  yearDiff <- min(as.POSIXlt(tmp.df$batchDate)$year) - thebd2Year   # Assumes all batchDates after 1960.
+  #yearDiff <- min(as.POSIXlt(tmp.df$batchDate)$year) - thebd2Year   # Assumes all batchDates after 1960.
+  yearDiff <- min(as.POSIXlt(df$batchDate)$year) - thebd2Year   # Assumes all batchDates after 1960.
   
   #   ---- Similar to the above with the strt.dt and end.dt, we need to be careful with the remap. 
   df <- df[order(df[,bd]),]
@@ -98,50 +95,3 @@ reMap <- function(df,bd,min.date,max.date,tmp.df,strt.dt,end.dt){
   
 }  
   
-  
-  
-  
-  
- 
-  # Removed from eff_model and 'functionized' here.
-  
-  # #   ---- Build a bridge to map 1960 batchDate2 to whatever regular batchDate we have.  leap year ok?
-  # bd2.lt <- as.POSIXlt(c0$batchDate2)
-  # 
-  # #   ---- This gets tricky.  If batchDate2 has a 2-29, but our real dates don't, we have a problem.
-  # checkLeapDay <- as.POSIXlt(seq.POSIXt(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
-  #                                       as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
-  #                                       by="1 DSTday"))
-  # 
-  # #   ---- Check if we should have leap day in the map back to the min.date max.date range.
-  # if( sum(checkLeapDay$mon == 1 & checkLeapDay$mday == 29) == 0 ){
-  #   
-  #   #   ---- Get rid of 2/29 -- don't need it.
-  #   bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]   
-  #   c0 <- c0[!(as.POSIXlt(c0$batchDate2)$mon + 1 == 2 & as.POSIXlt(c0$batchDate2)$mday == 29),]
-  # }
-  # 
-  # #   ---- If the minimum year of bd2.lt is 1960, we've wrapped around to 1960, after starting
-  # #   ---- in 1959.  If the minimum year of bs2.lt is 1959, we haven't wrapped around.  
-  # thebd2Year <- min(bd2.lt$year)
-  # 
-  # #   ---- By design, the min.date and max.date span at most one year.  Add exactly the 
-  # #   ---- number of years between 1960 and the min(c0$batchDate$year) to the dates in bd2.lt.  
-  # yearDiff <- min(as.POSIXlt(tmp.df$batchDate)$year) - thebd2Year   # Assumes all batchDates after 1960.
-  # 
-  # #   ---- Similar to the above with the strt.dt and end.dt, we need to be careful with the remap. 
-  # c0 <- c0[order(c0$batchDate2),]
-  # c0$batchDate <- seq.POSIXt(strt.dt,end.dt,by="1 DSTday")
-  # 
-  # # c0$batchDate <- ifelse(bd2.lt$year == 59,as.POSIXct(bd2.lt + lubridate::years(yearDiff)),
-  # #                        ifelse(bd2.lt$year == 60,as.POSIXct(bd2.lt + lubridate::years(yearDiff - 1)),-1000000))
-  # # c0$batchDate <- as.POSIXct(c0$batchDate,format="%Y-%m-%d",tz="America/Los_Angeles",origin="1970-01-01 00:00:00 UTC")                                             
-  # 
-  # #   ---- Allow for all days in the spline enh eff trial period. 
-  # allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
-  #                                      as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
-  # 
-  # #   ---- The documentation indicates that allDates$batchDate should have tz="UTC", because I set it 
-  # #   ---- in the from of the seq call.  I suspect that my then placing it in a data.frame loses the 
-  # #   ---- tz specification, which is forcing it as "PDT".  Force it to "UTC"...again.
-  # allDates$batchDate <- as.POSIXct(allDates$batchDate,format="%Y-%m-%d",tz=time.zone)
