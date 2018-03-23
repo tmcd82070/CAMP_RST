@@ -31,7 +31,7 @@ annualizeCovars <- function(site,min.date,max.date,season){
   # season <- theSeason
 
   #   ---- Connect to database. 
-  ch <- rodbc::odbcConnectAccess(db.file)
+  ch <- RODBC::odbcConnectAccess(db.file)
   
   #   ---- Develop the TempReportCriteria_TrapVisit table.
   F.buildReportCriteria( site, min.date, max.date )
@@ -40,28 +40,27 @@ annualizeCovars <- function(site,min.date,max.date,season){
   F.run.sqlFile( ch, "QryCleanEnvCov.sql" )
     
   #   ---- Now, fetch the result.  
-  dbCov <- rodbc::sqlFetch( ch, "EnvDataRaw_Standardized" )
+  dbCov <- RODBC::sqlFetch( ch, "EnvDataRaw_Standardized" )
   
   #   ---- While we're in here, get mapping if sites to subSites.
-  sitesXwalk <- rodbc::sqlQuery( ch, "SELECT siteID, subSiteID FROM SubSite;" )
+  sitesXwalk <- RODBC::sqlQuery( ch, "SELECT siteID, subSiteID FROM SubSite;" )
     
   close(ch)
     
   #   ---- Calculate the average for each variable from CAMP mdbs.  
   avg <- data.frame(site=site,
                     Season=theSeason,
-                    dischargeMean=mean(na.omit(dbCov$discharge)),
-                    waterDepthMean=mean(na.omit(dbCov$waterDepth)),
-                    waterVelMean=mean(na.omit(dbCov$waterVel)),
-                    airTempMean=mean(na.omit(dbCov$airTemp)),
-                    waterTempMean=mean(na.omit(dbCov$waterTemp)),
-                    lightPenetrationMean=mean(na.omit(dbCov$lightPenetration)),
-                    turbidityMean=mean(na.omit(dbCov$turbidity)),
-                    dissolvedOxygenMean=mean(na.omit(dbCov$dissolvedOxygen)),
-                    conductivityMean=mean(na.omit(dbCov$conductivity)),
-                    baromenterMean=mean(na.omit(dbCov$barometer)))
-  
-  
+                    discharge_cfs=mean(na.omit(dbCov$discharge)),
+                    waterDepth_cm=mean(na.omit(dbCov$waterDepth)),
+                    waterVel_fts=mean(na.omit(dbCov$waterVel)),
+                    airTemp_F=mean(na.omit(dbCov$airTemp)),
+                    waterTemp_C=mean(na.omit(dbCov$waterTemp)),
+                    lightPenetration_cm=mean(na.omit(dbCov$lightPenetration)),
+                    turbidity_ntu=mean(na.omit(dbCov$turbidity)),
+                    dissolvedOxygen_mgL=mean(na.omit(dbCov$dissolvedOxygen)),
+                    conductivity_mgL=mean(na.omit(dbCov$conductivity)),
+                    barometer_inHg=mean(na.omit(dbCov$barometer)))
+
   
   #   ---- We assemble all the unique ourSiteIDs we need for this run.  In this application, I assume that 
   #   ---- I can query once (via information on a subSiteID), as being representative for the site in question. 
@@ -176,8 +175,8 @@ annualizeCovars <- function(site,min.date,max.date,season){
   
   avg2 <- data.frame(site=site,
                      Season=theSeason,
-                     dischargeEnvCovMean=dischargeEnvCovMean,
-                     tempEnvCovMean=tempEnvCovMean)
+                     flow_cfs=dischargeEnvCovMean,
+                     temp_c=tempEnvCovMean)
     
     
   all <- merge(avg,avg2,by=c("site","Season"))  
@@ -187,14 +186,90 @@ annualizeCovars <- function(site,min.date,max.date,season){
   
   #   ----  water vel     * area *  half-cone * multipliers for adjustments
   #   ----                         (assume no)  
-  q_d <- all$waterVelMean * 24.6 *      1      / 43650 * 86400 
+  q_d <- all$waterVel_fts * 24.6 *      1      / 43650 * 86400 
     
   #   ----  daily total stream Q * multipliers for adjustments
-  Q_D <- all$dischargeEnvCovMean * 86400 / 43560
+  Q_D <- all$flow_cfs * 86400 / 43560
   
   #   ---- Calculate percent Q.
   all$percQ <- q_d / Q_D
   
+  
+  
+  #   ---- Assemble mean forklengths, and astrological statistics.  
+  
+  #   ---- Obtain necessary variables from the global environment.  
+  fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
+  passageRounder <- get("passageRounder",envir=.GlobalEnv)
+  
+  #   Check that times are less than 1 year apart
+  strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
+  end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )
+  run.season <- data.frame( start=strt.dt, end=end.dt )
+  dt.len <- difftime(end.dt, strt.dt, units="days")
+  if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
+  
+  #   ---- Identify the type of passage report we're doing
+  # Utilize this construction to avoid NOTEs about assigning variables to the 
+  # .GlobalEnv when running devtools::check().  
+  pos <- 1
+  envir <- as.environment(pos)
+  assign("passReport","ALLRuns",envir=envir)
+  passReport <- get("passReport",envir=.GlobalEnv)
+  
+  #   ---- Fetch the catch and visit data
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date, output.file  )
+  
+  catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
+  visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
+  
+  catch.dfX <- catch.df      # save for a small step below.  several dfs get named catch.df, so need to call this something else.
+  
+  # if( nrow(catch.df) == 0 ){
+  #   stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
+  # }
+  # 
+  # #   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables
+  # catch.df0 <- F.summarize.fish.visit( catch.df, 'unassigned' )   # jason - 5/20/2015 - we summarize over lifeStage, wrt to unassigned.   10/2/2015 - i think by 'unassigned,' i really mean 'unmeasured'???
+  # catch.df1 <- F.summarize.fish.visit( catch.df, 'inflated' )     # jason - 4/14/2015 - we summarize over lifeStage, w/o regard to unassigned.  this is what has always been done.
+  # catch.df2 <- F.summarize.fish.visit( catch.df, 'assigned' )     # jason - 4/14/2015 - we summarize over assigned.  this is new, and necessary to break out by MEASURED, instead of CAUGHT.
+  # 
+  # catch.df3 <- F.summarize.fish.visit( catch.df, 'halfConeAssignedCatch' )     # jason - 1/14/2016
+  # catch.df4 <- F.summarize.fish.visit( catch.df, 'halfConeUnassignedCatch' )   # jason - 1/14/2016
+  # catch.df5 <- F.summarize.fish.visit( catch.df, 'assignedCatch' )             # jason - 1/14/2016
+  # catch.df6 <- F.summarize.fish.visit( catch.df, 'unassignedCatch' )           # jason - 1/14/2016
+  # catch.df7 <- F.summarize.fish.visit( catch.df, 'modAssignedCatch' )          # jason - 1/14/2016
+  # catch.df8 <- F.summarize.fish.visit( catch.df, 'modUnassignedCatch' )        # jason - 1/14/2016
+  
+  #   ---- I calculate mean forklength here and attach via an attribute on visit.df.  This way, it gets into function 
+  #   ---- F.get.release.data.enh.  Note I make no consideration of FinalRun, or anything else.  I get rid of plus 
+  #   ---- count fish, and instances where forkLength wasn't measured.  Note that I do not restrict to RandomSelection == 
+  #   ---- 'yes'.  Many times, if there are few fish in the trap, they'll just measure everything, and record a 
+  #   ---- RandomSelection == 'no'.  
+  catch.df2B <- catch.df[catch.df$Unassd != "Unassigned" & !is.na(catch.df$forkLength),]
+  
+  #   ---- Get the weighted-mean forkLength, weighting on the number of that length of fish caught.  Return a vector
+  #   ---- of numeric values in millimeters, with entry names reflecting trapVisitIDs.  Also get the N for weighting. 
+  flVec <- sapply(split(catch.df2B, catch.df2B$trapVisitID), function(x) weighted.mean(x$forkLength, w = x$Unmarked)) 
+  flDF <- data.frame(trapVisitID=names(flVec),wmForkLength=flVec,stringsAsFactors=FALSE)
+  nVec <- aggregate(catch.df2B$Unmarked,list(trapVisitID=catch.df2B$trapVisitID),sum)
+  names(nVec)[names(nVec) == "x"] <- "nForkLength"
+  tmp <- merge(flDF,nVec,by=c("trapVisitID"),all.x=TRUE)
+  tmp <- tmp[order(as.integer(tmp$trapVisitID)),]
+  attr(visit.df,"fl") <- tmp
+  
+  #   ---- Fetch efficiency data
+  setWinProgressBar( progbar, 0.1 , label="Fetching efficiency data" )
+  release.df <- F.get.release.data( site, taxon, min.date, max.date, visit.df )
+  
+  #   ---- Get some averages.  Maybe weight by number of released fish?  For now, I just do a straight average.  
+  release.avgs <- data.frame(site=site,
+                             Season=theSeason,
+                             bdMeanNightProp=mean(na.omit(release.df$meanNightProp)),
+                             bdMeanMoonProp=mean(na.omit(release.df$meanMoonProp)),
+                             bdMeanForkLength=mean(na.omit(release.df$meanForkLength)))
+  
+  all <- merge(all,release.avgs,by=c("site","Season"))
   
   return(all)
 }
