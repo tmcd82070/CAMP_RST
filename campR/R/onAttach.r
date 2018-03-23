@@ -3,6 +3,8 @@
 #' @importFrom ellipse ellipse
 #' @importFrom EnvCovDBpostgres queryEnvCovDB buildStrings
 #' @importFrom lubridate years
+#' @importFrom RODBC sqlQuery odbcConnectAccess
+#' @importFrom DBI dbConnect dbSendQuery dbFetch dbClearResult dbDisconnect
 #' 
 .onAttach <- function(libname, pkgname){
 	

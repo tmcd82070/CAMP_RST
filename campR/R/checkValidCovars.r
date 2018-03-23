@@ -23,6 +23,15 @@
 #' @param covarB A character vector containing the covariates deemed important 
 #'   in the enhanced efficiency model tied to the \code{TrapPositionID} returned
 #'   from \code{df}.
+#'   
+#' @param site The identification number of the site for which estimates are 
+#'   required.
+#' 
+#' @param strt.dt The remapped start date associated with the current trap's 
+#'   minimum (earliest) spline date.
+#'   
+#' @param end.dt The remapped end date associated with the current trap's 
+#'   maximum (latest) spline date.
 #' 
 #' @details The values of \code{min.date} and \code{max.date} are the same as 
 #'   those provided by the user in the initial passage estimation run.
@@ -63,9 +72,9 @@
 #'   
 #' @examples 
 #' \dontrun{
-#' checkValidCovars(df,tmp.df,min.date,max.date,covarB)
+#' checkValidCovars(df,tmp.df,min.date,max.date,covarB,site)
 #' }
-checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
+checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end.dt){
   
   # df <- df
   # tmp.df <- tmp.df
@@ -89,7 +98,6 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
     cat(paste0("\nPROBELM:  Missing variable(s) ",paste0(missingVars,collapse=", ")," in queried set of covariate information, when comparing to required data.  Cannot use enhanced efficiency.\n"))
     doEnhEff <- FALSE
   }
-
   
   if(doEnhEff == TRUE){
     
@@ -100,8 +108,8 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
     red.eff.df <- df[tmp.df$batchDate[1] <= df$batchDate & df$batchDate <= tmp.df$batchDate[nrow(tmp.df)],]
     N.red.usr <- nrow(red.usr.df)
     N.red.eff <- nrow(red.eff.df)
-    check0 <- check1 <- check2 <- good1 <- good2 <- rep(0,length(covarB))
-    names(check0) <- names(check1) <- names(check2) <- names(good1) <- names(good2) <- names(covarB)
+    check0 <- check1 <- check2 <- check3 <- good1 <- good2 <- rep(0,length(covarB))
+    names(check0) <- names(check1) <- names(check2) <- names(check3) <- names(good1) <- names(good2) <- names(covarB)
     C <- length(covarB)
     cat(paste0("\nChecking presence of daily enhanced efficiency covariates against your requested time frame for trap ",unique(df$TrapPositionID)[1],".\n"))
     cat("If that doesn't work, I'll at least try to find daily covariate data in your returned set of efficiency trials, in your requested time frame.\n\n")
@@ -117,7 +125,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
       #   ---- as well.  The exception would be if the enh eff model was a temporal spline alone with no covariates.  
       check0[c] <-  as.logical( (covar %in% names(tmp.df) & nrow(tmp.df) == 0) & (covar %in% names(df) & sum(df[!is.na(df[,covar]),covar]) == 0) )
         
-      #   ---- If check0[c] is a zero, then we have no covariate data, due to no efficiency trials.  
+      #   ---- If check0[c] is a one, then we have no covariate data, due to no efficiency trials.  
       if(check0[c] == 1){
         
         #   ---- Cut to the chase:  we have a problem, and cannot fit enhanced efficiency trials.  
@@ -136,8 +144,12 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
         check1[c] <- sum( seq(min.date.p,max.date.p,by="DSTday") %in% red.usr.df[!is.na(red.usr.df[,covar]),"batchDate"] )
          
         #   ---- Case 2:  We have a covar lacking all data for provided min.date and max.date, but with all data 
-        #   ---- inside at least the efficiency-trial dates within min.date and max.date.
-        check2[c] <- sum( seq(tmp.df$batchDate[1],tmp.df$batchDate[nrow(tmp.df)],by="DSTday") %in% red.eff.df[!is.na(covar),"batchDate"] )
+        #   ---- inside at least strt.dt and end.dt.       # the efficiency-trial dates within min.date and max.date.
+        if(nrow(tmp.df) > 0){
+          check2[c] <- sum( seq(tmp.df$batchDate[1],tmp.df$batchDate[nrow(tmp.df)],by="DSTday") %in% red.eff.df[!is.na(covar),"batchDate"] )
+        } else {
+          check2[c] <- sum( seq(strt.dt,end.dt,by="DSTday") %in% red.eff.df[!is.na(covar),"batchDate"] )
+        }
         
         #   ---- Each evaluated covar gets a message, indicating the strength of the data variable, in terms of presence.  
         if(check1[c] == N.red.usr){
@@ -199,6 +211,86 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB){
       doEnhEff <- FALSE
     }
   } 
+  
+  #   ---- Update, per Trent.  Substitute in a mean value for when a necessary covariate is NA; i.e., is blank.  Calculate mean values per 
+  #   ---- year.  In theory, we should always have a value for all (historical) years for all rivers...I think...if we have an annual_records 
+  #   ---- dataframe at the ready.  
+  if(doEnhEff == FALSE){
+    cat(paste0("While I don't use recorded information for ",paste0(missingVars,collapse=", "),", I may have an annual mean.  I will try to sub in that.\n"))
+
+    data(annual_records,envir=environment())
+    annual_records <- annual_records[!is.na(annual_records$Season),]
+    
+    #   ---- In a general run performed by the user, we don't have "Season," as defined in theExcel.  Generally, however, the "Season," which 
+    #   ---- is a year, represents the year in which the majority of the min.date and max.date covers.  So, assign Season to be that year that 
+    #   ---- is a majority of the requested time period.  
+    dateSeq <- seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
+                   as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday")
+    reppedYrs <- unique(as.POSIXlt(dateSeq)$year)
+    sumYrs <- tapply(dateSeq,list(as.POSIXlt(dateSeq)$year),length)
+    theSeason <- as.numeric(names(sumYrs[which(sumYrs == max(sumYrs))])) + 1900
+
+    #   ---- I foresee that rarely, we might identify theSeason to actually be a year that doesn't exist.  Try and game this.  
+    this_record <- annual_records[annual_records$site == site & annual_records$Season == theSeason,]
+    
+    #   ---- Trent says instead of going forward and back in time, just use an overall average.  
+    if(nrow(this_record) == 0){
+      this_record <- annual_records[annual_records$site == site & annual_records$Season == -9999,]
+    }
+    
+    # #   ---- Go back in time until we find *something*.  
+    # repeat{
+    #   if(nrow(this_record) == 0){
+    #     theSeason <- theSeason - 1
+    #     this_record <- annual_records[annual_records$Season == theSeason,]
+    #   } else {
+    #     break()
+    #   }
+    # }
+    # 
+    # #   ---- Go forward in time until we find *something*.  
+    # repeat{
+    #   if(nrow(this_record) == 0){
+    #     theSeason <- theSeason + 1
+    #     this_record <- annual_records[annual_records$Season == theSeason,]
+    #   } else {
+    #     break()
+    #   }
+    # }
+    
+    #   ---- If we're here, we seem to have nothing to work with.  Give up. 
+    if(nrow(this_record) == 0){
+      cat(paste0("I tried hard to put in valid values for missing variables, but I utterly failed.  Sorry. \n"))
+    } else {
+
+      #   ---- We live to fight another day:  loop through the original list of missingVars, filling in where necessary.  
+      for(i in 1:length(missingVars)){
+      
+        #   ---- See if we have absolutely nothing for the ith variable, and if so, put in the mean.  
+        if(good1[i] == 0 & good2[i] == 0){
+          NASum <- sum(is.na(df[,missingVars[i]]))
+          df[is.na(df[,missingVars[i]]),missingVars[i]] <- this_record[,missingVars[i]]
+          check3[i] <- 1
+          cat(paste0("I put in a value of ",this_record[,missingVars[i]]," for ",NASum," missing ",missingVars[i],".\n"))
+        }
+      }
+    }
+  }
+  
+  #   ---- Final check:  we need a non-zero, for each variable, in one of check1, check2, check3.
+  doEnhEff <- TRUE
+  for(i in 1:length(covarB)){
+    if( all(check1[i] == 0,check2[i] == 0,check3[i] == 0) ){
+      cat(paste0("I was unable to do anything for necessary covariate",covarB[i],".  Abandoning all hope for enhanced efficiency.  Sorry.  I tried really hard.\n"))
+      doEnhEff <- FALSE
+    }
+  }
+  
+  #   ---- In theory, we might be good to go!
+  if(doEnhEff == TRUE){
+    cat(paste0("I have data to run enhanced efficiency for this trap!"))
+  }
+
   ans <- list(df=df,doEnhEff=doEnhEff)
   return(ans)
 }

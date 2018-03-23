@@ -4,7 +4,7 @@
 \alias{reMap}
 \title{reMap}
 \usage{
-reMap(df, bd, min.date, max.date, tmp.df, strt.dt, end.dt)
+reMap(df, bd, min.date, max.date, strt.dt, end.dt)
 }
 \arguments{
 \item{df}{Usually a \code{c0} dataframe housing the basis matrix used to fit 
@@ -21,9 +21,6 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
 \item{max.date}{The end date for data to include.  Same format as 
 \code{min.date}.}
-
-\item{tmp.df}{The release dataframe associated with a trap, or 
-\code{TrapPositionID}, in which each row represets an efficiency trial.}
 
 \item{strt.dt}{The remapped start date associated with the current trap's 
 minimum (earliest) spline date.}
@@ -47,7 +44,7 @@ Map 1959-1960 efficiency-trial \code{batchDate}s back to the
 }
 \examples{
 \dontrun{
-reMap(df,bd,min.date,max.date,tmp.df,strt.dt,end.dt)
+reMap(df,bd,min.date,max.date,strt.dt,end.dt)
 }
 }
 \author{

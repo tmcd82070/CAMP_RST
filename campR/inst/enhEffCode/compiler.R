@@ -5,9 +5,10 @@
 # 1.  Run enhanced efficiency models via reportRun "Q" in BigLooper2.0. 
 # 2.  Collect .RData objects from wherever they are saved and placed in package campR folder inst/enhEffStats.
 # 3.  Run this compiler code to make a new "betas" dataframe for use in package.
-# 4.  Build package.  (Maybe run devtools::check too.)
-# 5.  Install. 
-# 6.  Move compiled campR from local WEST machine to campR "ThePlatform" R folder directory. 
+# 4.  Run covariateAnnualizer to get annual-based covariates.  
+# 5.  Build package.  (Maybe run devtools::check too.)
+# 6.  Install. 
+# 7.  Move compiled campR from local WEST machine to campR "ThePlatform" R folder directory. 
 
 
 

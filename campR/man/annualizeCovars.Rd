@@ -4,7 +4,7 @@
 \alias{annualizeCovars}
 \title{annualizeCovars}
 \usage{
-annualizeCovars(site, min.date, max.date, season)
+annualizeCovars(site, min.date, max.date, season, taxon)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -16,8 +16,11 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 \item{max.date}{The end date for data to include.  Same format as 
 \code{min.date}.}
 
-\item{theSeason}{Typicall a year related to the timeframe specified by 
+\item{season}{Typically a year related to the timeframe specified by 
 \code{min.date} and \code{max.date}.}
+
+\item{taxon}{The species identifier indicating the type of fish of interest. 
+This is always \code{161980}; i.e., Chinook Salmon.}
 }
 \value{
 If successful, an updated data file in the thing.

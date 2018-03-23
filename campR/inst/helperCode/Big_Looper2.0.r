@@ -13,7 +13,7 @@ excelName <- "theExcel"
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
-reportRun <- c("R")
+reportRun <- c("AA")
 
 #   ---- Assign the version of R to use.  A real check uses the version of R CAMP people use.
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
@@ -49,41 +49,44 @@ theExcel <- theExcel[!is.na(theExcel$siteID),]
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
 outStem <- paste0(theStem,"/Outputs")
 
+
+
+
 #   ---- Identify the possible reports we can run, and folder stems we can create.  
 #   ---- This section should not be ameliorated.  
 nn <- c("label","folder","report","function")
-a <- c("A","EstProdAllRunsLSReport"    ,"ls.run.passage"                      ,"passageWithLifeStageAssign")
-b <- c("B","EstProdAllRunsReport"      ,"run.passage"                         ,"F.run.passage")
-c <- c("C","PassageEst_FL_Fall"        ,"lifestage.passage.forkLength"        ,"F.lifestage.passage.forkLength")
-d <- c("D","AllCatchTable"             ,"all.catch"                           ,"F.allCatch.table")
-e <- c("E","ByCatchTable"              ,"by.catch"                            ,"F.byCatch.table")
-f <- c("F","ChinookByDate"             ,"chinook.by.date"                     ,"F.chinookByDate.table")
-g <- c("G","ReleaseSummary"            ,"release.summary"                     ,"F.release.summary")
-h <- c("H","SizeByDate"                ,"size.by.date"                        ,"F.size.by.date")
-i <- c("I","LengthFreq"                ,"length.freq"                         ,"F.length.frequency")
-j <- c("J","WeeklyEffortReport"        ,"weekly.effort"                       ,"F.weekly.effort")
-k <- c("K","AutoLS_2Group_YesWgt"      ,"auto.ls.2grp_yWgt"                   ,"F.lifestage.passage.assignLS2group")
-l <- c("L","AutoLS_2Group_NoWgt"       ,"auto.ls.2grp_nWgt"                   ,"F.lifestage.passage.assignLS2groupNoWeight")
-m <- c("M","AutoLS_3Group_YesWgt"      ,"auto.ls.3grp_yWgt"                   ,"F.lifestage.passage.assignLS3group")
-n <- c("N","AutoLS_3Group_NoWgt"       ,"auto.ls.3grp_nWgt"                   ,"F.lifestage.passage.assignLS3groupNoWeight")
-o <- c("O","AutoLS_2or3_AutoWgt"       ,"auto.ls.2or3grp_autoWgt"             ,"F.lifestage.passage.assignLS")
-p <- c("P","AutoLS_2or3_NoWgt"         ,"auto.ls.2or3grp_nWgt"                ,"F.lifestage.passage.assignLSNoWeight")
-q <- c("Q","Enhanced_Eff_Get_Betas"    ,"run.passage.enh"                     ,"F.run.passage.enh")
-r <- c("R","EstProdAllRunsReportENH"   ,"run.passage.enheffT"                 ,"F.run.passage")
-s <- c("S","EstProdAllRunsLSReportENH" ,"ls.run.passage.enheffT"              ,"passageWithLifeStageAssign")
-t <- c("T","PassageEst_FL_FallENH"     ,"lifestage.passage.forkLength.enheffT","F.lifestage.passage.forkLength")
-u <- c("U","AutoLS_2Group_YesWgtENH"   ,"auto.ls.2grp_yWgt.enheffT"           ,"F.lifestage.passage.assignLS2group")
-v <- c("V","AutoLS_2Group_NoWgtENH"    ,"auto.ls.2grp_nWgt.enheffT"           ,"F.lifestage.passage.assignLS2groupNoWeight")
-w <- c("W","AutoLS_3Group_YesWgtENH"   ,"auto.ls.3grp_yWgt.enheffT"           ,"F.lifestage.passage.assignLS3group")
-x <- c("X","AutoLS_3Group_NoWgtENH"    ,"auto.ls.3grp_nWgt.enheffT"           ,"F.lifestage.passage.assignLS3groupNoWeight")
-y <- c("Y","AutoLS_2or3_AutoWgtENH"    ,"auto.ls.2or3grp_autoWgt.enheffT"     ,"F.lifestage.passage.assignLS")
-z <- c("Z","AutoLS_2or3_NoWgtENH"      ,"auto.ls.2or3grp_nWgt.enheffT"        ,"F.lifestage.passage.assignLSNoWeight")
-
+a  <- c("A" ,"EstProdAllRunsLSReport"    ,"ls.run.passage"                      ,"passageWithLifeStageAssign")
+b  <- c("B" ,"EstProdAllRunsReport"      ,"run.passage"                         ,"F.run.passage")
+c  <- c("C" ,"PassageEst_FL_Fall"        ,"lifestage.passage.forkLength"        ,"F.lifestage.passage.forkLength")
+d  <- c("D" ,"AllCatchTable"             ,"all.catch"                           ,"F.allCatch.table")
+e  <- c("E" ,"ByCatchTable"              ,"by.catch"                            ,"F.byCatch.table")
+f  <- c("F" ,"ChinookByDate"             ,"chinook.by.date"                     ,"F.chinookByDate.table")
+g  <- c("G" ,"ReleaseSummary"            ,"release.summary"                     ,"F.release.summary")
+h  <- c("H" ,"SizeByDate"                ,"size.by.date"                        ,"F.size.by.date")
+i  <- c("I" ,"LengthFreq"                ,"length.freq"                         ,"F.length.frequency")
+j  <- c("J" ,"WeeklyEffortReport"        ,"weekly.effort"                       ,"F.weekly.effort")
+k  <- c("K" ,"AutoLS_2Group_YesWgt"      ,"auto.ls.2grp_yWgt"                   ,"F.lifestage.passage.assignLS2group")
+l  <- c("L" ,"AutoLS_2Group_NoWgt"       ,"auto.ls.2grp_nWgt"                   ,"F.lifestage.passage.assignLS2groupNoWeight")
+m  <- c("M" ,"AutoLS_3Group_YesWgt"      ,"auto.ls.3grp_yWgt"                   ,"F.lifestage.passage.assignLS3group")
+n  <- c("N" ,"AutoLS_3Group_NoWgt"       ,"auto.ls.3grp_nWgt"                   ,"F.lifestage.passage.assignLS3groupNoWeight")
+o  <- c("O" ,"AutoLS_2or3_AutoWgt"       ,"auto.ls.2or3grp_autoWgt"             ,"F.lifestage.passage.assignLS")
+p  <- c("P" ,"AutoLS_2or3_NoWgt"         ,"auto.ls.2or3grp_nWgt"                ,"F.lifestage.passage.assignLSNoWeight")
+q  <- c("Q" ,"Enhanced_Eff_Get_Betas"    ,"run.passage.enh"                     ,"F.run.passage.enh")
+r  <- c("R" ,"EstProdAllRunsReportENH"   ,"run.passage.enheffT"                 ,"F.run.passage")
+s  <- c("S" ,"EstProdAllRunsLSReportENH" ,"ls.run.passage.enheffT"              ,"passageWithLifeStageAssign")
+t  <- c("T" ,"PassageEst_FL_FallENH"     ,"lifestage.passage.forkLength.enheffT","F.lifestage.passage.forkLength")
+u  <- c("U" ,"AutoLS_2Group_YesWgtENH"   ,"auto.ls.2grp_yWgt.enheffT"           ,"F.lifestage.passage.assignLS2group")
+v  <- c("V" ,"AutoLS_2Group_NoWgtENH"    ,"auto.ls.2grp_nWgt.enheffT"           ,"F.lifestage.passage.assignLS2groupNoWeight")
+w  <- c("W" ,"AutoLS_3Group_YesWgtENH"   ,"auto.ls.3grp_yWgt.enheffT"           ,"F.lifestage.passage.assignLS3group")
+x  <- c("X" ,"AutoLS_3Group_NoWgtENH"    ,"auto.ls.3grp_nWgt.enheffT"           ,"F.lifestage.passage.assignLS3groupNoWeight")
+y  <- c("Y" ,"AutoLS_2or3_AutoWgtENH"    ,"auto.ls.2or3grp_autoWgt.enheffT"     ,"F.lifestage.passage.assignLS")
+z  <- c("Z" ,"AutoLS_2or3_NoWgtENH"      ,"auto.ls.2or3grp_nWgt.enheffT"        ,"F.lifestage.passage.assignLSNoWeight")
+aa <- c("AA","AnnualizeCovars"           ,"annualize.covars"                    ,"annualizeCovars")
 
 
 
 #   ---- Clean up our requested report list for use in making folders. 
-masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z),stringsAsFactors=FALSE)
+masterReports <- as.data.frame(rbind(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa),stringsAsFactors=FALSE)
 names(masterReports) <- nn
 rownames(masterReports) <- NULL
 masterReports <- masterReports[masterReports$label %in% reportRun,]
@@ -129,6 +132,13 @@ makeTheDir <- function(theDir){
 # unassd.sig.digit                <<- 1
 
 #i <- j <- k <- 1
+
+
+#   ---- If we are building annualized covariates for enhnaced efficiency, we need this.  
+if( reportRun == "AA" ){
+  annual_records <- NULL
+}
+
 #   ---- Given the 'theExcel', loop over the streams.  
 for(i in 1:nStreamNames){
   
@@ -176,7 +186,7 @@ for(i in 1:nStreamNames){
       outFileStem <- paste0(outStem,"/",paste0(theStreamName,"--",theSiteName),"/",theSeason,"/",theReportFolder)
       outFile     <- paste0(theReportTitle,"-",siteText)
       outAll      <- paste0(outFileStem,"/",outFile,"-")
-      
+
       #   ---- Set up the db.file text string, so R knows where to find the database.
       if(theStreamName == 'Sacramento River'){
         #db.file <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Data/TestingDBs/CAMP_RBDD_19June20151/CAMP.mdb"
@@ -202,7 +212,8 @@ for(i in 1:nStreamNames){
       cat(paste("DB file:", db.file, "\n"))
       ch <- odbcConnectAccess(db.file)
       close(ch)
-      
+
+    
       #   ---- Create the by lifestage and run report.  
       if( theReportLabel == "A" ){
         by <- "All"
@@ -475,6 +486,24 @@ for(i in 1:nStreamNames){
         F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=FALSE,useEnhEff=TRUE)       
       }
       
+      #   ---- Estimate annualized covariates.  We build this report here in the Big Looper;  all others create external output.  
+      if( theReportLabel == "AA" ){
+        aa_record <- annualizeCovars(site,min.date,max.date,theSeason)
+        annual_records <- rbind(annual_records,aa_record)
+        
+        #   ---- Check to see if we have considered the last aa_record, so as to save the final built annual_records.
+        if(i == nStreamNames & j == nSeasons & k == nReports){
+          
+          #   ---- Estimate a grand mean, per site. 
+          for(ss in 1:length(unique(annual_records$site))){
+            siteMean <- apply(annual_records[annual_records$site == unique(annual_records$site)[ss]],2,function(x) mean(x[!is.nan(x)]))
+            siteMean[names(siteMean) == "Season"] <- -9999
+            annual_records <- rbind(annual_records,siteMean)
+          }
+          
+          devtools::use_data(annual_records,annual_records,internal=FALSE,overwrite=TRUE)
+        }
+      }
     }
   }
 }

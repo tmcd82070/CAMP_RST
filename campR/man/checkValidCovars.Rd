@@ -4,7 +4,7 @@
 \alias{checkValidCovars}
 \title{checkValidCovars}
 \usage{
-checkValidCovars(df, tmp.df, min.date, max.date, covarB)
+checkValidCovars(df, tmp.df, min.date, max.date, covarB, site, strt.dt, end.dt)
 }
 \arguments{
 \item{df}{The data frame for a specific \code{TrapPositionID} containing 
@@ -25,6 +25,15 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 \item{covarB}{A character vector containing the covariates deemed important 
 in the enhanced efficiency model tied to the \code{TrapPositionID} returned
 from \code{df}.}
+
+\item{site}{The identification number of the site for which estimates are 
+required.}
+
+\item{strt.dt}{The remapped start date associated with the current trap's 
+minimum (earliest) spline date.}
+
+\item{end.dt}{The remapped end date associated with the current trap's 
+maximum (latest) spline date.}
 }
 \value{
 A modified dataframe input of \code{df}, containing possibly 
@@ -71,6 +80,6 @@ The values of \code{min.date} and \code{max.date} are the same as
 }
 \examples{
 \dontrun{
-checkValidCovars(df,tmp.df,min.date,max.date,covarB)
+checkValidCovars(df,tmp.df,min.date,max.date,covarB,site)
 }
 }

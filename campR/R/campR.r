@@ -80,3 +80,42 @@ NULL
 #' @keywords datasets
 #' 
 NULL
+
+#' Annual estimates of available covariates, per site and estimation year.  Used in lieu of 
+#' daily covariate values in the estimation of enhanced efficiency models, when daily data 
+#' do not exist, or are otherwise not available.  
+#'
+#' @name annual_records
+#' @docType data
+#' @usage data(annual_records)
+#' @format A data frame with 81 rows and 18 variables.
+#' 
+#' \describe{Simple annual mean estimates per \code{site} and \code{Season}
+#' (typically year).  Values of \code{-9999} in variable \code{Season} indicate
+#' overall grand-mean values over all years for the given \code{site}.
+#' The variables are as follows:
+#' 
+#' \itemize{
+#'   \item \code{site}. Site identifier.  Usually tied to a particular stream.  
+#'   \item \code{Season}. Typically a year, or in the case of \code{-9999}, the mean over all available values for that \code{site}.
+#'   \item \code{discharge_cfs}.Estimated annualized mean effect due to flow, in units of cfs, as recorded in the CAMP \code{mdb}. 
+#'   \item \code{waterDepth_cm}.Estimated annualized mean effect due to water depth, in units of cm, as recorded in the CAMP \code{mdb}.  
+#'   \item \code{waterVel_fts}. Estimated annualized mean effect due to water velocity, in units of ft/s, as recorded in the CAMP \code{mdb}. 
+#'   \item \code{airTemp_F}. Estimated annualized mean effect due to air temperature, in units of F, as recorded in the CAMP \code{mdb}.  
+#'   \item \code{waterTemp_C}. Estimated annualized mean effect due to water temperature, in units of C, as recorded in the CAMP \code{mdb}.  
+#'   \item \code{lightPenetration_ntu}. Estimated annualized mean effect due to light penetration, in units of ntu, as recorded in the CAMP \code{mdb}.  
+#'   \item \code{turbidity_ntu}. Estimated annualized mean effect due to turbidity, in units of ntu, as recorded in the CAMP \code{mdb}.  
+#'   \item \code{dissolvedOxygen_mgL}. Estimated annualized mean effect due to dissolved oxygen, in units of mg/L, as recorded in the CAMP \code{mdb}.  
+#'   \item \code{conductivity_mgL}. Estimated annualized mean effect due to conductivity, in units of mg/L, as recorded in the CAMP \code{mdb}.  
+#'   \item \code{barometer_inHg}. Estimated annualized mean effect due to barometer, in units of inches Hg, as recorded in the CAMP \code{mdb}.  
+#'   \item \code{flow_cfs}. Estimated annualized mean effect due to flow, in units of cfs, as recorded in the Environmental Covariate database.
+#'   \item \code{temp_c}. Estimated annualized mean effect due to water temperature, in units of C, as recorded in the Environmental Covariate database.  
+#'   \item \code{percQ}. Estimated annualized mean effect due to percent \eqn{Q}.     
+#'   \item \code{bdMeanNightProp}. Estimated annualized mean effect due to proportion of fishing at night.  
+#'   \item \code{bdMeanMoonProp}. Estimated annualized mean effect due to proportion of fishing with moon in the sky.
+#'   \item \code{bdMeanForkLength}. Estimated annualized mean effect due to mean fork length.  
+#' }
+#' }
+#' @keywords datasets
+#' 
+NULL

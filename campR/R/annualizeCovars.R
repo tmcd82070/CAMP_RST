@@ -7,13 +7,16 @@
 #' @param site The identification number of the site for which estimates are 
 #'   required.
 #'   
+#' @param taxon The species identifier indicating the type of fish of interest. 
+#'   This is always \code{161980}; i.e., Chinook Salmon.
+#'   
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
 #'   
 #' @param max.date The end date for data to include.  Same format as 
 #'   \code{min.date}.
 #'   
-#' @param theSeason Typicall a year related to the timeframe specified by 
+#' @param season Typically a year related to the timeframe specified by 
 #'   \code{min.date} and \code{max.date}.
 #'   
 #' @return If successful, an updated data file in the thing.
@@ -23,13 +26,17 @@
 #'   Looper.  Annual here corresponds to \code{"Season"}, although one year (or 
 #'   "annual" time period) only ever contains one Season.
 #'   
-annualizeCovars <- function(site,min.date,max.date,season){
+annualizeCovars <- function(site,min.date,max.date,season,taxon){
   
   # site <- site
   # min.date <- min.date
   # max.date <- max.date
   # season <- theSeason
 
+  #   ---- Obtain necessary variables from the global environment.  
+  time.zone <- get("time.zone",envir=.GlobalEnv)
+  db.file <- get( "db.file", envir=.GlobalEnv )
+  
   #   ---- Connect to database. 
   ch <- RODBC::odbcConnectAccess(db.file)
   
@@ -49,7 +56,7 @@ annualizeCovars <- function(site,min.date,max.date,season){
     
   #   ---- Calculate the average for each variable from CAMP mdbs.  
   avg <- data.frame(site=site,
-                    Season=theSeason,
+                    Season=season,
                     discharge_cfs=mean(na.omit(dbCov$discharge)),
                     waterDepth_cm=mean(na.omit(dbCov$waterDepth)),
                     waterVel_fts=mean(na.omit(dbCov$waterVel)),
@@ -174,7 +181,7 @@ annualizeCovars <- function(site,min.date,max.date,season){
   }
   
   avg2 <- data.frame(site=site,
-                     Season=theSeason,
+                     Season=season,
                      flow_cfs=dischargeEnvCovMean,
                      temp_c=tempEnvCovMean)
     
@@ -218,7 +225,7 @@ annualizeCovars <- function(site,min.date,max.date,season){
   passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Fetch the catch and visit data
-  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date, output.file  )
+  tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date, output.file="Fake"  )
   
   catch.df <- tmp.df$catch   # All positive catches, all FinalRun and lifeStages, inflated for plus counts.  Zero catches (visits without catch) are NOT here.
   visit.df <- tmp.df$visit   # the unique trap visits.  This will be used in a merge to get 0's later
@@ -259,12 +266,11 @@ annualizeCovars <- function(site,min.date,max.date,season){
   attr(visit.df,"fl") <- tmp
   
   #   ---- Fetch efficiency data
-  setWinProgressBar( progbar, 0.1 , label="Fetching efficiency data" )
-  release.df <- F.get.release.data( site, taxon, min.date, max.date, visit.df )
+  release.df <- F.get.release.data( site, taxon=, min.date, max.date, visit.df )
   
   #   ---- Get some averages.  Maybe weight by number of released fish?  For now, I just do a straight average.  
   release.avgs <- data.frame(site=site,
-                             Season=theSeason,
+                             Season=season,
                              bdMeanNightProp=mean(na.omit(release.df$meanNightProp)),
                              bdMeanMoonProp=mean(na.omit(release.df$meanMoonProp)),
                              bdMeanForkLength=mean(na.omit(release.df$meanForkLength)))

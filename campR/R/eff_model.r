@@ -136,7 +136,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     
     #   ---- Get stuff we need to fit the enhanced efficiency models.  
     
-    #   ---- 1.  We know traps from immediately above.
+    #   ---- We know traps from immediately above.
     #load("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/data/betas.rda")
     data(betas,envir=environment())
     betas <- betas[betas$subsiteID %in% traps,]
@@ -261,7 +261,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         tmp.df <- df[ind & ind.inside,]
         m.i <- sum(ind & ind.inside)
         
-        #   ---- 4. Find out which covariates this trap cares about.  
+        #   ---- Find out which covariates this trap cares about.  
         thisB1 <- betas[betas$subsiteID == trap,]                                                               # Restrict to trap.
         thisB2 <- thisB1[,names(thisB1)[sapply(thisB1,function(x) ifelse(is.numeric(x),sum(x),x)) != "0"]]      # Restrict to non-zero covariates.
         
@@ -288,7 +288,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- Check to make sure we have the data we need to fit enhanced efficiency trials.  Not necessary
         #   ---- if we have an intercept-only model.  
         if(length(covarB) > 0){
-          checkCovarValidity <- checkValidCovars(df,tmp.df,min.date,max.date,covarB)
+          checkCovarValidity <- checkValidCovars(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end.dt)
           df <- checkCovarValidity$df
           doEnhEff <- checkCovarValidity$doEnhEff
         } else {
@@ -365,10 +365,20 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
           
           #   ---- Variable batchDate doesn't include all dates, since releases average over days.  Fill in the missing 
           #   ---- dates.  This creates a step function ish for meanNightProp, meanMoonProp, and meanForkLength.  
-          c4 <- stepper(tmp.df[,c("batchDate","TrapPositionID","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")],
-                        c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"),
-                        min.date,
-                        max.date)
+          if(nrow(tmp.df) > 0){
+            
+            #   ---- If we're here, we had efficiency trials this year, and thus "bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"
+            #   ---- obtained from this year's efficiency trials.  
+            c4 <- stepper(tmp.df[,c("batchDate","TrapPositionID","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")],
+                          c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"),
+                          min.date,
+                          max.date)
+          } else {
+            
+            #   ---- If we're here, we didn't have efficiency trials this year, so we're using a constant Season estimate,
+            #   ---- from annual_records, for these variable(s) that we need.  
+            c4 <- df[,c("batchDate",names(covarB)[names(covarB) %in% c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength")])]
+          }
           
           #   ---- Function stepper designed to run over non-unique TrapPositionIDs.  Get rid of this variable. 
           c4$TrapPositionID <- NULL
@@ -382,7 +392,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         } 
         
         #   ---- Map back to current time frame.  
-        reMapped <- reMap(c0,"batchDate2",min.date,max.date,tmp.df,strt.dt,end.dt)
+        reMapped <- reMap(c0,"batchDate2",min.date,max.date,strt.dt,end.dt)
         c0 <- reMapped$c0
         allDates <- reMapped$allDates
         
@@ -776,4 +786,16 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
 
   ans
 
+  # ttt <- unique(ans$eff$TrapPositionID)
+  # yM <- max(ans$eff$efficiency)
+  # for(i in 1:length(ttt)){
+  #   ttt.df <- ans$eff[ans$eff$trapPositionID == ttt[i],]
+  #   if(i == 1){
+  #     plot(ttt.df$batchDate,ttt.df$efficiency,type="l",ylim=c(0,yM))
+  #   } else {
+  #     par(new=TRUE)
+  #     plot(ttt.df$batchDate,ttt.df$efficiency,type="l",ylim=c(0,yM))
+  #   }
+  # }
+  
 }
