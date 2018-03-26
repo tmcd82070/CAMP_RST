@@ -216,6 +216,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
   #   ---- year.  In theory, we should always have a value for all (historical) years for all rivers...I think...if we have an annual_records 
   #   ---- dataframe at the ready.  
   if(doEnhEff == FALSE){
+    missingVars <- names(covarB)[!(names(covarB) %in% names(df))]
     cat(paste0("While I don't use recorded information for ",paste0(missingVars,collapse=", "),", I may have an annual mean.  I will try to sub in that.\n"))
 
     data(annual_records,envir=environment())
