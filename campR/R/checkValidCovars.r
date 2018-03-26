@@ -81,6 +81,9 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
   # min.date <- min.date
   # max.date <- max.date
   # covarB <- covarB
+  # site <- site
+  # strt.dt <- strt.dt
+  # end.dt <- end.dt
   
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
@@ -216,7 +219,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
   #   ---- year.  In theory, we should always have a value for all (historical) years for all rivers...I think...if we have an annual_records 
   #   ---- dataframe at the ready.  
   if(doEnhEff == FALSE){
-    missingVars <- names(covarB)[!(names(covarB) %in% names(df))]
+    missingVars <- names(check0)[check0 == 1]
     cat(paste0("While I don't use recorded information for ",paste0(missingVars,collapse=", "),", I may have an annual mean.  I will try to sub in that.\n"))
 
     data(annual_records,envir=environment())
@@ -267,21 +270,24 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
       #   ---- We live to fight another day:  loop through the original list of missingVars, filling in where necessary.  
       for(i in 1:length(missingVars)){
       
-        #   ---- See if we have absolutely nothing for the ith variable, and if so, put in the mean.  
-        if(good1[i] == 0 & good2[i] == 0){
+        #   ---- See if we have absolutely nothing for the ith variable, and if so, put in the mean.  Because missingVars
+        #   ---- could now be of length less than goodX, we must be careful in how we do our checks.  
+        if(good1[names(good1) == missingVars[i]] == 0 & good2[names(good2) == missingVars[i]] == 0){
           NASum <- sum(is.na(df[,missingVars[i]]))
           df[is.na(df[,missingVars[i]]),missingVars[i]] <- this_record[,missingVars[i]]
-          check3[i] <- 1
+          
+          #   ---- Flip original problem check0 variables to 1.  These are now 'fixed.'  
+          check0[names(check0) == missingVars[i]] <- 0
           cat(paste0("I put in a value of ",this_record[,missingVars[i]]," for ",NASum," missing ",missingVars[i],".\n"))
         }
       }
     }
   }
   
-  #   ---- Final check:  we need a non-zero, for each variable, in one of check1, check2, check3.
+  #   ---- Final check:  we need a non-zero for each variable in check0.  Is this as strong as it can be?
   doEnhEff <- TRUE
   for(i in 1:length(covarB)){
-    if( all(check1[i] == 0,check2[i] == 0,check3[i] == 0) ){
+    if( check0[i] != 0 ){
       cat(paste0("I was unable to do anything for necessary covariate",covarB[i],".  Abandoning all hope for enhanced efficiency.  Sorry.  I tried really hard.\n"))
       doEnhEff <- FALSE
     }
