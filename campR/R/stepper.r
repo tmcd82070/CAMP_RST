@@ -102,5 +102,21 @@ stepper <- function(df,varVec,min.date,max.date){
     df.new[df.new[,paste0(varVec[i],"Step")] == -99,paste0(varVec[i],"Step")] <- means[i]
   }
 
+  #   ---- Update during Big Looping:  I hate the stepper function.  If we are going to take means over time, we should 
+  #   ---- interpolate at least via linear truncated basis models.  The current construct is inferior, but we are out of 
+  #   ---- time, so this will need to work for now.  It turns out that sometimes we "miss a day," due to daylight savings.
+  #   ---- See the comment above.  
+  batchDateCheck <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
+                                             as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
+                                             by="1 DSTday"))
+  
+  #   ---- If we did insert a date...which I think should only number one?, we need to get rid of NAs; i.e., put in data.
+  df.new <- merge(batchDateCheck,df.new,by=c("batchDate"),all.x=TRUE) 
+  for(i in 2:nrow(df.new)){
+    if(is.na(df.new[i,]$TrapPositionID)){
+      df.new[i,!(colnames(df.new) %in% c("batchDate"))] <- df.new[i - 1,!(colnames(df.new) %in% c("batchDate"))]
+    }
+  }
+  
   return(df.new)
 }
