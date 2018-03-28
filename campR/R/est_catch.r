@@ -244,7 +244,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
       break
     }
   }
-  write.csv(model.info,paste0(plot.file,"_model_Info.csv"))
+  #write.csv(model.info,paste0(plot.file,"_model_Info.csv"))
   
   cat("in est_catch.r  DF")
   print( tapply(df$batchDate, df$trapPositionID, range) )
