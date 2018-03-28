@@ -373,6 +373,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
                           c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"),
                           min.date,
                           max.date)
+            
           } else {
             
             #   ---- If we're here, we didn't have efficiency trials this year, so we're using a constant Season estimate,

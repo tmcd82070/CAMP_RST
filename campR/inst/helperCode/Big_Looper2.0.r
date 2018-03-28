@@ -13,7 +13,7 @@ excelName <- "theExcel"
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
-reportRun <- c("AA")
+reportRun <- c("R")
 
 #   ---- Assign the version of R to use.  A real check uses the version of R CAMP people use.
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
@@ -433,7 +433,7 @@ for(i in 1:nStreamNames){
         
         #   ---- Run function lifestage.passage.forkLength over the four possible temporal periods.  
         for(byj in 1:4){
-          if(byj == 1){by <- 'day'  } 
+               if(byj == 1){by <- 'day'  } 
           else if(byj == 2){by <- 'week' } 
           else if(byj == 3){by <- 'month'} 
           else if(byj == 4){by <- 'year' }

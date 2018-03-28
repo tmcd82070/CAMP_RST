@@ -153,9 +153,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   dbDisc <- stuff$dbDisc
   dbDpcm <- stuff$dbDpcm
   dbATpF <- stuff$dbATpF
-  if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
+  #if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
     dbTurb <- stuff$dbTurb
-  }
+  #}
   dbWVel <- stuff$dbWVel
   dbWTpC <- stuff$dbWTpC
   dbLite <- stuff$dbLite
@@ -174,9 +174,9 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
   
   varSummary <- NULL
   possibleVars <- c("(Intercept)","bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual","percQ")
-  if(substr(obs.eff.df$TrapPositionID[1],1,2) == "42"){
-    possibleVars <- possibleVars[possibleVars != "turbidity_ntu"]
-  }
+  #if(substr(obs.eff.df$TrapPositionID[1],1,2) == "42"){
+  #  possibleVars <- possibleVars[possibleVars != "turbidity_ntu"]
+  #}
   
   
   #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
@@ -385,10 +385,10 @@ F.efficiency.model.enh <- function( obs.eff.df, plot=T, max.df.spline=4, plot.fi
     #   ---- Make a lookup vector.  
     dfs <- c("dbMoon","dbNite","dbFLen","dbFlPG","dbTpPG","dbDisc","dbDpcm","dbDpft","dbATpC","dbATpF","dbTurb","dbWVel","dbWTpC","dbWTmF","dbLite","dbDOxy","dbCond","dbBaro","dbWeat","dbPerQ")
     covars <- c("bdMeanMoonProp","bdMeanNightProp","bdMeanForkLength","flow_cfs","temp_c","discharge_cfs","waterDepth_cm","waterDepth_ft","airTemp_C","airTemp_F","turbidity_ntu","waterVel_fts","waterTemp_C","waterTemp_F","lightPenetration_ntu","dissolvedOxygen_mgL","conductivity_mgL","barometer_inHg","precipLevel_qual","percQ")
-    if(substr(obs.eff.df$TrapPositionID[1],1,2) == "42"){
-      dfs <- dfs[dfs != "dbTurb"]
-      covars <- covars[covars != "turbidity_ntu"]
-    }
+    #if(substr(obs.eff.df$TrapPositionID[1],1,2) == "42"){
+    #  dfs <- dfs[dfs != "dbTurb"]
+    #  covars <- covars[covars != "turbidity_ntu"]
+    #}
     covarlu <- dfs
     names(covarlu) <- covars
         
