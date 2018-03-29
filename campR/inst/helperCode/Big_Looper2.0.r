@@ -9,11 +9,11 @@ excelName <- "theExcel"
 #   ---- Set the reports you want to run.  Use the key below. 
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
-# reportRun <- c("A","B","C","D","E","F","G","H","I","J")
+reportRun <- c("A","B","C","D","E","F","G","H","I","J")
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
-reportRun <- c("R")
+# reportRun <- c("R")
 
 #   ---- Assign the version of R to use.  A real check uses the version of R CAMP people use.
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
@@ -35,10 +35,12 @@ require(campR)
 theExcel <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/",excelName,".csv"))
 rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
+theExcel <- theExcel[!(rownames(theExcel) %in% c(50)),]  # Exclude out years that seemingly have no releases.  
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
-#theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]                  # For Enh Eff development (no RBDD)
-#theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,73),]               # For Enh Eff development (yes RBDD)
+# theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]                 # For Enh Eff development (no RBDD)
+# theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,73),]              # For Enh Eff development (yes RBDD)
+# theExcel <- theExcel[c(36),]                                       # For Enh Eff development (only RBDD)
 
 # theExcel <- theExcel[theExcel$streamName == "American River",]     # American
 # theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
@@ -135,7 +137,7 @@ makeTheDir <- function(theDir){
 
 
 #   ---- If we are building annualized covariates for enhnaced efficiency, we need this.  
-if( reportRun == "AA" ){
+if( "AA" %in% reportRun ){
   annual_records <- NULL
 }
 

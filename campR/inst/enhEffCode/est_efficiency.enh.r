@@ -89,11 +89,11 @@
 
 F.est.efficiency.enh <- function( release.df, batchDate, df.spline=4, plot=TRUE, plot.file=NA ){
 
-  release.df <- release.df.enh
-  batchDate <- bd.enh
-  df.spline <- 4
-  plot <- TRUE
-  plot.file <- file.root
+  # release.df <- release.df.enh
+  # batchDate <- bd.enh
+  # df.spline <- 4
+  # plot <- TRUE
+  # plot.file <- file.root
   
   time.zone <- get("time.zone", envir=.GlobalEnv)
   forEffPlots <- attr(release.df,"forEffPlots")
