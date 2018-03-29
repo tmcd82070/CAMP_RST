@@ -490,82 +490,92 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     }
  
     # 	---- If number of trials at a trap less than this number, 
-    #        assume constant and use ROM+1 estimator
+    #   ---- assume constant and use ROM+1 estimator
     eff.min.spline.samp.size <- get("eff.min.spline.samp.size", pos=.GlobalEnv)
     
     #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
     for( trap in traps ){
   
+      if( useEnhEff == TRUE ){
       
-      #   ---- No efficiency trials at this trap.  BUT!  If we have an enhanced efficiency model at 
-      #   ---- this trap, but lack a covariate's data, we can at least do it the old way, on the 1960 paradigm
-      #   ---- batchDate2, and at least bust out the temporal spline (with no covariates).  We use the old 
-      #   ---- data to refit the spline -- we do NOT use the temporal spline fit with the covariates.  
-      if(file.exists(paste0(here,"/",site,"_",trap,"_fit.RData"))){
+        #   ---- No efficiency trials at this trap.  BUT!  If we have an enhanced efficiency model at 
+        #   ---- this trap, but lack a covariate's data, we can at least do it the old way, on the 1960 paradigm
+        #   ---- batchDate2, and at least bust out the temporal spline (with no covariates).  We use the old 
+        #   ---- data to refit the spline -- we do NOT use the temporal spline fit with the covariates.  
         
-        #   ---- Get the current trap enh eff fit back in memory.  
-        load(paste0(here,"/",site,"_",trap,"_fit.RData"),envir=.tmpDataEnv)
-        load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
-        # load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"),envir=.tmpDataEnv)
-        
-        splineDays <- .tmpDataEnv$splineDays
-        # splineCoef <- .tmpDataEnv$splineCoef
-        fit <- .tmpDataEnv$fit
-        
-        tmp.df <- fit$data
-        
-        #   ---- Could have the same month-day represent more than one e-trial, over more than one year. 
-        #   ---- Collapse these down to help with a merge below. 
-        nReleased <- aggregate(tmp.df$nReleased,list(batchDate2=tmp.df$batchDate2),sum)
-        names(nReleased)[names(nReleased) == "x"] <- "nReleased"
-        nCaught <- aggregate(tmp.df$nCaught,list(batchDate2=tmp.df$batchDate2),sum)
-        names(nCaught)[names(nCaught) == "x"] <- "nCaught"
-        tmp.df <- merge(nReleased,nCaught,by=c("batchDate2"))
-        
-        #   ---- Pluck off batchDate2.  
-        bd2 <- tmp.df$batchDate2
-        bd2 <- bd2[!is.na(bd2)]
-        
-        #   ---- Remap back to the current time frame we care about.  
-        reMap2list <- reMap2(min.date,max.date,splineDays)
-        strt.tmp.dt <- reMap2list$strt.dt
-        end.tmp.dt <- reMap2list$end.dt
-
-        #   ---- Build up a crosswalk between batchDate and batchDate2.  
-        date.seq.bd  <- data.frame(batchDate=seq(strt.tmp.dt,end.tmp.dt,by="1 DSTday"))
-        date.seq.bd2 <- data.frame(batchDate2=seq(min(tmp.df$batchDate2),max(tmp.df$batchDate2),by="1 DSTday"))
-        
-        #   ---- Make sure we agree on 2/29.  Default batchDate2 seq always has this, because it's 1960.
-        if(any(as.POSIXlt(date.seq.bd2$batchDate2)$mon == 1 & as.POSIXlt(date.seq.bd2$batchDate2)$mday == 29)){
-          date.seq.bd2 <- date.seq.bd2[!(as.POSIXlt(date.seq.bd2$batchDate2)$mon == 1 & as.POSIXlt(date.seq.bd2$batchDate2)$mday == 29),]
-          date.seq.bd2 <- data.frame(batchDate2=date.seq.bd2)
+        #   ---- Because we now imputed mean coefficient values in the enh eff traps above, when covariate data
+        #   ---- are missing, we should rarely end up here; i.e., useEnhEff == TRUE and sum(doOldEff) > 0
+        #   ---- should be rare.  
+        if(file.exists(paste0(here,"/",site,"_",trap,"_fit.RData"))){
+          
+          #   ---- Get the current trap enh eff fit back in memory.  
+          load(paste0(here,"/",site,"_",trap,"_fit.RData"),envir=.tmpDataEnv)
+          load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
+          # load(paste0(here,"/",site,"_",trap,"_splineCoef.RData"),envir=.tmpDataEnv)
+          
+          splineDays <- .tmpDataEnv$splineDays
+          # splineCoef <- .tmpDataEnv$splineCoef
+          fit <- .tmpDataEnv$fit
+          
+          tmp.df <- fit$data
+          
+          #   ---- Could have the same month-day represent more than one e-trial, over more than one year. 
+          #   ---- Collapse these down to help with a merge below. 
+          nReleased <- aggregate(tmp.df$nReleased,list(batchDate2=tmp.df$batchDate2),sum)
+          names(nReleased)[names(nReleased) == "x"] <- "nReleased"
+          nCaught <- aggregate(tmp.df$nCaught,list(batchDate2=tmp.df$batchDate2),sum)
+          names(nCaught)[names(nCaught) == "x"] <- "nCaught"
+          tmp.df <- merge(nReleased,nCaught,by=c("batchDate2"))
+          
+          #   ---- Pluck off batchDate2.  
+          bd2 <- tmp.df$batchDate2
+          bd2 <- bd2[!is.na(bd2)]
+          
+          #   ---- Remap back to the current time frame we care about.  
+          reMap2list <- reMap2(min.date,max.date,splineDays)
+          strt.tmp.dt <- reMap2list$strt.dt
+          end.tmp.dt <- reMap2list$end.dt
+  
+          #   ---- Build up a crosswalk between batchDate and batchDate2.  
+          date.seq.bd  <- data.frame(batchDate=seq(strt.tmp.dt,end.tmp.dt,by="1 DSTday"))
+          date.seq.bd2 <- data.frame(batchDate2=seq(min(tmp.df$batchDate2),max(tmp.df$batchDate2),by="1 DSTday"))
+          
+          #   ---- Make sure we agree on 2/29.  Default batchDate2 seq always has this, because it's 1960.
+          if(any(as.POSIXlt(date.seq.bd2$batchDate2)$mon == 1 & as.POSIXlt(date.seq.bd2$batchDate2)$mday == 29)){
+            date.seq.bd2 <- date.seq.bd2[!(as.POSIXlt(date.seq.bd2$batchDate2)$mon == 1 & as.POSIXlt(date.seq.bd2$batchDate2)$mday == 29),]
+            date.seq.bd2 <- data.frame(batchDate2=date.seq.bd2)
+          }
+          
+          #   ---- Make the batchDate crosswalk.  
+          bdxwalk <- data.frame(date.seq.bd,date.seq.bd2)
+          
+          #   ---- And now, disguise the data frame like the old efficiency code expects it. 
+          tmp.df <- merge(bdxwalk,tmp.df,by=c("batchDate2"),all.x=TRUE)
+          tmp.df$TrapPositionID <- trap
+          tmp.df$efficiency <- tmp.df$nCaught / tmp.df$nReleased
+          tmp.df <- tmp.df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
+          
+          #   ---- We need the dates from the original obs.eff.df for this trap, so it matches the other traps'
+          #   ---- temporal sequence.  
+          obs.eff.df.df <- obs.eff.df[obs.eff.df$TrapPositionID == trap,]
+          df <- merge(obs.eff.df.df[,!(names(obs.eff.df.df) %in% c("TrapPositionID","nReleased","nCaught","efficiency"))],
+                      tmp.df,
+                      by=c("batchDate"),
+                      all.x=TRUE)
+          
+          #   ---- In this part of the code, we don't care about covariates.  
+          df <- df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
+          df$TrapPositionID <- trap
+  
+        } else {
+          
+          #   ---- We have a trap that is new this year -- no enhanced efficiency model exists.  
+          df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
         }
-        
-        #   ---- Make the batchDate crosswalk.  
-        bdxwalk <- data.frame(date.seq.bd,date.seq.bd2)
-        
-        #   ---- And now, disguise the data frame like the old efficiency code expects it. 
-        tmp.df <- merge(bdxwalk,tmp.df,by=c("batchDate2"),all.x=TRUE)
-        tmp.df$TrapPositionID <- trap
-        tmp.df$efficiency <- tmp.df$nCaught / tmp.df$nReleased
-        tmp.df <- tmp.df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
-        
-        #   ---- We need the dates from the original obs.eff.df for this trap, so it matches the other traps'
-        #   ---- temporal sequence.  
-        obs.eff.df.df <- obs.eff.df[obs.eff.df$TrapPositionID == trap,]
-        df <- merge(obs.eff.df.df[,!(names(obs.eff.df.df) %in% c("TrapPositionID","nReleased","nCaught","efficiency"))],
-                    tmp.df,
-                    by=c("batchDate"),
-                    all.x=TRUE)
-        
-        #   ---- In this part of the code, we don't care about covariates.  
-        df <- df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
-        df$TrapPositionID <- trap
-
       } else {
-        
-        #   ---- We have a trap that is new this year -- no enhanced efficiency model exists.  
-        df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
+          
+          #   ---- We just want old-school efficiency estimation.  Do it the old way.  
+          df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
       }
       
       ind <- !is.na(df$efficiency)
@@ -751,8 +761,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     }
   }
 
-  
-  
   #   ---- With enhanced efficiency models, could have traps in ans with NA entries.  This happens because
   #   ---- we didn't have the covariates this year to fit a trap's enh eff model, and there were no efficiency
   #   ---- trials at that trap.  But, we have catch at that trap.  Make sure we have the trap location's pretty 
