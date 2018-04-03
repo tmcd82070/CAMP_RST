@@ -51,8 +51,8 @@
 #'}
 estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   
-  # dbCov <- dbDpcm
-  # covName <- "waterDepth_cm"
+  # dbCov <- dbDisc
+  # covName <- "discharge_cfs"
   # estType <- 1
   # traps <- traps
   # obs.eff.df <- obs.eff.df
@@ -159,7 +159,8 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
         #   ---- non-NA on non-batchDates, which we don't want.
         if(covName %in% names(obs.eff.df)){
           if( sum(is.na(obs.eff.df[,covName])) == nrow(obs.eff.df)){
-            obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],covName] <- NULL
+            obs.eff.df[,covName] <- NULL
+            # obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj],covName] <- NULL
           }
         }
         
