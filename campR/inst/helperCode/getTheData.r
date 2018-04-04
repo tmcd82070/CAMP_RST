@@ -121,6 +121,13 @@ getTheData <- function(openThese,stem){
       CBs <- rbind(CBs,thisLine)
       theDFs[[i]] <- CBs
     }
+    
+    #   ---- Identify if we have a passage estimate from an ENHANCED EFFICIENCY estimate.  
+    if(grepl("ENH",stem,fixed=TRUE)){
+      theDFs[[i]]$enhEff <- "Enhanced"
+    } else {
+      theDFs[[i]]$enhEff <- "Regular"
+    }
     bigDF <- rbind(bigDF,theDFs[[i]])
   }
   bigDF

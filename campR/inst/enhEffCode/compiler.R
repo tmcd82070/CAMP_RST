@@ -13,7 +13,6 @@
 
 
 
-
 dir <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/enhEffStats"
 files <- dir(dir,pattern=".RData")
 

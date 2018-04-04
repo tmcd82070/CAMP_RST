@@ -13,7 +13,7 @@ reportRun <- c("A","B","C","D","E","F","G","H","I","J")
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
-# reportRun <- c("R")
+# reportRun <- c("R","S")
 
 #   ---- Assign the version of R to use.  A real check uses the version of R CAMP people use.
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
@@ -46,6 +46,7 @@ theExcel <- theExcel[!(rownames(theExcel) %in% c(50)),]  # Exclude out years tha
 # theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
 # theExcel <- theExcel[theExcel$streamName == "Stanislaus River",]   # Stanislaus
 # theExcel <- theExcel[theExcel$streamName == "Sacramento River",]   # Sacramento
+# theExcel <- theExcel[!(theExcel$streamName == "Sacramento River"),]   # All but Sacramento
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
@@ -490,7 +491,7 @@ for(i in 1:nStreamNames){
       
       #   ---- Estimate annualized covariates.  We build this report here in the Big Looper;  all others create external output.  
       if( theReportLabel == "AA" ){
-        aa_record <- annualizeCovars(site,min.date,max.date,theSeason)
+        aa_record <- annualizeCovars(site,min.date,max.date,theSeason,taxon)
         annual_records <- rbind(annual_records,aa_record)
         
         #   ---- Check to see if we have considered the last aa_record, so as to save the final built annual_records.
@@ -503,7 +504,7 @@ for(i in 1:nStreamNames){
             annual_records <- rbind(annual_records,siteMean)
           }
           
-          devtools::use_data(annual_records,annual_records,internal=FALSE,overwrite=TRUE)
+          # devtools::use_data(annual_records,annual_records,internal=FALSE,overwrite=TRUE)
         }
       }
     }
