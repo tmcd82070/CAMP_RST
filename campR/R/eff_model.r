@@ -463,6 +463,16 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         df$enhanced.eff <- rep("Yes",nrow(df))
         df$trapPositionID <- trap
         
+       
+        #   ---- Sometimes, covariates don't play nice, and we end up with absurdly low efficiencies.  Apply 
+        #   ---- an indicator in this case, so that any efficiencies below the 5th percentile AND below 0.01 
+        #   ---- (a practical efficiency minimum) are replaced with the 'fivePThreshold'.  I don't think 
+        #   ---- fivePThreshold can be NA...but I don't want to have to dig into this and restart the BL. 
+        fivePThreshold <- quantile(df$efficiency,0.05)
+        if(!is.na(fivePThreshold)){
+          df[df$efficiency < fivePThreshold & rep(fivePThreshold < 0.01,nrow(df)),]$efficiency <- fivePThreshold
+          rm(fivePThreshold)
+        }
         
         #plot(df$batchDate,df$efficiency)
         ans <- rbind(ans, df)
