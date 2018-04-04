@@ -462,6 +462,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         df$imputed.eff <- factor( !ind, levels=c(T,F), labels=c("Yes", "No"))
         df$enhanced.eff <- rep("Yes",nrow(df))
         df$trapPositionID <- trap
+        
+        
         #plot(df$batchDate,df$efficiency)
         ans <- rbind(ans, df)
         #plot(ans[ans$TrapPositionID == "42010",]$batchDate,ans[ans$TrapPositionID == "42010",]$efficiency)

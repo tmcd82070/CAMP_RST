@@ -423,6 +423,12 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
     #   ---- Rearrange columns.
     tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','halfConeAdj','imputedCatch','totalEstimatedCatch','propImputedCatch','efficiency','propImputedEff','passage')]
     tmp.df <- tmp.df[order(tmp.df$subSiteID,tmp.df$batchDate),] 
+    
+    if(useEnhEff == TRUE){
+      tmp.df$effModel <- "Enhanced"
+    } else {
+      tmp.df$effModel <- "Regular"
+    }
 
     write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
     out.fn.list <- c(out.fn.list, out.fn)

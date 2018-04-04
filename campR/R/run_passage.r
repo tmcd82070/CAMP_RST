@@ -337,6 +337,11 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         tmp.df$pct.imputed.catch <- round(tmp.df$pct.imputed.catch, 3)
         tmp.df$sampleLengthHrs <- round(tmp.df$sampleLengthHrs,1)
         tmp.df$sampleLengthDays <- round(tmp.df$sampleLengthDays,2)
+        if(useEnhEff == TRUE){
+          tmp.df$effModel <- "Enhanced"
+        } else {
+          tmp.df$effModel <- "Regular"
+        }
         names(tmp.df)[ names(tmp.df) == "pct.imputed.catch" ] <- "propImputedCatch"
         names(tmp.df)[ names(tmp.df) == "lower.95" ] <- "lower95pctCI"
         names(tmp.df)[ names(tmp.df) == "upper.95" ] <- "upper95pctCI"
