@@ -32,6 +32,7 @@ annualizeCovars <- function(site,min.date,max.date,season,taxon){
   # min.date <- min.date
   # max.date <- max.date
   # season <- theSeason
+  # taxon <- taxon
 
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
@@ -266,7 +267,7 @@ annualizeCovars <- function(site,min.date,max.date,season,taxon){
   attr(visit.df,"fl") <- tmp
   
   #   ---- Fetch efficiency data
-  release.df <- F.get.release.data( site, taxon=, min.date, max.date, visit.df )
+  release.df <- F.get.release.data( site, taxon, min.date, max.date, visit.df )
   
   #   ---- Get some averages.  Maybe weight by number of released fish?  For now, I just do a straight average.  
   release.avgs <- data.frame(site=site,
