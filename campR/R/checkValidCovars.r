@@ -126,7 +126,11 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
       #   ---- to still use enh eff in this case, but if the enh eff model has covariates, this is no go.  It is not 
       #   ---- appropriate to simply take the temporal spline alone from the enh eff fit, because that was fit with covariates 
       #   ---- as well.  The exception would be if the enh eff model was a temporal spline alone with no covariates.  
-      check0[c] <-  as.logical( (covar %in% names(tmp.df) & nrow(tmp.df) == 0) & (covar %in% names(df) & sum(df[!is.na(df[,covar]),covar]) == 0) )
+      if(covar %in% names(df)){
+        check0[c] <-  as.logical( (covar %in% names(tmp.df) & nrow(tmp.df) == 0) & (covar %in% names(df) & sum(df[!is.na(df[,covar]),covar]) == 0) )
+      } else {
+        check0[c] <- 1    # Not due to missing covariate data, but still a problem -- variable not there.  
+      }
         
       #   ---- If check0[c] is a one, then we have no covariate data, due to no efficiency trials.  
       if(check0[c] == 1){
@@ -288,7 +292,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
   doEnhEff <- TRUE
   for(i in 1:length(covarB)){
     if( check0[i] != 0 ){
-      cat(paste0("I was unable to do anything for necessary covariate",covarB[i],".  Abandoning all hope for enhanced efficiency.  Sorry.  I tried really hard.\n"))
+      cat(paste0("I was unable to do anything for necessary covariate ",names(covarB)[i],".  Abandoning all hope for enhanced efficiency.  Sorry.  I tried really hard.\n"))
       doEnhEff <- FALSE
     }
   }
