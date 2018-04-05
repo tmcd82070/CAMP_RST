@@ -124,7 +124,7 @@ F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plo
   attr(eff, "site.name") <- release.df$siteName[1]
   attr(eff, "min.date") <- attr(release.df,"min.date")
   attr(eff, "max.date") <- attr(release.df,"max.date")
-  attr(eff, "useEnhEff") <- attr(release.df,"useEnhEff")
+  attr(eff, "enhmodel") <- attr(release.df,"enhmodel")
   attr(eff, "site") <- release.df$siteID[1]
   attr(eff, "catch.subsites") <- attr(release.df,"catch.subsites")
   

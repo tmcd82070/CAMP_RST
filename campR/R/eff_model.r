@@ -99,7 +99,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   
   ans <- NULL
   
-  useEnhEff <- attr(obs.eff.df,"useEnhEff")
+  enhmodel <- attr(obs.eff.df,"enhmodel")
   min.date <- attr(obs.eff.df,"min.date")
   max.date <- attr(obs.eff.df,"max.date")
   site <- attr(obs.eff.df,"site")
@@ -110,7 +110,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   # ---- If we are using enhanced efficiency trials, we should always have an efficiency model,
   # ---- unless a trap is new for the year defined by original min.date and max.date.  Define
   # ---- traps vector appropriately so the looping works appropriately.
-  if(useEnhEff == TRUE){
+  if(enhmodel == TRUE){
     traps <- catch.subsites
   } else {
     traps <- as.character(droplevels(sort(unique(obs.eff.df$TrapPositionID))))
@@ -127,12 +127,12 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
   
-  #   ---- Set this up here, so it can evaluated in the if below when useEnhEff == FALSE.  
+  #   ---- Set this up here, so it can evaluated in the if below when enhmodel == FALSE.  
   doOldEff <- rep(TRUE,length(traps))
   names(doOldEff) <- traps
   
   #   ---- Decide if we're going to use enhanced efficiency.  
-  if(useEnhEff == TRUE){
+  if(enhmodel == TRUE){
     
     #   ---- Get stuff we need to fit the enhanced efficiency models.  
     
@@ -184,7 +184,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     obs.eff.df <- obs.eff.df[order(obs.eff.df$TrapPositionID,obs.eff.df$batchDate),]
     
     #   ---- Get covariate data on bigger obs.eff.df.  
-    stuff <- getTogetherCovarData(obs.eff.df,min.date,max.date,traps,useEnhEff=TRUE)
+    stuff <- getTogetherCovarData(obs.eff.df,min.date,max.date,traps,enhmodel=TRUE)
 
     #   ---- Unpack 'stuff' so that we have the dbCovar dataframes available for plotting below.
     obs.eff.df <- stuff$obs.eff.df
@@ -465,13 +465,13 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
        
         #   ---- Sometimes, covariates don't play nice, and we end up with absurdly low efficiencies.  Apply 
-        #   ---- an indicator in this case, so that any efficiencies below the 5th percentile AND below 0.001 
-        #   ---- (a practical efficiency minimum -- 1 out of 1000 fish) are replaced with 0.001.  I don't think 
+        #   ---- an indicator in this case, so that any efficiencies below the 20th percentile AND below 0.005 
+        #   ---- (a practical efficiency minimum -- 5 out of 1000 fish) are replaced with 20th p.  I don't think 
         #   ---- fivePThreshold can be NA...but I don't want to have to dig into this and restart the BL. 
-        fivePThreshold <- quantile(df$efficiency,0.05)
+        fivePThreshold <- quantile(df$efficiency,0.20)   # <--- It looks 0.05 is still too small...try 0.20.
         if(!is.na(fivePThreshold)){
-          if(any( df$efficiency < fivePThreshold & rep(fivePThreshold < 0.001,nrow(df)) )){
-            df[df$efficiency < fivePThreshold & rep(fivePThreshold < 0.001,nrow(df)),]$efficiency <- 0.001  # <- If below threshold, replace.
+          if(any( df$efficiency < fivePThreshold & rep(fivePThreshold < 0.005,nrow(df)) )){
+            df[df$efficiency < fivePThreshold & rep(fivePThreshold < 0.005,nrow(df)),]$efficiency <- fivePThreshold # <- If below threshold, replace.
           }
           rm(fivePThreshold)
         }
@@ -491,14 +491,14 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     }
   } 
   
-  if( useEnhEff == FALSE | sum(doOldEff) > 0 ){
+  if( enhmodel == FALSE | sum(doOldEff) > 0 ){
     
     #   ---- Just do it the old way.  
 
     #   ---- If sum(doOldEff) > 0, then we have at least one trap for which we lack the requisite data from attempt to do enh eff models.
     #   ---- Redefine vector traps to only include those for which the old way is necessary. Of course,
     #   ---- only do this redefining if we really hoped for Enh Eff.  
-    if( useEnhEff == TRUE ){
+    if( enhmodel == TRUE ){
       oldTraps <- traps
       traps <- traps[doOldEff]
     }
@@ -510,7 +510,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     #   ---- Estimate a model for efficiency for each trap in obs.eff.df.
     for( trap in traps ){
   
-      if( useEnhEff == TRUE ){
+      if( enhmodel == TRUE ){
       
         #   ---- No efficiency trials at this trap.  BUT!  If we have an enhanced efficiency model at 
         #   ---- this trap, but lack a covariate's data, we can at least do it the old way, on the 1960 paradigm
@@ -518,7 +518,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- data to refit the spline -- we do NOT use the temporal spline fit with the covariates.  
         
         #   ---- Because we now imputed mean coefficient values in the enh eff traps above, when covariate data
-        #   ---- are missing, we should rarely end up here; i.e., useEnhEff == TRUE and sum(doOldEff) > 0
+        #   ---- are missing, we should rarely end up here; i.e., enhmodel == TRUE and sum(doOldEff) > 0
         #   ---- should be rare.  
         if(file.exists(paste0(here,"/",site,"_",trap,"_fit.RData"))){
           

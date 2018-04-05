@@ -103,7 +103,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- max.date entered as attribute variables.  
   min.date <- attr(catch.df,"min.date")
   max.date <- attr(catch.df,"max.date")
-  useEnhEff <- attr(catch.df,"useEnhEff")
+  enhmodel <- attr(catch.df,"enhmodel")
   
   #   ---- Get global variable values.
   max.ok.gap <- get("max.ok.gap",envir=.GlobalEnv)
@@ -294,7 +294,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- Estimate capture for every day of season.  Add in min.date and max.date for enh eff.
   attr(release.df,"min.date") <- min.date
   attr(release.df,"max.date") <- max.date
-  attr(release.df,"useEnhEff") <- useEnhEff
+  attr(release.df,"enhmodel") <- enhmodel
   attr(release.df,"catch.subsites") <- sort(unique(substr(as.character(catch.df$trapPositionID),1,5)))
   eff.and.fits <- F.est.efficiency( release.df, bd, df.spline=4, plot=TRUE, plot.file=file.root )
   if(usepb){
@@ -424,7 +424,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
     tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','halfConeAdj','imputedCatch','totalEstimatedCatch','propImputedCatch','efficiency','propImputedEff','passage')]
     tmp.df <- tmp.df[order(tmp.df$subSiteID,tmp.df$batchDate),] 
     
-    if(useEnhEff == TRUE){
+    if(enhmodel == TRUE){
       tmp.df$effModel <- "Enhanced"
     } else {
       tmp.df$effModel <- "Regular"

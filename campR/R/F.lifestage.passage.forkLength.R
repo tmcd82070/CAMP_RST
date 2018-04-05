@@ -37,7 +37,7 @@
 #'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
 #'   if \code{autols=FALSE}.  See Details.
 #'   
-#' @param useEnhEff A logical indicating if enhanced efficiency models should 
+#' @param enhmodel A logical indicating if enhanced efficiency models should 
 #'   be used to estimate trap efficiencies.  Default is \code{TRUE}.  
 #' 
 #' @return A \code{csv} table of passage estimates over the specified date 
@@ -122,7 +122,7 @@
 #' F.lifestage.passage.forkLength(site,taxon,min.date,max.date,by,
 #'   output.file,ci,nls,weightuse,autols,reclassify)
 #' }
-F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,useEnhEff=FALSE){
+F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,enhmodel=FALSE){
 
   # site <- 1000
   # taxon <- 161980
@@ -350,7 +350,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
         #   ---- Set these attributes so they can be passed along.
         attr(catch.df.ls,"min.date") <- min.date
         attr(catch.df.ls,"max.date") <- max.date
-        attr(catch.df.ls,"useEnhEff") <- useEnhEff
+        attr(catch.df.ls,"enhmodel") <- enhmodel
         
         #   ---- Compute passage.
         if(nrow(catch.df.ls) > 0){# & sum(as.numeric(theSums)) > 0){

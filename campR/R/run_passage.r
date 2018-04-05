@@ -29,7 +29,7 @@
 #' @param ci A logical indicating if 95\% bootstrapped confidence intervals 
 #'   should be estimated along with passage estimates..  Default is \code{TRUE}.  
 #'   
-#' @param useEnhEff A logical indicating if enhanced efficiency models should 
+#' @param enhmodel A logical indicating if enhanced efficiency models should 
 #'   be used to estimate trap efficiencies.  Default is \code{TRUE}.  
 #'   
 #' @return A \code{csv} table of passage estimates over the specified date 
@@ -88,7 +88,7 @@
 #' output.file <- "Feather"
 #' ci <- TRUE
 #' }
-F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE, useEnhEff=TRUE ){
+F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=TRUE, enhmodel=TRUE ){
   
   # site <- 12345
   # taxon <- 161980
@@ -97,7 +97,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   # by <- "week"
   # output.file <- NA
   # ci <- TRUE
-  # useEnhEff <- TRUE
+  # enhmodel <- TRUE
   
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
@@ -277,7 +277,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       #   ---- Set these attributes so they can be passed along.
       attr(catch.df.ls,"min.date") <- min.date
       attr(catch.df.ls,"max.date") <- max.date
-      attr(catch.df.ls,"useEnhEff") <- useEnhEff
+      attr(catch.df.ls,"enhmodel") <- enhmodel
       #   ---- Compute passage
       if(by == 'year'){
         pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
@@ -337,7 +337,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         tmp.df$pct.imputed.catch <- round(tmp.df$pct.imputed.catch, 3)
         tmp.df$sampleLengthHrs <- round(tmp.df$sampleLengthHrs,1)
         tmp.df$sampleLengthDays <- round(tmp.df$sampleLengthDays,2)
-        if(useEnhEff == TRUE){
+        if(enhmodel == TRUE){
           tmp.df$effModel <- "Enhanced"
         } else {
           tmp.df$effModel <- "Regular"

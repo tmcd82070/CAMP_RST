@@ -34,7 +34,7 @@
 #'   the analytical life stage assignment;  the default is \code{NULL}. Ignored
 #'   if \code{autols=FALSE}.  See Details.
 #'   
-#' @param useEnhEff A logical indicating if enhanced efficiency models should 
+#' @param enhmodel A logical indicating if enhanced efficiency models should 
 #'   be used to estimate trap efficiencies.  Default is \code{TRUE}.  
 #'   
 #' @details The date range difference specified via \code{max.date} and
@@ -113,7 +113,7 @@
 #' }
 
 
-F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,useEnhEff=TRUE){
+F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output.file, ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,enhmodel=TRUE){
   
 #   site <- 12345
 #   taxon <- 161980
@@ -328,7 +328,7 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
         #   ---- Set these attributes so they can be passed along.
         attr(catch.df.ls,"min.date") <- min.date
         attr(catch.df.ls,"max.date") <- max.date
-        attr(catch.df.ls,"useEnhEff") <- useEnhEff
+        attr(catch.df.ls,"enhmodel") <- enhmodel
         
         #   ---- Compute passage
         if(nrow(catch.df.ls) > 0){#} & sum(as.numeric(theSums)) > 0){

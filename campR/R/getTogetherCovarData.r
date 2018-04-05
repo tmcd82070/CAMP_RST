@@ -18,7 +18,7 @@
 #' 
 #' @param traps A set of traps for which efficiency data are available.  
 #' 
-#' @param useEnhEff A logical indicating if function \code{getTogetherCovarData}
+#' @param enhmodel A logical indicating if function \code{getTogetherCovarData}
 #'   should use query dates based on provided \code{min.date} and
 #'   \code{max.date} (\code{TRUE}), or efficency time frames (\code{FALSE}).
 #'   
@@ -70,15 +70,15 @@
 #'                             min.date,
 #'                             max.date,
 #'                             traps,
-#'                             useEnhEff)
+#'                             enhmodel)
 #' }
-getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
+getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
   
   # obs.eff.df <- obs.eff.df
   # min.date <- min.date2
   # max.date <- max.date2
   # traps <- traps
-  # useEnhEff <- TRUE
+  # enhmodel <- TRUE
   
   #   ---- Obtain necessary variables from the global environment.  
   time.zone <- get("time.zone",envir=.GlobalEnv)
@@ -115,7 +115,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,useEnhEff){
     #   ---- Get covariate data of interest.  
     oursitevar <- uniqueOurSiteIDsToQuery[ii]   
     
-    if(useEnhEff == TRUE){
+    if(enhmodel == TRUE){
       
       #   ---- Use these when constructing passage estimates.  Buff out a month each way.
       minEffDate <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone) - 90*24*60*60
