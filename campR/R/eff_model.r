@@ -465,14 +465,13 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
        
         #   ---- Sometimes, covariates don't play nice, and we end up with absurdly low efficiencies.  Apply 
-        #   ---- an indicator in this case, so that any efficiencies below the 5th percentile AND below 0.01 
-        #   ---- (a practical efficiency minimum) are replaced with the 'fivePThreshold'.  I don't think 
+        #   ---- an indicator in this case, so that any efficiencies below the 5th percentile AND below 0.001 
+        #   ---- (a practical efficiency minimum -- 1 out of 1000 fish) are replaced with 0.001.  I don't think 
         #   ---- fivePThreshold can be NA...but I don't want to have to dig into this and restart the BL. 
-        fivePThreshold <- quantile(df$efficiency,0.10)   # <--- Initially, Trent suggested 0.05, but 0.10 seems
-                                                         #      to work better on the American where first found.
+        fivePThreshold <- quantile(df$efficiency,0.05)
         if(!is.na(fivePThreshold)){
           if(any( df$efficiency < fivePThreshold & rep(fivePThreshold < 0.001,nrow(df)) )){
-            df[df$efficiency < fivePThreshold & rep(fivePThreshold < 0.001,nrow(df)),]$efficiency <- fivePThreshold
+            df[df$efficiency < fivePThreshold & rep(fivePThreshold < 0.001,nrow(df)),]$efficiency <- 0.001  # <- If below threshold, replace.
           }
           rm(fivePThreshold)
         }
