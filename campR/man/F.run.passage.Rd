@@ -5,7 +5,7 @@
 \title{F.run.passage}
 \usage{
 F.run.passage(site, taxon, min.date, max.date, by, output.file, ci = TRUE,
-  useEnhEff = TRUE)
+  enhmodel = TRUE)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -29,7 +29,7 @@ estimated catch is to be summarized.  Can be one of \code{day},
 \item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
 should be estimated along with passage estimates..  Default is \code{TRUE}.}
 
-\item{useEnhEff}{A logical indicating if enhanced efficiency models should 
+\item{enhmodel}{A logical indicating if enhanced efficiency models should 
 be used to estimate trap efficiencies.  Default is \code{TRUE}.}
 
 \item{run}{The text seasonal identifier.  This is a one of \code{"Spring"},

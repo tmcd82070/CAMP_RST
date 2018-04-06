@@ -4,7 +4,7 @@
 \alias{getTogetherCovarData}
 \title{getTogetherCovarData}
 \usage{
-getTogetherCovarData(obs.eff.df, min.date, max.date, traps, useEnhEff)
+getTogetherCovarData(obs.eff.df, min.date, max.date, traps, enhmodel)
 }
 \arguments{
 \item{obs.eff.df}{A data frame with at least variables \code{batchDate} and
@@ -19,7 +19,7 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 
 \item{traps}{A set of traps for which efficiency data are available.}
 
-\item{useEnhEff}{A logical indicating if function \code{getTogetherCovarData}
+\item{enhmodel}{A logical indicating if function \code{getTogetherCovarData}
 should use query dates based on provided \code{min.date} and
 \code{max.date} (\code{TRUE}), or efficency time frames (\code{FALSE}).}
 }
@@ -74,7 +74,7 @@ ans <- getTogetherCovarData(obs.eff.df,
                             min.date,
                             max.date,
                             traps,
-                            useEnhEff)
+                            enhmodel)
 }
 }
 \references{

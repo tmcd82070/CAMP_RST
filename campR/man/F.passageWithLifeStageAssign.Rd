@@ -6,7 +6,7 @@
 \usage{
 F.passageWithLifeStageAssign(site, taxon, min.date, max.date, output.file,
   ci = TRUE, autols = FALSE, nls = NULL, weightuse = NULL,
-  useEnhEff = TRUE)
+  enhmodel = TRUE)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -38,7 +38,7 @@ See Details.}
 the analytical life stage assignment;  the default is \code{NULL}. Ignored
 if \code{autols=FALSE}.  See Details.}
 
-\item{useEnhEff}{A logical indicating if enhanced efficiency models should 
+\item{enhmodel}{A logical indicating if enhanced efficiency models should 
 be used to estimate trap efficiencies.  Default is \code{TRUE}.}
 }
 \value{
