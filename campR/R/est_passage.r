@@ -296,7 +296,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   attr(release.df,"min.date") <- min.date
   attr(release.df,"max.date") <- max.date
   attr(release.df,"enhmodel") <- enhmodel
-  attr(release.df,"catch.subsites") <- attr(catch.df,"catch.subsites")
+  attr(release.df,"catch.subsites") <- as.character(sort(unique(catch.df$oldtrapPositionID)))
   eff.and.fits <- F.est.efficiency( release.df, bd, df.spline=4, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)
