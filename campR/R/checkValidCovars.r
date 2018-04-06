@@ -100,6 +100,13 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
     missingVars <- names(covarB)[!(names(covarB) %in% names(df))]
     cat(paste0("\nPROBELM:  Missing variable(s) ",paste0(missingVars,collapse=", ")," in queried set of covariate information, when comparing to required data.  Cannot use enhanced efficiency.\n"))
     doEnhEff <- FALSE
+    
+    #   ---- We need check1, as defined in the doEnhEff == TRUE section, for the annual-mean imputation.  
+    check1 <- check2 <- good1 <- good2 <- rep(0,length(covarB))
+    check0 <- rep(1,length(covarB))
+    names(check0) <- names(check1) <- names(check2) <- names(good1) <- names(good2) <- names(covarB)
+    min.date.p <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone)
+    max.date.p <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone)
   }
   
   if(doEnhEff == TRUE){
@@ -241,10 +248,9 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
     #   ---- I foresee that rarely, we might identify theSeason to actually be a year that doesn't exist.  Try and game this.  
     this_record <- annual_records[annual_records$site == site & annual_records$Season == theSeason,]
     
-    #   ---- Trent says instead of going forward and back in time, just use an overall average.  
-    if(nrow(this_record) == 0){
-      this_record <- annual_records[annual_records$site == site & annual_records$Season == -9999,]
-    }
+    #   ---- Get overall record, in case the variable we need is missing this year.  
+    year_record <- annual_records[annual_records$site == site & annual_records$Season == -9999,]
+
     
     # #   ---- Go back in time until we find *something*.  
     # repeat{
@@ -267,7 +273,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
     # }
     
     #   ---- If we're here, we seem to have nothing to work with.  Give up. 
-    if(nrow(this_record) == 0){
+    if(nrow(this_record) == 0 & nrow(year_record) == 0){
       cat(paste0("I tried hard to put in valid values for missing variables, but I utterly failed.  Sorry. \n"))
     } else {
 
@@ -277,12 +283,38 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
         #   ---- See if we have absolutely nothing for the ith variable, and if so, put in the mean.  Because missingVars
         #   ---- could now be of length less than goodX, we must be careful in how we do our checks.  
         if(good1[names(good1) == missingVars[i]] == 0 & good2[names(good2) == missingVars[i]] == 0){
-          NASum <- sum(is.na(df[,missingVars[i]]))
-          df[is.na(df[,missingVars[i]]),missingVars[i]] <- this_record[,missingVars[i]]
           
+          #   ---- It could be that for this season, we don't have anything on the variable we want.  
+          if( !(missingVars[i] %in% names(df)) ){
+            
+            #   ---- If the above condition is true, it's likely we may not have a seasonal mean.  
+            if(is.nan(this_record[,missingVars[i]]) | is.na(this_record[,missingVars[i]])){
+              
+              #   ---- If we're here, we're grasping.  Use the overall over-all-time mean.  
+              NASum <- nrow(df)
+              df <- cbind(df,data.frame(Var=year_record[,missingVars[i]]))
+              names(df)[names(df) == "Var"] <- missingVars[i]
+
+            } else {
+              
+              #   ---- Put in what we have.  
+              NASum <- nrow(df)
+              df <- cbind(df,data.frame(Var=this_record[,missingVars[i]]))
+              names(df)[names(df) == "Var"] <- missingVars[i]
+            }
+
+          } else {
+            NASum <- sum(is.na(df[,missingVars[i]]))
+            df[is.na(df[,missingVars[i]]),missingVars[i]] <- this_record[,missingVars[i]]
+          }
+
           #   ---- Flip original problem check0 variables to 1.  These are now 'fixed.'  
           check0[names(check0) == missingVars[i]] <- 0
-          cat(paste0("I put in a value of ",this_record[,missingVars[i]]," for ",NASum," missing ",missingVars[i],".\n"))
+          if(is.nan(this_record[,missingVars[i]])){
+            cat(paste0("I put in a value of ",year_record[,missingVars[i]]," for ",NASum," missing ",missingVars[i],".\n"))
+          } else {
+            cat(paste0("I put in a value of ",this_record[,missingVars[i]]," for ",NASum," missing ",missingVars[i],".\n"))
+          }
         }
       }
     }

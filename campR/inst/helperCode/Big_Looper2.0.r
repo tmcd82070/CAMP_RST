@@ -221,7 +221,7 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "A" ){
         by <- "All"
         outAll <- paste0(outFileStem,"/",outFile,"-")
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file=outAll,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,useEnhEff=FALSE)
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file=outAll,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,enhmodel=FALSE)
       }
       
       #   ---- Create the ALL runs report -- NO ENHANCED EFFICIENCY.  
@@ -236,7 +236,7 @@ for(i in 1:nStreamNames){
 
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
-          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,useEnhEff=FALSE)
+          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,enhmodel=FALSE)
           
           #   ---- If desired, remove some of the output.  
           #theFiles <- dir(outFileStem)
@@ -257,7 +257,7 @@ for(i in 1:nStreamNames){
             
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
-          F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file=output.file,ci=TRUE,useEnhEff=FALSE)
+          F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file=output.file,ci=TRUE,enhmodel=FALSE)
         } 
       }
       
@@ -335,42 +335,42 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "K" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=TRUE,useEnhEff=FALSE)         
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=TRUE,enhmodel=FALSE)         
       }
 
       #   ---- Create automatic lifestage report:  lifestage to 2 groups and don't use weight variable.
       if( theReportLabel == "L" ){
         outAll <- paste0(outFileStem,"/",outFile,"-") 
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=FALSE,useEnhEff=FALSE) 
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=FALSE,enhmodel=FALSE) 
       }
     
       #   ---- Create automatic lifestage report:  lifestage to 3 groups and use weight variable.
       if( theReportLabel == "M" ){
         outAll <- paste0(outFileStem,"/",outFile,"-") 
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=TRUE,useEnhEff=FALSE)       
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=TRUE,enhmodel=FALSE)       
       }
       
       #   ---- Create automatic lifestage report:  lifestage to 3 groups and don't use weight variable.
       if( theReportLabel == "N" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=FALSE,useEnhEff=FALSE) 
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=FALSE,enhmodel=FALSE) 
       }
       
       #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and use weight variable.
       if( theReportLabel == "O" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=TRUE,useEnhEff=FALSE)            
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=TRUE,enhmodel=FALSE)            
       }
       
       #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and don't use weight variable.
       if( theReportLabel == "P" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=FALSE,useEnhEff=FALSE)       
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=FALSE,enhmodel=FALSE)       
       }
       
       #   ---- Create enhanced efficiency beta estimates and associated plots and output.  
@@ -409,8 +409,8 @@ for(i in 1:nStreamNames){
           
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
-          useEnhEff <- TRUE
-          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,useEnhEff=useEnhEff)
+          enhmodel <- TRUE
+          F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,enhmodel=enhmodel)
           
           #   ---- If desired, remove some of the output.  
           #theFiles <- dir(outFileStem)
@@ -428,7 +428,7 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "S" ){
         by <- "All"
         outAll <- paste0(outFileStem,"/",outFile,"-")
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file=outAll,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,useEnhEff=TRUE)
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file=outAll,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,enhmodel=TRUE)
       }
       
       #   ---- Create the forklength report -- YES ENHANCED EFFICIENCY. 
@@ -443,7 +443,7 @@ for(i in 1:nStreamNames){
           
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
-          F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file=output.file,ci=TRUE,useEnhEff=TRUE)
+          F.lifestage.passage.forkLength(site, taxon, min.date, max.date,by,output.file=output.file,ci=TRUE,enhmodel=TRUE)
         } 
       }
       
@@ -451,61 +451,74 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "U" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=TRUE,useEnhEff=TRUE)         
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=TRUE,enhmodel=TRUE)         
       }
       
       #   ---- Create automatic lifestage report:  lifestage to 2 groups and don't use weight variable -- YES ENHANCED EFFICIENCY.
       if( theReportLabel == "V" ){
         outAll <- paste0(outFileStem,"/",outFile,"-") 
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=FALSE,useEnhEff=TRUE) 
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=2,weightuse=FALSE,enhmodel=TRUE) 
       }
       
       #   ---- Create automatic lifestage report:  lifestage to 3 groups and use weight variable -- YES ENHANCED EFFICIENCY.
       if( theReportLabel == "W" ){
         outAll <- paste0(outFileStem,"/",outFile,"-") 
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=TRUE,useEnhEff=TRUE)       
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=TRUE,enhmodel=TRUE)       
       }
       
       #   ---- Create automatic lifestage report:  lifestage to 3 groups and don't use weight variable -- YES ENHANCED EFFICIENCY.
       if( theReportLabel == "X" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=FALSE,useEnhEff=TRUE) 
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=3,weightuse=FALSE,enhmodel=TRUE) 
       }
       
       #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and use weight variable -- YES ENHANCED EFFICIENCY.
       if( theReportLabel == "Y" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=TRUE,useEnhEff=TRUE)            
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=TRUE,enhmodel=TRUE)            
       }
       
       #   ---- Create automatic lifestage report:  let program decide 2 or 3 groups and don't use weight variable -- YES ENHANCED EFFICIENCY.
       if( theReportLabel == "Z" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=FALSE,useEnhEff=TRUE)       
+        F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=FALSE,enhmodel=TRUE)       
       }
       
       #   ---- Estimate annualized covariates.  We build this report here in the Big Looper;  all others create external output.  
       if( theReportLabel == "AA" ){
-        aa_record <- annualizeCovars(site,min.date,max.date,theSeason,taxon)
+        # aa_record <- annualizeCovars(site,min.date,max.date,theSeason,taxon)
+        # output.file  <- paste0(outFileStem,"/",outFile,"-",theSeason)
+        # save(aa_record,file=paste0(output.file,"-","aa_record.RData"))
+        # annual_records <- rbind(annual_records,aa_record)
+        
+        #   ---- It is likely the loop broke, it was done in pieces, etc.  So, read in each of the aa_records,
+        #   ---- from all their folders. Be sure theExcel is everything you want to include.  To use this part,
+        #   ---- turn off the four lines above used to make aa_record and save it.  
+        
+        #   ---- After all aa_records are made, run this whole section.  To be safe, you can do use_data after. 
+        output.file <- paste0(outFileStem,"/",outFile,"-",theSeason)
+        load(file=paste0(output.file,"-","aa_record.RData"))
         annual_records <- rbind(annual_records,aa_record)
         
         #   ---- Check to see if we have considered the last aa_record, so as to save the final built annual_records.
         if(i == nStreamNames & j == nSeasons & k == nReports){
-          
-          #   ---- Estimate a grand mean, per site. 
+
+          #   ---- Estimate a grand mean, per site.
           for(ss in 1:length(unique(annual_records$site))){
-            siteMean <- apply(annual_records[annual_records$site == unique(annual_records$site)[ss]],2,function(x) mean(x[!is.nan(x)]))
+            siteMean <- apply(annual_records[annual_records$site == unique(annual_records$site)[ss],],2,function(x) mean(x[!is.nan(x)]))
             siteMean[names(siteMean) == "Season"] <- -9999
             annual_records <- rbind(annual_records,siteMean)
           }
-          
-          # devtools::use_data(annual_records,annual_records,internal=FALSE,overwrite=TRUE)
+          devtools::use_data(annual_records,internal=FALSE,overwrite=TRUE)
         }
+        #   ---- End of all section to do at once.  
+        
+        
       }
     }
   }
