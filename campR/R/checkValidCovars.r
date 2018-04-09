@@ -134,7 +134,11 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
       #   ---- appropriate to simply take the temporal spline alone from the enh eff fit, because that was fit with covariates 
       #   ---- as well.  The exception would be if the enh eff model was a temporal spline alone with no covariates.  
       if(covar %in% names(df)){
-        check0[c] <-  as.logical( (covar %in% names(tmp.df) & nrow(tmp.df) == 0) & (covar %in% names(df) & sum(df[!is.na(df[,covar]),covar]) == 0) )
+                                  # The covar is in eff-trial dataset this go-around, but the eff-trial set contains zero trials. 
+                                  # The covar is in eff-trial dataset this go-around, but the eff-trial set contains records.  
+                                  # Why do I differentiate these two cases?  
+        check0[c] <-  as.logical( (covar %in% names(tmp.df) & nrow(tmp.df) == 0) & (covar %in% names(df) & sum(df[!is.na(df[,covar]),covar]) == 0) |
+                                  (covar %in% names(tmp.df) & nrow(tmp.df)  > 0) & (covar %in% names(df) & sum(df[!is.na(df[,covar]),covar]) == 0) )
       } else {
         check0[c] <- 1    # Not due to missing covariate data, but still a problem -- variable not there.  
       }
@@ -231,7 +235,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
   #   ---- dataframe at the ready.  
   if(doEnhEff == FALSE){
     missingVars <- names(check1)[check1 < (difftime(max.date.p,min.date.p) + 1)]
-    cat(paste0("While I don't have readily available recorded information for ",paste0(missingVars,collapse=", "),", I may have an annual mean.  I will try to sub in that.\n"))
+    cat(paste0("While I don't have readily available recorded information for some missing records of ",paste0(missingVars,collapse=", "),", I may have an annual mean.  I will try to sub in that.\n"))
 
     data(annual_records,envir=environment())
     annual_records <- annual_records[!is.na(annual_records$Season),]
