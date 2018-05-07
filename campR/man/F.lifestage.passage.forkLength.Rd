@@ -5,8 +5,8 @@
 \title{F.lifestage.passage.forkLength}
 \usage{
 F.lifestage.passage.forkLength(site, taxon, min.date, max.date, by, output.file,
-  ci = TRUE, autols = FALSE, nls = NULL, weightuse = NULL,
-  enhmodel = FALSE)
+  ci = TRUE, enhmodel = FALSE, autols = FALSE, nls = NULL,
+  weightuse = NULL)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -30,6 +30,9 @@ estimated catch is to be summarized.  Can be one of \code{"day"},
 \item{ci}{A logical indicating if 95\% bootstrapped confidence intervals 
 should be estimated along with passage estimates.}
 
+\item{enhmodel}{A logical indicating if enhanced efficiency models should 
+be used to estimate trap efficiencies.  Default is \code{TRUE}.}
+
 \item{autols}{Default of \code{FALSE} leads to no assigning of no analytical
 life stage. If \code{TRUE}, assignment of analytical life stage is performed. 
 See Details.}
@@ -40,9 +43,6 @@ See Details.}
 \item{weightuse}{A logical indicating if variable \code{weight} should be used for
 the analytical life stage assignment;  the default is \code{NULL}. Ignored
 if \code{autols=FALSE}.  See Details.}
-
-\item{enhmodel}{A logical indicating if enhanced efficiency models should 
-be used to estimate trap efficiencies.  Default is \code{TRUE}.}
 }
 \value{
 A \code{csv} table of passage estimates over the specified date 
