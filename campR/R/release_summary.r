@@ -77,7 +77,11 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   cat(paste("Site=,", release.df$siteName[1], "\n", sep=""))
   cat(paste("Site abbreviation=,", siteTable[siteTable$siteID == site,]$siteAbbreviation, "\n", sep=""))
   cat(paste("Site ID=,", attr(release.df,"siteID"), "\n", sep=""))
-  cat(paste("Species=,", "Chinook Salmon", "\n", sep=""))
+  if(taxon == 161980){
+    cat(paste("Species=,", "Chinook Salmon", "\n", sep=""))
+  } else if(taxon == 161989){
+    cat(paste("Species=,", "Steelhead / rainbow trout", "\n", sep=""))
+  }
   cat(paste("Species ID=,", attr(release.df,"taxonID"), "\n", sep=""))
   cat(paste("Run=,", runTable[runTable$runID == run,]$run, "\n", sep=""))
   cat(paste("Run ID=,", run, "\n", sep=""))

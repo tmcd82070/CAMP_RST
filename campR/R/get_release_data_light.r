@@ -178,8 +178,12 @@ F.get.release.data.light <- function( site, taxon, min.date, max.date ){
   class(ans$meanRecapTime) <- class(release.visit$VisitTime)
   attr(ans$meanRecapTime, "tzone") <- attr(release.visit$VisitTime, "tzone")
   
-  cat("First 20 records of RELEASE table:\n")
-  print( ans[1:min(nrow(ans),20),] )
+  #   ---- Jason adding a check here when nothing is brought back from query.  In this case, 
+  #   ---- the min(nrow(ans)) doesn't exist, leading to error.  I think this check works.  
+  if(length(u.groups) > 0){
+    cat("First 20 records of RELEASE table:\n")
+    print( ans[1:min(nrow(ans),20),] )
+  }
   
   #   ---- Store values of some header info as attribute.
   attr(ans, "taxonID" ) <- taxon
