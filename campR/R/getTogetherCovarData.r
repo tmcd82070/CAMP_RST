@@ -92,7 +92,9 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
   #luSubSiteID <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
   luSubSiteID <- read.csv(paste0(find.package("EnvCovDBpostgres"),"/helperFiles/luSubSiteID.csv"))
   xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"catch.subsites"),]   # Change to catch.subsites.  Does this affect eff beta estimation?
- #xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"subsites")$subSiteID,]   
+ 
+  xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% c("57001","57002","57003","57004","57005"),]
+  #xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"subsites")$subSiteID,]   
   uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2,xwalk$ourSiteIDChoice3)))
   
   df <- vector("list",length(uniqueOurSiteIDsToQuery))
@@ -137,18 +139,22 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
                     dbname='EnvCovDB',
                     host='streamdata.west-inc.com',
                     port=5432,
-                    user="jmitchell",
-                    password="G:hbtr@RPH5M.")
+                    # user="jmitchell",
+                    # password="G:hbtr@RPH5M.")
+                    user="envcovread",
+                    password="KRFCszMxDTIcLSYwUu56xwt0GO")
     res <- dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
     nGood <- dbFetch(res)
     dbClearResult(res)
     dbDisconnect(ch)
     
     if(nrow(nGood) > 0){
-      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
+      # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
+      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("envcovread","KRFCszMxDTIcLSYwUu56xwt0GO",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
       df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
     } else {
-      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
+      # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
+      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("envcovread","KRFCszMxDTIcLSYwUu56xwt0GO",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
       
       if(sum(!is.na(df[[ii]]$flow_cfs)) > 0 & (sum(df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs)) > 0) ){
         df[[ii]][df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs),]$flow_cfs <- NA

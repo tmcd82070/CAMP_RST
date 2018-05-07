@@ -35,7 +35,7 @@ require(campR)
 theExcel <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/",excelName,".csv"))
 rownames(theExcel) <- NULL
 theExcel <- theExcel[!is.na(theExcel$siteID),]
-theExcel <- theExcel[!(rownames(theExcel) %in% c(50)),]  # Exclude out years that seemingly have no releases.  
+theExcel <- theExcel[!(theExcel$streamName == "Sacramento River" & theExcel$Season %in% c(2014,2015)),]  # Exclude out years that seemingly have no releases.  
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
 # theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]                 # For Enh Eff development (no RBDD)
@@ -49,10 +49,11 @@ theExcel <- theExcel[!(rownames(theExcel) %in% c(50)),]  # Exclude out years tha
 # theExcel <- theExcel[!(theExcel$streamName == "Sacramento River"),]   # All but Sacramento
 
 #   ---- Tell the Big Looper where to put all the output.  
-theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
+# theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
+# outStem <- paste0(theStem,"/Outputs")
+
+theStem <- "C:/Users/jmitchell/Desktop"
 outStem <- paste0(theStem,"/Outputs")
-
-
 
 
 #   ---- Identify the possible reports we can run, and folder stems we can create.  

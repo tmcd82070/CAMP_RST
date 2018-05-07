@@ -21,7 +21,8 @@ passVec <- c("EstProdAllRunsLSReport","EstProdAllRunsReport","EstProdAllRunsLSRe
 #               "Feather River--Steep Riffle",
 #               "Feather River--Sunset Pumps")
 
-riverVec <- c("American River--American River at Watt Avenue")
+# riverVec <- c("American River--American River at Watt Avenue")
+
 
 source('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/getTheData.R')
 source('//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/getRiverPassage.R')
@@ -127,4 +128,5 @@ final[abs(final$bEstDiff) > 1000000 & !is.na(final$bEstDiff),]
 
 
 
-write.csv(good,"C:/Users/jmitchell/Desktop/allEstsCompare.csv",row.names=FALSE)
+write.csv(good,"C:/Users/jmitchell/Desktop/allEstsCompare_good.csv",row.names=FALSE)
+write.csv(final,"C:/Users/jmitchell/Desktop/allEstsCompare_final.csv",row.names=FALSE)
