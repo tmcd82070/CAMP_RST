@@ -122,7 +122,7 @@
 #' F.lifestage.passage.forkLength(site,taxon,min.date,max.date,by,
 #'   output.file,ci,nls,weightuse,autols,reclassify)
 #' }
-F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,autols=FALSE,nls=NULL,weightuse=NULL,enhmodel=FALSE){
+F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,output.file,ci=TRUE,enhmodel=FALSE,autols=FALSE,nls=NULL,weightuse=NULL){
 
   # site <- 1000
   # taxon <- 161980
