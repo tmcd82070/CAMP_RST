@@ -104,7 +104,13 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   min.date <- attr(catch.df,"min.date")
   max.date <- attr(catch.df,"max.date")
   enhmodel <- attr(catch.df,"enhmodel")
-  attr(catch.df,"catch.subsites") <- sort(unique(catch.df$oldtrapPositionID))
+  
+  #   ---- Maybe oldtrapPositionID doesn't exist is there are no gaps in fishing.  
+  if("oldtrapPositionID" %in% colnames(catch.df)){
+    attr(catch.df,"catch.subsites") <- sort(unique(catch.df$oldtrapPositionID))
+  } else {
+    attr(catch.df,"catch.subsites") <- sort(unique(catch.df$trapPositionID))
+  }
   
   #   ---- Get global variable values.
   max.ok.gap <- get("max.ok.gap",envir=.GlobalEnv)
@@ -296,7 +302,14 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   attr(release.df,"min.date") <- min.date
   attr(release.df,"max.date") <- max.date
   attr(release.df,"enhmodel") <- enhmodel
-  attr(release.df,"catch.subsites") <- as.character(sort(unique(catch.df$oldtrapPositionID)))
+  
+  #   ---- Maybe oldtrapPositionID doesn't exist if there are no gaps in fishing.  
+  if("oldtrapPositionID" %in% colnames(catch.df)){
+    attr(catch.df,"catch.subsites") <- sort(unique(catch.df$oldtrapPositionID))
+  } else {
+    attr(catch.df,"catch.subsites") <- sort(unique(catch.df$trapPositionID))
+  }
+  
   eff.and.fits <- F.est.efficiency( release.df, bd, df.spline=4, plot=TRUE, plot.file=file.root )
   if(usepb){
     tmp <- getWinProgressBar(progbar)
