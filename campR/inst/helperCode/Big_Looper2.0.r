@@ -9,7 +9,7 @@ excelName <- "theExcel"
 #   ---- Set the reports you want to run.  Use the key below. 
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
-reportRun <- c("A","B","C","D","E","F","G","H","I","J")
+reportRun <- c("O")
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
@@ -18,6 +18,8 @@ reportRun <- c("A","B","C","D","E","F","G","H","I","J")
 #   ---- Assign the version of R to use.  A real check uses the version of R CAMP people use.
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
+.libPaths("C:/ThePlatform/CAMP_RST20180415-campR2.0/R/library")
+
 
 #   ---- Get necessary packages in order.  
 # install.packages(c("RODBC","mvtnorm"))
@@ -49,11 +51,10 @@ theExcel <- theExcel[!(theExcel$streamName == "Sacramento River" & theExcel$Seas
 # theExcel <- theExcel[!(theExcel$streamName == "Sacramento River"),]   # All but Sacramento
 
 #   ---- Tell the Big Looper where to put all the output.  
-# theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
-# outStem <- paste0(theStem,"/Outputs")
-
-theStem <- "C:/Users/jmitchell/Desktop"
+theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
 outStem <- paste0(theStem,"/Outputs")
+
+
 
 
 #   ---- Identify the possible reports we can run, and folder stems we can create.  
@@ -180,7 +181,7 @@ for(i in 1:nStreamNames){
       makeTheDir(paste0(outStem,"/",paste0(theStreamName,"--",theSiteName),"/",theSeason,"/",theReportFolder))
       
       #   ---- At this point, we're ready to create reports for this row in 'theExcel.'
-      taxon       <- 161980
+      taxon       <- 161980         #   taxon <- 161989    # steelhead / rainbow trout
       ci          <- TRUE
       site        <- the2ndExcel$siteID
       siteText    <- as.character(droplevels(the2ndExcel$Site))
@@ -364,6 +365,11 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "O" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
+        
+        
+        
+        
+        
         F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=TRUE,enhmodel=FALSE)            
       }
       
