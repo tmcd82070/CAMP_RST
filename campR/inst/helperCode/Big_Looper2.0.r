@@ -2,8 +2,8 @@
 
 
 #   ---- Set variables necessary for Big Looper completion. 
-RVersion <- "3.4.3"
-TestingPlatform <- "CAMP_RST20170115-campR1.1.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+RVersion <- "3.5.0"
+TestingPlatform <- "CAMP_RST20180415-campR2.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 
 #   ---- Set the reports you want to run.  Use the key below. 
