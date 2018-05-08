@@ -111,7 +111,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   # ---- unless a trap is new for the year defined by original min.date and max.date.  Define
   # ---- traps vector appropriately so the looping works appropriately.
   if(enhmodel == TRUE){
-    traps <- catch.subsites
+    traps <- as.character(catch.subsites)
   } else {
     traps <- as.character(droplevels(sort(unique(obs.eff.df$TrapPositionID))))
   }
