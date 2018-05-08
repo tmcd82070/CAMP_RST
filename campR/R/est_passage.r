@@ -305,9 +305,9 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   
   #   ---- Maybe oldtrapPositionID doesn't exist if there are no gaps in fishing.  
   if("oldtrapPositionID" %in% colnames(catch.df)){
-    attr(catch.df,"catch.subsites") <- sort(unique(catch.df$oldtrapPositionID))
+    attr(release.df,"catch.subsites") <- sort(unique(catch.df$oldtrapPositionID))
   } else {
-    attr(catch.df,"catch.subsites") <- sort(unique(catch.df$trapPositionID))
+    attr(release.df,"catch.subsites") <- sort(unique(catch.df$trapPositionID))
   }
   
   eff.and.fits <- F.est.efficiency( release.df, bd, df.spline=4, plot=TRUE, plot.file=file.root )
