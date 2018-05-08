@@ -85,6 +85,9 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
   dt.len.min <- difftime(end.dt, strt.dt, units="mins")
   if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
   
+  #   ---- Check that taxon is Chinook salmon.  
+  if( taxon != 161980 ) stop("Cannot specify any species other than Chinook salmon, code 161980.")
+  
   #   ---- Start a progress bar.
   progbar <- winProgressBar( "Weekly effort estimate", label=paste0("Reading data and accounting for the ",dt.len.min[1]," minutes your time range specified." ), width=500 )
   

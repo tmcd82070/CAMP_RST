@@ -63,6 +63,9 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
   #   ---- Get global environment stuff.
   db.file <- get("db.file",envir=.GlobalEnv)
   table.names <- get("table.names",envir=.GlobalEnv)
+  
+  #   ---- Check that taxon is Chinook salmon.  
+  if( taxon != 161980 ) stop("Cannot specify any species other than Chinook salmon, code 161980.")
 
   #   ---- Open a graphics device.
   if( !is.na(output.file) ){

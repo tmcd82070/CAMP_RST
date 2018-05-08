@@ -54,6 +54,9 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   # max.date <- "2010-05-30"
   # output.file <- NA
 
+  #   ---- Check that taxon is Chinook salmon.  
+  if( taxon != 161980 ) stop("Cannot specify any species other than Chinook salmon, code 161980.")
+  
   #   ---- Fetch efficiency data.
   release.df <- F.get.release.data.light( site, taxon, min.date, max.date )
 

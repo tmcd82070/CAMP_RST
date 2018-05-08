@@ -136,6 +136,9 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   # weightuse <- NULL
   # reclassifyFL <- TRUE
   
+  #   ---- Check that taxon is Chinook salmon.  
+  if( taxon != 161980 ) stop("Cannot specify any species other than Chinook salmon, code 161980.")
+  
   #   ---- Ensure special consideration of forklength.
   reclassifyFL <- TRUE
   

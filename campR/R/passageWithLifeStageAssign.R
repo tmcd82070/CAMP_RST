@@ -136,6 +136,9 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   dt.len <- difftime(end.dt, strt.dt, units="days")
   if( dt.len > 366 )  stop("Cannot specify more than 365 days in F.passage. Check min.date and max.date.")
   
+  #   ---- Check that taxon is Chinook salmon.  
+  if( taxon != 161980 ) stop("Cannot specify any species other than Chinook salmon, code 161980.")
+  
   #   ---- Identify the type of passage report we're doing.
   # Utilize this construction to avoid NOTEs about assigning variables to the 
   # .GlobalEnv when running devtools::check().  
