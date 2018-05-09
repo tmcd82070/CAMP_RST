@@ -531,7 +531,8 @@ assignLifeStage <- function(DATA,groupN=1,USEWeight=NULL,output.file=output.file
             }
 
             dat[w,'group'] <- aaply(malMat,1,which.min)
-            ddply(dat[w,],~group,summarize,FL=mean(dat[w,]$forkLength),sdFL=sd(dat[w,]$forkLength))  # jason changes forkLength to 
+            ddply(dat[w,],~group,summarize,FL=mean(forkLength),sdFL=sd(forkLength))
+            # ddply(dat[w,],~group,summarize,FL=mean(dat[w,]$forkLength),sdFL=sd(dat[w,]$forkLength))  # jason changes forkLength to 
                                                                                                      # dat[w,]$forkLength to make check() happy.
             return(dat)
 	} # end malDistAssign
