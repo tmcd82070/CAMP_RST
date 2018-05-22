@@ -125,6 +125,9 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
 #   weightuse <- NULL
 #   autols <- FALSE
   
+  #   ---- Make sure we have all temp tables.
+  tableChecker()
+  
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
   passageRounder <- get("passageRounder",envir=.GlobalEnv)

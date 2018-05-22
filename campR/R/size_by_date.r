@@ -65,6 +65,9 @@ F.size.by.date <- function( site, taxon, run, min.date, max.date, output.file ){
   # max.date <- "2014-06-30"
   # output.file <- "American"
 
+  #   ---- Make sure we have all temp tables.
+  tableChecker()
+  
   #   ---- Get global environment stuff.
   db.file <- get("db.file",envir=.GlobalEnv)
   table.names <- get("table.names",envir=.GlobalEnv)

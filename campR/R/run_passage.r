@@ -99,6 +99,9 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   # ci <- TRUE
   # enhmodel <- TRUE
   
+  #   ---- Make sure we have all temp tables.
+  tableChecker()
+  
   #   ---- Obtain necessary variables from the global environment.  
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
   passageRounder <- get("passageRounder",envir=.GlobalEnv)

@@ -60,6 +60,9 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
   # output.file <- "American"
   # by.lifestage <- TRUE
 
+  #   ---- Make sure we have all temp tables.
+  tableChecker()
+  
   #   ---- Get global environment stuff.
   db.file <- get("db.file",envir=.GlobalEnv)
   table.names <- get("table.names",envir=.GlobalEnv)

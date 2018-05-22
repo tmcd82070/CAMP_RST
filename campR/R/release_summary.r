@@ -54,6 +54,9 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   # max.date <- "2010-05-30"
   # output.file <- NA
 
+  #   ---- Make sure we have all temp tables.
+  tableChecker()
+  
   #   ---- Check that taxon is Chinook salmon.  
   if( taxon != 161980 ) stop("Cannot specify any species other than Chinook salmon, code 161980.")
   

@@ -39,6 +39,9 @@ F.allCatch.table <- function( site, min.date, max.date, output.file ){
   # max.date <- "2010-05-30"
   # output.file <- NA
 
+  #   ---- Make sure we have all temp tables.
+  tableChecker()
+  
   #   ---- Build table in Access file containing trap visits we want.
   nvisits <- F.buildReportCriteria( site, min.date, max.date )
 

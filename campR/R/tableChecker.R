@@ -2,7 +2,7 @@
 #' 
 #' @title tableChecker
 #' 
-#' @description Query the Environmental Covariate Database for all internal
+#' @description Query the CAMP.mdb for all internal
 #'   tables, and in the case any identified "temp" tables are missing, insert
 #'   "fake" ones, so as to ensure those temp tables are available for deletion
 #'   in subsequent SQL queries.
@@ -15,16 +15,15 @@
 #'   specification.
 #'   
 #' @return The function is silent.  It simply reports messages to the log
-#'   file indicating connection attempts.  In the case a connection is
-#'   successful, a message of success is recorded.
+#'   file indicating copied tables.
 #'   
 #' @author WEST, Inc.
 #'   
-function <- tableChecker(){
+tableChecker <- function(){
   
   #   ---- See what tables we have in our current db.file, or CAMP.mdb.  
   db <- get( "db.file", envir=.GlobalEnv )
-  ch <- odbcConnectAccess(db)
+  ch <- RODBC::odbcConnectAccess(db)
   tables <- RODBC::sqlTables(ch)
   tables <- tables[tables$TABLE_TYPE == "TABLE",]$TABLE_NAME
   close(ch)
@@ -65,19 +64,20 @@ function <- tableChecker(){
       
       #   ---- Go through all the missing tables and make a copy, one-by-one.  
       needThisTmpTable <- tmpTables[!(tmpTables %in% tables)][i]
-
+      
       #   ---- Make a fake dataframe to push up to CAMP.mdb.  
       fake <- data.frame(Fake=seq(1,10,1))
       
       #   ---- Connect and push the fake dataframe.  
-      ch <- odbcConnectAccess(db)
-      sqlSave(ch,
-              fake,
-              tablename=needThisTmpTable,
-              varTypes=c(Fake="integer"),
-              rownames=FALSE)
+      ch <- RODBC::odbcConnectAccess(db)
+      ORDBC::sqlSave(ch,
+                     fake,
+                     tablename=needThisTmpTable,
+                     varTypes=c(Fake="integer"),
+                     rownames=FALSE)
       cat(paste0("I copied in a version of temp table ",needThisTmpTable,".\n"))
       close(ch)
     }
   }
+  cat(paste0("All expected temp tables present.\n"))
 }

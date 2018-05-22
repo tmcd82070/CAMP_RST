@@ -1,5 +1,13 @@
 
 
+# #   ---- Update packages.  This is rarely done.  Usually immediately before a new release. 
+# pkgs <- dir(.libPaths("//LAR-FILE-SRV/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20170115-campR1.1.0/R/library"))
+# notThese <- dir("C:/Program Files/R/R-3.5.0/library")
+# pkgs <- pkgs[!(pkgs %in% c(notThese,c("campR","EnvCovDBpostgres")))]
+# 
+# install.packages(pkgs,"C:/ThePlatform/CAMP_RST20180415-campR2.0/R/library")
+
+
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.5.0"
@@ -365,11 +373,6 @@ for(i in 1:nStreamNames){
       if( theReportLabel == "O" ){
         outAll <- paste0(outFileStem,"/",outFile,"-")
         output.file <- outAll
-        
-        
-        
-        
-        
         F.passageWithLifeStageAssign(site,taxon,min.date,max.date,output.file,ci=TRUE,autols=TRUE,nls=1,weightuse=TRUE,enhmodel=FALSE)            
       }
       

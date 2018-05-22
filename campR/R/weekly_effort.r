@@ -78,6 +78,9 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
 #   max.date <- "2013-06-08"
 #   output.file <- "American"
 
+  #   ---- Make sure we have all temp tables.
+  tableChecker()
+  
   #   ---- Check that times are less than 1 year apart.
   strt.dt <- as.POSIXct( min.date, format="%Y-%m-%d" )
   end.dt <- as.POSIXct( max.date, format="%Y-%m-%d" )

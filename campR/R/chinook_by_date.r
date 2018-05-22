@@ -44,6 +44,9 @@ F.chinookByDate.table <- function(site, min.date, max.date, output.file ){
   # max.date <- "2010-05-30"
   # output.file <- NA
 
+  #   ---- Make sure we have all temp tables.
+  tableChecker()
+  
   taxon <- 161980
   catch <- F.get.all.catch.data( site, taxon, min.date, max.date )
 
