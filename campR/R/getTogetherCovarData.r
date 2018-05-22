@@ -134,19 +134,33 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     #library(DBI)
     #library(RPostgres)
     
+    
+    
+
+    
     #   ---- Query the PostgreSQL database for information on temperature and flow.  
     ch <- dbConnect(RPostgres::Postgres(),    
                     dbname='EnvCovDB',
                     host='streamdata.west-inc.com',
                     port=5432,
-                    # user="jmitchell",
-                    # password="G:hbtr@RPH5M.")
-                    user="envcovread",
-                    password="KRFCszMxDTIcLSYwUu56xwt0GO")
-    res <- dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
-    nGood <- dbFetch(res)
+                    user="jmitchell",
+                    password="G:hbtr@RPH5M.")
+                    # user="envcovread",
+                    # password="KRFCszMxDTIcLSYwUu56xwt0GO")
+
+    #   ---- See if anyone else is signed on. 
+    tryEnvCovDB(24,5)
+    
+    #   ---- If we're here, we were successfully to demo we are the only ones querying.  
+    res <- RPostgres::dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
+    nGood <- RPostgres::dbFetch(res)
     dbClearResult(res)
     dbDisconnect(ch)
+
+    #   ---- RIGHT HERE, a querying competitor could steal the database if they query, because I've disconnected, and it's
+    #   ---- open for anyone to grab.  Solution is to use campR::tryEnvCovDB
+    #   ---- inside EnvCovDBpostgres::queryEnvCovDB, but that requires a rebuild of EnvCovDBpostgres.  The window of destruction here
+    #   ---- should be very small.  
     
     if(nrow(nGood) > 0){
       # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
@@ -174,7 +188,8 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
           df[[ii]][!is.na(df[[ii]]$temp_c) & df[[ii]]$temp_c == 0.0,]$temp_c <- NA
         }
       }
-    }  
+    } 
+
     
     #   ---- Compile the good dates for each metric. 
     min.date.flow <- suppressWarnings(min(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date))
