@@ -9,6 +9,9 @@
 #'   Database.
 #'   
 #' @param secSleep The number of seconds to wait between attempts.
+#' 
+#' @param ch A previously defined connection to the Environmental Covariate
+#'   Database utilizing \code{RPostgres::dbConnect}.
 #'   
 #' @details The function is a simple \code{repeat}-type loop, running at most
 #'   \code{nTries} times.
@@ -19,7 +22,7 @@
 #'   
 #' @author WEST, Inc.
 #'   
-tryEnvCovDB <- function(nTries,secSleep){
+tryEnvCovDB <- function(nTries,secSleep,ch){
 
   # nTries <- 24
   # secSleep <- 5
