@@ -149,7 +149,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
                     # password="KRFCszMxDTIcLSYwUu56xwt0GO")
 
     #   ---- See if anyone else is signed on. 
-    tryEnvCovDB(24,5)
+    tryEnvCovDB(24,5,ch)
     
     #   ---- If we're here, we were successfully to demo we are the only ones querying.  
     res <- RPostgres::dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
