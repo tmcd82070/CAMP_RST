@@ -4,13 +4,16 @@
 \alias{tryEnvCovDB}
 \title{tryEnvCovDB}
 \usage{
-tryEnvCovDB(nTries, secSleep)
+tryEnvCovDB(nTries, secSleep, ch)
 }
 \arguments{
 \item{nTries}{The number of attempts to query the Environmental Covariate
 Database.}
 
 \item{secSleep}{The number of seconds to wait between attempts.}
+
+\item{ch}{A previously defined connection to the Environmental Covariate
+Database utilizing \code{RPostgres::dbConnect}.}
 }
 \value{
 The function is nearly silent.  It simply reports messages to the log
