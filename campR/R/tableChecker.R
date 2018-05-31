@@ -34,7 +34,7 @@ tableChecker <- function(){
                  "EnvDataRawXTargetSite","LengthAtDate",
                  "MarkApplied","MarkExisting","MarkShortcuts","People",                           
                  "PostHandleMort","PostHandleMortMark","ProjectDescription","ReadMe",                           
-                 "Release","ReleaseFish","Settings",                         
+                 "Release","ReleaseFish","ReleaseXTargetSite","Settings",                         
                  "Site","Specimen","StreamFlow","SubSite",                          
                  "TaxonImages","TaxonNative","TrapVisit","Version")
   luTables  <- c("luActive","luAgency",                       
@@ -44,7 +44,7 @@ tableChecker <- function(){
                  "luReleasePurpose","luRights","luRun","luRunMethod",                      
                  "luSampleGear","luSpecimenType","luSubsampleMethod","luTaxon",                          
                  "luTrapFunctioning","luUnit","luVisitType")
-  tmpTables <- c("EnvDataRaw_Standardized","EnvDataRaw_StandardSelect","NonTrapSample1","ReleaseXTargetSite","TrapSample1",
+  tmpTables <- c("EnvDataRaw_Standardized","EnvDataRaw_StandardSelect","NonTrapSample1","TrapSample1",
                  "TempChinookSampling_a","TempChinookSampling_b",            
                  "TempChinookSampling_c","TempChinookSampling_d1","TempChinookSampling_d2","TempChinookSampling_d3",           
                  "TempChinookSampling_e","TempChinookSampling_f","TempChinookSampling_g","TempChinookSampling_h",            
