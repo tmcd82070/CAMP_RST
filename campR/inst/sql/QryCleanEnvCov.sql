@@ -1,13 +1,13 @@
 --SQL documentation for series to standardize units of measure in table EnvDataRaw
 --C. Shannon Nov 15, 2017
 --Notes: 
---•	This series was developed to standardize the environmental data units of measure found in the EnvDataRaw table.  The sql below results in the development of a new table EnvDataRaw_Standardized.  
---•	The series is dependent upon output tables from other SQL series used to develop production estimates.  Specifically the tables TempReportCriteria_TrapVisit.  Table TempReportCriteria_TrapVisit should be rebuild prior to each analysis run.
---•	Following is a list of fields modified to contain standard units of measure.
+--?	This series was developed to standardize the environmental data units of measure found in the EnvDataRaw table.  The sql below results in the development of a new table EnvDataRaw_Standardized.  
+--?	The series is dependent upon output tables from other SQL series used to develop production estimates.  Specifically the tables TempReportCriteria_Trapvisit.  Table TempReportCriteria_Trapvisit should be rebuild prior to each analysis run.
+--?	Following is a list of fields modified to contain standard units of measure.
 --o	discharge (CFS)
 --o	waterDepth (CM)
 --o	waterVel (ft/sec)
---o	airTemp (°F)
+--o	airTemp (?F)
 --o	waterTemp (C)
 --o	lightPenetration (CM)
 --o	turbidity (NTU)
@@ -16,16 +16,16 @@
 --o	barometer (Not used, not calculated)
 --o	cloudCover (Text field left as-is)
 --o	weather (Text field left as-is)
---•	SQL
+--?	SQL
 --
 --
---1.	QEnv_Standardize01_Select:  this sql uses the TempReportCriteria_TrapVisit table to build a dataset table named EnvDataRaw_StandardSelect.  Table builds in a 10 day buffer on either side of the user selected date range when those data are available.
---Notes:  Must have access to the TempReportCriteria_TrapVisit table else, run sql for that table first.
+--1.	QEnv_Standardize01_Select:  this sql uses the TempReportCriteria_Trapvisit table to build a dataset table named EnvDataRaw_StandardSelect.  Table builds in a 10 day buffer on either side of the user selected date range when those data are available.
+--Notes:  Must have access to the TempReportCriteria_Trapvisit table else, run sql for that table first.
 
 DROP TABLE EnvDataRaw_StandardSelect;
 
 SELECT TrapVisit.projectDescriptionID, SubSite.siteID, Min(DateAdd('d',-10,(Format(TrapVisit!visitTime,'short date')))) AS MinDate, Max(DateAdd('d',+10,(Format(TrapVisit!visitTime,'short date')))) AS MaxDate INTO EnvDataRaw_StandardSelect
-FROM SubSite INNER JOIN (TempReportCriteria_TrapVisit INNER JOIN TrapVisit ON (TempReportCriteria_TrapVisit.projectDescriptionID = TrapVisit.projectDescriptionID) AND (TempReportCriteria_TrapVisit.trapVisitID = TrapVisit.trapVisitID)) ON SubSite.subSiteID = TrapVisit.trapPositionID
+FROM SubSite INNER JOIN (TempReportCriteria_Trapvisit INNER JOIN TrapVisit ON (TempReportCriteria_Trapvisit.projectDescriptionID = TrapVisit.projectDescriptionID) AND (TempReportCriteria_Trapvisit.trapVisitID = TrapVisit.trapVisitID)) ON SubSite.subSiteID = TrapVisit.trapPositionID
 GROUP BY TrapVisit.projectDescriptionID, SubSite.siteID;
 
 --2.	QEnv_Standardize02_Build:  This query converts data when necessary to comply with standard units detailed at top of this page.  Creates an output table named EnvDataRaw_Standardized.
