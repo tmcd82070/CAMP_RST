@@ -75,8 +75,8 @@
 getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
   
   # obs.eff.df <- obs.eff.df
-  # min.date <- min.date2
-  # max.date <- max.date2
+  # min.date <- min.date    #2
+  # max.date <- max.date    #2
   # traps <- traps
   # enhmodel <- TRUE
   
@@ -136,27 +136,56 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     
     
     
-
+    #   ---- See if anyone else is signed on. 
+    ch <- RPostgres::dbConnect(RPostgres::Postgres(),    
+                    dbname='EnvCovDB',
+                    host='streamdata.west-inc.com',
+                    port=5432,
+                    # user="jmitchell",
+                    # password="G:hbtr@RPH5M.")
+                    user="envcovread",
+                    password="KRFCszMxDTIcLSYwUu56xwt0GO")
+    tryEnvCovDB(24,5,ch)
+    RPostgres::dbDisconnect(ch)
     
-    #   ---- Query the PostgreSQL database for information on temperature and flow.  
-    ch <- dbConnect(RPostgres::Postgres(),    
+    #   ---- I have problems with permissions using read-only envcovread.  
+    ch <- RPostgres::dbConnect(RPostgres::Postgres(),    
                     dbname='EnvCovDB',
                     host='streamdata.west-inc.com',
                     port=5432,
                     user="jmitchell",
                     password="G:hbtr@RPH5M.")
-                    # user="envcovread",
-                    # password="KRFCszMxDTIcLSYwUu56xwt0GO")
+    
+    #   ---- To force delete all connections, sign in under jmitchell above and submit this query.  
+    # RPostgres::dbSendQuery(ch,"select pg_terminate_backend(pid) from pg_stat_activity where datname='EnvCovDB';")
+    
+    
+    #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
+    res <- RPostgres::dbSendQuery(ch,"GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO envcovread;")
+    RPostgres::dbClearResult(res)
+    RPostgres::dbDisconnect(ch)
+    
+    #   ---- Query the PostgreSQL database for information on temperature and flow.  
+    ch <- RPostgres::dbConnect(RPostgres::Postgres(),    
+                    dbname='EnvCovDB',
+                    host='streamdata.west-inc.com',
+                    port=5432,
+                    # user="jmitchell",
+                    # password="G:hbtr@RPH5M.")
+                    user="envcovread",
+                    password="KRFCszMxDTIcLSYwUu56xwt0GO")
 
     #   ---- See if anyone else is signed on. 
     tryEnvCovDB(24,5,ch)
     
-    #   ---- If we're here, we were successfully to demo we are the only ones querying.  
+    #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
     res <- RPostgres::dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
     nGood <- RPostgres::dbFetch(res)
-    dbClearResult(res)
-    dbDisconnect(ch)
+    RPostgres::dbClearResult(res)
+    RPostgres::dbDisconnect(ch)
 
+    tableChecker()
+    
     #   ---- RIGHT HERE, a querying competitor could steal the database if they query, because I've disconnected, and it's
     #   ---- open for anyone to grab.  Solution is to use campR::tryEnvCovDB
     #   ---- inside EnvCovDBpostgres::queryEnvCovDB, but that requires a rebuild of EnvCovDBpostgres.  The window of destruction here
@@ -202,20 +231,22 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     
     if(ii == 1){
       
-      #   ---- 11/20/2017.  Update to run Connie's cleaning query.
-      db <- get( "db.file", envir=.GlobalEnv )
-      ch <- odbcConnectAccess(db)
-      
+      tableChecker()
+    
       #   ---- Develop the TempReportCriteria_TrapVisit table.
       F.buildReportCriteria( site, min.date, max.date )   # was min.date2, max.date2.  matter?
-    
+      
+      #   ---- 11/20/2017.  Update to run Connie's cleaning query.
+      db <- get( "db.file", envir=.GlobalEnv )
+      chRODBC <- odbcConnectAccess(db)
+
       #   ---- Run the clean-up query.
-      F.run.sqlFile( ch, "QryCleanEnvCov.sql")#, min.date2, max.date2 )
+      F.run.sqlFile( chRODBC, "QryCleanEnvCov.sql")#, min.date2, max.date2 )
       
       #   ---- Now, fetch the result.  
-      dbCov <- sqlFetch( ch, "EnvDataRaw_Standardized" )
+      dbCov <- sqlFetch( chRODBC, "EnvDataRaw_Standardized" )
       
-      close(ch)
+      close(chRODBC)
       
       #   ---- Make a dataframe for what we have.  
       dbDisc <- getCAMPEnvCov(dbCov,"discharge","dischargeUnitID",12)
