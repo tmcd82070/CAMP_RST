@@ -174,6 +174,8 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
                     user="envcovread",
                     password="KRFCszMxDTIcLSYwUu56xwt0GO")
 
+    # RPostgres::dbGetQuery(chPG,"SET SESSION idle_in_transaction_session_timeout = '1min';")
+    
     #   ---- See if anyone else is signed on. 
     tryEnvCovDB(24,5,chPG)
     
