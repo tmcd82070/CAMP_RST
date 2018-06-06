@@ -61,12 +61,19 @@ reMap <- function(df,bd,min.date,max.date,strt.dt,end.dt){
                                         as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
                                         by="1 DSTday"))
   
+  checkLeapDay2 <- as.POSIXlt(seq.POSIXt(as.POSIXct(strt.dt,format="%Y-%m-%d",tz=time.zone),
+                                         as.POSIXct(end.dt,format="%Y-%m-%d",tz=time.zone),
+                                         by="1 DSTday"))
+  
   #   ---- Check if we should have leap day in the map back to the min.date max.date range.
   if( sum(checkLeapDay$mon == 1 & checkLeapDay$mday == 29) == 0 ){
     
     #   ---- Get rid of 2/29 -- don't need it.
     bd2.lt <- bd2.lt[!(bd2.lt$mon + 1 == 2 & bd2.lt$mday == 29)]   
     df <- df[!(as.POSIXlt(df[,bd])$mon + 1 == 2 & as.POSIXlt(df[,bd])$mday == 29),]
+    
+    checkLeapDay2 <- as.POSIXct(sort(checkLeapDay2[!(checkLeapDay2$mon + 1 == 2 & checkLeapDay2$mday == 29),]))
+    
   }
   
   #   ---- If the minimum year of bd2.lt is 1960, we've wrapped around to 1960, after starting
@@ -80,7 +87,7 @@ reMap <- function(df,bd,min.date,max.date,strt.dt,end.dt){
   
   #   ---- Similar to the above with the strt.dt and end.dt, we need to be careful with the remap. 
   df <- df[order(df[,bd]),]
-  df$batchDate <- seq.POSIXt(strt.dt,end.dt,by="1 DSTday")
+  df$batchDate <- checkLeapDay2   #seq.POSIXt(strt.dt,end.dt,by="1 DSTday")
   
   #   ---- Allow for all days in the spline enh eff trial period. 
   allDates <- data.frame(batchDate=seq(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
