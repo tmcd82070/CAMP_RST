@@ -137,36 +137,35 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     
     
     #   ---- See if anyone else is signed on. 
-    ch <- RPostgres::dbConnect(RPostgres::Postgres(),    
-                    dbname='EnvCovDB',
-                    host='streamdata.west-inc.com',
-                    port=5432,
-                    # user="jmitchell",
-                    # password="G:hbtr@RPH5M.")
-                    user="envcovread",
-                    password="KRFCszMxDTIcLSYwUu56xwt0GO")
-    tryEnvCovDB(24,5,ch)
-    RPostgres::dbDisconnect(ch)
+    chPG <- RPostgres::dbConnect(RPostgres::Postgres(),    
+                                 dbname='EnvCovDB',
+                                 host='streamdata.west-inc.com',
+                                 port=5432,
+                                 # user="jmitchell",
+                                 # password="G:hbtr@RPH5M.")
+                                 user="envcovread",
+                                 password="KRFCszMxDTIcLSYwUu56xwt0GO")
+    tryEnvCovDB(24,5,chPG)
+    RPostgres::dbDisconnect(chPG)
     
     #   ---- I have problems with permissions using read-only envcovread.  
-    ch <- RPostgres::dbConnect(RPostgres::Postgres(),    
-                    dbname='EnvCovDB',
-                    host='streamdata.west-inc.com',
-                    port=5432,
-                    user="jmitchell",
-                    password="G:hbtr@RPH5M.")
+    chPG <- RPostgres::dbConnect(RPostgres::Postgres(),    
+                                 dbname='EnvCovDB',
+                                 host='streamdata.west-inc.com',
+                                 port=5432,
+                                 user="jmitchell",
+                                 password="G:hbtr@RPH5M.")
     
     #   ---- To force delete all connections, sign in under jmitchell above and submit this query.  
-    # RPostgres::dbSendQuery(ch,"select pg_terminate_backend(pid) from pg_stat_activity where datname='EnvCovDB';")
-    
+    # RPostgres::dbSendQuery(chPG,"select pg_terminate_backend(pid) from pg_stat_activity where datname='EnvCovDB';")
     
     #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
-    res <- RPostgres::dbSendQuery(ch,"GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO envcovread;")
+    res <- RPostgres::dbSendQuery(chPG,"GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO envcovread;")
     RPostgres::dbClearResult(res)
-    RPostgres::dbDisconnect(ch)
+    RPostgres::dbDisconnect(chPG)
     
     #   ---- Query the PostgreSQL database for information on temperature and flow.  
-    ch <- RPostgres::dbConnect(RPostgres::Postgres(),    
+    chPG <- RPostgres::dbConnect(RPostgres::Postgres(),    
                     dbname='EnvCovDB',
                     host='streamdata.west-inc.com',
                     port=5432,
@@ -176,13 +175,13 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
                     password="KRFCszMxDTIcLSYwUu56xwt0GO")
 
     #   ---- See if anyone else is signed on. 
-    tryEnvCovDB(24,5,ch)
+    tryEnvCovDB(24,5,chPG)
     
     #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
-    res <- RPostgres::dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
+    res <- RPostgres::dbSendQuery(chPG,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
     nGood <- RPostgres::dbFetch(res)
     RPostgres::dbClearResult(res)
-    RPostgres::dbDisconnect(ch)
+    RPostgres::dbDisconnect(chPG)
 
     tableChecker()
     

@@ -17,7 +17,7 @@ excelName <- "theExcel"
 #   ---- Set the reports you want to run.  Use the key below. 
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
-reportRun <- c("O")
+reportRun <- c("R")
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
@@ -26,7 +26,7 @@ reportRun <- c("O")
 #   ---- Assign the version of R to use.  A real check uses the version of R CAMP people use.
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
-.libPaths("C:/ThePlatform/CAMP_RST20180415-campR2.0/R/library")
+.libPaths("C:/ThePlatform/CAMP_RST20180509-campR2.0/R/library")
 
 
 #   ---- Get necessary packages in order.  
@@ -209,6 +209,7 @@ for(i in 1:nStreamNames){
         db.file <- paste0(theStem,"/Data/TestingDBs/newAmericanCAMP_21July2017/CAMP.mdb")
         #db.file <- "C:/Users/jmitchell/Desktop/Test/American/CAMP.mdb"
         #db.file <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Data/oldTestingDBs/CAMPAmerican2013_2015Database_23June2015/CAMP.mdb"
+        #db.file <- "C:/ThePlatform/CAMP_RST20180509-campR2.0/Data/CAMP.mdb"
       } else if(theStreamName == 'Feather River'){
         db.file <- paste0(theStem,"/Data/TestingDBs/newFeatherCAMP_21July2017/CAMP.mdb")
       } else if(theStreamName == 'Stanislaus River'){
