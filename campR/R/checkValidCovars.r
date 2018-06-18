@@ -254,7 +254,7 @@ checkValidCovars <- function(df,tmp.df,min.date,max.date,covarB,site,strt.dt,end
     
     #   ---- Get overall record, in case the variable we need is missing this year.  
     year_record <- annual_records[annual_records$site == site & annual_records$Season == -9999,]
-
+    this_record <- year_record
     
     # #   ---- Go back in time until we find *something*.  
     # repeat{
