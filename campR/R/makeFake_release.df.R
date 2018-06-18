@@ -25,18 +25,11 @@ makeFake_release.df <- function(min.date,max.date,visit.df){
 
   # min.date <- "2016-03-02"
   # max.date <- "2016-04-01"
+  # visit.df <- visit.df
   
   pos <- 1
   envir <- as.environment(pos)
   time.zone <- get("time.zone",envir=.GlobalEnv)
-  
-  # ReleaseDates <- as.POSIXlt(seq.POSIXt(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
-  #                                       as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
-  #                                       by="1 DSTday"))
-  # ReleaseDates <- as.POSIXlt(seq.POSIXt(as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
-  #                                       as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
-  #                                       by="1 DSTday"))
-  
   
   
   #   ---- Be sure to make a fake eff trial on a day within the range covered by our enh eff spline days.  
@@ -74,9 +67,9 @@ makeFake_release.df <- function(min.date,max.date,visit.df){
                                     releaseID=0,
                                     IncludeTest=NA,
                                     IncludeCatch=NA,
-                                    ReleaseDate=AintB,#[length(AintB)],
+                                    ReleaseDate=AintB[length(AintB)],
                                     siteID=site,
-                                    siteName=NA,
+                                    siteName=visit.df[visit.df$trapPositionID == trap,]$siteName[1],
                                     trapPositionID=trap,
                                     TrapPosition=visit.df[visit.df$trapPositionID == trap,]$TrapPosition[1],
                                     sampleGear=NA,
