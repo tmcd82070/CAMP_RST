@@ -20,6 +20,11 @@
 #' @details Days produced depend on the \code{seq.POSIXt} function with
 #'   \code{by="1 DSTday"}.
 #'
+#'   The "fake efficiency trials" produced by this function insert one released
+#'   fish and zero captured fish, per unique \code{trapPositionID} found within
+#'   the \code{visit.df} data frame.  These numbers are used to minimize the
+#'   impact, if any, the construction of these fake data cause.
+#'   
 #' @seealso \code{F.get.release.data}
 makeFake_release.df <- function(min.date,max.date,visit.df){
 
@@ -74,7 +79,7 @@ makeFake_release.df <- function(min.date,max.date,visit.df){
                                     TrapPosition=visit.df[visit.df$trapPositionID == trap,]$TrapPosition[1],
                                     sampleGear=NA,
                                     HalfCone=NA,
-                                    nReleased=1000,
+                                    nReleased=1,
                                     Recaps=0,
                                     ReleaseComments=NA,
                                     visitTime=.POSIXct(NA),
@@ -105,7 +110,8 @@ makeFake_release.df <- function(min.date,max.date,visit.df){
                                     meanTimeAtLargeHrs=0,
                                     meanNightProp=0,
                                     meanMoonProp=0,       
-                                    meanForkLength=0)
+                                    meanForkLength=0,
+                                    thisIsFake=1)
       release.df <- rbind(release.df,release.df.trap)
       
       #   ---- Clean up workspace.  
