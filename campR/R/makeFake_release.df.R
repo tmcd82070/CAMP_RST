@@ -74,7 +74,7 @@ makeFake_release.df <- function(min.date,max.date,visit.df){
                                     releaseID=0,
                                     IncludeTest=NA,
                                     IncludeCatch=NA,
-                                    ReleaseDate=AintB[length(AintB)],
+                                    ReleaseDate=AintB,#[length(AintB)],
                                     siteID=site,
                                     siteName=NA,
                                     trapPositionID=trap,
