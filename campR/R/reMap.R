@@ -91,6 +91,8 @@ reMap <- function(df,bd,min.date,max.date,strt.dt,end.dt){
   #   ---- Make sure this batchDate is ct and not lt.
   if(class(checkLeapDay2)[1] == "POSIXlt"){
     df$batchDate <- as.POSIXct(checkLeapDay2)   #seq.POSIXt(strt.dt,end.dt,by="1 DSTday")
+  } else {
+    df$batchDate <- checkLeapDay2
   }
   
   #   ---- Allow for all days in the spline enh eff trial period. 
