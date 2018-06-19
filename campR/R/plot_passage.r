@@ -96,8 +96,9 @@ F.plot.passage <- function( df, out.file="passage.png" ){
     return(ans)
   }
 
-  #   ---- Compute extent of y-axis.
+  #   ---- Compute extent of y-axis.  Add in a zero so we have a bottom to the graph. 
   hgts <- colSums( pass )
+  hgts <- c(0,hgts)
   lab.y.at <- pretty( hgts )
 
   #   ---- Graph using barplot.
