@@ -176,7 +176,6 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
   # R <- 100
   # ci <- T
 
-
   #   ---- Set the confidence level of the intervals.
   conf <- 0.95   
   
@@ -343,6 +342,9 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
           #   ---- probably because we lacked a covariate.  If there were additionally no efficiency 
           #   ---- trials for the min.date and max.date period, there is not much we can do.  
           #   ---- The commented out code below puts NA for ALL ROWS in e.pred.  This is not correct. 
+          
+          #   ---- Update 6/18/2018:  we also end up here if we put in a fake release.df row in run_passage.
+          #   ---- While eff.obs.data has one fake row of data, it really shouldn't be there.  
           #e.pred <- matrix( NA, nrow(c.pred), ncol(c.pred) )
         } else {
 
@@ -430,7 +432,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
             
             } else {
               X <- rep(1,length(eff.obs.data$nCaught))
-              p <- (sum(eff.obs.data$nCaught) + 1) / (sum(eff.obs.data$nReleased) + 1)
+              p <- (sum(eff.obs.data$nCaught) + 1) / (sum(eff.obs.data$nReleased) + 1)    # What if we have a fake release.df row, because we had no trials?
               w <- eff.obs.data$nReleased*rep(p*(1 - p),length(X))
               
               diagonal <- matrix(rep(0,length(X)*length(X)),length(X),length(X))

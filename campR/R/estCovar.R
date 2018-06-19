@@ -51,8 +51,8 @@
 #'}
 estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   
-  # dbCov <- dbDisc
-  # covName <- "discharge_cfs"
+  # dbCov <- dbTurb
+  # covName <- "turbidity_ntu"
   # estType <- 1
   # traps <- traps
   # obs.eff.df <- obs.eff.df
