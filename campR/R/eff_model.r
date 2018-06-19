@@ -483,7 +483,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- other non-eff trial day.  
         if(any(release.df[release.df$trapPositionID == trap,]$thisIsFake == 1)){
           df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nReleased <- NA
-          df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nCaughted <- NA        
+          df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nCaught <- NA        
         }
         
         #plot(df$batchDate,df$efficiency)
@@ -785,7 +785,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #   ---- other non-eff trial day.  I think I need this here as well as above.  
       if(any(release.df[release.df$trapPositionID == trap,]$thisIsFake == 1)){
         df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nReleased <- NA
-        df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nCaughted <- NA        
+        df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nCaught <- NA        
       }
       
       ans <- rbind(ans, df)
