@@ -481,11 +481,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         
         #   ---- If we have a fake efficiency trial here, get rid of it now.  Flip its data to NA, like any 
         #   ---- other non-eff trial day.  
-        if(any(obs.eff.df[obs.eff.df$trapPositionID == trap,]$thisIsFake == 1)){
+        if(any(obs.eff.df[obs.eff.df$TrapPositionID == trap,]$thisIsFake == 1)){
           # df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=obs.eff.df[obs.eff.df$thisIsFake == 1 & obs.eff.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nReleased <- NA
           # df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=obs.eff.df[obs.eff.df$thisIsFake == 1 & obs.eff.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nCaught <- NA        
-          df[df$batchDate %in% c(obs.eff.df[obs.eff.df$thisIsFake == 1 & obs.eff.df$trapPositionID == trap,]$batchDate),]$nReleased <- NA
-          df[df$batchDate %in% c(obs.eff.df[obs.eff.df$thisIsFake == 1 & obs.eff.df$trapPositionID == trap,]$batchDate),]$nCaught <- NA        
+          df[df$batchDate %in% c(obs.eff.df[obs.eff.df$thisIsFake == 1 & obs.eff.df$TrapPositionID == trap & !is.na(obs.eff.df$thisIsFake),]$batchDate),]$nReleased <- NA
+          df[df$batchDate %in% c(obs.eff.df[obs.eff.df$thisIsFake == 1 & obs.eff.df$TrapPositionID == trap & !is.na(obs.eff.df$thisIsFake),]$batchDate),]$nCaught <- NA        
         }
         
         #plot(df$batchDate,df$efficiency)
