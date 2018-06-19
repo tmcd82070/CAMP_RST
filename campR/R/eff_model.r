@@ -482,8 +482,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- If we have a fake efficiency trial here, get rid of it now.  Flip its data to NA, like any 
         #   ---- other non-eff trial day.  
         if(any(release.df[release.df$trapPositionID == trap,]$thisIsFake == 1)){
-          ans[ans$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1,]$ReleaseDate))$batchDate),]$nReleased <- NA
-          ans[ans$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1,]$ReleaseDate))$batchDate),]$nCaughted <- NA        
+          df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nReleased <- NA
+          df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nCaughted <- NA        
         }
         
         #plot(df$batchDate,df$efficiency)
@@ -784,8 +784,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       #   ---- If we have a fake efficiency trial here, get rid of it now.  Flip its data to NA, like any 
       #   ---- other non-eff trial day.  I think I need this here as well as above.  
       if(any(release.df[release.df$trapPositionID == trap,]$thisIsFake == 1)){
-        ans[ans$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1,]$ReleaseDate))$batchDate),]$nReleased <- NA
-        ans[ans$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1,]$ReleaseDate))$batchDate),]$nCaughted <- NA        
+        df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nReleased <- NA
+        df[df$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1 & release.df$trapPositionID == trap,]$ReleaseDate))$batchDate),]$nCaughted <- NA        
       }
       
       ans <- rbind(ans, df)
