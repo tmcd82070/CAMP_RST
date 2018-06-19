@@ -74,7 +74,8 @@ F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plo
                           "HrsToLastVisitAfter","trapPositionID","meanRecapTime","Recaps",'beg.date','end.date',
                           "allMoonMins","meanMoonProp",   # added this line for enhanced models for collapsing on batchDate.
                           "allNightMins","meanNightProp", # added this line for enhanced models for collapsing on batchDate.
-                          "allfl","meanForkLength")]      # added this line for enhanced models for collapsing on batchDate.
+                          "allfl","meanForkLength",       # added this line for enhanced models for collapsing on batchDate.
+                          "thisIsFake")]                  # added this line for enhanced models for when we have no legit eff trials.
   rel.df$batchDate <- rep(NA, nrow(rel.df))
   names(rel.df)[ names(rel.df) == "meanRecapTime" ] <- "EndTime"
   
@@ -93,8 +94,9 @@ F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plo
   #   ---- Sum by batch dates.  This combines release and catches over trials that occured close in time.  For enhanced
   #   ---- efficiency models, need to collapse prop of moon and night and forklength as well over batchDate.
   ind <- list( TrapPositionID=rel.df$trapPositionID,batchDate=rel.df$batchDate.str )
-  nReleased <- tapply( rel.df$nReleased,ind, sum )
-  nCaught   <- tapply( rel.df$Recaps,ind, sum )
+  nReleased  <- tapply( rel.df$nReleased,ind, sum )
+  nCaught    <- tapply( rel.df$Recaps,ind, sum )
+  thisIsFake <- tapply( rel.df$thisIsFake,ind, max)
   
   #lapply(split(truc, truc$x), function(z) weighted.mean(z$y, z$w)) 
   
@@ -104,7 +106,7 @@ F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plo
   
   eff.est <- cbind( expand.grid( TrapPositionID=dimnames(nReleased)[[1]],batchDate=dimnames(nReleased)[[2]]), 
                     nReleased=c(nReleased),nCaught=c(nCaught),bdMeanNightProp=c(bdMeanNightProp),
-                    bdMeanMoonProp=c(bdMeanMoonProp),bdMeanForkLength=c(bdMeanForkLength) )
+                    bdMeanMoonProp=c(bdMeanMoonProp),bdMeanForkLength=c(bdMeanForkLength),thisIsFake=c(thisIsFake) )
   eff.est$batchDate <- as.character(eff.est$batchDate)
   
   #   ================== done with data manipulations ===========================
