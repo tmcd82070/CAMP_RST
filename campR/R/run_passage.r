@@ -177,6 +177,8 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   #   ---- the objects that depend on it have something to grab. 
   if(is.null(release.df)){
     release.df <- makeFake_release.df(min.date,max.date,visit.df)
+  } else {
+    release.df$thisIsFake <- rep(0,nrow(release.df))
   }
   
   # if( nrow(release.df) == 0 ){
