@@ -447,6 +447,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- up on them.  
         df <- df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency")]
         
+        #   ---- Find any fake efficiency trials used and removed them. 
+        # do me do me do me?
+        
         #   ---- Save the fit for bootstrapping.
         #fits[[trap]] <- fit  
         
@@ -474,6 +477,13 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
             df[df$efficiency < fivePThreshold & rep(fivePThreshold < 0.005,nrow(df)),]$efficiency <- fivePThreshold # <- If below threshold, replace.
           }
           rm(fivePThreshold)
+        }
+        
+        #   ---- If we have a fake efficiency trial here, get rid of it now.  Flip its data to NA, like any 
+        #   ---- other non-eff trial day.  
+        if(any(release.df[release.df$trapPositionID == trap,]$thisIsFake == 1)){
+          ans[ans$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1,]$ReleaseDate))$batchDate),]$nReleased <- NA
+          ans[ans$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1,]$ReleaseDate))$batchDate),]$nCaughted <- NA        
         }
         
         #plot(df$batchDate,df$efficiency)
@@ -771,6 +781,13 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       df$enhanced.eff <- rep("No",nrow(df))
       df <- df[,c("TrapPositionID","batchDate","nReleased","nCaught","efficiency","imputed.eff","enhanced.eff","trapPositionID")]
       
+      #   ---- If we have a fake efficiency trial here, get rid of it now.  Flip its data to NA, like any 
+      #   ---- other non-eff trial day.  I think I need this here as well as above.  
+      if(any(release.df[release.df$trapPositionID == trap,]$thisIsFake == 1)){
+        ans[ans$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1,]$ReleaseDate))$batchDate),]$nReleased <- NA
+        ans[ans$batchDate %in% c(F.assign.batch.date(data.frame(EndTime=release.df[release.df$thisIsFake == 1,]$ReleaseDate))$batchDate),]$nCaughted <- NA        
+      }
+      
       ans <- rbind(ans, df)
     }
   }
@@ -808,17 +825,5 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   attr(ans, "out.fn.list") <- out.fn
 
   ans
-
-  # ttt <- unique(ans$eff$TrapPositionID)
-  # yM <- max(ans$eff$efficiency)
-  # for(i in 1:length(ttt)){
-  #   ttt.df <- ans$eff[ans$eff$trapPositionID == ttt[i],]
-  #   if(i == 1){
-  #     plot(ttt.df$batchDate,ttt.df$efficiency,type="l",ylim=c(0,yM))
-  #   } else {
-  #     par(new=TRUE)
-  #     plot(ttt.df$batchDate,ttt.df$efficiency,type="l",ylim=c(0,yM))
-  #   }
-  # }
   
 }
