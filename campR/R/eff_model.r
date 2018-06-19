@@ -503,8 +503,6 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   
   if( enhmodel == FALSE | sum(doOldEff) > 0 ){
     
-    #   ---- Just do it the old way.  
-
     #   ---- If sum(doOldEff) > 0, then we have at least one trap for which we lack the requisite data from attempt to do enh eff models.
     #   ---- Redefine vector traps to only include those for which the old way is necessary. Of course,
     #   ---- only do this redefining if we really hoped for Enh Eff.  
@@ -521,6 +519,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     for( trap in traps ){
   
       if( enhmodel == TRUE ){
+        
+        cat(paste0("I'm in the old efficiency code sequence for trap ",trap,".\n"))
       
         #   ---- No efficiency trials at this trap.  BUT!  If we have an enhanced efficiency model at 
         #   ---- this trap, but lack a covariate's data, we can at least do it the old way, on the 1960 paradigm
