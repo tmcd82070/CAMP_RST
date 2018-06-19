@@ -176,7 +176,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   #   ---- For enh eff models, it is okay if we have zero rows in release.df.  But make a fake release.df so all 
   #   ---- the objects that depend on it have something to grab. 
   if(is.null(release.df)){
-    release.df <- makeFake_release.df(min.date,max.date,visit.df)
+    release.df <- makeFake_release.df(site,min.date,max.date,visit.df)
   } else {
     release.df$thisIsFake <- rep(0,nrow(release.df))
   }

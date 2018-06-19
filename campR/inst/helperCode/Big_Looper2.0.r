@@ -11,7 +11,7 @@
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.5.0"
-TestingPlatform <- "CAMP_RST20180415-campR2.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+TestingPlatform <- "CAMP_RST20180517-campR2.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 
 #   ---- Set the reports you want to run.  Use the key below. 
@@ -40,17 +40,32 @@ detach("package:RPostgres",unload=TRUE)
 detach("package:campR", unload=TRUE)
 require(campR)
 
+
+
+
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_passage.R")
+
+
+
+
 #   ---- Read in the desired Excel scheme.  This is kept in the helperCode folder of the inst folder
 #   ---- in the campR package development folder in CAMP_RST20160601.  
 theExcel <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/inst/helperCode/",excelName,".csv"))
 rownames(theExcel) <- NULL
-theExcel <- theExcel[!is.na(theExcel$siteID),]
-theExcel <- theExcel[!(theExcel$streamName == "Sacramento River" & theExcel$Season %in% c(2014,2015)),]  # Exclude out years that seemingly have no releases.  
+# theExcel <- theExcel[!is.na(theExcel$siteID),]
+# theExcel <- theExcel[!(theExcel$streamName == "Sacramento River" & theExcel$Season %in% c(2014,2015)),]  # Exclude out years that seemingly have no releases.  
 
 #   ---- Modify theExcel further here, if desired.  Otherwise, delete or comment out.
 # theExcel <- theExcel[c(1,5,13,15,24,26,32,52,73),]                 # For Enh Eff development (no RBDD)
 # theExcel <- theExcel[c(1,5,13,15,24,26,32,36,52,73),]              # For Enh Eff development (yes RBDD)
-# theExcel <- theExcel[c(36),]                                       # For Enh Eff development (only RBDD)
+# theExcel <- theExcel[c(23),]                                       # For Enh Eff development (only RBDD)
 
 # theExcel <- theExcel[theExcel$streamName == "American River",]     # American
 # theExcel <- theExcel[theExcel$streamName == "Feather River",]      # Feather 
@@ -58,10 +73,11 @@ theExcel <- theExcel[!(theExcel$streamName == "Sacramento River" & theExcel$Seas
 # theExcel <- theExcel[theExcel$streamName == "Sacramento River",]   # Sacramento
 # theExcel <- theExcel[!(theExcel$streamName == "Sacramento River"),]   # All but Sacramento
 
+# theExcel <- theExcel[theExcel$siteID == 5000,]  # Herringer Riffle
+
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
 outStem <- paste0(theStem,"/Outputs")
-
 
 
 
@@ -145,6 +161,10 @@ makeTheDir <- function(theDir){
 # unassd.sig.digit                <<- 1
 
 #i <- j <- k <- 1
+
+
+
+
 
 
 #   ---- If we are building annualized covariates for enhnaced efficiency, we need this.  
@@ -421,6 +441,11 @@ for(i in 1:nStreamNames){
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
           enhmodel <- TRUE
+          
+          
+          min.date <- "2015-11-02"
+          max.date <- "2016-06-20"
+          
           F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,enhmodel=enhmodel)
           
           #   ---- If desired, remove some of the output.  
