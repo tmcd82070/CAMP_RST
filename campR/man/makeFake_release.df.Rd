@@ -4,9 +4,12 @@
 \alias{makeFake_release.df}
 \title{makeFake_release.df}
 \usage{
-makeFake_release.df(min.date, max.date, visit.df)
+makeFake_release.df(site, min.date, max.date, visit.df)
 }
 \arguments{
+\item{site}{The identification number of the site for which estimates are 
+required.}
+
 \item{min.date}{The start date for data to include. This is a text string in 
 the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 

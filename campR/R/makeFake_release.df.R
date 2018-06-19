@@ -6,6 +6,9 @@
 #'   trials exist within the time period specified via \code{min.date} and
 #'   \code{max.date}.
 #'   
+#' @param site The identification number of the site for which estimates are 
+#'   required.
+#'   
 #' @param min.date The start date for data to include. This is a text string in 
 #'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
 #'   
@@ -26,8 +29,9 @@
 #'   impact, if any, the construction of these fake data cause.
 #'   
 #' @seealso \code{F.get.release.data}
-makeFake_release.df <- function(min.date,max.date,visit.df){
+makeFake_release.df <- function(site,min.date,max.date,visit.df){
 
+  # site <- 5000
   # min.date <- "2016-03-02"
   # max.date <- "2016-04-01"
   # visit.df <- visit.df
