@@ -12,7 +12,7 @@
 #' @param max.date The end date for data to include.  Same format as
 #'   \code{min.date}.
 #'   
-#' @param visit.df 
+#' @param visit.df A data frame resulting from the catch SQL sequence.
 #'
 #' @return A data frame with the number of rows equal to the number of days
 #'   between \code{min.date} and \code{max.date}, inclusive.
