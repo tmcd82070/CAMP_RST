@@ -204,9 +204,17 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   setWinProgressBar( progbar, 0.1 , label="Fetching efficiency data" )
   release.df <- F.get.release.data( site, taxon, min.date, max.date, visit.df )
   
-  if( nrow(release.df) == 0 ){
-    stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
+  #   ---- For enh eff models, it is okay if we have zero rows in release.df.  But make a fake release.df so all 
+  #   ---- the objects that depend on it have something to grab. 
+  if(is.null(release.df)){
+    release.df <- makeFake_release.df(site,min.date,max.date,visit.df)
+  } else {
+    release.df$thisIsFake <- rep(0,nrow(release.df))
   }
+  
+  # if( nrow(release.df) == 0 ){
+  #   stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates."))
+  # }
   
   #   ---- Compute the unique runs we need to do.
   runs <- unique(c(catch.df1$FinalRun,catch.df2$FinalRun))    
