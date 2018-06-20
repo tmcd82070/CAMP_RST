@@ -11,13 +11,14 @@
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.5.0"
-TestingPlatform <- "CAMP_RST20180517-campR2.0"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+TestingPlatform <- "CAMP_RST20180615-campR2.0.2"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
+# excelName <- "theExcel2"
 
 #   ---- Set the reports you want to run.  Use the key below. 
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
-reportRun <- c("R")
+reportRun <- c("R","S","T")
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
@@ -26,7 +27,7 @@ reportRun <- c("R")
 #   ---- Assign the version of R to use.  A real check uses the version of R CAMP people use.
 #.libPaths(paste0("C:/Users/jmitchell/Documents/R/win-library/",RVersion))
 .libPaths(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library"))[1]
-.libPaths("C:/ThePlatform/CAMP_RST20180509-campR2.0/R/library")
+
 
 
 #   ---- Get necessary packages in order.  
@@ -42,15 +43,15 @@ require(campR)
 
 
 
-
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_passage.R")
+#   ---- Read in updated functions, if updated before updating of package.  
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_passage.R")
 
 
 
@@ -74,6 +75,10 @@ rownames(theExcel) <- NULL
 # theExcel <- theExcel[!(theExcel$streamName == "Sacramento River"),]   # All but Sacramento
 
 # theExcel <- theExcel[theExcel$siteID == 5000,]  # Herringer Riffle
+
+#   ---- Monthly testing runs for enhanced efficiency.
+# theExcel <- theExcel[theExcel$siteID == 5000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
+
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
@@ -441,11 +446,6 @@ for(i in 1:nStreamNames){
           outAll  <- paste0(outFileStem,"/",by,"-",outFile,"-")
           output.file <- outAll
           enhmodel <- TRUE
-          
-          
-          min.date <- "2015-11-02"
-          max.date <- "2016-06-20"
-          
           F.run.passage(site,taxon,min.date,max.date,by=by,output.file=outAll,ci=TRUE,enhmodel=enhmodel)
           
           #   ---- If desired, remove some of the output.  
@@ -454,11 +454,6 @@ for(i in 1:nStreamNames){
           #file.remove(paste0(outFileStem,"/",theFiles))
         }
       }
-      
-      
-      
-      
-      
       
       #   ---- Create the by lifestage and run report -- YES ENHANCED EFFICIENCY.
       if( theReportLabel == "S" ){
