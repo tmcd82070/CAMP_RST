@@ -365,7 +365,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
           
           #   ---- Variable batchDate doesn't include all dates, since releases average over days.  Fill in the missing 
           #   ---- dates.  This creates a step function ish for meanNightProp, meanMoonProp, and meanForkLength.  
-          if(nrow(tmp.df) > 0){
+          if(nrow(tmp.df) > 0 & !all(tmp.df$thisIsFake == 1)){
             
             #   ---- If we're here, we had efficiency trials this year, and thus "bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength"
             #   ---- obtained from this year's efficiency trials.  
