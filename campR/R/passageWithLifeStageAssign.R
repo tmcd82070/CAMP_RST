@@ -208,6 +208,9 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   #   ---- the objects that depend on it have something to grab. 
   if(is.null(release.df)){
     release.df <- makeFake_release.df(site,min.date,max.date,visit.df)
+    if(is.null(release.df)){
+      stop(paste0("No efficiency trials between ",min.date, " and ",max.date," in the current year, nor historically for this month and day. Check dates.\n"))
+    }
   } else {
     release.df$thisIsFake <- rep(0,nrow(release.df))
   }
