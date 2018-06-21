@@ -34,7 +34,7 @@ makeFake_release.df <- function(site,min.date,max.date,visit.df){
   # site <- 5000
   # min.date <- "2016-03-02"
   # max.date <- "2016-04-01"
-  # visit.df <- visit.df
+  # visit.df <- visit.df[visit.df$trapPositionID == trap,]
   
   pos <- 1
   envir <- as.environment(pos)

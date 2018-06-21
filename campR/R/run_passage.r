@@ -179,6 +179,23 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     if(is.null(release.df)){
       stop(paste0("No efficiency trials between ",min.date, " and ",max.date," in the current year, nor historically for this month and day. Check dates.\n"))
     }
+  } else if(length(unique(visit.df$trapPositionID)[!(unique(visit.df$trapPositionID) %in% unique(release.df$trapPositionID))]) > 0){
+    
+    visit_but_no_release_traps <- unique(visit.df$trapPositionID)[!(unique(visit.df$trapPositionID) %in% unique(release.df$trapPositionID))]
+    cat(paste0("I'm going to add in fake releases for trap(s) ",paste0(visit_but_no_release_traps,collapse=", "),".\n"))
+    
+    #   ---- If we're here, we have a visit for a trap that lacks efficiency trials, but a visit for a different 
+    #   ---- trap that does have efficiency trials.  This means release.df is not null.  So we find the trap with 
+    #   ---- a visit but no efficiency trial and make a fake trial.  
+    for(trap in visit_but_no_release_traps){
+      
+      #   ---- I restrict visit.df to trap here to ensure that makeFake returns one record for the trap of interest.  
+      #   ---- Only add a fake record if we need to.  
+      release.df.fake <- makeFake_release.df(site,min.date,max.date,visit.df[visit.df$trapPositionID == trap,])
+      if(!is.null(release.df.fake)){
+        release.df <- rbind(release.df,release.df.fake)
+      }
+    }
   } else {
     release.df$thisIsFake <- rep(0,nrow(release.df))
   }
