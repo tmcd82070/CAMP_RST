@@ -39,7 +39,7 @@ reMap2 <- function(min.date,max.date,splineDays){
   
   yr.m <- as.POSIXlt(strptime(min.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
   yr.M <- as.POSIXlt(strptime(max.date,format="%Y-%m-%d"),format="%Y-%m-%d",tz="UTC")$year
-  
+ 
   strt.dt <- as.POSIXlt(min(splineDays))   # Earliest date with an efficiency trial 1960 paradigm
   end.dt  <- as.POSIXlt(max(splineDays))   # Latest date with efficiency trial 1960 paradigm
   
@@ -58,7 +58,9 @@ reMap2 <- function(min.date,max.date,splineDays){
   #   ---- Spline data start in 1959, but end in 1960.
   if(strt.dt$year == 59 & end.dt$year == 60){
     if(yr.m == yr.M){
-      if(min.date.p$mon < strt.dt$mon){
+      if(min.date.p$mon == strt.dt$mon){
+        # do nothing.  added 6/21/2018.  when strt.dt min.dt month and year both equal. 
+      } else if(min.date.p$mon < strt.dt$mon){
         strt.dt$year <- yr.m - 1
         end.dt$year <- yr.M
       } else {
