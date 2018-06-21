@@ -60,6 +60,10 @@ reMap2 <- function(min.date,max.date,splineDays){
     if(yr.m == yr.M){
       if(min.date.p$mon == strt.dt$mon){
         # do nothing.  added 6/21/2018.  when strt.dt min.dt month and year both equal. 
+        
+        strt.dt$year <- yr.m
+        end.dt$year <- yr.M + 1       # max.date year needs to get upped by 1 to keep tabs with strt.dt end.dt
+        
       } else if(min.date.p$mon < strt.dt$mon){
         strt.dt$year <- yr.m - 1
         end.dt$year <- yr.M
