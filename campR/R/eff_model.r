@@ -111,7 +111,10 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   # ---- unless a trap is new for the year defined by original min.date and max.date.  Define
   # ---- traps vector appropriately so the looping works appropriately.
   if(enhmodel == TRUE){
-    traps <- as.character(catch.subsites)
+    
+    #   ---- 6/21/2018 -- I believe that with makeFake release.df, traps is the same always.
+    traps <- as.character(droplevels(sort(unique(obs.eff.df$TrapPositionID))))
+    # traps <- as.character(catch.subsites)
   } else {
     traps <- as.character(droplevels(sort(unique(obs.eff.df$TrapPositionID))))
   }
@@ -153,31 +156,38 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
     otherCols <- names(obs.eff.df)[!(names(obs.eff.df) %in% c("TrapPositionID","batchDate"))]
     all.Dates[otherCols] <- NA
     
-    #   ---- It could be that all.Dates has more traps than obs.eff.df, if we have fish in catch 
-    #   ---- from a trap on which there were no eff trials this year.  Find these traps.   
-    extraTraps <- unique(all.Dates$TrapPositionID)[!(unique(all.Dates$TrapPositionID) %in% unique(obs.eff.df$TrapPositionID))]
+    #   ---- Update 6/21/2018.  We now have a makeFake_release.df.R program that finds exactly 
+    #   ---- when we need a fake e-trial to get things to go.  What can sometimes happen is that 
+    #   ---- given a short time frame, say, a month, we have ONE trap with good spline days during 
+    #   ---- that time frame, but another that has none.  We don't want to fit anything for that
+    #   ---- second trap -- we have no spline enh eff for those days.  This means we cannot 
+    #   ---- possible have a real trial on those days either.  So turn this section off.  
     
-    #   ---- If we have extraTraps, add in rows to obs.eff.df, so the rbind below creates the
-    #   ---- same number of rows for each trap, as expected. 
-    if(length(extraTraps) > 0){
-      if(is.factor(obs.eff.df$TrapPositionID)){
-        theFirst <- as.character(droplevels(obs.eff.df$TrapPositionID[1]))
-      } else {
-        theFirst <- obs.eff.df$TrapPositionID[1]
-      }
-      for(i in 1:length(extraTraps)){
-        extra.obs.eff.df <- data.frame(TrapPositionID=extraTraps[i],
-                                       batchDate=obs.eff.df[obs.eff.df$TrapPositionID == theFirst,]$batchDate,
-                                       nReleased=NA,
-                                       nCaught=NA,
-                                       bdMeanNightProp=NA,
-                                       bdMeanMoonProp=NA,
-                                       bdMeanForkLength=NA,
-                                       efficiency=NA,
-                                       thisIsFake=NA)
-        obs.eff.df <- rbind(obs.eff.df,extra.obs.eff.df)
-      }
-    }
+    # #   ---- It could be that all.Dates has more traps than obs.eff.df, if we have fish in catch 
+    # #   ---- from a trap on which there were no eff trials this year.  Find these traps.   
+    # extraTraps <- unique(all.Dates$TrapPositionID)[!(unique(all.Dates$TrapPositionID) %in% unique(obs.eff.df$TrapPositionID))]
+    # 
+    # #   ---- If we have extraTraps, add in rows to obs.eff.df, so the rbind below creates the
+    # #   ---- same number of rows for each trap, as expected. 
+    # if(length(extraTraps) > 0){
+    #   if(is.factor(obs.eff.df$TrapPositionID)){
+    #     theFirst <- as.character(droplevels(obs.eff.df$TrapPositionID[1]))
+    #   } else {
+    #     theFirst <- obs.eff.df$TrapPositionID[1]
+    #   }
+    #   for(i in 1:length(extraTraps)){
+    #     extra.obs.eff.df <- data.frame(TrapPositionID=extraTraps[i],
+    #                                    batchDate=obs.eff.df[obs.eff.df$TrapPositionID == theFirst,]$batchDate,
+    #                                    nReleased=NA,
+    #                                    nCaught=NA,
+    #                                    bdMeanNightProp=NA,
+    #                                    bdMeanMoonProp=NA,
+    #                                    bdMeanForkLength=NA,
+    #                                    efficiency=NA,
+    #                                    thisIsFake=NA)
+    #     obs.eff.df <- rbind(obs.eff.df,extra.obs.eff.df)
+    #   }
+    # }
   
     #   ---- Combine the original obs.eff.df from eff with all.Dates, so we have bigger date ranges
     #   ---- for use with splines.  
