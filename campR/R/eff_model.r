@@ -173,7 +173,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
                                        bdMeanNightProp=NA,
                                        bdMeanMoonProp=NA,
                                        bdMeanForkLength=NA,
-                                       efficiency=NA)
+                                       efficiency=NA,
+                                       thisIsFake=NA)
         obs.eff.df <- rbind(obs.eff.df,extra.obs.eff.df)
       }
     }
