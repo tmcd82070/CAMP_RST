@@ -175,14 +175,21 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   #   ---- For enh eff models, it is okay if we have zero rows in release.df.  But make a fake release.df so all 
   #   ---- the objects that depend on it have something to grab. 
   if(is.null(release.df)){
-    release.df <- makeFake_release.df(site,min.date,max.date,visit.df)
-    if(is.null(release.df)){
-      stop(paste0("No efficiency trials between ",min.date, " and ",max.date," in the current year, nor historically for this month and day. Check dates.\n"))
+    if(enhmodel == TRUE){
+      release.df <- makeFake_release.df(site,min.date,max.date,visit.df)
+      if(is.null(release.df)){
+        stop(paste0("No efficiency trials between ",min.date, " and ",max.date," in the current year, nor historically for this month and day. Check dates.\n"))
+      }
+    } else {
+      stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates.\n"))
     }
   } else if(length(unique(visit.df$trapPositionID)[!(unique(visit.df$trapPositionID) %in% unique(release.df$trapPositionID))]) > 0){
     
     visit_but_no_release_traps <- unique(visit.df$trapPositionID)[!(unique(visit.df$trapPositionID) %in% unique(release.df$trapPositionID))]
     cat(paste0("I'm going to add in fake releases for trap(s) ",paste0(visit_but_no_release_traps,collapse=", "),".\n"))
+    
+    #   ---- Add in thisIsFake to what we do have already.  
+    release.df$thisIsFake <- 0
     
     #   ---- If we're here, we have a visit for a trap that lacks efficiency trials, but a visit for a different 
     #   ---- trap that does have efficiency trials.  This means release.df is not null.  So we find the trap with 
