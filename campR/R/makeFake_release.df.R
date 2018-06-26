@@ -47,7 +47,7 @@ makeFake_release.df <- function(site,min.date,max.date,visit.df){
   here <- paste0(find.package("campR"),"/enhEffStats")  
   .tmpDataEnv <- new.env(parent=emptyenv()) 
   
-  traps <- unique(visit.df$trapPositionID)
+  traps <- unique(visit.df$oldtrapPositionID)
   release.df <- NULL
   for(trap in traps){
     load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
@@ -78,7 +78,7 @@ makeFake_release.df <- function(site,min.date,max.date,visit.df){
                                     IncludeCatch=NA,
                                     ReleaseDate=AintB[length(AintB)],
                                     siteID=site,
-                                    siteName=visit.df[visit.df$trapPositionID == trap,]$siteName[1],
+                                    siteName=visit.df[visit.df$oldtrapPositionID == trap,]$siteName[1],
                                     trapPositionID=trap,
                                     TrapPosition=visit.df[visit.df$trapPositionID == trap,]$TrapPosition[1],
                                     sampleGear=NA,
