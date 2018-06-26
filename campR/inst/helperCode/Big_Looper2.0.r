@@ -19,6 +19,7 @@ excelName <- "theExcel"
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
 reportRun <- c("A","B","C","G","R","S","T")
+reportRun <- c("G","R","S","T")
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
 # reportRun <- c("Q")
@@ -43,18 +44,19 @@ require(campR)
 
 
 
-#   ---- Read in updated functions, if updated before updating of package.  
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/passageWithLifeStageAssign.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/F.lifestage.passage.forkLength.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_passage.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/release_summary.R")
+# #   ---- Read in updated functions, if updated before updating of package.  
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/passageWithLifeStageAssign.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/F.lifestage.passage.forkLength.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap2.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_passage.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/release_summary.R")
 
 
 
@@ -80,7 +82,7 @@ rownames(theExcel) <- NULL
 
 #   ---- Monthly testing runs for enhanced efficiency.
 # theExcel <- theExcel[theExcel$siteID == 5000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
-
+# theExcel <- theExcel[theExcel$siteID == 42000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
@@ -543,10 +545,27 @@ for(i in 1:nStreamNames){
 
           #   ---- Estimate a grand mean, per site.
           for(ss in 1:length(unique(annual_records$site))){
-            siteMean <- apply(annual_records[annual_records$site == unique(annual_records$site)[ss],],2,function(x) mean(x[!is.nan(x)]))
+            siteMean <- apply(annual_records[annual_records$site == unique(annual_records$site)[ss],],2,function(x) mean(x[!is.nan(x) & !is.na(x)]))
             siteMean[names(siteMean) == "Season"] <- -9999
             annual_records <- rbind(annual_records,siteMean)
           }
+          
+          #   --- Check that all -9999 have records filled in.  No NA!
+          var <- "bdMeanForkLength"
+          ind <- annual_records$site == site & annual_records$Season != -9999 & !is.na(annual_records[,var])
+          est <- mean(annual_records[ind,var])
+          annual_records[annual_records$site == site & annual_records$Season == -9999,var] <- est
+          
+          var <- "bdMeanMoonProp"
+          ind <- annual_records$site == site & annual_records$Season != -9999 & !is.na(annual_records[,var])
+          est <- mean(annual_records[ind,var])
+          annual_records[annual_records$site == site & annual_records$Season == -9999,var] <- est
+          
+          var <- "bdMeanNightProp"
+          ind <- annual_records$site == site & annual_records$Season != -9999 & !is.na(annual_records[,var])
+          est <- mean(annual_records[ind,var])
+          annual_records[annual_records$site == site & annual_records$Season == -9999,var] <- est
+          
           devtools::use_data(annual_records,internal=FALSE,overwrite=TRUE)
         }
         #   ---- End of all section to do at once.  
