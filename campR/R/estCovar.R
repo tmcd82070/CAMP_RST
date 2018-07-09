@@ -51,8 +51,8 @@
 #'}
 estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
   
-  # dbCov <- dbTurb
-  # covName <- "turbidity_ntu"
+  # dbCov <- dbDpcm
+  # covName <- "waterDepth_cm"
   # estType <- 1
   # traps <- traps
   # obs.eff.df <- obs.eff.df
@@ -85,8 +85,8 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
           min.date.cov <- as.POSIXct(format(min(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
           max.date.cov <- as.POSIXct(format(max(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate),format="%Y-%m-%d",tz=time.zone),format="%Y-%m-%d",tz=time.zone)
           
-          #   ---- If there is only one observation, or < 4 unique values, the smooth.spline doesn't appear to work.  Force it.
-          if( (sum(!is.na(jdbCov[,CAMPCovName])) == 1) | (length(unique(jdbCov[,CAMPCovName][!is.na(jdbCov[,CAMPCovName])])) < 4) ){
+          #   ---- If there is only one observation, or < 4 unique measureDate values, the smooth.spline doesn't appear to work.  Force it.
+          if( (sum(!is.na(jdbCov[,CAMPCovName])) == 1) | (length(unique(jdbCov[,"measureDate"][!is.na(jdbCov[,CAMPCovName])])) < 4) ){
             m3 <- jdbCov[,CAMPCovName]
           } else {
              
@@ -94,9 +94,9 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
             m3 <- smooth.spline(as.numeric(jdbCov[!is.na(jdbCov[,CAMPCovName]),]$measureDate),jdbCov[!is.na(jdbCov[,CAMPCovName]),CAMPCovName],cv=FALSE)
           }
 
-          # plot(dbTurb$measureDate,dbTurb$turbidity,pch=19,cex=0.5,xlim=c(min(dbTurb$measureDate),max(dbTurb$measureDate)),ylim=c(0,30))
+          # plot(jdbCov$measureDate,jdbCov[,CAMPCovName],pch=19,cex=0.5,xlim=c(min(jdbCov$measureDate),max(jdbCov$measureDate)),ylim=c(0,max(jdbCov[,CAMPCovName])))
           # par(new=TRUE)
-          # plot(m3$x,m3$y,xlim=c(min(dbTurb$measureDate),max(dbTurb$measureDate)),ylim=c(0,30),type="l",col="red")
+          # plot(m3$x,m3$y,xlim=c(min(jdbCov$measureDate),max(jdbCov$measureDate)),ylim=c(0,max(jdbCov[,CAMPCovName])),type="l",col="red")
           
           #   ---- Sometimes, there is an environmental observation on a day that doesn't correspond to an efficiency trial
           #   ---- batchDate.  This could be because we take the average of catch days as the defined efficiency-trial date.  
