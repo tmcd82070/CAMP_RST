@@ -122,7 +122,7 @@ estCovar <- function(dbCov,covName,estType,traps,obs.eff.df,xwalk,oursitevar){
             #table(obs.eff.df$TrapPositionID,obs.eff.df$covar,exclude=NULL)
             
             #   ---- If there is only one observation, the smooth.spline doesn't appear to work.  Force it.
-            if( (sum(!is.na(jdbCov[,CAMPCovName])) == 1) | (length(unique(jdbCov[,CAMPCovName][!is.na(jdbCov[,CAMPCovName])])) < 4) ){
+            if( (sum(!is.na(jdbCov[,CAMPCovName])) == 1) | (length(unique(jdbCov[,"measureDate"][!is.na(jdbCov[,CAMPCovName])])) < 4) ){
               obs.eff.df[obs.eff.df$TrapPositionID == theJJ[jj] & obs.eff.df$TrapPositionID %in% xwalk[xwalk$ourSiteIDChoice1 == oursitevar,]$subSiteID & obs.eff.df$batchDate %in% batchDateForChecking,covName] <- m3
               jdbCov[paste0("pred_",covName)] <- m3
             } else {
