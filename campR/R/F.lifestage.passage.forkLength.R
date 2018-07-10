@@ -181,8 +181,8 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   catch.dfX <- catch.df  
   
   #   ---- Check if we can estimate catch (numerator).  
-  if( nrow(catch.df) == 0 ){
-    stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
+  if( is.null(catch.df) ){
+    stop( paste0( "No catch records between ", min.date, " and ", max.date, ". Check dates and taxon."))
   }
   
   #   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. 

@@ -135,8 +135,8 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   
   catch.dfX <- catch.df      # save for a small step below.  several dfs get named catch.df, so need to call this something else.
   
-  if( nrow(catch.df) == 0 ){
-    stop( paste( "No catch records between", min.date, "and", max.date, ". Check dates and taxon."))
+  if( is.null(catch.df) ){
+    stop( paste0( "No catch records between ", min.date, " and ", max.date, ". Check dates and taxon."))
   }
   
   #   ---- Summarize catch data by trapVisitID X FinalRun X lifeStage. Upon return, catch.df has one line per combination of these variables
