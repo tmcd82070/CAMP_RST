@@ -11,7 +11,7 @@
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.5.0"
-TestingPlatform <- "CAMP_RST20180615-campR2.0.3"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+TestingPlatform <- "CAMP_RST20180711-campR2.0.4"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 # excelName <- "theExcel2"
 
@@ -45,8 +45,8 @@ require(campR)
 
 
 # #   ---- Read in updated functions, if updated before updating of package.  
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/tableDeleter.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/tableDeleter.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/passageWithLifeStageAssign.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/F.lifestage.passage.forkLength.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
