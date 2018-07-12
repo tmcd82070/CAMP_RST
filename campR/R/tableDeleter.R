@@ -68,7 +68,7 @@ tableDeleter <- function(){
       #   ---- Connect and push the fake dataframe.  
       ch <- RODBC::odbcConnectAccess(db)
       RODBC::sqlDrop(ch,
-                     sqlTable=needThisTmpTable,
+                     sqtable=needThisTmpTable,
                      errors=TRUE)
       cat(paste0("I deleted temp table ",needThisTmpTable,".\n"))
       close(ch)

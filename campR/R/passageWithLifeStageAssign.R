@@ -460,7 +460,9 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
       out.fn.roots <- c(out.fn.roots, fl)
     }
   }
-
+  
+  tableDeleter()
+  
   #   ---- Write out message.
   cat("SUCCESS - F.passageWithLifeStageAssign\n\n")
   cat(paste("Working directory:", getwd(), "\n"))

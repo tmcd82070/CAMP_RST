@@ -60,6 +60,8 @@ F.allCatch.table <- function( site, min.date, max.date, output.file ){
 
   write.table( df, file=out.fn, sep=",", col.names=T, row.names=F ) 
 
+  tableDeleter()
+  
   #   ---- Send messages back to the interface.
   cat("SUCCESS - F.allCatch.table\n\n")
   cat(paste("Working directory:", getwd(), "\n"))

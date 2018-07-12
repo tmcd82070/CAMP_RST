@@ -395,6 +395,8 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
   out.csv <- paste(output.file, "_len_freq.csv", sep="")
   write.table( ans, file=out.csv, sep=",", row.names=F )
 
+  tableDeleter()
+  
   #   ---- Send messages back to the interface.
   cat("SUCCESS - F.length.frequency\n\n")
   cat(paste("Working directory:", getwd(), "\n"))

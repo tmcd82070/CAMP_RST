@@ -111,6 +111,8 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
     sink()
     utils::write.table( release.sum, file=out.fn, sep=",", append=TRUE, row.names=FALSE, col.names=FALSE)
   
+    tableDeleter()
+    
     #   ---- Send messages back to the interface.
     cat("SUCCESS - F.release.summary\n\n")
     cat(paste("Working directory:", getwd(), "\n"))

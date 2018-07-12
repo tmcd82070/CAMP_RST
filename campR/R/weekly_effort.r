@@ -351,6 +351,8 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
     print(cat(out.fn.roots))
   }
   
+  tableDeleter()
+  
   #   ---- Send messages back to the interface.  
   cat("SUCCESS - F.weekly.effort\n\n")
   cat(paste("Working directory:", getwd(), "\n"))

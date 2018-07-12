@@ -54,6 +54,8 @@ F.chinookByDate.table <- function(site, min.date, max.date, output.file ){
   out.fn <- paste(output.file, "_chinookByDate.csv", sep="")
   write.table( catch, file=out.fn, sep=",", col.names=T, row.names=F )  
 
+  tableDeleter()
+  
   #   ---- Send messages back to the interface.
   cat("SUCCESS - F.chinookByDate.table\n\n")
   cat(paste("Working directory:", getwd(), "\n"))

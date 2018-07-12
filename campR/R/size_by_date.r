@@ -314,6 +314,8 @@ F.size.by.date <- function( site, taxon, run, min.date, max.date, output.file ){
     write.table( ans.qr, file=out.qr, sep=",", row.names=FALSE)
   }
 
+  tableDeleter()
+  
   #   ---- Send messages back to the interface
   cat("SUCCESS - F.size.by.date\n\n")
   cat(paste("Working directory:", getwd(), "\n"))

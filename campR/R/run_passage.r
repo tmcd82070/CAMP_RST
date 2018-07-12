@@ -516,6 +516,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   }
   
   nf <- length(out.fn.roots)
+  tableDeleter()
   
   #   ---- Write out message
   cat("SUCCESS - F.run.passage\n\n")

@@ -61,11 +61,11 @@
 
 F.est.efficiency <- function( release.df, batchDate, df.spline=4, plot=TRUE, plot.file=NA ){
   
-  # release.df <- release.df
-  # batchDate <- bd
-  # df.spline <- 4
-  # plot <- TRUE
-  # plot.file <- file.root
+  release.df <- release.df
+  batchDate <- bd
+  df.spline <- 4
+  plot <- TRUE
+  plot.file <- file.root
 
   time.zone <- get("time.zone", envir=.GlobalEnv)
   

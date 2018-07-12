@@ -612,6 +612,8 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     
   }
   
+  tableDeleter()
+  
   #   ---- Write out message.
   cat("SUCCESS - F.lifestage.passage\n\n")
   cat(paste("Working directory:", getwd(), "\n"))

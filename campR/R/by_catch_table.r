@@ -92,6 +92,8 @@ F.byCatch.table <- function( site, min.date, max.date, output.file ){
     dev.off(dev.cur())
   }
   
+  tableDeleter()
+  
   #   ---- Send messages back to the interface.  
   cat("SUCCESS - F.byCatch.table\n\n")
   cat(paste("Working directory:", getwd(), "\n"))

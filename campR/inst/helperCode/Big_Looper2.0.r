@@ -46,14 +46,15 @@ require(campR)
 
 # #   ---- Read in updated functions, if updated before updating of package.  
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/tableDeleter.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/passageWithLifeStageAssign.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/F.lifestage.passage.forkLength.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.R")
-source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.R")
+# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap2.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.R")
@@ -85,6 +86,7 @@ rownames(theExcel) <- NULL
 #   ---- Monthly testing runs for enhanced efficiency.
 # theExcel <- theExcel[theExcel$siteID == 5000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
 # theExcel <- theExcel[theExcel$siteID == 42000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
+theExcel <- theExcel[c(49:80),]
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
