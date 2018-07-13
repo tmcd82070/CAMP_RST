@@ -82,6 +82,17 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
                                 Run=runTable[runTable$runID == run,]$run,
                                 Releases="No releases found."),
                      out.fn,row.names=FALSE)
+    
+    tableDeleter()
+    
+    #   ---- Send messages back to the interface.
+    cat("SUCCESS - F.release.summary\n\n")
+    cat(paste("Working directory:", getwd(), "\n"))
+    cat(paste("R data frames saved in file:", "<No RData saved>", "\n\n"))
+    cat("Number of files created in working directory = 1\n")
+    cat(paste(out.fn, "\n"))
+    cat("\n")
+    
   } else {
     
     release.sum <- F.summarize.releases( release.df )
@@ -123,4 +134,5 @@ F.release.summary <- function(site,taxon,run,min.date,max.date,output.file){
   
     invisible(release.sum)
   }
+
 }
