@@ -80,8 +80,20 @@ reMap2 <- function(min.date,max.date,splineDays){
   #   ---- If max(splineDays) is leap day 1960, but we are ultimately going to map back
   #   ---- to a non-leap year, then R will push to March 1st.  This screws things up.  Push back 
   #   ---- end.dt by one day.  I don't know what to do for strt.dt...leave this for now.  
+  
+  #   ---- We only need to make the correction if it's NOT a leap year.  If min.date -- max.date 
+  #   ---- encompasses a leap day, we sure don't want to get rid of it.  
+  checkLeapDay <- as.POSIXlt(seq.POSIXt(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
+                                        as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),
+                                        by="1 DSTday"))
+  
+  weHaveALeapDay <- 0
+  if( sum(checkLeapDay$mon == 1 & checkLeapDay$mday == 29) == 0 ){
+    weHaveALeapDay <- 1 
+  }
+  
   maxSplineDayslt <- as.POSIXlt(max(splineDays),format="%Y-%m-%d")
-  if(maxSplineDayslt$mon == 1 & maxSplineDayslt$mday == 29){
+  if( (maxSplineDayslt$mon == 1 & maxSplineDayslt$mday == 29) & weHaveALeapDay == 1) {
     end.dt <- end.dt - 24*60*60
   }
   
