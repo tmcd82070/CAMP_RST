@@ -11,7 +11,7 @@
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.5.0"
-TestingPlatform <- "CAMP_RST20180711-campR2.0.4"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+TestingPlatform <- "CAMP_RST20180715-campR2.0.5"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 # excelName <- "theExcel2"
 
@@ -81,7 +81,8 @@ rownames(theExcel) <- NULL
 # theExcel <- theExcel[theExcel$streamName == "Sacramento River",]   # Sacramento
 # theExcel <- theExcel[!(theExcel$streamName == "Sacramento River"),]   # All but Sacramento
 
-# theExcel <- theExcel[theExcel$siteID == 5000,]  # Herringer Riffle
+# theExcel <- theExcel[theExcel$siteID == 5000,]    # Herringer Riffle
+# theExcel <- theExcel[theExcel$siteID == 52000 & !is.na(theExcel$siteID),]   # Gateway Riffle
 
 #   ---- Monthly testing runs for enhanced efficiency.
 # theExcel <- theExcel[theExcel$siteID == 5000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
