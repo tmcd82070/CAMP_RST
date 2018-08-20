@@ -134,15 +134,23 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   doOldEff <- rep(TRUE,length(traps))
   names(doOldEff) <- traps
   
+  #   ---- We know traps from immediately above.
+  #load("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/data/betas.rda")
+  data(betas,envir=environment())
+  betas <- betas[betas$subsiteID %in% traps,]
+  
+  #   ---- If betas has zero rows, then we know this is a new subsite, and this is the only 
+  #   ---- trap we care about.  So, this means we probably have no enhanced efficiency 
+  #   ---- model for it, nor data in the environmental covariate database.  So, flip enhmodel
+  #   ---- to FALSE and skip all the enhmodel stuff.  
+  if(nrow(betas) == 0){
+    enhmodel <- FALSE
+  }
+  
   #   ---- Decide if we're going to use enhanced efficiency.  
   if(enhmodel == TRUE){
     
     #   ---- Get stuff we need to fit the enhanced efficiency models.  
-    
-    #   ---- We know traps from immediately above.
-    #load("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/data/betas.rda")
-    data(betas,envir=environment())
-    betas <- betas[betas$subsiteID %in% traps,]
     
     #   ---- Get together covariates.  We need to query for days before and after the first and last 
     #   ---- eff trial date, so we need to make the obs.eff.df "bigger."  
@@ -612,6 +620,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       } else {
           
           #   ---- We just want old-school efficiency estimation.  Do it the old way.  
+          setWinProgressBar(progbar,
+                            getWinProgressBar(progbar),
+                            label=paste0("Trap ",trap," has no Trap-Efficiency model.  Defaulting to Mark-Recapture."))
           df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
       }
       

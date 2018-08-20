@@ -11,7 +11,7 @@
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.5.0"
-TestingPlatform <- "CAMP_RST20180715-campR2.0.5"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+TestingPlatform <- "CAMP_RST20180724-campR2.0.6"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 # excelName <- "theExcel2"
 
@@ -87,7 +87,7 @@ rownames(theExcel) <- NULL
 #   ---- Monthly testing runs for enhanced efficiency.
 # theExcel <- theExcel[theExcel$siteID == 5000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
 # theExcel <- theExcel[theExcel$siteID == 42000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
-theExcel <- theExcel[c(49:80),]
+theExcel <- theExcel[c(13),]
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
