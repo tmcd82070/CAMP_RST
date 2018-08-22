@@ -277,7 +277,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     cat(paste(rep("*",80), collapse=""))
     cat("\n\n")
     
-    progbar <- winProgressBar( tmp.mess, label="Run processing" )
+    progbar <- winProgressBar( tmp.mess, label="Run processing", width=500 )
     barinc <- 1 / (length(runs) * 6)
     assign( "progbar", progbar, pos=envir )
     
@@ -383,7 +383,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         if(enhmodel == TRUE){
           tmp.df$effModel <- "Enhanced"
         } else {
-          tmp.df$effModel <- "Regular"
+          tmp.df$effModel <- "Mark-Recapture"
         }
         names(tmp.df)[ names(tmp.df) == "pct.imputed.catch" ] <- "propImputedCatch"
         names(tmp.df)[ names(tmp.df) == "lower.95" ] <- "lower95pctCI"

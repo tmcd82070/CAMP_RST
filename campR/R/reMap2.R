@@ -31,6 +31,8 @@ reMap2 <- function(min.date,max.date,splineDays){
   # max.date <- max.date 
   # splineDays <- splineDays
 
+  time.zone <- get("time.zone", .GlobalEnv )
+  
   #   ---- Find the "season", which is between first and last OVERALL efficiency trials.  This is different
   #   ---- than "regular" eff models, where we define the "season" as first and last eff trials, as defined
   #   ---- within the provided min.date and max.date.  

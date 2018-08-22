@@ -166,7 +166,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
   passReport <- get("passReport",envir=.GlobalEnv)
   
   #   ---- Start a progress bar.
-  progbar <<- winProgressBar( "Production estimate for lifestage + runs", label="Fetching catch data" )
+  progbar <<- winProgressBar("Production estimate for lifestage + runs",label="Fetching catch data",width=500)
   
   #   ---- Fetch the catch and visit data.  
   tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date,output.file,autols=autols,nls=nls,weightuse=weightuse,reclassifyFL=TRUE)
@@ -328,7 +328,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     cat("\n\n")
     
     #   ---- Update progress bar.
-    progbar <- winProgressBar( tmp.mess, label="Lifestage X run processing" )
+    progbar <- winProgressBar(tmp.mess,label="Lifestage X run processing",width=500)
     barinc <- 1 / (length(lstages) * 6)
     assign( "progbar", progbar, pos=envir )
     

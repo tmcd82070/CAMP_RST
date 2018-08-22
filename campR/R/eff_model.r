@@ -143,7 +143,11 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   #   ---- trap we care about.  So, this means we probably have no enhanced efficiency 
   #   ---- model for it, nor data in the environmental covariate database.  So, flip enhmodel
   #   ---- to FALSE and skip all the enhmodel stuff.  
+  iChangedYourChoice <- 0
   if(nrow(betas) == 0){
+    if(enhmodel == TRUE){
+      iChangedYourChoice <- 1
+    }
     enhmodel <- FALSE
   }
   
@@ -620,10 +624,15 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
       } else {
           
           #   ---- We just want old-school efficiency estimation.  Do it the old way.  
+        if(iChangedYourChoice == 1){
+          pos <- 1
+          envir <- as.environment(pos)
+          progbar <- get( "progbar", pos=envir)#.GlobalEnv )
           setWinProgressBar(progbar,
                             getWinProgressBar(progbar),
-                            label=paste0("Trap ",trap," has no Trap-Efficiency model.  Defaulting to Mark-Recapture."))
-          df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
+                            label=paste0("Unable to estimate Trap-Efficiency Model for Trap ",trap,".  Defaulting to Mark-Recapture."))
+        }
+        df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
       }
       
       ind <- !is.na(df$efficiency)
@@ -845,7 +854,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   print(obs.data)
   cat("\n")
   
-  ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts, obs.data=obs.data, eff.type=eff.type)
+  ans <- list(eff=ans, fits=fits, X=all.X, ind.inside=all.ind.inside, X.dates=all.dts, obs.data=obs.data, eff.type=eff.type, doOldEff=doOldEff)
   attr(ans, "out.fn.list") <- out.fn
 
   ans

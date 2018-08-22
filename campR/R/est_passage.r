@@ -438,11 +438,18 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
     tmp.df <- tmp.df[c('subSiteID','subSiteName','batchDate','assignedCatch','unassignedCatch','halfConeAdj','imputedCatch','totalEstimatedCatch','propImputedCatch','efficiency','propImputedEff','passage')]
     tmp.df <- tmp.df[order(tmp.df$subSiteID,tmp.df$batchDate),] 
     
-    if(enhmodel == TRUE){
-      tmp.df$effModel <- "Enhanced"
-    } else {
-      tmp.df$effModel <- "Regular"
-    }
+    #   ---- Possibly obsolete.  See below.  
+    # if(enhmodel == TRUE){
+    #   tmp.df$effModel <- "Enhanced"
+    # } else {
+    #   tmp.df$effModel <- "Regular"
+    # }
+    
+    #   ---- Update vector of Enhanced status based on trap.  Need to worry about Connie's
+    #   ---- decimal trap names here, and the fact they are numeric.  
+    tmpVec <- eff.and.fits$doOldEff[match(do.call("c",lapply(strsplit(as.character(tmp.df$subSiteID),".",fixed=TRUE),function(x) x[1])),names(eff.and.fits$doOldEff))]
+    tmp.df$effModel <- ifelse(tmpVec == TRUE,"Mark-Recapture","Enhanced")
+    rm(tmpVec)
 
     write.table( tmp.df, file=out.fn, sep=",", row.names=FALSE, col.names=TRUE)
     out.fn.list <- c(out.fn.list, out.fn)
