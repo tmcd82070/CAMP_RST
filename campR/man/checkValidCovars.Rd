@@ -4,7 +4,8 @@
 \alias{checkValidCovars}
 \title{checkValidCovars}
 \usage{
-checkValidCovars(df, tmp.df, min.date, max.date, covarB, site, strt.dt, end.dt)
+checkValidCovars(df, tmp.df, min.date, max.date, covarB, site, strt.dt,
+  end.dt)
 }
 \arguments{
 \item{df}{The data frame for a specific \code{TrapPositionID} containing 

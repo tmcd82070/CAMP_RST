@@ -4,8 +4,9 @@
 \alias{F.get.catch.data}
 \title{F.get.catch.data}
 \usage{
-F.get.catch.data(site, taxon, min.date, max.date, output.file, autols = FALSE,
-  nls = NULL, weightuse = NULL, reclassifyFL = FALSE)
+F.get.catch.data(site, taxon, min.date, max.date, output.file,
+  autols = FALSE, nls = NULL, weightuse = NULL,
+  reclassifyFL = FALSE)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are
