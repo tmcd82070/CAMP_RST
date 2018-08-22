@@ -2,7 +2,7 @@ Package: campR
 Type: Package
 Title: CAMP RST R Routines
 Version: 2.0.7
-Date: 2018-08-20
+Date: 2018-08-22
 Author: Trent McDonald [aut, cre],
   Jason Mitchell [aut],
   Jared Studyvin [aut],
@@ -10,7 +10,7 @@ Author: Trent McDonald [aut, cre],
 Maintainer: Trent McDonald <tmcdonald@west-inc.com>
 Description: R routines for the CAMP R platform. 
 License: GNU General Public License
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Depends: RODBC, 
  EnvCovDBpostgres,
  R (>= 2.10)
@@ -38,3 +38,4 @@ Suggests: R.rsp,
     rmarkdown
 LazyData: true
 VignetteBuilder: R.rsp
+Encoding: UTF-8
