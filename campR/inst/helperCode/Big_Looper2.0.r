@@ -18,7 +18,7 @@ excelName <- "theExcel"
 #   ---- Set the reports you want to run.  Use the key below. 
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
 # reportRun <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P")
-reportRun <- c("A","B","C","G","R","S","T")
+reportRun <- c("A","B","C","R","S","T")
 reportRun <- c("G","R","S","T")
 # reportRun <- c("K","L","M","N","O","P")
 # reportRun <- c("B","R")
@@ -45,14 +45,14 @@ require(campR)
 
 
 # #   ---- Read in updated functions, if updated before updating of package.  
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/tableDeleter.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/passageWithLifeStageAssign.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/F.lifestage.passage.forkLength.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/passageWithLifeStageAssign.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/F.lifestage.passage.forkLength.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
@@ -87,7 +87,7 @@ rownames(theExcel) <- NULL
 #   ---- Monthly testing runs for enhanced efficiency.
 # theExcel <- theExcel[theExcel$siteID == 5000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
 # theExcel <- theExcel[theExcel$siteID == 42000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
-theExcel <- theExcel[c(13),]
+theExcel <- theExcel[c(12,13),]
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
@@ -245,7 +245,7 @@ for(i in 1:nStreamNames){
         #db.file <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20161212-campR1.0.0/Data/oldTestingDBs/CAMPAmerican2013_2015Database_23June2015/CAMP.mdb"
         #db.file <- "C:/ThePlatform/CAMP_RST20180509-campR2.0/Data/CAMP.mdb"
       } else if(theStreamName == 'Feather River'){
-        db.file <- paste0(theStem,"/Data/TestingDBs/newFeatherCAMP_21July2017/CAMP.mdb")
+        db.file <- paste0(theStem,"/Data/TestingDBs/newFeatherCAMP_15Aug2018/CAMP.mdb")
       } else if(theStreamName == 'Stanislaus River'){
         db.file <- paste0(theStem,"/Data/TestingDBs/newStanislausCAMP_21July2017/CAMP.mdb")
       } else if(theStreamName == 'Mokelumne River'){
