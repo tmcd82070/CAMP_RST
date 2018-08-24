@@ -127,7 +127,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   #   ---- Start a progress bar
   progbar <<- winProgressBar("Production estimate for ALL runs",
                              label=paste0("Fetching catch data, while using a ",round(fishingGapMinutes / 24 / 60,2),"-day fishing gap."),
-                             width=500)
+                             width=1000)
   
   #   ---- Fetch the catch and visit data
   tmp.df   <- F.get.catch.data( site, taxon, min.date, max.date, output.file  )
@@ -277,7 +277,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     cat(paste(rep("*",80), collapse=""))
     cat("\n\n")
     
-    progbar <- winProgressBar( tmp.mess, label="Run processing", width=500 )
+    progbar <- winProgressBar( tmp.mess, label="Run processing", width=1000 )
     barinc <- 1 / (length(runs) * 6)
     assign( "progbar", progbar, pos=envir )
     

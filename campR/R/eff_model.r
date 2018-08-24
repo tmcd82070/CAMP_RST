@@ -625,12 +625,26 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
           
           #   ---- We just want old-school efficiency estimation.  Do it the old way.  
         if(iChangedYourChoice == 1){
+          
+          #   ---- Get the subsite name for the trap on-hand.  Inefficiency to query for each 
+          #   ---- trap like this, but it is fast, and there shouldn't ever be too many 
+          #   ---- to query.  This is a copy of code down below (outside of this if-branch).  
+          db <- get( "db.file", envir=.GlobalEnv )
+          ch <- odbcConnectAccess(db)
+          newSubsites <- sqlQuery(ch, "SELECT DISTINCT subSiteName, subSiteID FROM SubSite;")             
+          F.sql.error.check(newSubsites)
+          close(ch)
+          newSubsites <- newSubsites[newSubsites$subSiteID %in% catch.subsites,]
+          if(is.factor(newSubsites$subSiteName)){
+            newSubsites$subSiteName <- as.character(droplevels(newSubsites$subSiteName))
+          }
+          
           pos <- 1
           envir <- as.environment(pos)
           progbar <- get( "progbar", pos=envir)#.GlobalEnv )
           setWinProgressBar(progbar,
                             getWinProgressBar(progbar),
-                            label=paste0("Unable to estimate Trap-Efficiency Model for Trap ",trap,".  Defaulting to Mark-Recapture."))
+                            label=paste0("Trap-Efficiency Model for Trap ",trap,": ",newSubsites[newSubsites$subSiteID == trap,]$subSiteName," failed; it didn't exist during previous enhanced-efficiency model estimation. Defaulting to Mark-Recapture efficiency."))
         }
         df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
       }
