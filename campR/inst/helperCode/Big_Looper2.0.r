@@ -45,7 +45,7 @@ require(campR)
 
 
 # #   ---- Read in updated functions, if updated before updating of package.
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/tableDeleter.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/passageWithLifeStageAssign.R")
 # source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/F.lifestage.passage.forkLength.R")
@@ -265,6 +265,8 @@ for(i in 1:nStreamNames){
         db.file <- paste0(theStem,"/Data/TestingDBs/CAMPKnightsTinsdaleNEW_04Feb2016/CAMP.mdb")
       } else if(theStreamName == "Battle Clear"){
         db.file <- paste0(theStem,"/Data/TestingDBs/newClearBattleCAMP_20July2017/CAMP.mdb")
+      } else if(theStreamName == "Tisdale Weir"){
+        db.file <- paste0(theStem,"/Data/TestingDBs/CAMPTisdale_18Sept2018/CAMP.mdb")
       }
       
       #   ---- Given the appropriate text string, connect to the database.  
