@@ -11,7 +11,7 @@
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.5.0"
-TestingPlatform <- "CAMP_RST20180822-campR2.0.7"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+TestingPlatform <- "CAMP_RST20181019-campR2.0.9"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 # excelName <- "theExcel2"
 
@@ -44,23 +44,24 @@ require(campR)
 
 
 
-# #   ---- Read in updated functions, if updated before updating of package.  
+#   ---- Read in updated functions, if updated before updating of package.
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/run_passage.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/tableDeleter.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/tableDeleter.R")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/passageWithLifeStageAssign.R")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/F.lifestage.passage.forkLength.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/makeFake_release.df.R")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_passage.R")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/est_efficiency.R")
 source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/eff_model.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap2.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_passage.R")
-# source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/release_summary.R")
-
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/getTogetherCovarData.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/estCovar.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/reMap2.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/checkValidCovars.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_passage.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/release_summary.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/catch_model.R")
+source("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20160601-DougXXX-4.5/R-Interface/campR/R/plot_catch_model.R")
 
 
 #   ---- Read in the desired Excel scheme.  This is kept in the helperCode folder of the inst folder
@@ -87,7 +88,19 @@ rownames(theExcel) <- NULL
 #   ---- Monthly testing runs for enhanced efficiency.
 # theExcel <- theExcel[theExcel$siteID == 5000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
 # theExcel <- theExcel[theExcel$siteID == 42000 & !is.na(theExcel$siteID),] # Herringer Riffle + Excel2.csv
-theExcel <- theExcel[c(13),]
+
+
+
+
+# theExcel <- theExcel[73,]
+# theExcel$Season <- 2018
+# theExcel$minvisitTime <- "11/11/2017"
+# theExcel$maxvisitTime <- "05/28/2018"
+
+
+theExcelSave <- theExcel
+
+
 
 #   ---- Tell the Big Looper where to put all the output.  
 theStem <- paste0("\\\\lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform)
@@ -247,7 +260,7 @@ for(i in 1:nStreamNames){
       } else if(theStreamName == 'Feather River'){
         db.file <- paste0(theStem,"/Data/TestingDBs/newFeatherCAMP_15Aug2018/CAMP.mdb")
       } else if(theStreamName == 'Stanislaus River'){
-        db.file <- paste0(theStem,"/Data/TestingDBs/newStanislausCAMP_21July2017/CAMP.mdb")
+        db.file <- paste0(theStem,"/Data/TestingDBs/newStanislausCAMP_20Sept2018/CAMP.mdb")
       } else if(theStreamName == 'Mokelumne River'){
         db.file <- paste0(theStem,"/Data/TestingDBs/newMokelumneCAMP_10Aug2017/CAMP.mdb")
       } else if(theStreamName == "Knight's Landing"){

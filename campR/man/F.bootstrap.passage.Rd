@@ -158,25 +158,6 @@ In order to bootstrap the estimated passage for a particular trap,
   trap.
 }
 
-\examples{
-\dontrun{
-grand.df <- grand.df
-catch.fits <- catch.and.fits$fits
-catch.Xmiss <- catch.and.fits$X.miss
-catch.gapLens <- catch.and.fits$gaps
-catch.bDates.miss <- catch.and.fits$bDates.miss
-eff.fits <- eff.and.fits$fits
-eff.X <- eff.and.fits$X
-eff.ind.inside <- eff.and.fits$ind.inside
-eff.X.dates <- eff.and.fits$X.dates
-sum.by <- summarize.by
-R <- 100
-ci=T <- ci
-df <- F.bootstrap.passage(grand.df,catch.fits,catch.Xmiss,catch.gapLens,
-  catch.bDates.miss,eff.fits,eff.X,eff.ind.inside,eff.X.dates,
-  sum.by,R,ci=T)
-}
-}
 \references{
 Manly, B. F. J.  Randomization, Bootstrap and Monte Carlo Methods
   in Biology, Third Edition, 2006.  Chapman and Hall/CRC.

@@ -157,7 +157,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
                                  password="G:hbtr@RPH5M.")
     
     #   ---- To force delete all connections, sign in under jmitchell above and submit this query.  
-    # RPostgres::dbSendQuery(chPG,"select pg_terminate_backend(pid) from pg_stat_activity where datname='EnvCovDB';")
+    # RPostgres::dbSendQuery(chPG,"select pg_terminate_backend(pid) from pg_stat_activity where datname='EnvCovDB';")   # <--- If you have to kick everyone off.
     
     #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
     res <- RPostgres::dbSendQuery(chPG,"GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO envcovread;")
@@ -180,7 +180,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     tryEnvCovDB(24,5,chPG)
     
     #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
-    res <- RPostgres::dbSendQuery(chPG,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
+    res <- RPostgres::dbSendQuery(chPG,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," AND ourmetricstatusid = 1 GROUP BY oursiteid;"))
     nGood <- RPostgres::dbFetch(res)
     RPostgres::dbClearResult(res)
     RPostgres::dbDisconnect(chPG)
@@ -194,7 +194,9 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     
     if(nrow(nGood) > 0){
       # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
+      # save.image("C:/Users/jmitchell/Desktop/fixme.RData")
       df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("envcovread","KRFCszMxDTIcLSYwUu56xwt0GO",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
+                           
       df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
     } else {
       # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
@@ -311,7 +313,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     
     covar <- NULL
     dontDo <- FALSE
-    if(sum(!is.na(df[[ii]]$flow_cfs)) > 0){
+    if(sum(unique(!is.na(df[[ii]]$flow_cfs))) > 3){
       m1[[ii]] <- smooth.spline(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date,df[[ii]][!is.na(df[[ii]]$flow_cfs),]$flow_cfs,cv=TRUE)
       
       if("covar" %in% names(obs.eff.df)){
@@ -362,7 +364,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     }
     
     dontDo <- FALSE
-    if(sum(!is.na(df[[ii]]$temp_c)) > 0){
+    if(sum(unique(!is.na(df[[ii]]$temp_c))) > 3){
       m2[[ii]] <- smooth.spline(as.numeric(df[[ii]][!is.na(df[[ii]]$temp_c),]$date),df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c,cv=TRUE)
       
       if("covar" %in% names(obs.eff.df)){

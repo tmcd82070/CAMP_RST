@@ -99,6 +99,15 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   # ci <- TRUE
   # enhmodel <- TRUE
   
+  # site <- 65000
+  # taxon <- "161980"
+  # min.date <- "2012-07-04"
+  # max.date <- "2013-07-01"
+  # by <-"week"
+  # output.file <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20181001-campR2.0.8/Outputs/run.passage_Tisdale RST_2018-10-01_15-08-49"
+  # ci <- TRUE
+  # enhmodel <- TRUE
+  
   #   ---- Make sure we have all temp tables.
   tableChecker()
   
@@ -180,7 +189,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
     if(enhmodel == TRUE){
       release.df <- makeFake_release.df(site,min.date,max.date,visit.df)
       if(is.null(release.df)){
-        stop(paste0("No efficiency trials between ",min.date, " and ",max.date," in the current year, nor historically for this month and day. Check dates.\n"))
+        stop(paste0("No efficiency trials between ",min.date, " and ",max.date,". Check dates.\n"))
       }
     } else {
       stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates.\n"))

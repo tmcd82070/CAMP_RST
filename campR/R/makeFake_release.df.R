@@ -50,81 +50,87 @@ makeFake_release.df <- function(site,min.date,max.date,visit.df){
   traps <- unique(visit.df$oldtrapPositionID)
   release.df <- NULL
   for(trap in traps){
-    load(paste0(here,"/",site,"_",trap,"_splineDays.RData"),envir=.tmpDataEnv)
-    splineDays <- .tmpDataEnv$splineDays
-  
-    #   ---- Remap back to the present.  
-    reMap2list <- reMap2(min.date,max.date,splineDays)
-    strt.dt <- reMap2list$strt.dt
-    end.dt <- reMap2list$end.dt
-  
-    #   ---- We need to make a fake efficiency trial on a day inside BOTH strt.dt and end.dt (days on 
-    #   ---- which we fit an enh eff spline) AND min.date and max.date.  
-    min.max.dates  <- as.POSIXlt(seq.POSIXt(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
-                                            as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
-    strt.end.dates <- as.POSIXlt(seq.POSIXt(as.POSIXct(strt.dt ,format="%Y-%m-%d",tz=time.zone),
-                                            as.POSIXct(end.dt  ,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
-  
-    #   ---- Check for non-zero intersection.  If so, use last date.  Don't use first, because the 
-    #   ---- 4 AM construct pushes the first date back one day -- this could end up being outside 
-    #   ---- the true date range we care about.  If empty intersection...we can't do anything?  
-    AintB <- intersect(min.max.dates,strt.end.dates)
-    
-    if(length(AintB) > 0){
-    
-      release.df.trap <- data.frame(projectDescriptionID=0,
-                                    releaseID=0,
-                                    IncludeTest=NA,
-                                    IncludeCatch=NA,
-                                    ReleaseDate=AintB[length(AintB)],
-                                    siteID=site,
-                                    siteName=visit.df[visit.df$oldtrapPositionID == trap,]$siteName[1],
-                                    trapPositionID=trap,
-                                    TrapPosition=visit.df[visit.df$trapPositionID == trap,]$TrapPosition[1],
-                                    sampleGear=NA,
-                                    HalfCone=NA,
-                                    nReleased=1,
-                                    Recaps=0,
-                                    ReleaseComments=NA,
-                                    visitTime=.POSIXct(NA),
-                                    visitTime2=.POSIXct(NA),
-                                    visitTypeID=0,
-                                    wmForkLength=0, 
-                                    nForkLength=0,
-                                    StartTime=.POSIXct(NA),
-                                    EndTime=.POSIXct(NA),
-                                    JasonSampleMinutes=difftime(.POSIXct(NA),.POSIXct(NA)),
-                                    uniqueDate=0,
-                                    sunMinutes=0,
-                                    sunProp=0,
-                                    moonMinutes=0,
-                                    moonProp=0,
-                                    nightMinutes=0,
-                                    nightProp=0,
-                                    halfConeAdj=0,    
-                                    oldRecaps=0,
-                                    allNightMins=0,
-                                    allMoonMins=0,
-                                    allSampleMins=0,
-                                    allfl=0,
-                                    allNfl=0,        
-                                    HrsToFirstVisitAfter=0,
-                                    HrsToLastVisitAfter=0,
-                                    meanRecapTime=.POSIXct(NA),
-                                    meanTimeAtLargeHrs=0,
-                                    meanNightProp=0,
-                                    meanMoonProp=0,       
-                                    meanForkLength=0,
-                                    thisIsFake=1)
-      release.df <- rbind(release.df,release.df.trap)
-      
-      #   ---- Clean up workspace.  
-      rm(splineDays,reMap2list,strt.dt,end.dt,min.max.dates,strt.end.dates,AintB,release.df.trap)
+    theFile <- paste0(here,"/",site,"_",trap,"_splineDays.RData")
+    if(!file.exists(theFile)){
+       release.df <- NULL
     } else {
-      cat(paste0("No intersection between min.date and max.date and enh.eff spline strt.dt and end.dt.\n"))
-      cat(paste0("To estimate passage, choose a min.date and max.date that spans at least one day in \n"))
-      cat(paste0("the enh.eff spline strt.dt and end.dt range for trap ",trap,".\n"))
+      
+      load(theFile,envir=.tmpDataEnv)
+      splineDays <- .tmpDataEnv$splineDays
+    
+      #   ---- Remap back to the present.  
+      reMap2list <- reMap2(min.date,max.date,splineDays)
+      strt.dt <- reMap2list$strt.dt
+      end.dt <- reMap2list$end.dt
+    
+      #   ---- We need to make a fake efficiency trial on a day inside BOTH strt.dt and end.dt (days on 
+      #   ---- which we fit an enh eff spline) AND min.date and max.date.  
+      min.max.dates  <- as.POSIXlt(seq.POSIXt(as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone),
+                                              as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
+      strt.end.dates <- as.POSIXlt(seq.POSIXt(as.POSIXct(strt.dt ,format="%Y-%m-%d",tz=time.zone),
+                                              as.POSIXct(end.dt  ,format="%Y-%m-%d",tz=time.zone),by="1 DSTday"))
+    
+      #   ---- Check for non-zero intersection.  If so, use last date.  Don't use first, because the 
+      #   ---- 4 AM construct pushes the first date back one day -- this could end up being outside 
+      #   ---- the true date range we care about.  If empty intersection...we can't do anything?  
+      AintB <- intersect(min.max.dates,strt.end.dates)
+      
+      if(length(AintB) > 0){
+      
+        release.df.trap <- data.frame(projectDescriptionID=0,
+                                      releaseID=0,
+                                       IncludeTest=NA,
+                                      IncludeCatch=NA,
+                                      ReleaseDate=AintB[length(AintB)],
+                                      siteID=site,
+                                      siteName=visit.df[visit.df$oldtrapPositionID == trap,]$siteName[1],
+                                      trapPositionID=trap,
+                                      TrapPosition=visit.df[visit.df$trapPositionID == trap,]$TrapPosition[1],
+                                      sampleGear=NA,
+                                      HalfCone=NA,
+                                      nReleased=1,
+                                      Recaps=0,
+                                      ReleaseComments=NA,
+                                      visitTime=.POSIXct(NA),
+                                      visitTime2=.POSIXct(NA),
+                                      visitTypeID=0,
+                                      wmForkLength=0, 
+                                      nForkLength=0,
+                                      StartTime=.POSIXct(NA),
+                                      EndTime=.POSIXct(NA),
+                                      JasonSampleMinutes=difftime(.POSIXct(NA),.POSIXct(NA)),
+                                      uniqueDate=0,
+                                      sunMinutes=0,
+                                      sunProp=0,
+                                      moonMinutes=0,
+                                      moonProp=0,
+                                      nightMinutes=0,
+                                      nightProp=0,
+                                      halfConeAdj=0,    
+                                      oldRecaps=0,
+                                      allNightMins=0,
+                                      allMoonMins=0,
+                                      allSampleMins=0,
+                                      allfl=0,
+                                      allNfl=0,        
+                                      HrsToFirstVisitAfter=0,
+                                      HrsToLastVisitAfter=0,
+                                      meanRecapTime=.POSIXct(NA),
+                                      meanTimeAtLargeHrs=0,
+                                      meanNightProp=0,
+                                      meanMoonProp=0,       
+                                      meanForkLength=0,
+                                      thisIsFake=1)
+        release.df <- rbind(release.df,release.df.trap)
+        
+        #   ---- Clean up workspace.  
+        rm(splineDays,reMap2list,strt.dt,end.dt,min.max.dates,strt.end.dates,AintB,release.df.trap)
+      } else {
+        cat(paste0("No intersection between min.date and max.date and enh.eff spline strt.dt and end.dt.\n"))
+        cat(paste0("To estimate passage, choose a min.date and max.date that spans at least one day in \n"))
+        cat(paste0("the enh.eff spline strt.dt and end.dt range for trap ",trap,".\n"))
+      }
     }
-  }
+  }  
   return(release.df)
-}  
+}      

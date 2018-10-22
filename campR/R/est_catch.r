@@ -103,9 +103,9 @@
 #' }
 F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 
-#   catch.df <- catch.df
-#   plot <- TRUE
-#   plot.file <- file.root
+  # catch.df <- catch.df
+  # plot <- TRUE
+  # plot.file <- file.root
 
   #   ---- Get stuff from the global environment.
   run.name <- get("run.name", envir=.GlobalEnv)
