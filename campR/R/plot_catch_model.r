@@ -117,18 +117,21 @@ F.plot.catch.model <- function( df, file=NA ){
   for( i in 1:length(traps) ){
     
     #   ---- Insert a "supersmoother" of the modified assigned catch (adjusted for half-cone counts).
-    # ind <- df$trapPositionID == traps[i] & !is.na(df$totalEstimatedCatch)
-    # print(lines( supsmu(df$batchDate[ind], df$totalEstimatedCatch[ind]), lwd=2, lty=1, col=my.colors[i] ))
+    ind <- df$trapPositionID == traps[i] & !is.na(df$totalEstimatedCatch)
+    if(sum(ind) >= 7){
+      lines( supsmu(df$batchDate[ind], df$totalEstimatedCatch[ind]), lwd=2, lty=1, col=my.colors[i] )
+    }
 
     #   ---- Insert the imputed data points.
     ind <- df$trapPositionID == traps[i] & imputed
-    print(points( df$batchDate[ind], df$imputedCatch[ind], pch=my.pch[i]-15, col=my.colors[i], cex=1 ))
+    points( df$batchDate[ind], df$imputedCatch[ind], pch=my.pch[i]-15, col=my.colors[i], cex=1 )
 
     #   ---- Insert the observed data points.
     ind <- df$trapPositionID == traps[i] & !imputed
-    print(points( df$batchDate[ind], df$totalEstimatedCatch[ind], pch=my.pch[i], col=my.colors[i] ))
+    points( df$batchDate[ind], df$totalEstimatedCatch[ind], pch=my.pch[i], col=my.colors[i] )
     
   }
+  
   #   ---- Set-up trapPosition names in lieu of their IDs. 
   catch.df.sites <- unique(na.omit(df[,c('trapPositionID','TrapPosition')]))
   colnames(catch.df.sites) <- c('subSiteID','subSiteName') 
