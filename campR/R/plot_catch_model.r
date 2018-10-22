@@ -63,7 +63,7 @@
 #' }
 F.plot.catch.model <- function( df, file=NA ){
 #
-# df   <- masterCatch     df <- example
+# df   <- masterCatch     #df <- example
 # file <- plot.file
 
   #   ---- If file=NA, a pdf graphing device is assumed to be open already.
@@ -79,7 +79,7 @@ F.plot.catch.model <- function( df, file=NA ){
     }
     
     #   ---- Produces hi-res graphs unless there's an error, then uses default png setting.
-    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})  
+    tryCatch({png(filename=out.pass.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.pass.graphs)})
   }
 
   imputed <- df$imputed.catch > 0 & !is.na(df$imputed.catch)
@@ -112,22 +112,23 @@ F.plot.catch.model <- function( df, file=NA ){
     my.pch <- 15 + 1:length(traps)
   }
 
+
   #   ---- Insert the data points and smoothed values trap-by-trap.
   for( i in 1:length(traps) ){
     
     #   ---- Insert a "supersmoother" of the modified assigned catch (adjusted for half-cone counts).
     ind <- df$trapPositionID == traps[i] & !is.na(df$totalEstimatedCatch)
-    lines( supsmu(df$batchDate[ind], df$totalEstimatedCatch[ind]), lwd=2, lty=1, col=my.colors[i] )    
-    
+    print(lines( supsmu(df$batchDate[ind], df$totalEstimatedCatch[ind]), lwd=2, lty=1, col=my.colors[i] ))
+
     #   ---- Insert the imputed data points.
     ind <- df$trapPositionID == traps[i] & imputed
-    points( df$batchDate[ind], df$imputedCatch[ind], pch=my.pch[i]-15, col=my.colors[i], cex=1 ) 
-    
+    print(points( df$batchDate[ind], df$imputedCatch[ind], pch=my.pch[i]-15, col=my.colors[i], cex=1 ))
+
     #   ---- Insert the observed data points.
     ind <- df$trapPositionID == traps[i] & !imputed
-    points( df$batchDate[ind], df$totalEstimatedCatch[ind], pch=my.pch[i], col=my.colors[i] )
+    print(points( df$batchDate[ind], df$totalEstimatedCatch[ind], pch=my.pch[i], col=my.colors[i] ))
+    
   }
-
   #   ---- Set-up trapPosition names in lieu of their IDs. 
   catch.df.sites <- unique(na.omit(df[,c('trapPositionID','TrapPosition')]))
   colnames(catch.df.sites) <- c('subSiteID','subSiteName') 
@@ -150,6 +151,7 @@ F.plot.catch.model <- function( df, file=NA ){
   #   ---- Add title.
   mtext( side=3, at=max(df$batchDate), text=attr(df,"site.name"), adj=1, cex=1.5, line=2 )
   mtext( side=3, at=max(df$batchDate), text= paste(attr(df,"species.name"), ", ", attr(df,"run.name"), " run, ", attr(df,"life.stage"), sep=""), adj=1, cex=.75, line=1 )
+  
   
   #   ---- Output file with programmatically set name. 
   if( !is.na(file) ){
