@@ -230,7 +230,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     } else {
       stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates.\n"))
     }
-  } else if(length(unique(visit.df$trapPositionID)[!(unique(visit.df$trapPositionID) %in% unique(release.df$trapPositionID))]) > 0){
+  } else if(length(unique(visit.df$trapPositionID)[!(unique(round(visit.df$trapPositionID,0)) %in% unique(release.df$trapPositionID))]) > 0){
     
     visit_but_no_release_traps <- unique(visit.df$trapPositionID)[!(unique(visit.df$trapPositionID) %in% unique(release.df$trapPositionID))]
     cat(paste0("I'm going to add in fake releases for trap(s) ",paste0(visit_but_no_release_traps,collapse=", "),".\n"))
