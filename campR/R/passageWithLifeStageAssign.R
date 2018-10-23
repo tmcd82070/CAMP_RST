@@ -213,6 +213,8 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
     enhmodel <- FALSE
     cat(paste0("You asked for enhanced efficiency, but I see none at this site.  Flipped enhmodel <- FALSE.\n"))
     cat(paste0("I will try to do Mark-Recapture instead.\n"))
+    setWinProgressBar( progbar, 0.15 , label="'Trap Efficiency Models' selected but none developed for this Site. Switching to Mark-Recapture Splines" )
+    sleep(5)
   }
   
   #   ---- For enh eff models, it is okay if we have zero rows in release.df.  But make a fake release.df so all 

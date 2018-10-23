@@ -11,7 +11,7 @@
 
 #   ---- Set variables necessary for Big Looper completion. 
 RVersion <- "3.5.0"
-TestingPlatform <- "CAMP_RST20181019-campR2.0.10"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
+TestingPlatform <- "CAMP_RST20181023-campR2.0.10"       #  What the CAMP people will use; i.e., the static R in the Platform.  Use this most of the time.
 excelName <- "theExcel"
 # excelName <- "theExcel2"
 
@@ -93,10 +93,10 @@ rownames(theExcel) <- NULL
 
 
 
-theExcel <- theExcel[1,]
-theExcel$Season <- 2018
-theExcel$minvisitTime <- "2/1/2018"
-theExcel$maxvisitTime <- "7/1/2018"
+theExcel <- theExcel[83,]
+theExcel$Season <- 2007
+theExcel$minvisitTime <- "1/1/2007"
+theExcel$maxvisitTime <- "7/1/2007"
 
 
 
