@@ -204,6 +204,17 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   setWinProgressBar( progbar, 0.1 , label="Fetching efficiency data" )
   release.df <- F.get.release.data( site, taxon, min.date, max.date, visit.df )
   
+  #   ---- Check if we can do enhanced efficiency.  Only look at the level of site.  If the provided site to the 
+  #   ---- function is not in sitesWithEnhEff, we know there was no effort to develop enh eff models at this site.  
+  enhBetas <- utils::read.csv("..\\R\\library\\campR\\enhEffStats\\EnhancedBetas.csv")
+  sitesWithEnhEff <- unique(signif(enhBetas[enhBetas$Stage == "Final",]$subsiteID,2))
+  
+  if( !(site %in% sitesWithEnhEff) ){
+    enhmodel <- FALSE
+    cat(paste0("You asked for enhanced efficiency, but I see none at this site.  Flipped enhmodel <- FALSE.\n"))
+    cat(paste0("I will try to do Mark-Recapture instead.\n"))
+  }
+  
   #   ---- For enh eff models, it is okay if we have zero rows in release.df.  But make a fake release.df so all 
   #   ---- the objects that depend on it have something to grab. 
   if(is.null(release.df)){
