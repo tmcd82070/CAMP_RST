@@ -330,6 +330,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
       attr(catch.df.ls,"min.date") <- min.date
       attr(catch.df.ls,"max.date") <- max.date
       attr(catch.df.ls,"enhmodel") <- enhmodel
+      
       #   ---- Compute passage
       if(by == 'year'){
         pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )

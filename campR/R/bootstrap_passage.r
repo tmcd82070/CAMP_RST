@@ -267,6 +267,9 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
           pred <- X %*% t(rbeta) + log(gaps)
           pred <- exp(pred)                          #   ---- Pred is nrow(X) X R.
 
+          # plot(seq(1,nrow(pred)),pred[,1])
+          # apply(pred,2,function(x) lines(seq(1,nrow(pred)),x))
+          
           #   ---- But remember, it is possible for a gap to be small, say 3 hours, and the resulting gap be
           #   ---- on the same batch date as another.  So, we need to sum over batch dates.  Do this for every column.
           pred <- apply( pred, 2, function(x,bd){tapply(x,bd,sum)}, bd=bd.miss )
@@ -528,7 +531,12 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
     #   ---- Compute bias corrected bootstrap CIs by applying 
     #   ---- f.bias.bs.ci to every row of pass to get bootstrap intervals.
     f.bias.acc.ci <- function( x, alpha, x.orig ){
-      p <- mean( x > x.orig, na.rm=TRUE)
+      
+      # x <- pass[1,]
+      # alpha <- 1 - conf
+      # x.orig <- n.orig
+      
+      p <- mean( x > rep(x.orig$passage,R), na.rm=TRUE)
       z.0 <- qnorm( 1 - p )
       z.alpha <- qnorm( 1 - (alpha/2))
       p.L <- pnorm( 2*z.0 - z.alpha )
