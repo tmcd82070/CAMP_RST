@@ -236,7 +236,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
     if(enhmodel == TRUE){
       release.df <- makeFake_release.df(site,min.date,max.date,visit.df)
       if(is.null(release.df)){
-        stop(paste0("No efficiency trials between ",min.date, " and ",max.date," in the current year, nor historically for this month and day. Check dates.\n"))
+        stop(paste0("No efficiency trials between ",min.date, " and ",max.date,". Check dates.\n"))
       }
     } else {
       stop( paste( "No efficiency trials between", min.date, "and", max.date, ". Check dates.\n"))
