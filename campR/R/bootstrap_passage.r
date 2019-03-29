@@ -544,11 +544,35 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
       ci <- quantile( x[ !is.na(x) & (x < Inf) ], p=c(p.L, p.H) )
       ci
     }
-    ans <- apply( pass, 1, f.bias.acc.ci, alpha=(1-conf), x.orig=n.orig )
+    
+    #   ---- Compute "regular" boostrap CIs, based on defined conf.  
+    f.ci <- function( x, alpha, x.orig ){
+      
+      # x <- pass[1,]
+      # alpha <- 1 - conf
+      # x.orig <- n.orig
+      
+      ci <- quantile( x[ !is.na(x) & (x < Inf) ], p=c(alpha/2, 1-(alpha/2)) )
+      ci
+    }
+    # ans <- apply( pass, 1, f.bias.acc.ci, alpha=(1-conf), x.orig=n.orig )
+    ans <- apply( pass, 1, f.ci, alpha=(1-conf), x.orig=n.orig )
     ans <- as.data.frame(t(matrix( unlist(ans), 2, n.len )))
-
+    
+    # lookie <- data.frame(passage=n.orig$passage,LCL=ans$V1,UCL=ans$V2)
+    # maxY <- max(lookie)
+    # days <- seq(1,nrow(lookie))
+    # 
+    # png("L:/PSMFC_CampRST/Support/bootStrapFun/lookie.png",res=600,height=40,width=12,units="in")
+    # plot(days,lookie$passage,col="blue",ylim=c(0,maxY),type="l")
+    # polygon(c(days,rev(days)),c(lookie$UCL,rev(lookie$LCL)),col="skyblue",border="skyblue")
+    # lines(days,lookie$passage,col="blue",ylim=c(0,maxY),type="l",lwd=0.25)
+    # dev.off()
   }
 
+  
+  save.image("L:/PSMFC_CampRST/Support/bootStrapFun/end_bootstrap_passage_clearCreek.RData")
+  
   #   ---- Append lower and upper end points and return
   names(ans) <- paste0( c("lower.", "upper."), conf*100 )
   ans <- data.frame( n.orig, ans, stringsAsFactors=F )
