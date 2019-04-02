@@ -460,10 +460,10 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
 
   #   ---- Summarization (to weeks, years, etc.) needs to happen in the bootstrapping routine.
   #   ---- Even if bootstraps are not called for, F.bootstrap averages over traps (if multiple 
-  #   ---- present) and summarizes by 'summarize.by'.
+  #   ---- present) and summarizes by 'summarize.by'.  R set by GlobalVars.
   n <- F.bootstrap.passage( grand.df, catch.and.fits$fits, catch.and.fits$X.miss, catch.and.fits$gaps,
                 catch.and.fits$bDates.miss, eff.and.fits$fits, eff.and.fits$X, eff.and.fits$ind.inside,
-                eff.and.fits$X.dates, eff.and.fits$obs.data, eff.and.fits$eff.type, summarize.by, 100, ci )
+                eff.and.fits$X.dates, eff.and.fits$obs.data, eff.and.fits$eff.type, summarize.by, R, ci )
   n
   
   if(usepb){

@@ -555,8 +555,16 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
       ci <- quantile( x[ !is.na(x) & (x < Inf) ], p=c(alpha/2, 1-(alpha/2)) )
       ci
     }
-    # ans <- apply( pass, 1, f.bias.acc.ci, alpha=(1-conf), x.orig=n.orig )
-    ans <- apply( pass, 1, f.ci, alpha=(1-conf), x.orig=n.orig )
+    
+    #   ---- Get (1 - alpha)% confidence bounds via GlobalVars bootstrap.CI.fx.
+    ans <- tryCatch({
+                    apply( pass, 1, get(bootstrap.CI.fx), alpha=(1-conf), x.orig=n.orig )
+                    },
+                    error=function(cond) {
+                       stop("I don't see a value for GlobalVars function bootstrap.CI.fx. Examine GlobalVars() for valid value(s).\n")
+                       # message(cond)
+                       return(NA)
+                    })
     ans <- as.data.frame(t(matrix( unlist(ans), 2, n.len )))
     
     # lookie <- data.frame(passage=n.orig$passage,LCL=ans$V1,UCL=ans$V2)
@@ -571,11 +579,15 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
   }
 
   
-  save.image("L:/PSMFC_CampRST/Support/bootStrapFun/end_bootstrap_passage_clearCreek.RData")
+  #   ---- Estimate standard deviation of the mean (error of X).  
+  correct <- apply(pass,1,function(x) sd(x))
+  # approx <- (ans$V2 - ans$V1)/4
+  # cor(correct,approx)
+  # plot(correct,approx)
   
   #   ---- Append lower and upper end points and return
   names(ans) <- paste0( c("lower.", "upper."), conf*100 )
-  ans <- data.frame( n.orig, ans, stringsAsFactors=F )
+  ans <- data.frame( n.orig, ans, error=correct, stringsAsFactors=F )
 
   ans
 

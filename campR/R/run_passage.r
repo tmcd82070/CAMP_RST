@@ -185,6 +185,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   
   #   ---- Check if we can do enhanced efficiency.  Only look at the level of site.  If the provided site to the 
   #   ---- function is not in sitesWithEnhEff, we know there was no effort to develop enh eff models at this site.  
+  # enhBetas <- utils::read.csv("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20181023-campR2.0.10/R/library/campR/enhEffStats/EnhancedBetas.csv")
   enhBetas <- utils::read.csv("..\\R\\library\\campR\\enhEffStats\\EnhancedBetas.csv")
   sitesWithEnhEff <- unique(signif(enhBetas[enhBetas$Stage == "Final",]$subsiteID,2))
   
@@ -398,6 +399,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         tmp.df$passage <- round(tmp.df$passage)
         tmp.df$lower.95 <- round(tmp.df$lower.95)
         tmp.df$upper.95 <- round(tmp.df$upper.95)
+        tmp.df$error <- round(tmp.df$error)
         tmp.df$meanForkLenMM <- round(tmp.df$meanForkLenMM,1)
         tmp.df$sdForkLenMM <- round(tmp.df$sdForkLenMM,2)
         tmp.df$pct.imputed.catch <- round(tmp.df$pct.imputed.catch, 3)
@@ -411,6 +413,7 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
         names(tmp.df)[ names(tmp.df) == "pct.imputed.catch" ] <- "propImputedCatch"
         names(tmp.df)[ names(tmp.df) == "lower.95" ] <- "lower95pctCI"
         names(tmp.df)[ names(tmp.df) == "upper.95" ] <- "upper95pctCI"
+        names(tmp.df)[ names(tmp.df) == "error" ] <- "error"
         names(tmp.df)[ names(tmp.df) == "nForkLenMM" ] <- "numFishMeasured"
         
         if( by == "day" ){

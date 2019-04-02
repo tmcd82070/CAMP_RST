@@ -124,6 +124,14 @@
 #'   \code{unassd.sig.digit=1}, plus-count fish are rounded to the nearest tenth. 
 #'   Setting \code{unassd.sig.digit=0} rounds to the nearest whole fish.
 #'   
+#' @param bootstrap.CI.fx The function, entered as a character string, to use
+#'   for identifying \eqn{(1 - \alpha)\%} bootstrapped confidence bounds for
+#'   passage.  Current options include \code{"f.bias.acc.ci"} or \code{"f.ci"}.
+#'   Default is \code{"f.bias.acc.ci"}.
+#'
+#' @param R The number of replicates to use for the bootstrap.  Default is
+#'   \code{100}.
+#'   
 #' @details One additional global variable is defined. \code{table.names} is a 
 #'   list containing the mapping of table names in Access to table names in R. 
 #'   This was set up to facilitate painless table name changes in Access.  This 
@@ -190,7 +198,9 @@ GlobalVars <- function(
 	forkLengthCutPoints = data.frame(lifeStage=c("FL1 leq 41mm","FL2 42-72mm","FL3 73-110mm","FL4 geq 111mm"),cutPoints=c(41,72,110,9999)),
 	passageRounder = 4,
 	eff.min.spline.samp.size = 10,
-	unassd.sig.digit = 1
+	unassd.sig.digit = 1,
+	bootstrap.CI.fx = "f.bias.acc.ci",
+	R = 100
 	){
 
     # Utilize this construction to avoid NOTEs about assigning variables to the 
@@ -260,7 +270,6 @@ GlobalVars <- function(
 	  # Set number of significant digits for unassigned fish during plus counting.
 	  assign("unassd.sig.digit", unassd.sig.digit, pos=envir)
 	  
-    
     # Table names is a special global variable that we intentionally make harder ----
     # to change.  I.e., must change code here and re-compile. 
     table.names <- c(trap.visit="TrapVisit",
@@ -282,6 +291,13 @@ GlobalVars <- function(
     								 life.stages="luLifeStage",
     								 fish.origin="luFishOrigin" )
     assign("table.names", table.names, pos=envir)
+    
+    # Define the boostrap function.  
+    assign("bootstrap.CI.fx", bootstrap.CI.fx, pos=envir)
+    
+    # Define the number of bootstrap replicates.  
+    assign("R", R, pos=envir)
+    
     
     #  *************** NOTE: To do - read the data base and figure out which water shed is being analyzed.  Then,
     #  *************** Set the efficiency model to use.

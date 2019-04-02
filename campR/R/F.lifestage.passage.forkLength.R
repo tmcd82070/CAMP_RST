@@ -465,6 +465,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
           tmp.df$passage <- round(tmp.df$passage)
           tmp.df$lower.95 <- round(tmp.df$lower.95)
           tmp.df$upper.95 <- round(tmp.df$upper.95)
+          tmp.df$error <- round(tmp.df$error)
           tmp.df$meanForkLenMM <- round(tmp.df$meanForkLenMM,1)
           tmp.df$sdForkLenMM <- round(tmp.df$sdForkLenMM,2)
           tmp.df$pct.imputed.catch <- round(tmp.df$pct.imputed.catch, 3)
@@ -473,6 +474,7 @@ F.lifestage.passage.forkLength <- function(site,taxon,min.date,max.date,by,outpu
           names(tmp.df)[ names(tmp.df) == "pct.imputed.catch" ] <- "propImputedCatch"
           names(tmp.df)[ names(tmp.df) == "lower.95" ] <- "lower95pctCI"
           names(tmp.df)[ names(tmp.df) == "upper.95" ] <- "upper95pctCI"
+          names(tmp.df)[ names(tmp.df) == "error" ] <- "error"
           names(tmp.df)[ names(tmp.df) == "nForkLenMM" ] <- "numFishMeasured"
           
           if( by == "day" ){
