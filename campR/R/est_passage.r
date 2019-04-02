@@ -115,6 +115,7 @@ F.est.passage <- function( catch.df, release.df, summarize.by, file.root, ci ){
   #   ---- Get global variable values.
   max.ok.gap <- get("max.ok.gap",envir=.GlobalEnv)
   passReport <- get("passReport",envir=.GlobalEnv)
+  R <- get("R",envir=.GlobalEnv)
   
   #   ---- Obtain text description of trap positions for use in output. 
   catch.df.sites <- unique(catch.df[,c('trapPositionID','TrapPosition')])
