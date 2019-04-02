@@ -15,7 +15,8 @@ GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb",
   seed = 884, forkLengthCutPoints = data.frame(lifeStage =
   c("FL1 leq 41mm", "FL2 42-72mm", "FL3 73-110mm", "FL4 geq 111mm"),
   cutPoints = c(41, 72, 110, 9999)), passageRounder = 4,
-  eff.min.spline.samp.size = 10, unassd.sig.digit = 1)
+  eff.min.spline.samp.size = 10, unassd.sig.digit = 1,
+  bootstrap.CI.fx = "f.bias.acc.ci", R = 100)
 }
 \arguments{
 \item{db.file}{Character string giving the full path and name of the CAMP 
@@ -137,6 +138,14 @@ representation of less common fish types (e.g., Winter or Smolt) during
 passage estimation.  For example, when
 \code{unassd.sig.digit=1}, plus-count fish are rounded to the nearest tenth. 
 Setting \code{unassd.sig.digit=0} rounds to the nearest whole fish.}
+
+\item{bootstrap.CI.fx}{The function, entered as a character string, to use
+for identifying \eqn{(1 - \alpha)\%} bootstrapped confidence bounds for
+passage.  Current options include \code{"f.bias.acc.ci"} or \code{"f.ci"}.
+Default is \code{"f.bias.acc.ci"}.}
+
+\item{R}{The number of replicates to use for the bootstrap.  Default is
+\code{100}.}
 }
 \value{
 No return value.

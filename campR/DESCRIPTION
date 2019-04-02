@@ -1,8 +1,8 @@
 Package: campR
 Type: Package
 Title: CAMP RST R Routines
-Version: 2.0.10
-Date: 2018-10-22
+Version: 2.0.11
+Date: 2019-04-02
 Author: Trent McDonald [aut, cre],
   Jason Mitchell [aut],
   Jared Studyvin [aut],
@@ -10,7 +10,7 @@ Author: Trent McDonald [aut, cre],
 Maintainer: Trent McDonald <tmcdonald@west-inc.com>
 Description: R routines for the CAMP R platform. 
 License: GNU General Public License
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Depends: RODBC, 
  EnvCovDBpostgres,
  R (>= 2.10)
