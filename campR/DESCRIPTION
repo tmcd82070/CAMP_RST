@@ -1,8 +1,8 @@
 Package: campR
 Type: Package
 Title: CAMP RST R Routines
-Version: 2.0.11
-Date: 2019-04-02
+Version: 2.0.12
+Date: 2019-05-08
 Author: Trent McDonald [aut, cre],
   Jason Mitchell [aut],
   Jared Studyvin [aut],
@@ -15,24 +15,24 @@ Depends: RODBC,
  EnvCovDBpostgres,
  R (>= 2.10)
 Imports:
- quantreg, 
- splines, 
+ assertthat,
+ DBI,
+ dplyr,
+ ellipse,
+ grDevices,
+ lubridate,
+ magrittr,
  MASS,
+ mclust,
  mvtnorm,
  plyr,
- mclust,
- tools,
- grDevices,
- dplyr,
- DBI,
- assertthat,
+ quantreg, 
  R6,
- magrittr,
  Rcpp,
- ellipse,
- tidyr,
  RPostgres,
- lubridate
+ splines, 
+ tidyr,
+ tools
 Suggests: R.rsp,
     knitr,
     rmarkdown

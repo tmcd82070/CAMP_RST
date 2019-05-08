@@ -198,14 +198,14 @@
 #'
 F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, autols=FALSE,nls=NULL,weightuse=NULL,reclassifyFL=FALSE){
   
-#   site <- 
-#   taxon <- 161980
-#   min.date <- "2010-01-01"
-#   max.date <- "2010-06-30"
-#   autols <- FALSE
-#   nls <- NULL
-#   weightuse <- NULL
-#   reclassifyFL <- FALSE
+  # site <- site
+  # taxon <- 161980
+  # min.date <- min.date
+  # max.date <- max.date
+  # autols <- FALSE
+  # nls <- NULL
+  # weightuse <- NULL
+  # reclassifyFL <- FALSE
   
   #   ---- Get stuff we need from the global environment.
   fishingGapMinutes <- get("fishingGapMinutes",envir=.GlobalEnv)
@@ -621,6 +621,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
   } else {
     
     #   --- Data query where all are full catch - just set the fancy variables to zero.
+    # catchS <- catch
     catch <- F.expand.plus.counts( catch )
     catch$preUnmarked <- catch$Unmarked
     if(nrow(catch) > 0){catch$halfConeAssignedCatch <- 0}

@@ -127,7 +127,7 @@
 #' @param bootstrap.CI.fx The function, entered as a character string, to use
 #'   for identifying \eqn{(1 - \alpha)\%} bootstrapped confidence bounds for
 #'   passage.  Current options include \code{"f.bias.acc.ci"} or \code{"f.ci"}.
-#'   Default is \code{"f.bias.acc.ci"}.
+#'   Default is \code{"f.ci"}.
 #'
 #' @param R The number of replicates to use for the bootstrap.  Default is
 #'   \code{100}.
@@ -199,7 +199,7 @@ GlobalVars <- function(
 	passageRounder = 4,
 	eff.min.spline.samp.size = 10,
 	unassd.sig.digit = 1,
-	bootstrap.CI.fx = "f.bias.acc.ci",
+	bootstrap.CI.fx = "f.ci",
 	R = 100
 	){
 

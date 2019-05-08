@@ -104,8 +104,13 @@
 F.assign.1dim <- function(catch, present.var, absent.var ){
 
   # catch <- catch
+  # present.var <- "lifeStage"
+  # absent.var <- "FinalRun" 
+  
+  # catch <- catch
   # present.var <- "FinalRun"     # present.var <- "JointDist"
   # absent.var <- "lifeStage"     # absent.var <- "jointLevs"
+                                  # savethis <- catch
   
   #   ---- Obtain global variables values.
   unassd.sig.digit <- get("unassd.sig.digit",envir=.GlobalEnv)
@@ -212,7 +217,12 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
           #   ---- If greater than zero, there were other fish captured this day that had an "absent" 
           #   ---- designation. Use them as an estimate for the "Unassigned."
           if(length(freqs) > 0){
-              
+
+            if(length(freqs) > 1){
+              tmp <- paste0(freqs,collapse=",")
+              cat(paste0("***************** ",j," **********(",tmp,")***********\n"))
+            }
+            
             props <- freqs / sum(freqs)
 
             #   ---- Multiply proportions that day by number of missings - the 'plus' count.  
@@ -223,6 +233,12 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
             #   ---- This fixes the rounding error.
             N.more <- N.j - sum(n.j)
 
+            
+            if(abs(N.more) > 0){
+              cat(paste0("+++++++++++ ",j," ++++++++++",N.j,",",n.j,",",N.more,"\n"))
+            }
+            
+            
             #   ---- Randomly allocate the rounding error to classes.
             #   ---- If we select global variable unassd.sig.digit to be an integer greater than zero,
             #   ---- then we have to get fancy with function rmultinom, as we can only allocated 
@@ -231,7 +247,7 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
             #   ---- assign the n.extra, and then drop back down by that same order of magnitude.
             #   ---- Note that the round is needed to ensure a perfect integer...sometimes it seems 
             #   ---- that even though an integer is displayed, it's off by a very small decimal. 
-            
+
             #   ---- We have under-allocated.  
             if( N.more > 0 ){
               n.extra <- c(rmultinom( 1, abs(round((10^unassd.sig.digit)*N.more,0)), props ))*10^(-1*unassd.sig.digit)
@@ -242,6 +258,18 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
               n.extra <- c(rmultinom( 1, abs(round((10^unassd.sig.digit)*N.more,0)), props ))*10^(-1*unassd.sig.digit)
               n.j <- n.j - n.extra             
             }
+            
+            
+            
+            
+            # N.more <- 4
+            # props <- c(0.88888889, 0.01960784, 0.09150327)
+            # names(props) <- c("Fry", "Parr", "Smolt")
+            # unassd.sig.digit <- 1
+            # 
+            # c(rmultinom( 1, abs(round((10^unassd.sig.digit)*N.more,0)), props ))*10^(-1*unassd.sig.digit)
+            
+            
             
             #   ---- Replace line j with length(props) lines.  These new lines have $n equal to n.j, 
             #   ---- but all other variables equal to the original line.
@@ -293,7 +321,7 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
       cat(sum(catch$Unmarked[(catch[,present.var] == i) & !is.na(catch[,present.var])]))
       cat("\n")
     } else {
-        cat(paste( " No Unassigned", absent.var, "\n"))
+      cat(paste( " No Unassigned", absent.var, "\n"))
     }
   }
 

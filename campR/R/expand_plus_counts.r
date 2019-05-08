@@ -102,6 +102,13 @@ F.expand.plus.counts <- function( catch ){
 
   cat("Final number of records in run X life stage table:\n")
   print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="always") )
+  
+  # here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20181023-campR2.0.10/Outputs/Clear Creek--Clear Creek Lower RST 1.7 rm/1999"
+  # tbl <- as.data.frame.matrix(table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="always"))
+  # rr <- runif(1,0,1000000000)
+  # write.csv(tbl,paste0(here,"/",rr,".csv"),row.number=FALSE)
+  # rm(here,tbl,rr)
+  
   cat("----------- DONE assigning plus Counts----------\n")
 
   catch
