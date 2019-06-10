@@ -205,6 +205,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
   if( !ci ){
       na <- rep(NA, n.len)
       ans <- data.frame(l = na, u= na)
+      correct <- NA
   } else {
     n.traps <- length(catch.fits)
 
@@ -580,11 +581,13 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
     # polygon(c(days,rev(days)),c(lookie$UCL,rev(lookie$LCL)),col="skyblue",border="skyblue")
     # lines(days,lookie$passage,col="blue",ylim=c(0,maxY),type="l",lwd=0.25)
     # dev.off()
+    
+    #   ---- Estimate standard deviation of the mean (error of X).  
+    correct <- apply(pass,1,function(x) sd(x))
   }
 
   
-  #   ---- Estimate standard deviation of the mean (error of X).  
-  correct <- apply(pass,1,function(x) sd(x))
+
   # approx <- (ans$V2 - ans$V1)/4
   # cor(correct,approx)
   # plot(correct,approx)
