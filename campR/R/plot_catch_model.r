@@ -124,7 +124,7 @@ F.plot.catch.model <- function( df, file=NA ){
 
     #   ---- Insert the imputed data points.
     ind <- df$trapPositionID == traps[i] & imputed
-    points( df$batchDate[ind], df$imputedCatch[ind], pch=my.pch[i]-15, col=my.colors[i], cex=1 )
+    points( df$batchDate[ind], df$totalEstimatedCatch[ind], pch=my.pch[i]-15, col=my.colors[i], cex=1 )
 
     #   ---- Insert the observed data points.
     ind <- df$trapPositionID == traps[i] & !imputed
@@ -142,12 +142,12 @@ F.plot.catch.model <- function( df, file=NA ){
   mx.len.name <- which.max( nchar(subsite.name$subSiteName) )
   
   #   ---- Get the left coordinate here;  note that we don't plot.
-  tmp <- legend( "topright",title=subsite.name$subSiteName[mx.len.name],legend=c("Observed","Imputed"),pch=rep(my.pch[1],2),cex=.85,plot=FALSE ) 
+  tmp <- legend( "topright",title=subsite.name$subSiteName[mx.len.name],legend=c("Observed","Some imputation"),pch=rep(my.pch[1],2),cex=.85,plot=FALSE ) 
   tmp$rect$top <- tmp$rect$top + tmp$rect$h
   for( i in 1:length(traps)){
     trap.name <- subsite.name$subSiteName[ subsite.name$subSiteID == traps[i] ]
     tmp <- legend( c(tmp$rect$left,tmp$rect$left + tmp$rect$w), c(tmp$rect$top - tmp$rect$h, tmp$rect$top - 2*tmp$rect$h) , title=trap.name, 
-                    legend=c("Observed","Imputed"), 
+                    legend=c("Observed","Some imputation"), 
                     pch=c(my.pch[i],my.pch[i]-15), col=c(my.colors[i], my.colors[i]), cex=.85, pt.cex=1.25)
   }
 

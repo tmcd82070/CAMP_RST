@@ -106,11 +106,11 @@ buildAstroStats <- function(release.visit,visit.df){
   notFishing <- sqlQuery(ch,paste0("SELECT SampleDate,
                                    StartTime,
                                    EndTime,
-                                   oldtrapPositionID AS TrapPositionID,
+                                   TrapPositionID AS oldtrapPositionID,
                                    SampleMinutes
                                    FROM TempSumUnmarkedByTrap_Run_Final 
                                    WHERE TrapStatus = 'Not Fishing'
-                                   ORDER BY oldTrapPositionID, EndTime"))
+                                   ORDER BY TrapPositionID, EndTime"))
   
   close(ch)
   
@@ -125,7 +125,7 @@ buildAstroStats <- function(release.visit,visit.df){
   
   #   ---- Bring in the mean forkLengths. 
   fl <- attr(visit.df,"fl")
-
+  
   
   #   ---- Some trapVisitIDs are not in the final catch table, for whatever reason.  Find these 
   #   ---- missing trap instances so they can be zeroed out.  These trap visits often are found 
@@ -168,10 +168,16 @@ buildAstroStats <- function(release.visit,visit.df){
   
   #   ---- We need to be smart here.
   #   ---- Put the SampleMinutes for the first record for each trapPositionID to -99.
-  tmp[tmp$trapPositionID != c(99,tmp$trapPositionID[1:(nrow(tmp) - 1)]),]$SampleMinutes <- -99
+  ind <- tmp$trapPositionID != c(99,tmp$trapPositionID[1:(nrow(tmp) - 1)])
+  if( sum(ind) > 0 ){
+    tmp$SampleMinutes[ind] <- -99
+  }
   
   #   ---- Put the SampleMinutes for a time frame greater than the gap in fishing length to -88.
-  tmp[tmp$SampleMinutes > fishingGapMinutes,]$SampleMinutes <- -88
+  ind <- tmp$SampleMinutes > fishingGapMinutes 
+  if( sum(ind) > 0 ){
+    tmp$SampleMinutes[ind] <- -88
+  }
   
   tmp$uniqueDate <- NA  
   
@@ -238,8 +244,27 @@ buildAstroStats <- function(release.visit,visit.df){
   tmpAstro <- tmp
   names(tmpAstro)[names(tmpAstro) == "SampleMinutes"] <- "JasonSampleMinutes"
   tmpAstro$trapPositionID <- NULL
+  # drop common columns from merge that happens below
+  # tmpAstro <- tmpAstro[, -which(names(tmpAstro) %in% 
+  #                                c( "visitTime", 
+  #                                   "visitTime2", 
+  #                                   "visitTypeID", 
+  #                                   "wmForkLength", 
+  #                                   "nForkLengNth", 
+  #                                   "StartTime", 
+  #                                   "EndTime", 
+  #                                   "JasonSampleMinutes", 
+  #                                   "uniqueDate", 
+  #                                   "sunMinutes", 
+  #                                   "sunProp", 
+  #                                   "moonMinutes", 
+  #                                   "moonProp", 
+  #                                   "nightMinutes", 
+  #                                   "nightProp"))]
+  
   release.visit <- merge(release.visit,tmpAstro,by=c("trapVisitID"),all.x=TRUE)
-
+  
   return(list(release.visit=release.visit,forEffPlots=forEffPlots,fl0=fl0))
+  
   
 }

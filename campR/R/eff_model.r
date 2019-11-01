@@ -649,10 +649,17 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         df <- obs.eff.df[ is.na(obs.eff.df$TrapPositionID) | (obs.eff.df$TrapPositionID == trap), ]
       }
       
+      cat("Trent -- You are saving a copy of the efficiency data in .GlobalEnv.\n")
+      assign("effDf", df, pos = .GlobalEnv)
+      
       ind <- !is.na(df$efficiency)
         
       #  ---- Find the "season", which is between first and last trials
       strt.dt <- suppressWarnings(min( df$batchDate[ind], na.rm=T ))  # Earliest date with an efficiency trial
+      
+      cat("\nTrent: you set start date of efficiency model to 2018-03-14 in eff_model.r Set it back.\n\n")
+      strt.dt <- as.POSIXct("2018-03-14", tz = "America/Los_Angeles")
+      
       end.dt  <- suppressWarnings(max( df$batchDate[ind], na.rm=T ))  # Latest date with efficiency trial
       ind.inside <- (strt.dt <= df$batchDate) & (df$batchDate <= end.dt)
       inside.dates <- c(strt.dt, end.dt)
@@ -716,7 +723,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
         #   ---- There are enough observations to estimate B-spline model.
       	
       	#   ---- Fit glm model, increasing degress of freedom, until minimize AIC or something goes wrong.  
-      	cat(paste("\n\n++++++Spline model fitting (no covariates) for trap:", trap, "\n Trials are:"))
+      	cat(paste("\n\n++++++Spline model fitting (no covariates) for trap:", trap, "\n Trials are:\n"))
         print(tmp.df)
           
         #   ---- At least one efficiency trial "inside" for this trap.
@@ -754,7 +761,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   	      cur.df <- 3
   	      repeat{
   	             
-  	        cur.bspl <- bs( df$batchDate[ind.inside], df=cur.df )
+  	        cur.bspl <- splines::bs( df$batchDate[ind.inside], df=cur.df )
   	        tmp.bs <- cur.bspl[!is.na(df$efficiency[ind.inside]),]
   	    
   	        cur.fit <- glm( nCaught / nReleased ~ tmp.bs, family=binomial, data=tmp.df, weights=tmp.df$nReleased )   
@@ -762,7 +769,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   	                
   	        cat(paste("df= ", cur.df, ", conv= ", cur.fit$converged, " bound= ", cur.fit$boundary, " AIC= ", round(cur.AIC, 4), "\n"))
   	    
-  	        if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC - 2) ){
+  	        cat("\nTrent: you changed AIC stopping rule in eff_model.r. Change back to fit.AIC - 2.\n\n")
+  	        
+  	        if( !cur.fit$converged | cur.fit$boundary | cur.df > max.df.spline | cur.AIC > (fit.AIC + 4) ){
   	          break
   	        } else {
   	          fit <- cur.fit

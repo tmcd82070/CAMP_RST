@@ -500,9 +500,6 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
   F.sql.error.check(catch)
   close(ch)
   
-  #   ---- Assign time zone (probably does not matter).
-  time.zone <- get( "time.zone", envir=.GlobalEnv )
-
   #   ---- Add in includeCatchID:  Assign time zone (definitely does matter -- otherwise it goes to MST).
   time.zone <- get( "time.zone", envir=.GlobalEnv )
   includecatchID$EndTime <- as.POSIXct(includecatchID$timeSampleEnded,tz=time.zone)

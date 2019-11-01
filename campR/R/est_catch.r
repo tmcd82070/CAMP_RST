@@ -246,7 +246,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
   }
   #write.csv(model.info,paste0(plot.file,"_model_Info.csv"))
   
-  cat("in est_catch.r  DF")
+  cat("in est_catch.r  DF\n")
   print( tapply(df$batchDate, df$trapPositionID, range) )
   cat("-------\n")
 
@@ -331,7 +331,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
   #   ---- Note that essentially refits all of the traps, all over again.  Said 
   #   ---- another way, it does, in its entirety, what we used to do before we 
   #   ---- started deleting out preceding and antecedent zeros and NA.  
-  trapsOperating <- F.est.catch.trapN(catch.df, plot=FALSE, plot.file="raw_catch.pdf" )
+  trapsOperating <- F.est.catch.trapN(catch.df, plot=TRUE, plot.file="raw_catch.pdf" )
 
   # By design, we now have missing days in est.catch.  Fix those now.
   # Possibly, we are missing days due to deleted imputed periods.
@@ -418,6 +418,7 @@ F.est.catch <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 
   #   ---- Output a plot of catch, with supersmoother approximation to the GAM spline.  
   if( !is.na(plot.file) ) {
+    utils::write.csv(masterCatch, file=paste0(plot.file,"_masterCatch.csv"), row.names = FALSE)
     out.fn <- F.plot.catch.model( masterCatch, file=plot.file )
   } else {
     out.fn <- NULL

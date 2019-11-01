@@ -51,7 +51,7 @@ F.est.catch.trapN <- function( catch.df, plot=TRUE, plot.file="raw_catch.pdf" ){
 
   #   ---- Loop over each individual trap, getting statistics of interest.  
   for( trap in u.traps ){
-      cat(paste("==== Catch model for trapPositionID", trap, "========\n" ))
+      cat(paste("==== Catch model with zero buffers for trapPositionID", trap, "========\n" ))
   
       df2 <- catch.df[catch.df$trapPositionID == trap,]
   

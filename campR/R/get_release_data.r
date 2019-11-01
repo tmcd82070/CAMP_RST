@@ -127,7 +127,7 @@ F.get.release.data <- function( site, taxon, min.date, max.date, visit.df ){
   
   
   #   ---- Compile astro statistics.  
-  astroStuff <- buildAstroStats(release.visit,visit.df)
+  astroStuff <- buildAstroStats(release.visit,visit.df)  # this is slow, speed it up with dplyr
   release.visit <- astroStuff$release.visit
   forEffPlots <- astroStuff$forEffPlots
   fl0 <- astroStuff$fl0
@@ -146,7 +146,8 @@ F.get.release.data <- function( site, taxon, min.date, max.date, visit.df ){
   release.visit$Recaps <- release.visit$oldRecaps + release.visit$halfConeAdj
   
   
-  release.visit[is.na(release.visit$nForkLength),]$nForkLength <- fl0[match(release.visit[is.na(release.visit$nForkLength),]$trapVisitID,fl0$trapVisitID),]$nForkLength
+  release.visit$nForkLength[is.na(release.visit$nForkLength)] <- 
+    fl0$nForkLength[match(release.visit$trapVisitID[is.na(release.visit$nForkLength)],fl0$trapVisitID)]
   
   
   

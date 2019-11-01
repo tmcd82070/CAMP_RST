@@ -98,6 +98,21 @@
 #'
 #' @examples
 #' \dontrun{
+#' 
+#' #  ---- For the WallaWalla workshop
+#' site <- 1000
+#' taxon <- "161980"
+#' min.date <- "2018-01-01"
+#' max.date <- "2018-08-01"
+#' output.file <- "passageWithLifeStageAssign_Imnaha_2019-10-31_15-33-50"
+#' ci <- TRUE
+#' autols <- FALSE
+#' nls <- 1
+#' weightuse <- TRUE
+#' enhmodel <- FALSE
+#' 
+#' ans <- F.passageWithLifeStageAssign(site, taxon, min.date, max.date, output.file, ci, autols, nls, weightuse, enhmodel)
+#' 
 #' #   ---- Estimate passage on the American by life stage and run.
 #' site <- 57000
 #' taxon <- 161980
@@ -206,15 +221,17 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   
   #   ---- Check if we can do enhanced efficiency.  Only look at the level of site.  If the provided site to the 
   #   ---- function is not in sitesWithEnhEff, we know there was no effort to develop enh eff models at this site.  
-  enhBetas <- utils::read.csv("..\\R\\library\\campR\\enhEffStats\\EnhancedBetas.csv")
-  sitesWithEnhEff <- unique(signif(enhBetas[enhBetas$Stage == "Final",]$subsiteID,2))
-  
-  if( !(site %in% sitesWithEnhEff) ){
-    enhmodel <- FALSE
-    cat(paste0("You asked for enhanced efficiency, but I see none at this site.  Flipped enhmodel <- FALSE.\n"))
-    cat(paste0("I will try to do Mark-Recapture instead.\n"))
-    setWinProgressBar( progbar, 0.15 , label="'Trap Efficiency Models' selected but none developed for this Site. Switching to Mark-Recapture Splines" )
-    Sys.sleep(5)
+  if(enhmodel){
+    enhBetas <- utils::read.csv("..\\R\\library\\campR\\enhEffStats\\EnhancedBetas.csv")
+    sitesWithEnhEff <- unique(signif(enhBetas[enhBetas$Stage == "Final",]$subsiteID,2))
+    
+    if( !(site %in% sitesWithEnhEff) ){
+      enhmodel <- FALSE
+      cat(paste0("You asked for enhanced efficiency, but I see none at this site.  Flipped enhmodel <- FALSE.\n"))
+      cat(paste0("I will try to do Mark-Recapture instead.\n"))
+      setWinProgressBar( progbar, 0.15 , label="'Trap Efficiency Models' selected but none developed for this Site. Switching to Mark-Recapture Splines" )
+      Sys.sleep(5)
+    }
   }
   
   #   ---- For enh eff models, it is okay if we have zero rows in release.df.  But make a fake release.df so all 
@@ -276,6 +293,8 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   #   ---- Loop over runs.
   ans <- lci <- uci <- matrix(0, length(lstages), length(runs))
   dimnames(ans)<-list(lstages, runs)
+  dimnames(lci)<-list(lstages, runs)
+  dimnames(uci)<-list(lstages, runs)
   
   out.fn.roots <- NULL
   for( j in 1:length(runs) ){
@@ -383,6 +402,7 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
         #   ---- Compute passage
         if(nrow(catch.df.ls) > 0){#} & sum(as.numeric(theSums)) > 0){
           pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, ci )
+          pass <- F.est.passage( catch.df.ls, release.df, "year", out.fn.root, TRUE )
         } else {
           
           #   ---- We need something for the matrix down below if ALL traps have zero fish in data frame theZeros above.
@@ -404,7 +424,13 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
   }
   
   cat("Final lifeStage X run estimates:\n")
-  print(ans)
+  if(ci){
+    dimnames(lci)<- list(dimnames(lci)[[1]], paste0("lowerCI.", dimnames(lci)[[2]]))
+    dimnames(uci)<- list(dimnames(uci)[[1]], paste0("upperCI.", dimnames(uci)[[2]]))
+    print(cbind(ans, lci, uci))
+  } else {
+    print(ans)
+  }
   
   #   ---- compute percentages of each life stage
   ans.pct <- matrix( colSums( ans ), byrow=T, ncol=ncol(ans), nrow=nrow(ans))

@@ -186,15 +186,17 @@ F.run.passage <- function( site, taxon, min.date, max.date, by, output.file, ci=
   #   ---- Check if we can do enhanced efficiency.  Only look at the level of site.  If the provided site to the 
   #   ---- function is not in sitesWithEnhEff, we know there was no effort to develop enh eff models at this site.  
   # enhBetas <- utils::read.csv("L:/PSMFC_CampRST/ThePlatform/CAMP_RST20181023-campR2.0.10/R/library/campR/enhEffStats/EnhancedBetas.csv")
-  enhBetas <- utils::read.csv("..\\R\\library\\campR\\enhEffStats\\EnhancedBetas.csv")
-  sitesWithEnhEff <- unique(signif(enhBetas[enhBetas$Stage == "Final",]$subsiteID,2))
-  
-  if( !(site %in% sitesWithEnhEff) ){
-    enhmodel <- FALSE
-    cat(paste0("You asked for enhanced efficiency, but I see none at this site.  Flipped enhmodel <- FALSE.\n"))
-    cat(paste0("I will try to do Mark-Recapture instead.\n"))
-    setWinProgressBar( progbar, 0.15 , label="'Trap Efficiency Models' selected but none developed for this Site. Switching to Mark-Recapture Splines" )
-    Sys.sleep(5)
+  if( enhmodel ){
+    enhBetas <- utils::read.csv("..\\R\\library\\campR\\enhEffStats\\EnhancedBetas.csv")
+    sitesWithEnhEff <- unique(signif(enhBetas[enhBetas$Stage == "Final",]$subsiteID,2))
+    
+    if( !(site %in% sitesWithEnhEff) ){
+      enhmodel <- FALSE
+      cat(paste0("You asked for enhanced efficiency, but I see none at this site.  Flipped enhmodel <- FALSE.\n"))
+      cat(paste0("I will try to do Mark-Recapture instead.\n"))
+      setWinProgressBar( progbar, 0.15 , label="'Trap Efficiency Models' selected but none developed for this Site. Switching to Mark-Recapture Splines" )
+      Sys.sleep(5)
+    }
   }
   
   #   ---- For enh eff models, it is okay if we have zero rows in release.df.  But make a fake release.df so all 

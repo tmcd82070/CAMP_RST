@@ -104,6 +104,21 @@ The date range difference specified via \code{max.date} and
 }
 \examples{
 \dontrun{
+
+#  ---- For the WallaWalla workshop
+site <- 1000
+taxon <- "161980"
+min.date <- "2018-01-01"
+max.date <- "2018-08-01"
+output.file <- "passageWithLifeStageAssign_Imnaha_2019-10-31_15-33-40"
+ci <- TRUE
+autols <- FALSE
+nls <- 1
+weightuse <- TRUE
+enhmodel <- FALSE
+
+ans <- F.passageWithLifeStageAssign(site, taxon, min.date, max.date, output.file, ci, autols, nls, weightuse, enhmodel)
+
 #   ---- Estimate passage on the American by life stage and run.
 site <- 57000
 taxon <- 161980
