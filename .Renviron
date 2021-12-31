@@ -1,0 +1,3 @@
+R_LIBS_RST=~/Projects/1200-RSTPlatform/RLibrary 
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=gogopostgres

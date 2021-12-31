@@ -1,3 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^thumbs.db$
+camp_interface.csv
+Rbatch.bat
+run_R.r
