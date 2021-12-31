@@ -1,5 +1,3 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-Helper/
-Obsolete/
-CAMP_RST.Rproj
+^thumbs.db$
