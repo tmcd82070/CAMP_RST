@@ -86,17 +86,24 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
   #   ---- Get from dataframe. 
   site <- attr(obs.eff.df,"site")
   
-  #   ---- JASON SETS THIS UP BASED ON UPDATED PACKAGE.
+  # ---- Find sites we need for this run ----
+  # Explanation: We have specific subSites in catch.df.  The environmental 
+  # database just has Sites.  We need to find the Site(s) associated with 
+  # the subSites we are working on so we can query the API later.
+  #
+  # The way Jason set this up is not the best.  The subSite to Site map 
+  # is stored over in the EnvCovDBpostgres package as a simple CSV. 
+  # Ultimately, we want to store this information in the postgreSQL database
+  # itself. This is Issue #105 in the campR Github repository.
+  
   #   ---- We assemble all the unique ourSiteIDs we need for this run. 
-  #TestingPlatform <- "CAMP_RST20161212-campR1.0.0"
-  #luSubSiteID <- read.csv(paste0("//lar-file-srv/Data/PSMFC_CampRST/ThePlatform/",TestingPlatform,"/R/library/EnvCovDBpostgres/helperfiles/luSubSiteID.csv"))
   luSubSiteID <- read.csv(paste0(find.package("EnvCovDBpostgres"),"/helperFiles/luSubSiteID.csv"))
   xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"catch.subsites"),]   # Change to catch.subsites.  Does this affect eff beta estimation?
  
-  # xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% c("57001","57002","57003","57004","57005"),]
-  #xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"subsites")$subSiteID,]   
-  uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2,xwalk$ourSiteIDChoice3)))
+  uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2)))
+
   
+  # ---- Loop over subSiteID's to obtain env covars for each ----  
   df <- vector("list",length(uniqueOurSiteIDsToQuery))
   m1 <- vector("list",length(uniqueOurSiteIDsToQuery))   #  flow (cfs)
   m2 <- vector("list",length(uniqueOurSiteIDsToQuery))   #  temperature (C)
@@ -108,13 +115,11 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
   #   ---- trials are actually present -- we deal with that possibility below.  So... just add
   #   ---- the simple text statement.  But if we're calling this function for real passage 
   #   ---- estimation, we don't want this.  
-  #if( sum(c("bdMeanNightProp","bdMeanMoonProp","bdMeanForkLength") %in% names(obs.eff.df)) == 3 ){
-    obs.eff.df$covar <- "bdMeanNightProp + bdMeanMoonProp + bdMeanForkLength"
-  #}
-  
+  obs.eff.df$covar <- "bdMeanNightProp + bdMeanMoonProp + bdMeanForkLength"
+
   for(ii in 1:length(uniqueOurSiteIDsToQuery)){
     
-    #   ---- Get covariate data of interest.  
+    #   ---- Get siteID and dates for this subSite ----
     oursitevar <- uniqueOurSiteIDsToQuery[ii]   
     
     if(enhmodel == TRUE){
@@ -129,191 +134,149 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
       maxEffDate <- as.character(max(obs.eff.df$batchDate))
     }
     
-    #   ---- See if we can get anything on tbld.  This is good for local runs.
-    #ch <- odbcConnect("PostgreSQL30", uid = 'jmitchell', pwd = 'jmitchell')
-    #library(DBI)
-    #library(RPostgres)
-    
-    
-    
-    #   ---- See if anyone else is signed on. 
-    chPG <- RPostgres::dbConnect(RPostgres::Postgres(),    
-                                 dbname='EnvCovDB',
-                                 host='streamdata.west-inc.com',
-                                 port=5432,
-                                 # user="jmitchell",
-                                 # password="G:hbtr@RPH5M.")
-                                 user="envcovread",
-                                 password="KRFCszMxDTIcLSYwUu56xwt0GO")
-    tryEnvCovDB(24,5,chPG)
-    RPostgres::dbDisconnect(chPG)
-    
-    #   ---- I have problems with permissions using read-only envcovread.  
-    chPG <- RPostgres::dbConnect(RPostgres::Postgres(),    
-                                 dbname='EnvCovDB',
-                                 host='streamdata.west-inc.com',
-                                 port=5432,
-                                 user="jmitchell",
-                                 password="G:hbtr@RPH5M.")
-    
-    #   ---- To force delete all connections, sign in under jmitchell above and submit this query.  
-    # RPostgres::dbSendQuery(chPG,"select pg_terminate_backend(pid) from pg_stat_activity where datname='EnvCovDB';")   # <--- If you have to kick everyone off.
-    
-    #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
-    res <- RPostgres::dbSendQuery(chPG,"GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO envcovread;")
-    RPostgres::dbClearResult(res)
-    RPostgres::dbDisconnect(chPG)
-    
-    #   ---- Query the PostgreSQL database for information on temperature and flow.  
-    chPG <- RPostgres::dbConnect(RPostgres::Postgres(),    
-                    dbname='EnvCovDB',
-                    host='streamdata.west-inc.com',
-                    port=5432,
-                    # user="jmitchell",
-                    # password="G:hbtr@RPH5M.")
-                    user="envcovread",
-                    password="KRFCszMxDTIcLSYwUu56xwt0GO")
+    #   ---- Make a call to the envir covar API ----
 
-    # RPostgres::dbGetQuery(chPG,"SET SESSION idle_in_transaction_session_timeout = '1min';")
-    
-    #   ---- See if anyone else is signed on. 
-    tryEnvCovDB(24,5,chPG)
-    
-    #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
-    res <- RPostgres::dbSendQuery(chPG,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," AND ourmetricstatusid = 1 GROUP BY oursiteid;"))
-    nGood <- RPostgres::dbFetch(res)
-    RPostgres::dbClearResult(res)
-    RPostgres::dbDisconnect(chPG)
+    df[[ii]] <- queryEnvCovAPI(min.date = minEffDate,
+                              max.date = maxEffDate,
+                              oursitevar = oursitevar,
+                              type = "D")
+    nGood <- nrow(df[[ii]])
 
-    tableChecker()
+    #   ---- Commented-out Jason code ----
+    #        This is Jason's code to do some (all?) QAQC on the returned EnvCov data.  
+    #        Trent is not sure we need any of this code, but probably, and 
+    #        that's why he is leaving it as comments.
+    #
+    # #   ---- If we're here, we were successfully able to demo we are the only ones querying.  
+    # res <- RPostgres::dbSendQuery(chPG,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," AND ourmetricstatusid = 1 GROUP BY oursiteid;"))
+    # nGood <- RPostgres::dbFetch(res)
+    # RPostgres::dbClearResult(res)
+    # RPostgres::dbDisconnect(chPG)
+    # 
+    # tableChecker()
+    # 
+    # #   ---- RIGHT HERE, a querying competitor could steal the database if they query, because I've disconnected, and it's
+    # #   ---- open for anyone to grab.  Solution is to use campR::tryEnvCovDB
+    # #   ---- inside EnvCovDBpostgres::queryEnvCovDB, but that requires a rebuild of EnvCovDBpostgres.  The window of destruction here
+    # #   ---- should be very small.  
+    # 
+    # if(nrow(nGood) > 0){
+    #   # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
+    #   # save.image("C:/Users/jmitchell/Desktop/fixme.RData")
+    #   df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("envcovread","KRFCszMxDTIcLSYwUu56xwt0GO",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
+    #                        
+    #   df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
+    # } else {
+    #   # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
+    #   df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("envcovread","KRFCszMxDTIcLSYwUu56xwt0GO",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
+    #   
+    #   if(sum(!is.na(df[[ii]]$flow_cfs)) > 0 & (sum(df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs)) > 0) ){
+    #     df[[ii]][df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs),]$flow_cfs <- NA
+    #   }
     
-    #   ---- RIGHT HERE, a querying competitor could steal the database if they query, because I've disconnected, and it's
-    #   ---- open for anyone to grab.  Solution is to use campR::tryEnvCovDB
-    #   ---- inside EnvCovDBpostgres::queryEnvCovDB, but that requires a rebuild of EnvCovDBpostgres.  The window of destruction here
-    #   ---- should be very small.  
-    
-    if(nrow(nGood) > 0){
-      # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
-      # save.image("C:/Users/jmitchell/Desktop/fixme.RData")
-      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("envcovread","KRFCszMxDTIcLSYwUu56xwt0GO",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
-                           
-      df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
-    } else {
-      # df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
-      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("envcovread","KRFCszMxDTIcLSYwUu56xwt0GO",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
+    #   ---- QAQC on temperature values ----
+    if(sum(!is.na(df[[ii]]$temp_c)) > 0){
       
-      if(sum(!is.na(df[[ii]]$flow_cfs)) > 0 & (sum(df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs)) > 0) ){
-        df[[ii]][df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs),]$flow_cfs <- NA
+      #   ---- This is mostly due to weird CDEC data.  
+      
+      #   ---- If we have temps less than -17.8F, then the Celsius value was 0.00.  Chuck these -- they're probably bad values. 
+      #   ---- The value of 37.7778 corresponds to 100F.  Chuck any values >37.7778 as implausible. 
+      if( any( (df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c >= 37.7778) | (df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c <= -17.8) ) ){
+        df[[ii]][!is.na(df[[ii]]$temp_c) & ( df[[ii]]$temp_c >= 37.7778 | df[[ii]]$temp_c <= -17.8 ),]$temp_c <- NA
       }
-      if(sum(!is.na(df[[ii]]$temp_c)) > 0){
-        
-        #   ---- This is mostly due to weird CDEC data.  
-        
-        #   ---- If we have temps less than -17.8F, then the Celsius value was 0.00.  Chuck these -- they're probably bad values. 
-        #   ---- The value of 37.7778 corresponds to 100F.  
-        if( any( (df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c >= 37.7778) | (df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c <= -17.8) ) ){
-          df[[ii]][!is.na(df[[ii]]$temp_c) & ( df[[ii]]$temp_c >= 37.7778 | df[[ii]]$temp_c <= -17.8 ),]$temp_c <- NA
-        }
-        
-        #   ---- They seem to use 32.0 as a substitution value as well.  Weird.  Get rid of those.  
-        if( any( (df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c == 0.0) ) ){
-          df[[ii]][!is.na(df[[ii]]$temp_c) & df[[ii]]$temp_c == 0.0,]$temp_c <- NA
-        }
+      
+      #   ---- They seem to use 32.0 as a substitution value as well.  Weird.  Get rid of those.  
+      if( any( (df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c == 0.0) ) ){
+        df[[ii]][!is.na(df[[ii]]$temp_c) & df[[ii]]$temp_c == 0.0,]$temp_c <- NA
       }
-    } 
+    }
 
     
-    #   ---- Compile the good dates for each metric. 
+    #   ---- Done with API. Compile the good dates for each metric.  ----
     min.date.flow <- suppressWarnings(min(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date))
     max.date.flow <- suppressWarnings(max(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date))
     min.date.temp <- suppressWarnings(min(df[[ii]][!is.na(df[[ii]]$temp_c),]$date))
     max.date.temp <- suppressWarnings(max(df[[ii]][!is.na(df[[ii]]$temp_c),]$date))
     
-    #   ---- Query this river's Access database for information recorded at the trap.  For now, we only use this 
-    #   ---- for turbidity.  I name objects that respect this.  
+    #   ---- Query this river's Access database for information recorded at the trap.  ----
+    #   For now, we only use this for turbidity.  I name objects that respect this.  
     
     if(ii == 1){
+        
+        tableChecker()
       
-      tableChecker()
-    
-      #   ---- Develop the TempReportCriteria_TrapVisit table.
-      F.buildReportCriteria( site, min.date, max.date )   # was min.date2, max.date2.  matter?
-      
-      #   ---- 11/20/2017.  Update to run Connie's cleaning query.
-      db <- get( "db.file", envir=.GlobalEnv )
-      chRODBC <- odbcConnectAccess(db)
-
-      #   ---- Run the clean-up query.
-      F.run.sqlFile( chRODBC, "QryCleanEnvCov.sql")#, min.date2, max.date2 )
-      
-      #   ---- Now, fetch the result.  
-      dbCov <- sqlFetch( chRODBC, "EnvDataRaw_Standardized" )
-      
-      close(chRODBC)
-      
-      #   ---- Make a dataframe for what we have.  
-      dbDisc <- getCAMPEnvCov(dbCov,"discharge","dischargeUnitID",12)
-      dbDpcm <- getCAMPEnvCov(dbCov,"waterDepth","waterDepthUnitID",3)
-      dbATpF <- getCAMPEnvCov(dbCov,"airTemp","airTempUnitID",19)
-      #if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
+        #   ---- Develop the TempReportCriteria_TrapVisit table.
+        F.buildReportCriteria( site, min.date, max.date )   # was min.date2, max.date2.  matter?
+        
+        #   ---- 11/20/2017.  Update to run Connie's cleaning query.
+        db <- get( "db.file", envir=.GlobalEnv )
+        chRODBC <- odbcConnectAccess(db)
+  
+        #   ---- Run the clean-up query.
+        F.run.sqlFile( chRODBC, "QryCleanEnvCov.sql")#, min.date2, max.date2 )
+        
+        #   ---- Now, fetch the result.  
+        dbCov <- sqlFetch( chRODBC, "EnvDataRaw_Standardized" )
+        
+        close(chRODBC)
+        
+        #   ---- Make a dataframe for what we have.  
+        dbDisc <- getCAMPEnvCov(dbCov,"discharge","dischargeUnitID",12)
+        dbDpcm <- getCAMPEnvCov(dbCov,"waterDepth","waterDepthUnitID",3)
+        dbATpF <- getCAMPEnvCov(dbCov,"airTemp","airTempUnitID",19)
         dbTurb <- getCAMPEnvCov(dbCov,"turbidity","turbidityUnitID",20)
-      #}
-      dbWVel <- getCAMPEnvCov(dbCov,"waterVel","waterVelUnitID",8)
-      dbWTpC <- getCAMPEnvCov(dbCov,"waterTemp","waterTempUnitID",18) 
-      dbLite <- getCAMPEnvCov(dbCov,"lightPenetration","lightPenetrationUnitID",3)
-      #dbDOxy <- getCAMPEnvCov(dbCov,"dissolvedOxygen","dissolvedOxygenUnitID",36)         
-      #dbCond <- getCAMPEnvCov(dbCov,"conductivity","conductivityUnitID",36)
-      #dbBaro <- getCAMPEnvCov(dbCov,"barometer","barometerUnitID",33)    
-      #dbWeat <- getCAMPEnvCov(dbCov,"weather",NA,NA)
-      
-      #   ---- Put all database covariates into a list for easier processing.
-      #if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
+        dbWVel <- getCAMPEnvCov(dbCov,"waterVel","waterVelUnitID",8)
+        dbWTpC <- getCAMPEnvCov(dbCov,"waterTemp","waterTempUnitID",18) 
+        dbLite <- getCAMPEnvCov(dbCov,"lightPenetration","lightPenetrationUnitID",3)
+        #dbDOxy <- getCAMPEnvCov(dbCov,"dissolvedOxygen","dissolvedOxygenUnitID",36)         
+        #dbCond <- getCAMPEnvCov(dbCov,"conductivity","conductivityUnitID",36)
+        #dbBaro <- getCAMPEnvCov(dbCov,"barometer","barometerUnitID",33)    
+        #dbWeat <- getCAMPEnvCov(dbCov,"weather",NA,NA)
+        
+        #   ---- Put all database covariates into a list for easier processing.
         dbCovar <- list(dbDisc,dbDpcm,dbATpF,dbTurb,dbWVel,dbWTpC,dbLite)#,dbDOxy,dbCond,dbBaro,dbWeat)
-      #} else {
-      #  dbCovar <- list(dbDisc,dbDpcm,dbATpF,dbWVel,dbWTpC,dbLite)#,dbDOxy,dbCond,dbBaro,dbWeat)
-      #}
-      
-      #   ---- Collapse all the UnitIDs we have. 
-      dfUnitIDs <- NULL
-      for(i in 1:length(dbCovar)){
-        l <- length(attr(dbCovar[[i]],"uniqueUnitID"))
-        if(l > 0){
-          dfUnitIDs.i <- data.frame("site"=rep(site,l),"covar"=rep(attr(dbCovar[[i]],"cov"),l),"UnitID"=attr(dbCovar[[i]],"uniqueUnitID"))
-          dfUnitIDs <- rbind(dfUnitIDs,dfUnitIDs.i)
+
+        #   ---- Collapse all the UnitIDs we have. 
+        dfUnitIDs <- NULL
+        for(i in 1:length(dbCovar)){
+          l <- length(attr(dbCovar[[i]],"uniqueUnitID"))
+          if(l > 0){
+            dfUnitIDs.i <- data.frame("site"=rep(site,l),"covar"=rep(attr(dbCovar[[i]],"cov"),l),"UnitID"=attr(dbCovar[[i]],"uniqueUnitID"))
+            dfUnitIDs <- rbind(dfUnitIDs,dfUnitIDs.i)
+          }
         }
-      }
-      
-      #   ---- Compile unique UnitIDs per covar. 
-      dfUnitIDs <- unique(dfUnitIDs)
-      rownames(dfUnitIDs) <- NULL
-      
-      dfUnitIDs$test <- NA
-      for(i in 1:nrow(dfUnitIDs)){
-        if(i == 1){
-          dfUnitIDs[i,]$test <- dfUnitIDs[i,]$UnitID
-        } else if(dfUnitIDs[i,]$covar != dfUnitIDs[i - 1,]$covar){
-          dfUnitIDs[i,]$test <- paste0(dfUnitIDs[i,]$UnitID," ")
-        } else {
-          dfUnitIDs[i,]$test <- paste0(dfUnitIDs[i - 1,]$test,dfUnitIDs[i,]$UnitID,sep=" ")
+        
+        #   ---- Compile unique UnitIDs per covar. 
+        dfUnitIDs <- unique(dfUnitIDs)
+        rownames(dfUnitIDs) <- NULL
+        
+        dfUnitIDs$test <- NA
+        for(i in 1:nrow(dfUnitIDs)){
+          if(i == 1){
+            dfUnitIDs[i,]$test <- dfUnitIDs[i,]$UnitID
+          } else if(dfUnitIDs[i,]$covar != dfUnitIDs[i - 1,]$covar){
+            dfUnitIDs[i,]$test <- paste0(dfUnitIDs[i,]$UnitID," ")
+          } else {
+            dfUnitIDs[i,]$test <- paste0(dfUnitIDs[i - 1,]$test,dfUnitIDs[i,]$UnitID,sep=" ")
+          }
         }
-      }
-      
-      dfUnitIDs <- aggregate(dfUnitIDs,list(dfUnitIDs$covar),function(x) tail(x,1))
-      dfUnitIDs$Group.1 <- dfUnitIDs$UnitID <- dfUnitIDs$site <- NULL
-      
-      # #   ---- Read in how to map unstandardized weather values to standardized values.  Put this in as data.frame...eventually. 
-      # weaMap <- read.csv("//LAR-FILE-SRV/Data/PSMFC_CampRST/felipe products/variables/weather/weatherLookupMapped20170720.csv")
-      # #weaKey <- weaMap[1:4,c("PrecipLevel","PrecipLevelText")]
-      # dbWeat <- merge(dbWeat,weaMap[,c("weather","precipLevel")],by=c("weather"),all.x=TRUE)
-      # dbWeat <- dbWeat[,c("subSiteID","measureDate","precipLevel")]
-      # names(dbWeat)[names(dbWeat) == "precipLevel"] <- "precipLevel"
+        
+        dfUnitIDs <- aggregate(dfUnitIDs,list(dfUnitIDs$covar),function(x) tail(x,1))
+        dfUnitIDs$Group.1 <- dfUnitIDs$UnitID <- dfUnitIDs$site <- NULL
+        
+        # #   ---- Read in how to map unstandardized weather values to standardized values.  Put this in as data.frame...eventually. 
+        # weaMap <- read.csv("//LAR-FILE-SRV/Data/PSMFC_CampRST/felipe products/variables/weather/weatherLookupMapped20170720.csv")
+        # #weaKey <- weaMap[1:4,c("PrecipLevel","PrecipLevelText")]
+        # dbWeat <- merge(dbWeat,weaMap[,c("weather","precipLevel")],by=c("weather"),all.x=TRUE)
+        # dbWeat <- dbWeat[,c("subSiteID","measureDate","precipLevel")]
+        # names(dbWeat)[names(dbWeat) == "precipLevel"] <- "precipLevel"
     }
     
-    #   ---- Fit a simple smoothing spline and predict.  First for temp and flow from the EnvCovDB.   
+    #   ---- Fit a simple smoothing spline and predict: FLOW  ----
     
     covar <- NULL
     dontDo <- FALSE
-    if(sum(unique(!is.na(df[[ii]]$flow_cfs))) > 3){
+    if(sum(!is.na(df[[ii]]$flow_cfs)) > 3){
       m1[[ii]] <- smooth.spline(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date,df[[ii]][!is.na(df[[ii]]$flow_cfs),]$flow_cfs,cv=TRUE)
       
       if("covar" %in% names(obs.eff.df)){
@@ -348,7 +311,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
         
         #   ---- Build a dataframe like the CAMP covariates.  If we're running against the unit table, we have no statistic.  
         #   ---- For flow, call it 450L, for temp, 451L.
-        if(!(nrow(nGood) > 0)){
+        if(!(nGood > 0)){
           dbFlPG <- data.frame(subSiteID=NA,measureDate=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=rep(450L,nrow(df[[ii]])))
         } else {
           dbFlPG <- data.frame(subSiteID=NA,measureDate=df[[ii]]$date,flow_cfs=df[[ii]]$flow_cfs,flow_cfsUnitID=df[[ii]]$flow_statistic)
@@ -362,9 +325,11 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     } else if(!exists("dbFlPG")){
       dbFlPG <- NULL
     }
+
+    #   ---- Fit a simple smoothing spline and predict: TEMPERATURE  ----
     
     dontDo <- FALSE
-    if(sum(unique(!is.na(df[[ii]]$temp_c))) > 3){
+    if(sum(!is.na(df[[ii]]$temp_c)) > 3){
       m2[[ii]] <- smooth.spline(as.numeric(df[[ii]][!is.na(df[[ii]]$temp_c),]$date),df[[ii]][!is.na(df[[ii]]$temp_c),]$temp_c,cv=TRUE)
       
       if("covar" %in% names(obs.eff.df)){
@@ -397,7 +362,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
         
         #   ---- Build a dataframe like the CAMP covariates.  If we're running against the unit table, we have no statistic.  
         #   ---- For flow, call it 450L, for temp, 451L.  Recall that oursitevar >= 80 means EnvCovDB from unit table is used.
-        if(!(nrow(nGood) > 0)){
+        if(!(nGood > 0)){
           dbTpPG <- data.frame(subSiteID=NA,measureDate=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=451L)       
         } else {
           dbTpPG <- data.frame(subSiteID=NA,measureDate=df[[ii]]$date,temp_c=df[[ii]]$temp_c,temp_cUnitID=df[[ii]]$temp_statistic)       
@@ -422,9 +387,7 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
       obs.eff.df <- estCovar(dbDisc,"discharge_cfs",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbDpcm,"waterDepth_cm",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbATpF,"airTemp_F",1,traps,obs.eff.df,xwalk,oursitevar)
-      #if(substr(obs.eff.df$TrapPositionID[1],1,2) != "42"){
-        obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df,xwalk,oursitevar)
-      #}
+      obs.eff.df <- estCovar(dbTurb,"turbidity_ntu",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbWVel,"waterVel_fts",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbWTpC,"waterTemp_C",1,traps,obs.eff.df,xwalk,oursitevar)
       obs.eff.df <- estCovar(dbLite,"lightPenetration_cm",1,traps,obs.eff.df,xwalk,oursitevar)
@@ -439,8 +402,9 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
   }
 
     
-  #   ---- In the case of the RBDD, swap out flow_cfs for percQ.  Note empty dbperQ has Date
-  #   ---- instead of POSIXct.  Don't think this matters.  
+  #   ---- Estimate percQ for RBDD ----
+  #   This will swap out flow_cfs for percQ.  
+  #   Note empty dbperQ has Date instead of POSIXct.  Don't think this matters.  
   dbPerQ <- data.frame(subSiteID=integer(),measureDate=as.Date(character()),percQ=numeric(),percQUnitID=integer(),stringsAsFactors=FALSE)
   if( site == 42000 ){
     dbPerQ <- percQ(hrflow=df[[2]])
@@ -474,10 +438,18 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
     
   }
   
-  #if(substr(obs.eff.df$TrapPositionID[1],1,2) == "42"){
-  #  return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,              dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite,dbFlPG=dbFlPG,dbTpPG=dbTpPG,dbPerQ=dbPerQ))
-  #} else {
-    return(list(obs.eff.df=obs.eff.df,dbDisc=dbDisc,dbDpcm=dbDpcm,dbATpF=dbATpF,dbTurb=dbTurb,dbWVel=dbWVel,dbWTpC=dbWTpC,dbLite=dbLite,dbFlPG=dbFlPG,dbTpPG=dbTpPG,dbPerQ=dbPerQ))
-  #}
+  #   ---- Done ----
+  return(list(obs.eff.df=obs.eff.df,
+              dbDisc=dbDisc,
+              dbDpcm=dbDpcm,
+              dbATpF=dbATpF,
+              dbTurb=dbTurb,
+              dbWVel=dbWVel,
+              dbWTpC=dbWTpC,
+              dbLite=dbLite,
+              dbFlPG=dbFlPG,
+              dbTpPG=dbTpPG,
+              dbPerQ=dbPerQ))
+  
 }
 
