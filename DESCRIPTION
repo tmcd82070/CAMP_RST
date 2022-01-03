@@ -1,14 +1,15 @@
 Package: campR
 Type: Package
 Title: CAMP RST R Routines
-Version: 2.0.13
-Date: 2019-06-10
+Version: 2.0.14
+Date: 2022-01-01
 Author: Trent McDonald [aut, cre],
   Jason Mitchell [aut],
   Jared Studyvin [aut],
   Connie Shannon [ctb]
-Maintainer: Trent McDonald <tmcdonald@west-inc.com>
-Description: R routines for the CAMP R platform. 
+Maintainer: Trent McDonald <trent@mcdonalddatasciences.com>
+Description: R routines that estimate passage and do other things
+  inside the RST platform. 
 License: GNU General Public License
 RoxygenNote: 6.1.1
 Depends: RODBC, 

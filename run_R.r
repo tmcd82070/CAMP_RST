@@ -29,7 +29,7 @@ output.file <- paste0("../outputs/",river,"/",by,"/",river)
 by.lifestage <- FALSE   
 ci        <- TRUE
 output.type <- "odt"   # or "pdf"
-from      <- "Trent McDonald, Ph.D., WEST Incorporated"
+from      <- "Trent McDonald, Ph.D."
 to        <- "Doug Threloff, USFWS CAMP Coordinator"
 return.addr <- "FISH AND WILDLIFE SERVICE!USFWS Caswell State Park Office!1234 Abbey Rd.!Caswell, California  96080!(530) 527-3043, FAX (530) 529-0292"
 
