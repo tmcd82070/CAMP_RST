@@ -73,7 +73,7 @@ annualizeCovars <- function(site,min.date,max.date,season,taxon){
   #   ---- We assemble all the unique ourSiteIDs we need for this run.  In this application, I assume that 
   #   ---- I can query once (via information on a subSiteID), as being representative for the site in question. 
   #   ---- This works because in luSubSiteID, ourSiteIDChoice1, etc. does not vary within a particular site.  
-  luSubSiteID <- utils::read.csv(paste0(find.package("EnvCovDBpostgres"),"/helperFiles/luSubSiteID.csv"))
+  luSubSiteID <- utils::read.csv(paste0(find.package("campR"),"/helperFiles/luSubSiteID.csv"))
   xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% sitesXwalk$subSiteID,]  
   uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2,xwalk$ourSiteIDChoice3)))
   
@@ -88,30 +88,46 @@ annualizeCovars <- function(site,min.date,max.date,season,taxon){
     oursitevar <- uniqueOurSiteIDsToQuery[ii]   
     
     #   ---- Use these when building enhanced efficiency trials.  
-    minEffDate <- as.character(min.date)
-    maxEffDate <- as.character(max.date)
+
+    minEffDate <- format(min.date, format="%Y-%m-%d")
+    maxEffDate <- format(max.date, format="%Y-%m-%d")
+
+    # We are assuming Daily values are available.  forget about hourly
+    df[[ii]] <- queryEnvCovAPI(min.date = minEffDate,
+                               max.date = maxEffDate,
+                               oursitevar = oursitevar,
+                               type = "D")
+    df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
     
-    #   ---- Query the PostgreSQL database for information on temperature and flow.  
-    ch <- DBI::dbConnect(RPostgres::Postgres(),    
-                    dbname='EnvCovDB',
-                    host='streamdata.west-inc.com',
-                    port=5432,
-                    user="jmitchell",
-                    password="G:hbtr@RPH5M.")
-    res <- DBI::dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
-    nGood <- DBI::dbFetch(res)
-    DBI::dbClearResult(res)
-    DBI::dbDisconnect(ch)
-    
-    if(nrow(nGood) > 0){
-      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="D",plot=FALSE)
-      df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
-    } else {
-      df[[ii]] <- EnvCovDBpostgres::queryEnvCovDB("jmitchell","G:hbtr@RPH5M.",minEffDate,maxEffDate,oursitevar,type="U",plot=FALSE)
-      
-      if(sum(!is.na(df[[ii]]$flow_cfs)) > 0 & (sum(df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs)) > 0) ){
-        df[[ii]][df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs),]$flow_cfs <- NA
-      }
+    # #   ---- Query the PostgreSQL database for information on temperature and flow.  
+    #   This commented-out code is Jason's before Trent changed to the API.
+    #
+    # ch <- DBI::dbConnect(RPostgres::Postgres(),    
+    #                 dbname='EnvCovDB',
+    #                 host='streamdata.west-inc.com',
+    #                 port=5432,
+    #                 user="jmitchell",
+    #                 password="G:hbtr@RPH5M.")
+    # res <- DBI::dbSendQuery(ch,paste0("SELECT COUNT(oursiteid) FROM tbld WHERE ('",min.date,"' <= date AND date <= '",max.date,"') AND oursiteid = ",oursitevar," GROUP BY oursiteid;"))
+    # nGood <- DBI::dbFetch(res)
+    # DBI::dbClearResult(res)
+    # DBI::dbDisconnect(ch)
+    # 
+    # if(nrow(nGood) > 0){
+    #   df[[ii]] <- queryEnvCovAPI(min.date = minEffDate,
+    #                              max.date = maxEffDate,
+    #                              oursitevar = oursitevar,
+    #                              type = "D")
+    #   df[[ii]]$date <- strptime(df[[ii]]$date,format="%Y-%m-%d",tz=time.zone)
+    # } else {
+    #   df[[ii]] <- queryEnvCovAPI(min.date = minEffDate,
+    #                              max.date = maxEffDate,
+    #                              oursitevar = oursitevar,
+    #                              type="U")
+    #   
+    #   if(sum(!is.na(df[[ii]]$flow_cfs)) > 0 & (sum(df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs)) > 0) ){
+    #     df[[ii]][df[[ii]]$flow_cfs <= -9997 & !is.na(df[[ii]]$flow_cfs),]$flow_cfs <- NA
+    #   }
       if(sum(!is.na(df[[ii]]$temp_c)) > 0){
         
         #   ---- This is mostly due to weird CDEC data.  
@@ -127,7 +143,7 @@ annualizeCovars <- function(site,min.date,max.date,season,taxon){
           df[[ii]][!is.na(df[[ii]]$temp_c) & df[[ii]]$temp_c == 0.0,]$temp_c <- NA
         }
       }
-    }  
+      
     
     #   ---- Compile the good dates for each metric. 
     min.date.flow <- suppressWarnings(min(df[[ii]][!is.na(df[[ii]]$flow_cfs),]$date))

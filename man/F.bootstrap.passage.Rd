@@ -4,9 +4,22 @@
 \alias{F.bootstrap.passage}
 \title{F.bootstrap.passage}
 \usage{
-F.bootstrap.passage(grand.df, catch.fits, catch.Xmiss, catch.gapLens,
-  catch.bDates.miss, eff.fits, eff.X, eff.ind.inside, eff.X.dates,
-  eff.X.obs.data, eff.type, sum.by, R, ci = T)
+F.bootstrap.passage(
+  grand.df,
+  catch.fits,
+  catch.Xmiss,
+  catch.gapLens,
+  catch.bDates.miss,
+  eff.fits,
+  eff.X,
+  eff.ind.inside,
+  eff.X.dates,
+  eff.X.obs.data,
+  eff.type,
+  sum.by,
+  R,
+  ci = T
+)
 }
 \arguments{
 \item{grand.df}{A data frame containing both daily estimated passage and 
@@ -140,22 +153,28 @@ In order to bootstrap the estimated passage for a particular trap,
 
 \section{Random Realizations}{
  Catch fit models are utilized to generate
-  random realizations of catch for each individual trap.  To do this, the 
-  \code{rmvnorm} function randomly samples from a multivariate normal 
-  distribution, with column dimension equal to the number of \eqn{\beta} 
-  coefficients utilized in that trap's catch model.  The \code{rmvnorm} uses 
-  the vector of model coefficients for the mean and the the modified 
-  quasilikelihood variance-covariance matrix for the variance. To emphasize 
-  calculation speed, the Cholesky matrix decomposition is used to calculate 
-  the variance matrix root.  Due to Poisson catch models utilizing a log 
-  link, betas and variances are on the log scale.
+  random realizations of catch for each individual trap.  To do this, we 
+  use the \code{mvtnorm::rmvnorm} function to randomly sample from a 
+  multivariate normal 
+  distribution, with dimension equal to the number of \eqn{\beta} 
+  coefficients utilized in the trap's catch model.  
+  The \code{mvtnorm::rmvnorm} routine uses 
+  the vector of model coefficients as the mean of the multivariate 
+  distribution and the the modified 
+  quasilikelihood variance-covariance matrix for the variance. To speed 
+  calculations, we use the Cholesky matrix decomposition to calculate 
+  the variance matrix root.  All betas and variances are on the log scale
+  because the Poisson catch models assume a log link.
   
-  Each of the \code{R} multivariate-normal samples is then utilized to create
-  a new prediction for missing catches, with each expanded by the log of the
-  trap down-time, i.e., trap down-time is an offset. Resulting predictions
-  for imputed catch are then exponentiated, and then combined with the
-  observed catch to create a full day-based temporal fishing record for each
-  trap.
+  After generation, we use each of the \code{R} multivariate-normal samples 
+  to create
+  a new prediction for missing catches. Random missing catches are 
+  expanded by the log of the
+  trap down-time, i.e., trap down-time or gap in fishing is an offset. 
+  We expatiate the resulting imputed catch predictions
+  and then combined with the
+  observed catch to create a dataset containing a catch record 
+  for every day of the season.
 }
 
 \references{

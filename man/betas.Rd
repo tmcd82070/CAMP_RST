@@ -6,7 +6,8 @@
 \title{Beta coefficients resulting from the fitting of trap- (\code{trapPositionID}
 or \code{subSiteID}) and river-specific (\code{site}) enhanced-efficiency
 models.}
-\format{A data frame with 40 rows and 24 variables.
+\format{
+A data frame with 40 rows and 24 variables.
 
 \describe{ A dataset containing beta estimates resulting from the fitting of 
 trap-specific generalized additive logistic models enhanced efficiency models
@@ -45,7 +46,8 @@ The variables are as follows:
   \item \code{available}. The number of distinct efficiency trials considered for beta estimation for the given \code{subsiteID}.
   \item \code{Stage}. Ubiquitously set to value of 'Final Model Betas'.  
 }
-}}
+}
+}
 \usage{
 data(betas)
 }

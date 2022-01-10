@@ -92,12 +92,12 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
   # the subSites we are working on so we can query the API later.
   #
   # The way Jason set this up is not the best.  The subSite to Site map 
-  # is stored over in the EnvCovDBpostgres package as a simple CSV. 
+  # is stored over as a simple CSV in the helperFiles directory of the package.
   # Ultimately, we want to store this information in the postgreSQL database
   # itself. This is Issue #105 in the campR Github repository.
   
   #   ---- We assemble all the unique ourSiteIDs we need for this run. 
-  luSubSiteID <- read.csv(paste0(find.package("EnvCovDBpostgres"),"/helperFiles/luSubSiteID.csv"))
+  luSubSiteID <- read.csv(paste0(find.package("campR"),"/helperFiles/luSubSiteID.csv"))
   xwalk <- luSubSiteID[luSubSiteID$subSiteID %in% attr(obs.eff.df,"catch.subsites"),]   # Change to catch.subsites.  Does this affect eff beta estimation?
  
   uniqueOurSiteIDsToQuery <- unique(na.omit(c(xwalk$ourSiteIDChoice1,xwalk$ourSiteIDChoice2)))
@@ -127,6 +127,10 @@ getTogetherCovarData <- function(obs.eff.df,min.date,max.date,traps,enhmodel){
       #   ---- Use these when constructing passage estimates.  Buff out a month each way.
       minEffDate <- as.POSIXct(min.date,format="%Y-%m-%d",tz=time.zone) - 90*24*60*60
       maxEffDate <- as.POSIXct(max.date,format="%Y-%m-%d",tz=time.zone) + 90*24*60*60
+      
+      # Truncate any hours from the date vars. Required by cov API.
+      minEffDate <- format(minEffDate, format="%Y-%m-%d") 
+      maxEffDate <- format(maxEffDate, format="%Y-%m-%d") 
     } else {
       
       #   ---- Use these when building enhanced efficiency trials.  

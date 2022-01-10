@@ -4,8 +4,13 @@
 \alias{F.est.efficiency}
 \title{F.est.efficiency}
 \usage{
-F.est.efficiency(release.df, batchDate, df.spline = 4, plot = TRUE,
-  plot.file = NA)
+F.est.efficiency(
+  release.df,
+  batchDate,
+  df.spline = 4,
+  plot = TRUE,
+  plot.file = NA
+)
 }
 \arguments{
 \item{release.df}{A data frame produced by \code{F.get.release.data}. 

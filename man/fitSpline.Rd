@@ -4,8 +4,15 @@
 \alias{fitSpline}
 \title{fitSpline}
 \usage{
-fitSpline(covarString, df, eff.ind.inside, tmp.df, dist, max.df,
-  eff.inside.dates)
+fitSpline(
+  covarString,
+  df,
+  eff.ind.inside,
+  tmp.df,
+  dist,
+  max.df,
+  eff.inside.dates
+)
 }
 \arguments{
 \item{covarString}{A character string of length one housing all covariates to

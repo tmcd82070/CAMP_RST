@@ -4,9 +4,19 @@
 \alias{F.lifestage.passage.forkLength}
 \title{F.lifestage.passage.forkLength}
 \usage{
-F.lifestage.passage.forkLength(site, taxon, min.date, max.date, by,
-  output.file, ci = TRUE, enhmodel = FALSE, autols = FALSE,
-  nls = NULL, weightuse = NULL)
+F.lifestage.passage.forkLength(
+  site,
+  taxon,
+  min.date,
+  max.date,
+  by,
+  output.file,
+  ci = TRUE,
+  enhmodel = FALSE,
+  autols = FALSE,
+  nls = NULL,
+  weightuse = NULL
+)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 

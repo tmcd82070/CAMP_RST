@@ -4,8 +4,7 @@
 \alias{F.get.indiv.fish.data}
 \title{F.get.indiv.fish.data}
 \usage{
-F.get.indiv.fish.data(site, taxon, run, min.date, max.date,
-  keep = "unmarked")
+F.get.indiv.fish.data(site, taxon, run, min.date, max.date, keep = "unmarked")
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 

@@ -3,11 +3,7 @@
 \docType{package}
 \name{campR}
 \alias{campR}
-\alias{campR-package}
 \title{campR: R routines for the CAMP R platform.}
-\description{
-campR: R routines for the CAMP R platform.
-}
 \section{Description}{
  Allow annual estimation of both catch and efficiency of
   juvenile Chinook salmon in the Central Valley of California.

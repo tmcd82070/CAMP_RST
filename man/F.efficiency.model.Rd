@@ -4,8 +4,7 @@
 \alias{F.efficiency.model}
 \title{F.efficiency.model}
 \usage{
-F.efficiency.model(obs.eff.df, plot = T, max.df.spline = 4,
-  plot.file = NA)
+F.efficiency.model(obs.eff.df, plot = T, max.df.spline = 4, plot.file = NA)
 }
 \arguments{
 \item{obs.eff.df}{A data frame with at least variables \code{batchDate} and 

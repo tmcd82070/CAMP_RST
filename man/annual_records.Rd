@@ -6,7 +6,8 @@
 \title{Annual estimates of available covariates, per site and estimation year.  Used in lieu of 
 daily covariate values in the estimation of enhanced efficiency models, when daily data 
 do not exist, or are otherwise not available.}
-\format{A data frame with 81 rows and 18 variables.
+\format{
+A data frame with 81 rows and 18 variables.
 
 \describe{Simple annual mean estimates per \code{site} and \code{Season}
 (typically year).  Values of \code{-9999} in variable \code{Season} indicate
@@ -33,7 +34,8 @@ The variables are as follows:
   \item \code{bdMeanMoonProp}. Estimated annualized mean effect due to proportion of fishing with moon in the sky.
   \item \code{bdMeanForkLength}. Estimated annualized mean effect due to mean fork length.  
 }
-}}
+}
+}
 \usage{
 data(annual_records)
 }

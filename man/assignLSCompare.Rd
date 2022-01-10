@@ -4,8 +4,13 @@
 \alias{assignLSCompare}
 \title{assignLSCompare}
 \usage{
-assignLSCompare(Data, muLIST, sigmaLIST, SAVE = TRUE,
-  output.file = output.file)
+assignLSCompare(
+  Data,
+  muLIST,
+  sigmaLIST,
+  SAVE = TRUE,
+  output.file = output.file
+)
 }
 \arguments{
 \item{Data}{A data.frame of the catch data with both the morphometric and

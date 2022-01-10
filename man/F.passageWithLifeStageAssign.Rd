@@ -4,9 +4,18 @@
 \alias{F.passageWithLifeStageAssign}
 \title{F.passageWithLifeStageAssign}
 \usage{
-F.passageWithLifeStageAssign(site, taxon, min.date, max.date, output.file,
-  ci = TRUE, autols = FALSE, nls = NULL, weightuse = NULL,
-  enhmodel = TRUE)
+F.passageWithLifeStageAssign(
+  site,
+  taxon,
+  min.date,
+  max.date,
+  output.file,
+  ci = TRUE,
+  autols = FALSE,
+  nls = NULL,
+  weightuse = NULL,
+  enhmodel = TRUE
+)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 
@@ -110,7 +119,7 @@ site <- 1000
 taxon <- "161980"
 min.date <- "2018-01-01"
 max.date <- "2018-08-01"
-output.file <- "passageWithLifeStageAssign_Imnaha_2019-10-31_15-33-40"
+output.file <- "passageWithLifeStageAssign_Imnaha_2019-10-31_15-33-50"
 ci <- TRUE
 autols <- FALSE
 nls <- 1

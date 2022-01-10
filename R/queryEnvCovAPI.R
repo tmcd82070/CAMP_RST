@@ -73,6 +73,10 @@ queryEnvCovAPI <- function(min.date,
                           oursitevar,
                           type = "D"){
 
+  cat("------ In queryEnvCovAPI -----------------\n")
+  cat(paste("min.date =", min.date, "\n"))
+  cat(paste("max.date =", max.date, "\n"))
+  cat(paste("oursitevar =", oursitevar, "\n"))
   
   # Check for valid date even though the API does this too.
   # This does not check for out of range dates.  E.g., "2001-2-30" is valid.
@@ -111,6 +115,8 @@ queryEnvCovAPI <- function(min.date,
   }
   )  
   
+  print(urlResult$status_code)
+  
   if( !is.null(urlResult) ){
 
     # I could make the 'stop' in these if statements into 'warning' and 
@@ -121,6 +127,14 @@ queryEnvCovAPI <- function(min.date,
       tbl <-  suppressWarnings( {jsonlite::fromJSON(httr::content(urlResult, 
                                                                   as = "text")) }
       )
+      
+      # --- debuggin 
+      print(head(tbl))
+      print(str(tbl))
+      cat("------ end debug -----------------\n")
+      # --- debuggin 
+      
+      
       tbl$date <- as.POSIXct(tbl$date, format = "%Y-%m-%d", tz = "America/Los_Angeles")
       tbl <- tbl %>% dplyr::select(
         date,

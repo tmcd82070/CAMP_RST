@@ -4,19 +4,31 @@
 \alias{GlobalVars}
 \title{CAMP RST Global Variables}
 \usage{
-GlobalVars(db.file = "..\\\\Data\\\\CAMP.mdb",
+GlobalVars(
+  db.file = "..\\\\Data\\\\CAMP.mdb",
   output.dir = "..\\\\outputs",
   sql.code.dir = file.path(find.package("campR"), "sql"),
-  samplePeriodCutTime = "04:00:00", max.ok.gap = 2,
-  fishingGapMinutes = 10080, knotMesh = 15, halfConeMulti = 2,
-  sample.size.forkLength = 100, sample.size.forkLengthAndWeight = 100,
-  weight.prop.forkLength = 0.5, forkLength.mean.diff = 10,
-  time.zone = "America/Los_Angeles", Yes.code = 1, No.code = 2,
-  seed = 884, forkLengthCutPoints = data.frame(lifeStage =
-  c("FL1 leq 41mm", "FL2 42-72mm", "FL3 73-110mm", "FL4 geq 111mm"),
-  cutPoints = c(41, 72, 110, 9999)), passageRounder = 4,
-  eff.min.spline.samp.size = 10, unassd.sig.digit = 1,
-  bootstrap.CI.fx = "f.ci", R = 100)
+  samplePeriodCutTime = "04:00:00",
+  max.ok.gap = 2,
+  fishingGapMinutes = 10080,
+  knotMesh = 15,
+  halfConeMulti = 2,
+  sample.size.forkLength = 100,
+  sample.size.forkLengthAndWeight = 100,
+  weight.prop.forkLength = 0.5,
+  forkLength.mean.diff = 10,
+  time.zone = "America/Los_Angeles",
+  Yes.code = 1,
+  No.code = 2,
+  seed = 884,
+  forkLengthCutPoints = data.frame(lifeStage = c("FL1 leq 41mm", "FL2 42-72mm",
+    "FL3 73-110mm", "FL4 geq 111mm"), cutPoints = c(41, 72, 110, 9999)),
+  passageRounder = 4,
+  eff.min.spline.samp.size = 10,
+  unassd.sig.digit = 1,
+  bootstrap.CI.fx = "f.ci",
+  R = 100
+)
 }
 \arguments{
 \item{db.file}{Character string giving the full path and name of the CAMP 

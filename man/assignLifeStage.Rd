@@ -4,8 +4,13 @@
 \alias{assignLifeStage}
 \title{assignLifeStage}
 \usage{
-assignLifeStage(DATA, groupN = 1, USEWeight = NULL,
-  output.file = output.file, ...)
+assignLifeStage(
+  DATA,
+  groupN = 1,
+  USEWeight = NULL,
+  output.file = output.file,
+  ...
+)
 }
 \arguments{
 \item{DATA}{A data frame of the catch data with the weight measurement, as

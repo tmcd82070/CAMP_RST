@@ -4,8 +4,15 @@
 \alias{F.length.frequency}
 \title{F.length.frequency}
 \usage{
-F.length.frequency(site, taxon, run, min.date, max.date, output.file,
-  by.lifestage)
+F.length.frequency(
+  site,
+  taxon,
+  run,
+  min.date,
+  max.date,
+  output.file,
+  by.lifestage
+)
 }
 \arguments{
 \item{site}{The identification number of the site for which estimates are 

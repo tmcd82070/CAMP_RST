@@ -262,7 +262,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
     
     #   ---- Open ODBC channel.
     db <- get( "db.file", envir=.GlobalEnv )
-    ch <- odbcConnectAccess(db)
+    ch <- RODBC::odbcConnectAccess(db)
     
     #   ---- Develop the hours fished and TempSamplingSummary table.
     F.run.sqlFile( ch, "QrySamplePeriod.sql", R.TAXON=taxon )
@@ -274,7 +274,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
     F.run.sqlFile( ch, "QryUnmarkedByRunLifestage.sql", R.TAXON=taxon )
     
     #   ---- Now, fetch the result.  
-    catch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
+    catch <- RODBC::sqlFetch( ch, "TempSumUnmarkedByTrap_Run_Final" )
     close(ch)
     
     if(nvisits > 0 & nrow(catch) == 0){

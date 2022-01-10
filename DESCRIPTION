@@ -8,35 +8,25 @@ Author: Trent McDonald [aut, cre],
   Jared Studyvin [aut],
   Connie Shannon [ctb]
 Maintainer: Trent McDonald <trent@mcdonalddatasciences.com>
-Description: R routines that estimate passage and do other things
-  inside the RST platform. 
+Description: R routines that estimate juvenile salmonid passage, and other routines,
+  inside the Rotary Screw Trap (RST) platform. 
 License: GNU General Public License
-RoxygenNote: 6.1.1
-Depends: RODBC, 
- EnvCovDBpostgres,
- R (>= 2.10)
+RoxygenNote: 7.1.2
+Depends: R (>= 2.10)
 Imports:
- assertthat,
+ utils, 
+ RODBC, 
  DBI,
+ splines,
  dplyr,
- ellipse,
- grDevices,
- lubridate,
- magrittr,
- MASS,
- mclust,
- mvtnorm,
- plyr,
- quantreg, 
- R6,
- Rcpp,
  RPostgres,
- splines, 
- tidyr,
- tools
-Suggests: R.rsp,
-    knitr,
-    rmarkdown
+ httr,
+ crayon, 
+ magrittr,
+ knitr,
+ ellipse, 
+ jsonlite,
+ mvtnorm
 LazyData: true
-VignetteBuilder: R.rsp
+VignetteBuilder: knitr
 Encoding: UTF-8

@@ -114,22 +114,28 @@
 #'   glm variance.
 #'   
 #' @section Random Realizations: Catch fit models are utilized to generate
-#'   random realizations of catch for each individual trap.  To do this, the 
-#'   \code{rmvnorm} function randomly samples from a multivariate normal 
-#'   distribution, with column dimension equal to the number of \eqn{\beta} 
-#'   coefficients utilized in that trap's catch model.  The \code{rmvnorm} uses 
-#'   the vector of model coefficients for the mean and the the modified 
-#'   quasilikelihood variance-covariance matrix for the variance. To emphasize 
-#'   calculation speed, the Cholesky matrix decomposition is used to calculate 
-#'   the variance matrix root.  Due to Poisson catch models utilizing a log 
-#'   link, betas and variances are on the log scale.
+#'   random realizations of catch for each individual trap.  To do this, we 
+#'   use the \code{mvtnorm::rmvnorm} function to randomly sample from a 
+#'   multivariate normal 
+#'   distribution, with dimension equal to the number of \eqn{\beta} 
+#'   coefficients utilized in the trap's catch model.  
+#'   The \code{mvtnorm::rmvnorm} routine uses 
+#'   the vector of model coefficients as the mean of the multivariate 
+#'   distribution and the the modified 
+#'   quasilikelihood variance-covariance matrix for the variance. To speed 
+#'   calculations, we use the Cholesky matrix decomposition to calculate 
+#'   the variance matrix root.  All betas and variances are on the log scale
+#'   because the Poisson catch models assume a log link.
 #'   
-#'   Each of the \code{R} multivariate-normal samples is then utilized to create
-#'   a new prediction for missing catches, with each expanded by the log of the
-#'   trap down-time, i.e., trap down-time is an offset. Resulting predictions
-#'   for imputed catch are then exponentiated, and then combined with the
-#'   observed catch to create a full day-based temporal fishing record for each
-#'   trap.
+#'   After generation, we use each of the \code{R} multivariate-normal samples 
+#'   to create
+#'   a new prediction for missing catches. Random missing catches are 
+#'   expanded by the log of the
+#'   trap down-time, i.e., trap down-time or gap in fishing is an offset. 
+#'   We expatiate the resulting imputed catch predictions
+#'   and then combined with the
+#'   observed catch to create a dataset containing a catch record 
+#'   for every day of the season. 
 #'   
 #' @references Manly, B. F. J.  Randomization, Bootstrap and Monte Carlo Methods
 #'   in Biology, Third Edition, 2006.  Chapman and Hall/CRC.
@@ -262,7 +268,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
             rbeta <- matrix( -10, nrow=R, ncol=1 )
           } else {
             #   ---- Generate random coefficients.
-            rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector. rbeta is R X (n coef)
+            rbeta <- mvtnorm::rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  # R random realizations of the beta vector. rbeta is R X (n coef)
           }
 
           #   ---- Predict catches using random coefficients.
@@ -417,7 +423,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
               
               #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
               sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
-              rbeta <- rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
+              rbeta <- mvtnorm::rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
 
             
             } else {
@@ -432,7 +438,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
               
               #   ---- This "matrix" is 1x1 here by design...only doing this for intercept-only models.
               sig <- as.matrix(disp*( solve(t(X) %*% diagonal %*% X) ))
-              rbeta <- rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
+              rbeta <- mvtnorm::rmvnorm(n=R, mean=log(p/(1-p)),sigma=sig,method="chol")
             }
 #             #   ---- Bootstrap on the observed efficiency trials.
 #             bsDF <- lapply(1:100000, function(x) eff.obs.data[sample(seq(1:length(eff.obs.data$nReleased)),replace=TRUE),])
@@ -444,7 +450,7 @@ F.bootstrap.passage <- function( grand.df, catch.fits, catch.Xmiss, catch.gapLen
 #             bspVar <- var(bsp)*this is wrong
             
           } else {
-            rbeta <- rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  
+            rbeta <- mvtnorm::rmvnorm(n=R, mean=beta, sigma=sig, method="chol")  
           }
           
           #   ---- Predict efficiency using random coefficients

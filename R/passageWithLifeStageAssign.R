@@ -140,6 +140,10 @@ F.passageWithLifeStageAssign <- function(site, taxon, min.date, max.date, output
 #   weightuse <- NULL
 #   autols <- FALSE
   
+  cat("---- At begginning of passageWithLifeStageAssign ----\n")
+  cat(".libPaths() = \n")
+  cat(paste(.libPaths(), "\n"))
+
   #   ---- Make sure we have all temp tables.
   tableChecker()
   

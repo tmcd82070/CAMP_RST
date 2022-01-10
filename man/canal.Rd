@@ -6,7 +6,8 @@
 \title{Average cubic feet per second recorded from the total dishcarge diverted to
 the two side canals immediately prior to the flow of the Scaramento River
 through the Red Bluff Diversion Dam.}
-\format{A data frame with 366 rows and 2 variables.
+\format{
+A data frame with 366 rows and 2 variables.
 
 \describe{A dataset containing a row for each day of the leap-year in the format of \code{mm-dd}, and another column holding the average 
 cubic feet per second through the two diversion canals on the Sacramento River immediately before the Red Bluff Diversion Dam.  Daily 
@@ -17,7 +18,8 @@ The variables are as follows:
   \item \code{monthDay}. Month-day identifier in the form \code{mm-dd}.  Note entry for \code{2-29}.  
   \item \code{average_cfs}. Estimated diversion daily flow in cubic feet per second.  
 }
-}}
+}
+}
 \usage{
 data(canal)
 }

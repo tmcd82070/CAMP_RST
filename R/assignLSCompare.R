@@ -180,7 +180,7 @@ assignLSCompare <- function(Data,muLIST,sigmaLIST,SAVE=TRUE,output.file=output.f
 
             for(j in 1:ncol(mu)){
                 #points(ellipse::ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')
-              points(ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')
+                 points(ellipse::ellipse(Sigma[vars,vars,j],centre=mu[vars,j]),type='l')
 
             } # end for j
 

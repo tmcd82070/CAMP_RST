@@ -4,9 +4,23 @@
 \alias{backEnhFit}
 \title{backEnhFit}
 \usage{
-backEnhFit(tmp.df, df, initialVars, possibleVars, m.i, eff.ind.inside,
-  max.df.spline, eff.inside.dates, trap, model.info, fits, plot.file,
-  option, bsplBegDt, bsplEndDt)
+backEnhFit(
+  tmp.df,
+  df,
+  initialVars,
+  possibleVars,
+  m.i,
+  eff.ind.inside,
+  max.df.spline,
+  eff.inside.dates,
+  trap,
+  model.info,
+  fits,
+  plot.file,
+  option,
+  bsplBegDt,
+  bsplEndDt
+)
 }
 \arguments{
 \item{tmp.df}{The reduced data frame originating from \code{df} containing 
