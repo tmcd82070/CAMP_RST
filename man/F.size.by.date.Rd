@@ -2,7 +2,7 @@
 % Please edit documentation in R/size_by_date.r
 \name{F.size.by.date}
 \alias{F.size.by.date}
-\title{F.size.by.date}
+\title{F.size.by.date - Plot fork lengths through time.}
 \usage{
 F.size.by.date(site, taxon, run, min.date, max.date, output.file)
 }
@@ -13,8 +13,19 @@ required.}
 \item{taxon}{The species identifier indicating the type of fish of interest. 
 This is always \code{161980}; i.e., Chinook Salmon.}
 
-\item{run}{The text seasonal identifier.  This is a one of \code{"Spring"}, 
-\code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.}
+\item{run}{The run code.  This is an integer value that corresponds to 
+a run listed in table \code{luRun} which is housed inside the Access database. 
+At the time of this writing, the \code{luRun} table translated run codes as:
+\itemize{
+  \item 1 = Spring
+  \item 2 = Summer
+  \item 3 = Fall
+  \item 4 = Winter
+  \item 5 = Late fall
+  \item 6 = Mixed
+}
+Normally, the translation from text (e.g., "fall") to code (e.g., 3) is done 
+by the camp interface.}
 
 \item{min.date}{The start date for data to include. This is a text string in 
 the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
@@ -26,7 +37,7 @@ the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.}
 saved.  Set to NA to plot to the Plot window.}
 }
 \value{
-A graphical \code{png} entitled via parameter \code{output.file}, displyaing 
+A graphical \code{png} entitled via parameter \code{output.file}, displaying 
 fork length in millimeters as a function of time.  Also, an accompanying \code{csv}
 containing the data used in plotting.
 }
@@ -34,36 +45,47 @@ containing the data used in plotting.
 Plot fork length (mm) of fish by date of catch for a particular
   site and year.
 }
-\details{
-Function \code{F.size.by.date} first compiles fish data via function
-  \code{F.get.indiv.fish.data}.  Trapping instances include both valid and
-  invalid catch, as determined via variable \code{includeCatchID}.  Thus, 
-  resulting graphs may display both valid and invalid fishing instances, if 
-  both trappining instances took place within the time period specified 
-  via \code{min.date} and \code{max.date.}
+\section{Details}{
+
+This routine compiles fish from the CAMP Access dBase using function
+  \code{F.get.indiv.fish.data}.  Fish are included from both "valid" and 
+  "invalid" trapping instances where "valid" means \code{includeCatchID = TRUE}.  Thus, 
+  resulting graphs can display both valid and invalid fishing instances if 
+  both types of trapping instances took place between
+  \code{min.date} and \code{max.date.}
   
-  All observations are jittered when plotted, so as to ensure the volume of 
-  any one particular date and fork length combination can be visualized.  
+  Observations in the output graph are jittered slightly when plotted to show 
+  the number of measurements on each date.  
   
-  In the case when no valid catch records are found, and hence no fish can 
-  contribute to the analysis, a blank \code{png} stating as such is returned.
+  When no valid catch records are found, a blank \code{png} is returned.
 }
+
+\section{Author}{
+
+ Trent McDonald and Jason Mitchell
+}
+
 \examples{
 \dontrun{
 # Create a plot of fork length by data for the American.
 site <- 57000
 taxon <- 161980
-run <- "Fall"
+run <- 3
 min.date <- "2014-01-01"
 max.date <- "2014-06-01"
 output.file <- "American"
 
 F.size.by.date(site,taxon,run,min.date,max.date,output.file)
+
+# Testing on Trent's local machine
+db.file <- file.path("C:/Users/trent/Documents/Projects/1200-RSTPlatform/ThePlatform",
+         "CAMP_RST20220103-campR2.0.14/Data/TestingDBs/newStanislausCAMP_20Sept2018/CAMP.mdb")
+output.file <- file.path("C:/Users/trent/Documents/Projects/1200-RSTPlatform/ThePlatform",
+         "CAMP_RST20220103-campR2.0.14/Outputs/size.by.date_ST004X_2022-03-21_14-33-45")
+F.size.by.date(site,taxon,run,min.date,max.date,output.file)
+
 }
 }
 \seealso{
 \code{F.get.indiv.fish.data}
-}
-\author{
-WEST Inc.
 }

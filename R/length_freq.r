@@ -1,39 +1,24 @@
 #' @export
 #' 
-#' @title F.length.frequency
+#' @title F.length.frequency - Histogram of fork lengths
 #'   
-#' @description Plot frequency distribution of fork lengths over all inclusive
-#'   data, or by individual life stage,
+#' @description Plot frequency distribution of fork lengths over life stages
+#' or by life stage
 #' 
-#' @param site The identification number of the site for which estimates are 
-#'   required.
-#' @param taxon The species identifier indicating the type of fish of interest. 
-#'   This is always \code{161980}; i.e., Chinook Salmon.
-#' @param run The text seasonal identifier.  This is a one of \code{"Spring"}, 
-#'   \code{"Fall"}, \code{"Late Fall"}, or \code{"Winter"}.
-#' @param min.date The start date for data to include. This is a text string in 
-#'   the format \code{\%Y-\%m-\%d}, or \code{YYYY-MM-DD}.
-#' @param max.date The end date for data to include.  Same format as 
-#'   \code{min.date}.
-#' @param output.file The name of the file prefix under which output is to be 
-#'   saved.  Set to NA to plot to the Plot window.
+#' @inheritParams F.size.by.date
+
 #' @param  by.lifestage  When set to \code{TRUE}, distributions are reported for 
 #'   individual life stages.  Otherwise, they are collapsed and reported for all
 #'   fish.
 #'   
-#' @details Function \code{F.length.freq} utilizes function
-#'   \code{F.get.indiv.fish.data} to obtain individual fish fork length data. 
-#'   Trapping instances include both valid and invalid catch, as determined via
-#'   variable \code{includeCatchID}.  Thus, resulting graphs may display both
-#'   valid and invalid fishing instances, if both trappining instances took
-#'   place within the time period specified via \code{min.date} and
-#'   \code{max.date.}
+#' @inheritSection F.size.by.date Details
+#' 
 #'   
 #' @return Either a single histogram, if variable \code{by.lifestage} is set to
 #'   \code{FALSE}. Otherwise, a histogram for each individual life stage present
 #'   within the data.
 #'   
-#' @author WEST Inc.
+#' @inheritSection F.size.by.date Author
 #'   
 #' @seealso \code{F.get.indiv.fish.data} 
 #'   
@@ -42,168 +27,49 @@
 #' #   ---- Obtain graphical histograms for the American. 
 #' site <- 57000
 #' taxon <- 161980
-#' run <- "Fall"
+#' run <- 3
 #' min.date <- "2014-01-01"
 #' max.date <- "2014-06-06"
 #' output.file <- "American"
 #' by.lifestage <- TRUE
 #' 
 #' F.length.frequency(site,taxon,run,min.date,max.date,output.file,by.lifestage)
+#' 
+#' # Testing on Trent's local machine
+#' db.file <- file.path("C:/Users/trent/Documents/Projects/1200-RSTPlatform/ThePlatform",
+#'          "CAMP_RST20220103-campR2.0.14/Data/TestingDBs/newStanislausCAMP_20Sept2018/CAMP.mdb")
+#' output.file <- file.path("C:/Users/trent/Documents/Projects/1200-RSTPlatform/ThePlatform",
+#'          "CAMP_RST20220103-campR2.0.14/Outputs/length.frequency_ST004X_2022-03-21_14-33-45")
+#' F.length.frequency(site,taxon,run,min.date,max.date,output.file,FALSE)
+#' output.file <- paste0(output.file, "_lstage")
+#' F.length.frequency(site,taxon,run,min.date,max.date,output.file,TRUE)
+#'          
 #' }
 F.length.frequency <- function( site, taxon, run, min.date, max.date, output.file, by.lifestage ){
 
-  # site <_ 57000
-  # taxon <- 161980
-  # run <- "Fall"
-  # min.date <- "2014-01-01"
-  # max.date <- "2014-06-06"
-  # output.file <- "American"
-  # by.lifestage <- TRUE
-
-  #   ---- Make sure we have all temp tables.
-  tableChecker()
-  
-  #   ---- Get global environment stuff.
-  db.file <- get("db.file",envir=.GlobalEnv)
-  table.names <- get("table.names",envir=.GlobalEnv)
-  
   #   ---- Check that taxon is Chinook salmon.  
   if( taxon != 161980 ) stop("Cannot specify any species other than Chinook salmon, code 161980.")
 
+  #   ---- Retrieve catch data with fork length attached. 
+  catch.df <- getCatchForkLenth( site, taxon, run, min.date, max.date )
+  
   #   ---- Open a graphics device.
   if( !is.na(output.file) ){
     
     #   ---- Open PNG device.
-    out.graphs <- paste(output.file, "_len_freq.png", sep="")
+    out.graphs <- paste(output.file, ".png", sep="")
     if(file.exists(out.graphs)){
       file.remove(out.graphs)
     }
     tryCatch({png(filename=out.graphs,width=7,height=7,units="in",res=600)}, error=function(x){png(filename=out.graphs)})
   }
-
-  #   ---- If breaking out by life stage, get their labels.  
-  if( by.lifestage ){
-    ch <- odbcConnectAccess(db.file)
-    CAMP.life.stage <- sqlFetch(ch, table.names["CAMP.life.stages"])
-    rst.life.stage <- sqlFetch(ch, table.names["life.stages"])
-    close(ch)
-  }
-
-  #   ---- Retrieve basic data set, one line per fish or group of fish of same length.
-  catch.df   <- F.get.indiv.fish.data( site, taxon, run, min.date, max.date, keep="unmarked" )
-
-  #   ---- Remove unnecessary variables.  
-  catch.df$includeCatchID <-
-  catch.df$preUnmarked <-
-  catch.df$halfConeAssignedCatch <-
-  catch.df$oldtrapPositionID <-
-  catch.df$halfConeUnassignedCatch <-
-  catch.df$assignedCatch <-
-  catch.df$unassignedCatch <-
-  catch.df$modUnassignedCatch <- catch.df$modAssignedCatch <- NULL
-
-  #   ---- When catch.df has no data, it doesn't get batchDates added.  Add this.  
-  if(nrow(catch.df) == 0){
-    names(catch.df)[names(catch.df) == 'SampleDate'] <- 'batchDate'
-    #catch.df <-  data.frame(catch.df,batchDate=integer(0))
-  }
-  
-  #   ---- Grab non-valid catch, while preserving the attributes from the catch query.
-  attributesSafe <- attributes(catch.df)
-  db <- get( "db.file", envir=.GlobalEnv ) 
-  ch <- odbcConnectAccess(db)
-  
-  F.run.sqlFile( ch, "QryNonValidFishing.sql", R.TAXON=taxon )   
-  nvCatch <- sqlFetch( ch, "TempSumUnmarkedByTrap_Run_X_final" )        
-  F.sql.error.check(nvCatch)
-
-  #   ---- Fetch run name for use in reporting and query restrictions.
-  tables <- get( "table.names", envir=.GlobalEnv )
-  runs <- sqlQuery(ch, paste( "SELECT run, runID FROM", tables["run.codes"] ))
-  F.sql.error.check(runs)
-  run.name <- as.character(runs$run[ runs$runID == run ])
-
-  close(ch)
-
-  #   ---- Construct the data frames needed to plot the data.  In other words, 
-  #   ---- subset the catches to just positives.  Toss the 0 catches.
-  nvCatch <- nvCatch[ (nvCatch$Unmarked > 0) & nvCatch$FinalRun == run.name, ]  
-  
-  #   ---- Check if there is any non-valid catch.  
-  if(nrow(nvCatch) > 0){
-    nvCatch$Unassd <- nvCatch$lifeStage
-    nvCatch2 <- F.expand.plus.counts( nvCatch )
-    nvCatch2$includeCatchID <- 2
-    nvCatch3 <- F.assign.batch.date( nvCatch2 )
-    nvCatch.df <- nvCatch3[,names(catch.df)]
-    
-    #   ---- Check if we also have valid catch. 
-    if(nrow(catch.df) > 0 & nrow(nvCatch.df) > 0){
-      catch.df <- rbind(catch.df,nvCatch.df)
-      attributes(catch.df) <- attributesSafe
-      disc <- 'Plotted fork lengths include data from both successful and unsuccessful fishing.'
-    
-    #   ---- Check if we have non-valid catch alone.
-    } else if(nrow(catch.df) == 0 & nrow(nvCatch.df) > 0){
-      catch.df <- nvCatch.df
-
-      #   ---- In this case, there are no attributes to bring in, so do it now.  We need the 
-      #   ---- row.names attribute to be something, or else catch.df goes back to zero data.
-      attributesSafe$row.names <- rownames(nvCatch.df)   
-      attributes(catch.df) <- attributesSafe
-      disc <- 'Plotted fork lengths include data from only unsuccessful fishing.'    
-    } 
-  
-  #   ---- Check if we only have valid catch data, and no non-valid data.  
-  } else if(nrow(catch.df) > 0 & nrow(nvCatch) == 0){
-    catch.df <- catch.df
-    attributes(catch.df) <- attributesSafe
-    disc <- 'Plotted fork lengths include data from only successful fishing.'     
-  } 
-  
-  #   ---- Deal with the situation when no records ever found.
-  if(nrow(catch.df) == 0){
-    plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
-    text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")
-    dev.off(dev.cur())
-    ans <- out.graphs
-    cat("FAILURE - F.length.frequency\n\n")
-    cat(paste("Working directory:", getwd(), "\n"))
-    cat(paste("R data frames saved in file:", "<no RData saved>", "\n\n"))
-    cat("Number of files created in working directory = 1\n")
-    cat(paste(out.graphs, "\n"))
-    cat("\n")    
-    return(catch.df)
-  }
-  
-  #   ---- In the case when lifeStage is a factor, convert to character.  
-  if(class(catch.df$lifeStage) == 'factor'){catch.df$lifeStage <- as.character(droplevels(catch.df$lifeStage))}   # jason add
-
-  #   ---- Define some quantities useful for plotting.  
-  y <- catch.df$forkLength
-  n <- catch.df$Unmarked  #catch.df$n
-  if( by.lifestage ){
-    lstage <- catch.df$lifeStage
-  } else {
-    lstage <- rep(0, length(y))
-  }
-
-  #   ---- Prevent records from plotting if any critical data are missing.  This means
-  #   ---- limit the lifestages to fry, parr, and smolt.
-  drop <-  is.na(y) | is.na(lstage) | is.na(n)
-  if( (length(taxon) == 1) & (taxon == 161980) & by.lifestage == TRUE ){  
-    drop <- drop | !(lstage %in% c('Fry','Parr','Smolt'))  
-  }
-  y <- y[!drop]
-  lstage <- lstage[!drop]
-  n <- n[!drop]
   
   #   ---- It could be the case that we get a small number of records that make it through
   #   ---- to the drop stage above, but end up getting thrown out, most likely due to the
   #   ---- lifeStage being Unassigned, and making it through the plus-count algorithm 
   #   ---- non-sliced and -diced.  This happens on occasion.  This means, there is now no
   #   ---- data to plot.  So, repeat the "no data to plot" code here for this contingency. 
-  if( length(n) == 0 ){
+  if( nrow(catch.df) == 0 ){
     plot( c(0,1), c(0,1), xaxt="n", yaxt="n", type="n", xlab="", ylab="")
     text( .5,.5, "All Zero's\nCheck dates\nCheck that finalRunID is assigned to >=1 fish per visit\nCheck sub-Site were operating between dates")
     dev.off(dev.cur())
@@ -215,18 +81,23 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
     cat("\n")        
     return(catch.df)
   }
+
+  #   ---- Define some quantities useful for plotting.  
+  y <- catch.df$forkLength
+  n <- catch.df$Unmarked  
+  if( by.lifestage ){
+    lstage <- catch.df$lifeStage
+  } else {
+    lstage <- rep(0, length(y))
+  }
   
   #   ---- Repeat the values for number of fish of that particular length.
   y <- rep(y, n)
   lstage <- rep(lstage, n)
 
-  #   ---- Formulate an internal function to compute common break points.
+  #   ---- An internal function to compute common break points.
   f.breaks <- function(x, near=10, width=2){
 
-    # x <- y
-    # near <- 10
-    # width <- 2
-    
     #   ---- Rounds down to nearest 'near' number.
     lolim <- trunc( min(x)/near ) * near  
     
@@ -236,22 +107,15 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
     bks
   }
 
-  #   ---- Formulate an internal function to compute common y-axes.
+  #   ---- An internal function to compute common y-axes.
   f.max.bar.hgt <- function(x, bks){
     h <- hist(x, breaks=bks, plot=F )
     max(h$counts)
   }
 
-  #   ---- Formulate an internal function to draw one length frequency plot.
+  #   ---- An internal function to draw one length frequency plot.
   f.len.freq <- function(x, bks, col, last=F, max.y, stage){
   
-    # x <- yy
-    # bks <- bks
-    # col <- mycol[ i ]
-    # last <- TRUE
-    # max.y <- max.y
-    # stage <- stage.name
-
     #   ---- Plot the bars.
     if(last) {
       xa <- "s" 
@@ -296,6 +160,7 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
   }
 
   #   ---- Set the main titles.
+  disc <- attr(catch.df, "disc")
   main.l1 <- attr(catch.df, "site.name")
   main.l2 <- attr(catch.df, "species.name") 
   if( !is.na(attr(catch.df, "runID")) ){
@@ -334,10 +199,11 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
     }
     
     #   ---- Plot histograms.
+    myleg <- attr(catch.df, "legendEntries")
     for( i in 1:nl ){
       ind <- life.stages[i] == lstage
       yy <- y[ind]
-      stage.name <- CAMP.life.stage$lifeStageCAMP[ CAMP.life.stage$lifeStageCAMP == life.stages[i] ]
+      stage.name <- life.stages[i] 
       if( i == nl ){
         
         #   ---- This is the bottom panel.  Make room for x-axis ticks and label.
@@ -392,7 +258,7 @@ F.length.frequency <- function( site, taxon, run, min.date, max.date, output.fil
   dev.off()
 
   #   ---- Write the CSV file.
-  out.csv <- paste(output.file, "_len_freq.csv", sep="")
+  out.csv <- paste(output.file, ".csv", sep="")
   write.table( ans, file=out.csv, sep=",", row.names=F )
 
   tableDeleter()
