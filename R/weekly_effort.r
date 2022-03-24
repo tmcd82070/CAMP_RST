@@ -5,7 +5,7 @@
 #' @description Compute weekly "Fishing" and 
 #'   "Not fishing" hours, then plot.
 #'   
-#' @inheritParams F.site.by.date
+#' @inheritParams F.size.by.date
 #' 
 #' @return A \code{png} graphical display and \code{csv} of underlying data, for
 #'   each unique trap with fishing data between the specified \code{min.date}
@@ -49,7 +49,7 @@
 #'   
 #' @seealso \code{F.run.sqlFile}
 #'   
-#' @author WEST Inc.
+#' @inheritSection F.size.by.date Author
 #'   
 #' @examples
 #' \dontrun{

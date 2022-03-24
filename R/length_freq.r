@@ -6,7 +6,7 @@
 #' or by life stage
 #' 
 #' @inheritParams F.size.by.date
-
+#' 
 #' @param  by.lifestage  When set to \code{TRUE}, distributions are reported for 
 #'   individual life stages.  Otherwise, they are collapsed and reported for all
 #'   fish.
