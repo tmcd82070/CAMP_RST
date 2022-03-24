@@ -345,7 +345,7 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
     cat(paste("Site=,", siteLabel, "\n", sep=""))
     cat(paste("Site ID=,", eff.df3$Position[1], "\n", sep=""))
     cat(paste("Species ID=,", 161980, "\n", sep=""))
-    cat(paste("Summarized by= week\n", sep=""))
+    cat(paste("Summarized by=, week\n", sep=""))
     cat(paste("Dates included=,", rs, "\n", sep=""))
     cat(paste("Note:  All time units in minutes.\n"))  
   
