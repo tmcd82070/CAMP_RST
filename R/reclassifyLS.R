@@ -41,7 +41,7 @@ F.reclassifyLS <- function(catch){
   #   ---- We pull out the labels and cutpoints separately.  Note that we add in the "0" to the cut points vector
   #   ---- manually. We also add a "-100" since we are going to map NAs in forkLength to -99.  This construction
   #   ---- ensures that NA forkLength get mapped to their own group -- this becomes "Unassigned".  
-  newLSLabels <- c("Unassigned",as.character(droplevels(forkLengthCutPoints$lifeStage)))
+  newLSLabels <- c("Unassigned",as.character(forkLengthCutPoints$lifeStage))
   newLScutPoints <- c(-100,0,forkLengthCutPoints$cutPoints)
   
   #   ---- Check to make sure user-specified dataframe forkLengthCutPoints is at least numeric.  

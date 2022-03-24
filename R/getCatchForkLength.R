@@ -121,7 +121,7 @@ getCatchForkLenth <- function( site, taxon, run, min.date, max.date ){
   
   #   ---- In the case when lifeStage is a factor, convert to character.  
   if(class(catch.df$lifeStage) == 'factor'){
-    catch.df$lifeStage <- as.character(droplevels(catch.df$lifeStage))
+    catch.df$lifeStage <- as.character(catch.df$lifeStage)
   }   
   
   #   ---- Prevent records from plotting if any critical data are missing.  This means

@@ -110,15 +110,8 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   # ---- If we are using enhanced efficiency trials, we should always have an efficiency model,
   # ---- unless a trap is new for the year defined by original min.date and max.date.  Define
   # ---- traps vector appropriately so the looping works appropriately.
-  if(enhmodel == TRUE){
-    
-    #   ---- 6/21/2018 -- I believe that with makeFake release.df, traps is the same always.
-    traps <- as.character(droplevels(sort(unique(obs.eff.df$TrapPositionID))))
-    # traps <- as.character(catch.subsites)
-  } else {
-    traps <- as.character(droplevels(sort(unique(obs.eff.df$TrapPositionID))))
-  }
-  
+  traps <- sort(unique(as.character(obs.eff.df$TrapPositionID)))
+
   fits <- all.X <- all.ind.inside <- all.dts <- obs.data <- eff.type <- vector("list", length(traps))
   names(fits) <- traps
   names(all.X) <- traps
@@ -636,7 +629,9 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
           close(ch)
           newSubsites <- newSubsites[newSubsites$subSiteID %in% catch.subsites,]
           if(is.factor(newSubsites$subSiteName)){
-            newSubsites$subSiteName <- as.character(droplevels(newSubsites$subSiteName))
+            # Note: as.character drops missing factor levels, like droplevels
+            # And: don't need this inside an if(is.factor()), cause as.character works same on characters and factors, but I'll leave it
+            newSubsites$subSiteName <- as.character(newSubsites$subSiteName)
           }
           
           pos <- 1
@@ -859,7 +854,7 @@ F.efficiency.model <- function( obs.eff.df, plot=T, max.df.spline=4, plot.file=N
   close(ch)
   newSubsites <- newSubsites[newSubsites$subSiteID %in% catch.subsites,]
   if(is.factor(newSubsites$subSiteName)){
-    newSubsites$subSiteName <- as.character(droplevels(newSubsites$subSiteName))
+    newSubsites$subSiteName <- as.character(newSubsites$subSiteName)
   }
   
   attr(ans,"subsites") <- newSubsites
