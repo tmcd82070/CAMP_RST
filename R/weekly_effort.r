@@ -115,7 +115,6 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
     dplyr::mutate(EffortDate = as.POSIXct(format(EffortDate), tz = get("time.zone", envir = .GlobalEnv)))
     
   #   ---- Obtain Julian dates so days can be mapped to specialized Julian weeks. 
-  # JDates <- RODBC::sqlFetch( ch, "Dates" )
   Site <- RODBC::sqlFetch( ch, "Site")
   close(ch) 
   
@@ -135,243 +134,299 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
     dplyr::select(-FishingEffort) %>% 
     dplyr::arrange(Position, EffortDate, EffortID) %>% 
     dplyr::rename(Date = EffortDate)
-      
-  eff.dfWide <- eff.df2 %>% 
-    tidyr::pivot_wider(id_cols = c("Position", "Year", "JWeek", "Date"), 
-                       names_from = EffortID, 
-                       names_prefix = "Minutes.", 
-                       values_from = Minutes, 
-                       values_fill = 0) %>% 
-    dplyr::select(Position, Year, JWeek, Date, Minutes.1, Minutes.2, Minutes.3) %>% 
-    dplyr::mutate(Total = Minutes.1 + Minutes.2 + Minutes.3, 
-                  Diff = Total - minPerDay)
   
-
-  #   ---- Set up data frame of dates and time possibilities.  Get min and max over all 
-  #   ---- traps so all resulting data frames are the same size.
-  minDate <- min( eff.dfWide$Date )
-  maxDate <- max( eff.dfWide$Date )
-  
-  #   ---- Get helpful stuff for looping over traps.
-  traps <- unique(eff.dfWide$Position)
-  nTraps <- length(traps)
-  
-  #   ---- Clean up the Julian week information.
-  theDates <- data.frame(Date=seq(minDate,maxDate,by="days")) %>% 
+  # Recompute JWeek ----
+  # The JWeek column returned from Access and computed by the sequence of 
+  # queries is wrong.  I think it is a simple (mod 7) calculation of 1:365, 
+  # which makes Jan 1 the first day of the first week always, and week 
+  # breaks are somewhere in the middle of normal weeks. Here, I recalculate
+  # JWeek using R's built-in ISO 8601 compliant week of the year computation, 
+  # with the week starting on Monday (the UK convention).  
+  # If the week (starting on Monday) containing 1 January has four or 
+  # more days in the new year, then it is considered week 1. Otherwise, it 
+  # is the last week of the previous year, and the next week is week 1. 
+  # Make sure to use same calculation in 'theDates' below, i.e., use %V
+  eff.df2 <- eff.df2 %>% 
     dplyr::mutate(JWeek = as.numeric(format(Date, "%V")), 
-                  mon = format(Date, "%b"), 
-                  day = format(Date, "%d")) %>% 
-    dplyr::group_by(JWeek) %>% 
-    dplyr::summarise(julianWeekLabel = paste(dplyr::first(mon), dplyr::first(day), 
-                                             "-", 
-                                             dplyr::last(mon), dplyr::last(day)))
-
-  #   ---- Check for Julian week 53, pull it out, make an indicator, and then get
-  #   ---- the number of days in it. 
-  JWeekChecker <- unique(theDates[theDates$JWeek == 53,c("JWeek","julianWeekLabel")])
-  J53 <- as.numeric(any(theDates$JWeek == 53))
-  if(J53 == 1){
-    J53nDays <- ifelse(nchar(as.character(JWeekChecker$julianWeekLabel)) == 7,1,2)
-  } else {
-    J53nDays <- 0
-  }
+                  Year = as.numeric(format(Date, "%Y")))  # just make sure Year is correct too
+      
+  #   Set up data frame of dates and time possibilities.  Get min and max over all ----
+  #   traps so all resulting data frames are the same size.
+  minDate <- min( eff.df2$Date )
+  maxDate <- max( eff.df2$Date )
+   
+  # Make data frame with JWeek labels. This will be merged in later. ----
+  theDates <- data.frame(Date=seq(minDate,maxDate,by="days")) %>%
+    dplyr::mutate(JWeek = as.numeric(format(Date, "%V")),
+                  mon = format(Date, "%b"),
+                  day = format(Date, "%d")) %>%
+    dplyr::group_by(JWeek) %>%
+    dplyr::summarise(julianWeekLabel = paste(dplyr::first(mon), dplyr::first(day),
+                                             "-",
+                                             dplyr::last(mon), dplyr::last(day)),
+                     Year = as.numeric(format(min(Date), "%Y")),
+                     .groups = "keep")
   
-  #   ---- Make nice data frames for output csv and also prep for plotting.
-  #   ---- Note that the last entry in the df.Day list is for all traps combined.
-  df.Day <- vector("list",nTraps + 1)
-  the.sum <- NULL
-  for(i in 1:nTraps){
-    df.Day[[i]] <- theDates %>% 
-      dplyr::mutate(Position = traps[i]) %>% 
-      dplyr::left_join(eff.dfWide, by = c("Position", "JWeek"))
-    
-    # df.Day[[i]] <- merge(theDates,eff.dfWide[eff.dfWide$Position == traps[i],],by=c('Date','Year','Position','JWeek'),all.x=TRUE)
-    df.Day[[i]][is.na(df.Day[[i]])] <- 0
-    
-    df.Day[[i]] <- df.Day[[i]] %>% 
-      dplyr::mutate(DataPresent = ifelse(Minutes.1 > 0 | Minutes.2 > 0,1,0),
-                    Minutes.3 = ifelse(Total == 0, minPerDay, Minutes.3),
-                    Total = ifelse(Total == 0, minPerDay, Total))  
-
-    if(i == 1){
-      the.sum <- df.Day[[i]] %>% dplyr::select(dplyr::matches("Minutes"), Total, Diff, DataPresent)
-    } else {
-      the.sum <- the.sum + (df.Day[[i]] %>% dplyr::select(dplyr::matches("Minutes"), Total, Diff, DataPresent))
-    }
-    
-  }
-  
-  #   ---- Combine all trap data into an overall data frame.
-  #   When summing, do not rely on the Total column because of missingness.
-  the.sum <- tibble::tibble(the.sum) %>%   
-    dplyr::mutate(Minutes.1 = ifelse(DataPresent > 0, Minutes.1 / DataPresent, 0),
-                  Minutes.2 = ifelse(DataPresent > 0, Minutes.2 / DataPresent, 0),
-                  Minutes.3 = ifelse(DataPresent > 0, minPerDay - Minutes.1 - Minutes.2, minPerDay), 
-                  Total = Minutes.1 + Minutes.2 + Minutes.3, 
-                  Diff = round(Total - minPerDay, 3))
-  df.Day[[nTraps + 1]] <- dplyr::bind_cols((df.Day[[1]] %>%  dplyr::select(JWeek, julianWeekLabel, Position, Year, Date)),the.sum)
-  df.Day[[nTraps + 1]]$Position <- 'AllTraps'
+  # Make sure all weeks appear in effort dataframe ----
+  eff.df2 <- eff.df2 %>% 
+    dplyr::group_by(Position) %>% 
+    dplyr::summarise(JWeek = c(JWeek, theDates$JWeek), 
+                     Minutes = c(Minutes, rep(0, nrow(theDates))), 
+                     EffortID = c(EffortID, rep(3, nrow(theDates))))
   
   #   ---- Get site label.
-  siteLabel <- Site %>% 
-    dplyr::filter(siteID == site) %>% 
+  siteLabel <- Site %>%
+    dplyr::filter(siteID == site) %>%
     dplyr::pull(siteName)
-  
-  setWinProgressBar( get("progbar",envir=.GlobalEnv), .7 , label="Creating trap-specific plots." )
-  
-  # for each trap (and over all traps)
-  
-  if(nTraps == 1){
-    stopHere <- nTraps
-  } else {
-    stopHere <- nTraps + 1
-  }
-  out.fn.roots <- NULL
-  for(i in 1:stopHere){
-    
-    eff.df3 <- df.Day[[i]] %>% 
-      dplyr::group_by(Position, JWeek) %>% 
-      dplyr::summarise(Year = dplyr::first(Year), 
-                       julianWeekLabel = dplyr::first(julianWeekLabel),
-                       Minutes.1 = sum(Minutes.1), 
-                       Minutes.2 = sum(Minutes.2), 
-                       Minutes.3 = sum(Minutes.3), 
-                       Total = sum(Total), 
-                       Diff = sum(Diff), 
-                       .groups = "drop") %>% 
-      dplyr::mutate(Effort1h = Minutes.1 / 60,
-                    Effort2h = Minutes.2 / 60,
-                    Effort3h = Minutes.3 / 60) %>% 
-      dplyr::arrange(Position, Year, JWeek)
 
-    #   ---- Make plotting matrix.
-    test <- t(eff.df3[,c('JWeek','Effort1h','Effort2h','Effort3h')])                                                                  
-    test[ is.nan(test) ] <- 0
-    colnames(test) <- test[1,]
-    test <- test[-1,]
+  eff.df3 <- eff.df2 %>% 
+    dplyr::group_by(Position, JWeek, EffortID) %>% 
+    dplyr::summarise(Minutes = sum(Minutes), 
+                     Effort = Minutes / 60) 
   
-    #   ---- Set up for plotting.  
+  eff.df3 <- eff.df3 %>% 
+    tidyr::pivot_wider(id_cols = c("Position", "EffortID"), 
+                       names_from = JWeek, 
+                       names_prefix = "Week.", 
+                       values_from = Effort, 
+                       values_fill = 0) %>% 
+    dplyr::arrange(Position, EffortID)
+    
+    
+    # Increase NoFishing bars so each bar sums to hours in a week (168) ----
+    # DF MUST be sorted by EffortID (1,2,3)
+    hrsPerWeek <- minPerDay * 7 / 60
+    bumpNoFishing <- function(x, totHrs){
+      x[3] <- totHrs - sum(x[1:2])
+      if( x[3] < 0 ){
+        # if sum(x) > 169 (I don't see how, but...), scale 
+        # the first to elements to sum to 168 exactly
+        x[3] <- 0
+        x[1:2] <- totHrs * (x[1:2] / sum(x[1:2]))
+      }
+      x
+    }
+    eff.df3 <- eff.df3 %>% 
+      dplyr::group_by(Position) %>% 
+      dplyr::mutate(dplyr::across(dplyr::starts_with("Week"), bumpNoFishing, totHrs = hrsPerWeek))
+
+    # Compute "All Trap" fishing hours ----
+    nTraps <- length(unique(eff.df2$Position))
+    if( nTraps > 1){
+      eff.df3 <- eff.df3 %>% 
+        dplyr::group_by(EffortID) %>% 
+        dplyr::summarise(Position = "All Traps", 
+                         across(starts_with("Week"), sum)) %>% 
+        dplyr::bind_rows(eff.df3)
+    }
+  
+
+    # Plot Effort ----
     theCols <- c("blue","red","white")
     theLegd <- c("Fishing successful","Fishing unsuccessful","Trap not fished")
     
-    #   ---- Check for week 53.  
-    if(J53 == 1){
-      getIt <- rep(0,ncol(test))
-      getIt[colnames(test) == 53] <- (7 - J53nDays)*1440 / 60
-      test <- rbind(test,getIt)
-      theCols <- c("blue","red","white","gray")
-      theLegd <- c("Fishing successful","Fishing unsuccessful","Trap not fished","Calendar end")
+    plotEff <- function(.x, .y, 
+                        jWeekLabs,
+                        output.file = output.file, 
+                        cols = theCols, 
+                        legnd = theLegd, 
+                        sitelab = siteLabel, 
+                        minDate = minDate, 
+                        maxDate = maxDate, 
+                        nTraps){
+
+      .x <- .x %>% 
+        dplyr::select(dplyr::starts_with("Week")) %>% 
+        as.matrix()
+
+      out.fn <- gsub(" ", "", paste0("_EffortPlot_",.y$Position[1],".png"))
+      out.fn <- paste(output.file, out.fn, sep="")
+      tryCatch({png(filename=out.fn,width=7,height=7,units="in",res=1000)}, 
+               error=function(x){png(filename=out.fn)})
+
+      print(paste0("Graph: ", siteLabel, ", ", .y$Position ))
+
+      #   ---- Layout plotting area. 
+      z <- layout( matrix(c(1,2,3), ncol=1), heights=c(0.1,0.45,0.45), widths=1)
+      
+      par(mar = c(0.2,0.2,0.2,0.2)); 
+      plot(1,1,type = "n",frame.plot = FALSE,axes = FALSE)
+      u <- par("usr")
+      text(u[4]-0.07*(u[4]-u[3]),u[1] +   3*(u[2]-u[1])/5,adj=c(1,NA),siteLabel,cex=2.25)
+      text(u[4]-0.07*(u[4]-u[3]),u[1] + 1.5*(u[2]-u[1])/5,adj=c(1,NA),
+           paste0("Weekly Effort from ",minDate,' through ',maxDate,": ",.y$Position[1]),cex=1.0)
+      
+      par(mar=c(1.0,6,0,2))
+      
+      #   ---- Finds where to cut bars and make top plot matrix and bottom plot matrix.
+      mid.time <- round((1+ncol(.x))/2)
+      eff1.bars <- .x[,1:mid.time]
+      eff2.bars <- .x[,(mid.time+1):ncol(.x)]
+      
+      #   ---- Set plot area. 
+      wk1.Labels <- jWeekLabs[1:mid.time]
+      wk2.Labels <- jWeekLabs[(mid.time+1):ncol(.x)]
+      
+      if( grepl("All", .y$Position) ){
+        yText <- paste0("Hours, summed over ", nTraps, " traps")
+        yTickInterval <- 24 * nTraps
+        yMin <- -(60 * nTraps)
+      } else {
+        yText <- "Hours per week"
+        yTickInterval <- 24
+        yMin <- -60
+      }
+      
+      yMax <- max(colSums(eff1.bars)) # is same for eff2.bars
+      
+      #   ---- Actually make the top plot. 
+      barplot(eff1.bars, 
+              space=0, 
+              col=theCols, 
+              legend.text=theLegd, 
+              args.legend=list(x="top", horiz=T, bty="n"), 
+              ylab="", 
+              xlab="", 
+              ylim=c(yMin,yMax*1.15), 
+              yaxt = "n", 
+              xaxt = "n")
+      
+      #   ---- Format top plot. 
+      mtext( side=2, text=yText, line=3, cex=0.7, at=c(NULL,yMax/2) )
+      axis(2, at=seq(0, yMax, by=yTickInterval), cex.axis=0.8)
+      text(x=1:mid.time - 0.5, y = yMin/2, labels=wk1.Labels, cex=0.7, srt = 90)
+      
+      #   ---- Actually make the bottom plot. 
+      par(mar=c(1.0,6,0,2))
+      barplot(eff2.bars, 
+              space=0, 
+              col=theCols, 
+              legend.text=theLegd, 
+              args.legend=list(x="top", horiz=T, bty="n"), 
+              ylab="", 
+              xlab="", 
+              ylim=c(yMin,yMax*1.15),
+              yaxt = "n", 
+              xaxt = "n")
+      
+      #   ---- Format the bottom plot.  
+      mtext( side=2, text=yText, line=3, cex=0.7, at=c(NULL,yMax/2) )    
+      axis(2, at=seq(0, yMax, by=yTickInterval), cex.axis=0.8)
+      text(x=1:mid.time - 0.5, y = yMin/2, labels=wk2.Labels, cex=0.7, srt = 90)
+      
+      dev.off()
+      
+      out.fn
+            
     }
-    
-    out.fn <- paste(output.file, paste0("_EffortPlot_",eff.df3$Position[1],".png"), sep="")
-    tryCatch({png(filename=out.fn,width=7,height=7,units="in",res=1000)}, error=function(x){png(filename=out.fn)})
-    
-    #   ---- Layout plotting area. 
-    z <- layout( matrix(c(1,2,3), ncol=1), heights=c(0.1,0.45,0.45), widths=1)
 
-    par(mar = c(0.2,0.2,0.2,0.2)); 
-    plot(1,1,type = "n",frame.plot = FALSE,axes = FALSE); u <- par("usr");     
-    text(u[4]-0.07*(u[4]-u[3]),u[1] +   3*(u[2]-u[1])/5,adj=c(1,NA),siteLabel,cex=2.25)
-    text(u[4]-0.07*(u[4]-u[3]),u[1] + 1.5*(u[2]-u[1])/5,adj=c(1,NA),paste0("Weekly Effort from ",minDate,' through ',maxDate,": ",eff.df3$Position[1]),cex=1.0)
-  
-    par(mar=c(1.0,6,0,2))
-    
-    #   ---- Fins where to cut bars and make top plot matrix and bottom plot matrix.
-    mid.time <- round((1+ncol(test))/2)
-    eff1.bars <- test[,1:mid.time]
-    eff2.bars <- test[,(mid.time+1):ncol(test)]
-    
-    #   ---- Set plot area. 
-    wk1.bars <- eff.df3$JWeek[1:mid.time]
-    wk1.Labels <- eff.df3$julianWeekLabel[1:mid.time]
-    yr1.bars <- eff.df3$Year[1:mid.time]
-    
-    wk2.bars <- eff.df3$JWeek[(mid.time+1):ncol(test)]
-    wk2.Labels <- eff.df3$julianWeekLabel[(mid.time+1):ncol(test)]
-    yr2.bars <- eff.df3$Year[(mid.time+1):ncol(test)]
-    
-    yText <- ifelse(i == (nTraps + 1),"Weighted average hours per Julian week","Number of hours per week")
-    
-    #   ---- Actually make the top plot. 
-    barplot(eff1.bars, 
-            space=0, 
-            col=theCols, 
-            legend.text=theLegd, 
-            args.legend=list(x="top", horiz=T, bty="n"), 
-            ylab="", 
-            xlab="", 
-            ylim=c(-60,7*24*1.15), 
-            yaxt = "n", 
-            xaxt = "n")
-  
-    #   ---- Format top plot. 
-    mtext( side=2, text=yText, line=3, cex=0.7, at=c(NULL,84) )
-    axis(2, at=seq(0, 7*24, by=24), cex.axis=0.8)
-    text(x=c(1:length(wk1.bars)) - 0.5, y = -31, labels=wk1.Labels, cex=0.7, srt = 90)
-  
-    #   ---- Actually make the bottom plot. 
-    par(mar=c(1.0,6,0,2))
-    barplot(eff2.bars, 
-            space=0, 
-            col=theCols, 
-            legend.text=theLegd, 
-            args.legend=list(x="top", horiz=T, bty="n"), 
-            ylab="", 
-            xlab="", 
-            ylim=c(-60,7*24*1.15),
-            yaxt = "n", 
-            xaxt = "n")
-    
-    #   ---- Format the bottom plot.  
-    mtext( side=2, text=yText, line=3, cex=0.7, at=c(NULL,84) )    
-    axis(2, at=seq(0, 7*24, by=24), cex.axis=0.8)
-    text(x=c(1:length(wk2.bars)) - 0.5, y = -31, labels=wk2.Labels, cex=0.7, srt = 90)
-    
-    dev.off()
-    
-    #   ---- Output csv of minutes for the ith trap.
-    out.week.table <- paste(output.file, "_EffortSummaryTable_",eff.df3$Position[1],".csv", sep="")
+    out.graphs <- eff.df3 %>% 
+      dplyr::group_by(Position) %>% 
+      dplyr::group_map(.f = plotEff, 
+                        jWeekLabs = theDates$julianWeekLabel,
+                        output.file = output.file, 
+                        cols = theCols, 
+                        legnd = theLegd, 
+                        sitelab = siteLabel, 
+                        minDate = minDate, 
+                        maxDate = maxDate, 
+                        nTraps = nTraps
+                        )
+    out.graphs <- do.call(c, out.graphs)
 
-    #   ---- Format output. 
-    eff.df3Print <- eff.df3 %>% 
+    # Computations for the  CSVs ----
+    # CSV has different format than that required by graph
+    
+    eff.df3 <- eff.df2 %>% 
+      dplyr::group_by(Position, JWeek, EffortID) %>% 
+      dplyr::summarise(Minutes = sum(Minutes)) 
+    
+    eff.df3 <- eff.df2 %>% 
+      dplyr::group_by(JWeek, EffortID) %>% 
+      dplyr::summarise(Minutes = sum(Minutes), 
+                       Position = "All Traps") %>% 
+      dplyr::bind_rows(eff.df3)
+    
+    eff.df3 <- eff.df3 %>% 
+      tidyr::pivot_wider(id_cols = c("Position", "JWeek"), 
+                         names_from = EffortID, 
+                         names_prefix = "Minutes.", 
+                         names_sort = TRUE,
+                         values_from = Minutes, 
+                         values_fill = 0) %>% 
+      dplyr::arrange(Position, JWeek)
+    
+    eff.df3 <- eff.df3 %>% 
+      dplyr::left_join(theDates, by = "JWeek") %>% 
+      dplyr::mutate(Total = Minutes.1 + Minutes.2 + Minutes.3,
+                    Diff = ifelse(Position == "All Traps", nTraps*hrsPerWeek*60 - Total, hrsPerWeek*60 - Total)) %>% 
       dplyr::rename(FishSuccess = Minutes.1, 
                     FishUnsuccess = Minutes.2, 
-                    TrapNotFished = Minutes.3) %>% 
-    dplyr::select('julianWeekLabel','Year','FishSuccess','FishUnsuccess','TrapNotFished','Total','Diff') 
+                    TrapNotFished = Minutes.3, 
+                    UnaccountedForMins = Diff,
+                    WeekOfYear = JWeek,
+                    Dates = julianWeekLabel) %>% 
+      dplyr::select(Position, Year, WeekOfYear, Dates, 
+         FishSuccess, FishUnsuccess,TrapNotFished,
+         Total, UnaccountedForMins) 
+    
+    # Write out the CSVs ----
+    
+    writeEffort <- function(.x, .y, 
+                            out.file = out.file, 
+                            siteLabel, 
+                            minDate, 
+                            maxDate){
       
-    rs <- paste0(minDate,' through ',maxDate)
-  
-    sink(out.week.table)
-    cat(paste("Site=,", siteLabel, "\n", sep=""))
-    cat(paste("Site ID=,", eff.df3$Position[1], "\n", sep=""))
-    cat(paste("Species ID=,", 161980, "\n", sep=""))
-    cat(paste("Summarized by=, week\n", sep=""))
-    cat(paste("Dates included=,", rs, "\n", sep=""))
-    cat(paste("Note:  All time units in minutes.\n"))  
-  
-    cat("\n")
-    cat("\n")
-    sink()
-    suppressWarnings(write.table( eff.df3Print, file=out.week.table, sep=",", append=TRUE, row.names=FALSE, col.names=TRUE))
-  
-    out.fn.roots <- c(out.fn.roots,out.week.table,out.fn)
-  }
+      #   ---- Output csv of minutes for the ith trap.
+      out.fn <- gsub(" ", "", paste0("_EffortSummaryTable_",.y$Position[1],".csv"))
+      out.week.table <- paste(output.file, out.fn, sep="")
+      
+      print(paste0("CSV: ", siteLabel, ", ", .y$Position ))
+      
+      rs <- paste0(minDate,' through ',maxDate)
+      
+      sink(out.week.table)
+      cat(paste("Site=,", siteLabel, "\n", sep=""))
+      cat(paste("Site ID=,", .y$Position[1], "\n", sep=""))
+      cat(paste("Species ID=,", 161980, "\n", sep=""))
+      cat(paste("Summarized by=, week\n", sep=""))
+      cat(paste("Dates included=,", rs, "\n", sep=""))
+      cat(paste("Note:, All time units in minutes.\n"))  
+      
+      cat("\n")
+      cat("\n")
+      sink()
+      suppressWarnings(write.table( .x, file=out.week.table, sep=",", 
+                                    append=TRUE, row.names=FALSE, col.names=TRUE))
+      
+      out.week.table
+    }
+    
+  out.csv <- eff.df3 %>% 
+    dplyr::group_by(Position) %>% 
+    dplyr::group_map( .f = writeEffort, 
+                      out.file = output.file, 
+                      siteLabel = siteLabel, 
+                      minDate = minDate,
+                      maxDate = maxDate)
+  out.csv <- do.call(c, out.csv)
+  results <- c(out.graphs, csvFiles)
+
+  # Clean up and send message back ----
   
   tableDeleter()
   
-  #   ---- Send messages back to the interface.  
   cat("SUCCESS - F.weekly.effort\n\n")
   cat(paste("Working directory:", getwd(), "\n"))
   cat(paste("R data frames saved in file:", "<No RData saved>", "\n\n"))
-  cat(paste("Number of files created in working directory =", 2*stopHere, "\n"))
-  for(i in 1:length(out.fn.roots)){
-    cat(paste(out.fn.roots[i], "\n", sep=""))
-  }
+  cat(paste("Number of files created in working directory =", length(results), "\n"))
+  cat(paste(results, "\n", sep=""))
   cat("\n")
   
   setWinProgressBar( get("progbar",envir=.GlobalEnv), 1 , label="SUCCESS" )
   close(progbar)
   
-  invisible(eff.df3Print)
+  invisible(eff.df3)
 
 }
