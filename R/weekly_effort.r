@@ -411,7 +411,7 @@ F.weekly.effort <- function( site, taxon, min.date, max.date, output.file ){
                       minDate = minDate,
                       maxDate = maxDate)
   out.csv <- do.call(c, out.csv)
-  results <- c(out.graphs, csvFiles)
+  results <- c(out.graphs, out.csv)
 
   # Clean up and send message back ----
   
