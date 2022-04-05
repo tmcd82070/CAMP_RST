@@ -1,8 +1,8 @@
 Package: campR
 Type: Package
 Title: CAMP RST R Routines
-Version: 2.0.17
-Date: 2022-04-04
+Version: 2.0.18
+Date: 2022-04-05
 Author: Trent McDonald [aut, cre],
   Jason Mitchell [aut],
   Jared Studyvin [aut],
