@@ -1,8 +1,8 @@
 #' @export
 #' 
-#' @title F.run.passage
+#' @title F.run.passage - Estimate passage of all fish. 
 #'   
-#' @description Estimate production by life stage and run for all days within a
+#' @description Estimate passage by run over all life stages within a
 #'   date range.
 #'   
 #' @param site The identification number of the site for which estimates are 
@@ -32,27 +32,47 @@
 #' @param enhmodel A logical indicating if enhanced efficiency models should 
 #'   be used to estimate trap efficiencies.  Default is \code{TRUE}.  
 #'   
-#' @return A \code{csv} table of passage estimates over the specified date 
-#'   range, with runs across the columns.  A \code{csv} of daily passage 
-#'   estimates for all traps operating at least one day, and catching at least 
-#'   one fish, for all days within the specified date range. An additional 
-#'   \code{csv} summarizing passage via the temporal unit specified via 
-#'   \code{by}.  A \code{png} of catch versus time, for all inclusive traps. A
-#'   \code{png} of daily efficiency estimates, and accompanying \code{csv} for 
-#'   all traps operating at least one day, and catching at least one fish, for 
-#'   all days within the specified time period.  Finally, for each run, a bar
-#'   chart of passage summarizing catch over the time period specified via
-#'   \code{by}.
+#' @return A data frame containing the final passage estimates.    
+#' 
+#' @section Files Created:
+#' This routine produces the following files in the 'outputs' directory of the 
+#' RST package: 
+#'   \itemize{
+#'     \item File \bold{<id>_<site>_<date>_<run>_passage_table.csv}: A \code{csv} 
+#'     table of passage estimates over the specified date range. This file contains
+#'     auxiliary information on mean fork length, sd of fork length, fishing length, 
+#'     the efficiency model used, and number of traps operating. If called for, 
+#'     this file contains daily confidence intervals surrounding estimated passage.
+#'       
+#'     \item File \bold{<id>_<site>_<date>_<run>_masterCatch.csv}: A \code{csv} 
+#'     of daily assigned catch, unassigned catch, imputed catch, and total 
+#'     catch.  All catch numbers in this file are un-inflated by efficiency. 
+#'     
+#'     \item File \bold{<id>_<site>_<date>_<run>_baseTable.csv}: A \code{csv} 
+#'     containing raw catch, imputed catch, total estimated catch, estimated 
+#'     efficiency and passage summarized  by the temporal unit specified via 
+#'     \code{by}.  Usually, this file contains one row per batch day.
+#'     
+#'     \item File \bold{<id>_<site>_<date>_<run>_catch.png}: A \code{png} of catch by time, for all traps. This graph shows raw
+#'     (un-inflated) catch, which days have some imputed catch, and the smoothed
+#'     catch model used for imputation.
+#'     \item File \bold{<id>_<site>_<date>_<run>_eff.png}: A \code{png} of daily efficiency estimates.  
+#'     \item File \bold{<id>_<site>_<date>_<run>_passage.png}: A \code{png} containing a bar chart of passage estimates 
+#'     over the time period for time units specified in \code{by}. This graph 
+#'     contains inflated passage estimates (usually by day), the proportion 
+#'     of each day's estimate that has been imputed, and total passage (sum 
+#'     of all bar heights).
+#'   }
 #'   
 #' @details Function \code{F.run.passage} is the main workhorse function for 
 #'   estimating passage with respect to each of run and life stage.  As such, it
-#'   calls several separate functions, some of which contain queries designed to
-#'   run against an Access database.
+#'   calls other functions, some of which query raw data from the Access database.
 #'   
-#'   Generally, queries against a database comprise two main efforts.  The first
+#'   Generally, queries against a database have two parts.  The first
 #'   involves a query for efficiency trial data, generally called "release" 
-#'   data, and conducted via function \code{F.get.release.data}, while the 
-#'   second queries for catch data via function \code{F.get.catch.data}.
+#'   data.  These queries are performed by function \code{F.get.release.data}. 
+#'   The second part involves queries of raw catch, which are 
+#'   performed by function \code{F.get.catch.data}.
 #'   
 #'   Once catch data are obtained, fish are partitioned as to whether or not 
 #'   they were assigned and caught during a half-cone operation.  Function 
@@ -61,9 +81,10 @@
 #'   over time.
 #'   
 #'   All calls to function \code{F.run.passage} result in daily passage 
-#'   estimates, and courser temporal estimates, based on the value specified via
-#'   \code{by}.  Regardless of the temporal partitioning, estimates are always 
-#'   additionally summarized by year.  Function runs with \code{by} specified 
+#'   estimates (in the "baseTable.csv" file).  Courser temporal estimates can 
+#'   be obtained by specifying the value of \code{by}.  
+#'   Regardless of \code{by}, estimates are summarized by year.  
+#'   Function runs with \code{by} specified 
 #'   as \code{year} output only one set of annual estimates.
 #'   
 #'   The difference between the specified \code{max.date} and \code{min.date}

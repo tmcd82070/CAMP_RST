@@ -116,7 +116,11 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
   unassd.sig.digit <- get("unassd.sig.digit",envir=.GlobalEnv)
 
   #   ---- Find the levels of the present variable.  
-  u <- levels( catch[,present.var] )
+  #   Mystery: Sometimes it appears the present.var is a factor, other times 
+  #   it is a character.  Regardless, we need the levels of present.var 
+  #   that are not missing and not Unassigned.
+  u <- unique(as.character(catch[,present.var]))
+  u <- u[ !is.na( u )]
   u <- u[ u!="Unassigned" ]
   
   nonMissTrapVisit <- !is.na(catch$trapVisitID)
@@ -127,7 +131,7 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
   #  ---- Loop over each level found in the present variable.  
   for( i in u ){
     thisPresent <- (catch[,present.var] == i) & !is.na(catch[,present.var])
-    cat(paste("--------", present.var, "=", i))
+    cat(paste("--------", present.var, "=", i, "---------"))
 
     #   ---- See if any of this level are present, but unassigned in the other
     #   ---- variable. If none, just skip to the end -- there's nothing to do.  
@@ -159,7 +163,7 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
           RandomlySelected <- (catch$RandomSelection == "Yes") & !(is.na(catch$RandomSelection))
           UnassignedAbsent <- (catch[,absent.var]=="Unassigned") & !is.na(catch[,absent.var])
            
-          #   ---- Form indicator of this trap visit, level, absent-var not "Unassigned", randomly selected.
+          #   ---- Form indicator of this trap visit, present var level, absent-var not "Unassigned", randomly selected.
           thisInd <- thisTrapVisit & thisPresent & !UnassignedAbsent & RandomlySelected 
                        
           if( !any( thisInd ) ){
@@ -214,15 +218,16 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
           freqs <- tapply( catch$Unmarked[ thisInd ], catch[ thisInd, absent.var ], sum)
           freqs <- freqs[ !is.na(freqs) ]
 
+          # A good debugging printout:
+          # cat(paste0("********** Freq data for: ** row ",j, " ** TrapVisit = ",catch$trapVisitID[j], " ********** \n"))
+          # print(head(catch[thisInd, ]))
+          # cat("Frequencies used:\n")
+          # print(freqs)
+          
           #   ---- If greater than zero, there were other fish captured this day that had an "absent" 
           #   ---- designation. Use them as an estimate for the "Unassigned."
           if(length(freqs) > 0){
 
-            if(length(freqs) > 1){
-              tmp <- paste0(freqs,collapse=",")
-              cat(paste0("***************** ",j," **********(",tmp,")***********\n"))
-            }
-            
             props <- freqs / sum(freqs)
 
             #   ---- Multiply proportions that day by number of missings - the 'plus' count.  
@@ -233,6 +238,10 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
             #   ---- This fixes the rounding error.
             N.more <- N.j - sum(n.j)
 
+            # # debugging printout
+            # cat(paste0("Number of unassigned ", absent.var, " during this trap visit = ", N.j, "\n"))
+            # cat("New allocated counts:\n")
+            # print(n.j)
             
             if(abs(N.more) > 0){
               cat(paste0("+++++++++++ ",j," ++++++++++",N.j,",",n.j,",",N.more,"\n"))
@@ -258,18 +267,6 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
               n.extra <- c(rmultinom( 1, abs(round((10^unassd.sig.digit)*N.more,0)), props ))*10^(-1*unassd.sig.digit)
               n.j <- n.j - n.extra             
             }
-            
-            
-            
-            
-            # N.more <- 4
-            # props <- c(0.88888889, 0.01960784, 0.09150327)
-            # names(props) <- c("Fry", "Parr", "Smolt")
-            # unassd.sig.digit <- 1
-            # 
-            # c(rmultinom( 1, abs(round((10^unassd.sig.digit)*N.more,0)), props ))*10^(-1*unassd.sig.digit)
-            
-            
             
             #   ---- Replace line j with length(props) lines.  These new lines have $n equal to n.j, 
             #   ---- but all other variables equal to the original line.
@@ -302,8 +299,11 @@ F.assign.1dim <- function(catch, present.var, absent.var ){
             #   ---- Leave 'absent' blank.  NOTE: this means some missings in 'absent' may remain in the data set after this routine.
             #   ---- It might be possible to look at previous and subsequent trap visits to assign a value to 'absent', but that
             #   ----  would need to be done by hand. Write out a note to this effect. 
-            cat(paste("NOTE: trapVisitID=", catch$trapVisitID[j], "has remaining Unassigned", absent.var, "on", catch$SampleDate[j],  
-              "To fix, assign at least one", absent.var, "during this trapVisit.\n"))
+            cat(paste("NOTE: I could not construct the frequency distribution of", absent.var, 
+            "during trapVisitID=", catch$trapVisitID[j], 
+            "on", catch$batchDate[j],  
+            "\n'Unassigned'", absent.var, "fish remain and will be dropped.",
+            "\nTo fix, manually assign at least one", absent.var, "during this trapVisit in the data base.\n"))
 
             #   ---- I only need to update thisPresentAndMissing[j] to FALSE because nothing 
             #   ---- has happened, but just for good measure, re-compute.

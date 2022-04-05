@@ -450,7 +450,7 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
   
   
   
-  cat("Jason Printing.\n")
+  cat("Head of the catch data frame in F.get.catch.data.\n")
   print(head(catch))
   
   
@@ -643,9 +643,12 @@ F.get.catch.data <- function( site, taxon, min.date, max.date, output.file, auto
   attr(catch, "site.name") <- catch$siteName[1]
   attr(catch, "subsites") <- unique(catch$trapPositionID)
   
-  cat("First 20 records of catch data frame...\n")
-  if( nrow(catch) >= 20 ) print( catch[1:20,] ) else print( catch )
-  
+  cat("The head and tail of catch data frame in F.get.catch.data...\n")
+  cat("Head : \n")
+  print(head(catch))
+  cat("Tail : \n")
+  print(tail(catch))
+
   #   ---- Return two data frames via a list.  One contains positive catches, while
   #   ---- the other contains visit and fishing information.
   list( catch=catch, visit=visits )

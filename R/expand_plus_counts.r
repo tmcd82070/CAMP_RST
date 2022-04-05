@@ -75,10 +75,11 @@ F.expand.plus.counts <- function( catch ){
   #   ---- Unmarked correspond to non-fishing.  Eliminate these if they exist. 
   catch <- catch[ (catch$Unmarked > 0) & !is.na(catch$Unmarked) , ]
 
-  cat("----------- Assigning run and lifestage based on Plus Counts----------\n")
-  cat("Number of records over season in run X lifestage matrix upon entry:\n")
+  cat("----------- Assigning run and lifestage based on 'Unassigned' (plus-) Counts----------\n")
+  cat("Number of fish in run X lifestage matrix upon entry:\n")
 
-  print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="always") )
+  print( table(FinalRun=rep(catch$FinalRun, catch$Unmarked), 
+               lifeStage=rep(catch$lifeStage, catch$Unmarked), useNA="always") )
 
   #   ---- Assign plus counts one dimension at a time, then for the doubly missing.
 
@@ -100,14 +101,9 @@ F.expand.plus.counts <- function( catch ){
     cat( "No Unassigned-Unassigned combinations of FinalRun and lifeStage\n" )
   }
 
-  cat("Final number of records in run X life stage table:\n")
-  print( table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="always") )
-  
-  # here <- "L:/PSMFC_CampRST/ThePlatform/CAMP_RST20181023-campR2.0.10/Outputs/Clear Creek--Clear Creek Lower RST 1.7 rm/1999"
-  # tbl <- as.data.frame.matrix(table(FinalRun=catch$FinalRun, lifeStage=catch$lifeStage, useNA="always"))
-  # rr <- runif(1,0,1000000000)
-  # write.csv(tbl,paste0(here,"/",rr,".csv"),row.number=FALSE)
-  # rm(here,tbl,rr)
+  cat("---- Final number of fish in run X life stage table:\n")
+  print( table(FinalRun=rep(catch$FinalRun, catch$Unmarked),
+               lifeStage= rep(catch$lifeStage, catch$Unmarked), useNA="always") )
   
   cat("----------- DONE assigning plus Counts----------\n")
 
