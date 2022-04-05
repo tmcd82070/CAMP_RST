@@ -115,23 +115,24 @@ queryEnvCovAPI <- function(min.date,
   }
   )  
   
-  print(urlResult$status_code)
-  
+  cat(paste0("Returned API status code: ", urlResult$status_code, "\n"))
+
   if( !is.null(urlResult) ){
 
     # I could make the 'stop' in these if statements into 'warning' and 
     # still return NULL.  For now, I think it better to stop.
+
+    tbl <-  suppressWarnings( {jsonlite::fromJSON(httr::content(urlResult, 
+                                                                as = "text")) })
     
     if( 200 <= urlResult$status_code & urlResult$status_code < 300 ){
       # we are good
-      tbl <-  suppressWarnings( {jsonlite::fromJSON(httr::content(urlResult, 
-                                                                  as = "text")) }
-      )
       
       # --- debuggin 
+      cat("Head of env data frame returned by API:\n")
       print(head(tbl))
       print(str(tbl))
-      cat("------ end debug -----------------\n")
+      cat("------ end debug in queryEnvCovAPI -----------------\n")
       # --- debuggin 
       
       
@@ -153,7 +154,10 @@ queryEnvCovAPI <- function(min.date,
       # tbl <- NULL
     } else {
       # whoops, Something else is wrong on the API side
-      stop(tbl$DETAIL)
+      cat(tbl$DETAIL)
+      stop(paste0("API ERROR: Usually these errors are temporary and due to server issues.\n", 
+                  "Please re-run the same CAMP analysis multiple times after some time has passed.\n",
+                  "If this error persists, contact CAMP support."))
     }
   } else {
     stop(paste(urlQueryList$hostname, "is down or unreachable."))
